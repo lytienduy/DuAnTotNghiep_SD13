@@ -31,7 +31,8 @@ import BrushIcon from '@mui/icons-material/Brush';
 import StyleIcon from '@mui/icons-material/Style';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
 import PanoramaHorizontalIcon from '@mui/icons-material/PanoramaHorizontal';
-import logo from '../img/dragonbee_logo_v1.png';
+import logo from '../../../img/dragonbee_logo_v1.png';
+
 
 
 

@@ -372,7 +372,7 @@ CREATE TABLE dot_giam_gia (
     ma_dot_giam_gia NVARCHAR(50) NOT NULL,
     loai_dot_giam_gia NVARCHAR(50),
     ten_dot_giam_gia NVARCHAR(100),
-    gia_tri_giam DECIMAL(10, 2),
+    gia_tri_giam FLOAT,
 	trang_thai NVARCHAR(20),
     ngay_bat_dau DATE,
     ngay_ket_thuc DATE,

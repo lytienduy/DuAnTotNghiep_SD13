@@ -1,10 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Sidebar from './components/SideBar';
-import Header from './components/Header';
-import ThongKe from './pages/ThongKe';
-import BanTaiQuay from './pages/BanTaiQuay';
-import HoaDon from './pages/HoaDon';
+import Sidebar from './module/admin/components/SideBar';
+import Header from './module/admin/components/Header';
+import ThongKe from './module/admin/pages/ThongKe';
+import BanTaiQuay from './module/admin/pages/BanTaiQuay';
+import HoaDon from './module/admin/pages/HoaDon';
 import { Box } from '@mui/material';
 
 const App = () => {
