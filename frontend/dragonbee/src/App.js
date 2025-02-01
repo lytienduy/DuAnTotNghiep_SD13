@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './module/admin/components/SideBar';
 import Header from './module/admin/components/Header';
 import ThongKe from './module/admin/pages/ThongKe';
+import PhieuGiamGia from './module/admin/pages/PhieuGiamGia';
+import ThemPhieuGiamGia from './module/admin/pages/ThemPhieuGiamGia';
 import BanTaiQuay from './module/admin/pages/BanTaiQuay';
 import HoaDon from './module/admin/pages/HoaDon';
 import { Box } from '@mui/material';
@@ -24,6 +26,8 @@ const App = () => {
               <Route path="/thongKe" element={<ThongKe />} />
               <Route path="/banTaiQuay" element={<BanTaiQuay />} />
               <Route path="/hoaDon" element={<HoaDon />} />
+              <Route path='/phieu-giam-gia' element={<PhieuGiamGia />} />
+              <Route path="/them-phieu-giam-gia" element={<ThemPhieuGiamGia />} />
             </Routes>
           </Box>
         </Box>

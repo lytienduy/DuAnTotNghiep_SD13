@@ -250,11 +250,11 @@ const Sidebar = ({ sx }) => {
         {/* Phiếu giảm giá */}
         <ListItemButton
           component={Link}
-          to="/discount-coupons"
+          to="/phieu-giam-gia"
           sx={{
             borderRadius: 3,
-            backgroundColor: isActive('/discount-coupons') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
-            color: isActive('/discount-coupons') ? '#fff' : 'inherit',
+            backgroundColor: isActive('/phieu-giam-gia') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
+            color: isActive('/phieu-giam-gia') ? '#fff' : 'inherit',
             '&:hover': {
               backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
               color: '#fff', // Chữ màu trắng khi hover
@@ -263,7 +263,7 @@ const Sidebar = ({ sx }) => {
         >
           <ListItemIcon
             sx={{
-              color: isActive('/discount-coupons') ? '#fff' : 'inherit',
+              color: isActive('/phieu-giam-gia') ? '#fff' : 'inherit',
               minWidth: '40px',
             }}
           >
