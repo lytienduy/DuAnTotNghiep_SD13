@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class KhachHangResponse {
+    private Integer id;
     private String tenKhachHang;
     private String sdt;
     private String email;

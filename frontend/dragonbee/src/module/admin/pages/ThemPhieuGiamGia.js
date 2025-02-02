@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";  // Đảm bảo bạn đã cài đặt axios
 import { Select, MenuItem } from "@mui/material";  // Thêm import cần thiết
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -33,7 +34,82 @@ const ThemPhieuGiamGia = () => {
   const [page, setPage] = useState(0);  // Trang hiện tại
   const [rowsPerPage, setRowsPerPage] = useState(5);  // Số dòng trên mỗi trang
   const [totalItems, setTotalItems] = useState(0);  // Tổng số bản ghi
-
+  const [soLuong, setSoLuong] = useState(0); // Tạo trạng thái cho số lượng
+  const navigate = useNavigate(); // Tạo biến navigate để điều hướng
+  // Tạo các ref cho các input
+  const maRef = useRef();
+  const tenPhieuGiamGiaRef = useRef();
+  const giaTriRef = useRef();
+  const soLuongRef = useRef();
+  const dieuKienRef = useRef();
+  const giaTriToiDaRef = useRef();
+  const tuNgayRef = useRef();
+  const denNgayRef = useRef();
+  // Add phiếu giảm giá
+  const handleAddNewCoupon = async () => {
+    try {
+      const ma = maRef.current ? maRef.current.value : "";
+      const tenPhieuGiamGia = tenPhieuGiamGiaRef.current ? tenPhieuGiamGiaRef.current.value : "";
+      const giaTriGiam = giaTriRef.current ? parseFloat(giaTriRef.current.value) : 0;
+      const dieuKien = dieuKienRef.current ? parseFloat(dieuKienRef.current.value) : 0;
+      const giaTriToiDa = giaTriToiDaRef.current ? parseFloat(giaTriToiDaRef.current.value) : 0;
+      const tuNgay = tuNgayRef.current ? tuNgayRef.current.value : "";
+      const denNgay = denNgayRef.current ? denNgayRef.current.value : "";
+    
+      const formattedNgayBatDau = tuNgay ? new Date(tuNgay).toISOString() : null;
+      const formattedNgayKetThuc = denNgay ? new Date(denNgay).toISOString() : null;
+    
+      // Kiểm tra các trường bắt buộc
+      if (!ma || !tenPhieuGiamGia || !formattedNgayBatDau || !formattedNgayKetThuc) {
+        alert("Các trường bắt buộc không được để trống!");
+        return;
+      }
+    
+      // Kiểm tra kiểu và tính số lượng
+      let khachHangIds = [];
+      let soLuong = 0;  // Số lượng mặc định
+    
+      if (type === "private" && selectedCustomers.length > 0) {
+        khachHangIds = selectedCustomers.map(customer => customer.id);  // Lấy ID khách hàng
+        soLuong = selectedCustomers.length;  // Số lượng khách hàng được chọn
+      } else if (type === "private" && selectedCustomers.length === 0) {
+        alert("Vui lòng chọn khách hàng!");
+        return;
+      } else if (type === "public") {
+        soLuong = soLuongRef.current ? parseInt(soLuongRef.current.value, 10) : 0;  // Số lượng nhập tay cho kiểu công khai
+      }
+    
+      // Chuẩn bị dữ liệu gửi lên server
+      const requestData = {
+        ma: ma,
+        tenPhieuGiamGia: tenPhieuGiamGia,
+        loaiPhieuGiamGia: selectedIcon === "percent" ? "Phần trăm" : "Cố định",
+        kieuGiamGia: type === "public" ? "Công khai" : "Cá nhân",
+        giaTriGiam: giaTriGiam,
+        soTienToiThieu: dieuKien,
+        soTienGiamToiDa: giaTriToiDa,
+        ngayBatDau: formattedNgayBatDau,
+        ngayKetThuc: formattedNgayKetThuc,
+        soLuong: soLuong,  // Sử dụng số lượng tính toán
+        moTa: "Mô tả phiếu giảm giá",
+        khachHangIds: khachHangIds,  // Gửi danh sách ID khách hàng nếu kiểu là "Cá nhân"
+      };
+    
+      // Gọi API để thêm mới phiếu giảm giá
+      const response = await axios.post("http://localhost:8080/dragonbee/add-phieu-giam-gia", requestData);
+    
+      // Kiểm tra phản hồi thành công
+      if (response.status === 200) {
+        alert("Thêm mới phiếu giảm giá thành công!");
+        navigate("/phieu-giam-gia"); // Điều hướng về trang danh sách phiếu giảm giá
+      }
+    } catch (error) {
+      console.error("Lỗi khi thêm mới phiếu giảm giá:", error.response?.data || error);
+      alert("Thêm mới phiếu giảm giá thất bại!");
+    }
+  };
+  
+  
   // Hàm gọi API để lấy danh sách khách hàng
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -60,21 +136,32 @@ const ThemPhieuGiamGia = () => {
   // Xử lý chọn tất cả
   const handleSelectAll = (event) => {
     setSelectAll(event.target.checked);
+    
     if (event.target.checked) {
-      setSelectedCustomers(customers.map((customer) => customer.email));  // Chọn tất cả dựa trên email
+      setSelectedCustomers(customers);  // Chọn tất cả đối tượng khách hàng
     } else {
-      setSelectedCustomers([]);
+      setSelectedCustomers([]);  // Bỏ chọn tất cả
     }
   };
+  
+  
+  // Xử lý chọn từng khách hàng
+  const handleSelectCustomer = (id) => {
+    const selectedCustomer = customers.find(customer => customer.id === id);
+    
+    if (selectedCustomers.includes(selectedCustomer)) {
+      // Bỏ chọn khách hàng
+      setSelectedCustomers(selectedCustomers.filter(customer => customer !== selectedCustomer));
+    } else {
+      // Chọn khách hàng
+      setSelectedCustomers([...selectedCustomers, selectedCustomer]);
+    }
+  };
+  
+  
+  
+  
 
-  // Xử lý chọn từng dòng
-  const handleSelectCustomer = (email) => {
-    if (selectedCustomers.includes(email)) {
-      setSelectedCustomers(selectedCustomers.filter((customerEmail) => customerEmail !== email));
-    } else {
-      setSelectedCustomers([...selectedCustomers, email]);
-    }
-  };
 
   // Hàn xử lý sự kiện cho Pagination phân trang
   const handleChangePage = (newPage) => {
@@ -125,6 +212,7 @@ const ThemPhieuGiamGia = () => {
     {/* Các thành phần form */}
     <TextField
       label="Mã phiếu giảm giá"
+      inputRef={maRef}
       variant="outlined"
       size="small"
       fullWidth
@@ -132,6 +220,7 @@ const ThemPhieuGiamGia = () => {
     />
     <TextField
       label="Tên phiếu giảm giá"
+      inputRef={tenPhieuGiamGiaRef}
       variant="outlined"
       size="small"
       fullWidth
@@ -140,6 +229,7 @@ const ThemPhieuGiamGia = () => {
     <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
       <TextField
         label="Giá trị"
+        inputRef={giaTriRef}
         type="number"
         size="small"
         fullWidth
@@ -167,7 +257,8 @@ const ThemPhieuGiamGia = () => {
         }}
       />
       <TextField
-        label="Giá trị tối đa"
+        label="Giá trị giảm tối đa"
+        inputRef={giaTriToiDaRef}
         type="number"
         variant="outlined"
         size="small"
@@ -175,23 +266,45 @@ const ThemPhieuGiamGia = () => {
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <AttachMoneyIcon style={{ color: "#1976D2" }} />
+              {selectedIcon === "dollar" ? (
+                <AttachMoneyIcon style={{ color: "#1976D2" }} />
+              ) : (
+                <PercentIcon style={{ color: "#1976D2" }} />
+              )}
             </InputAdornment>
           ),
         }}
+        disabled={selectedIcon === "dollar"}  // Disable input if icon is dollar
       />
+
     </Box>
 
     <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
       <TextField
         label="Số lượng"
+        inputRef={soLuongRef}
         type="number"
         variant="outlined"
         size="small"
         fullWidth
+        value={type === "private" ? selectedCustomers.length : soLuong}  // Khi kiểu "Cá nhân" thì lấy số lượng khách hàng
+        disabled={type === "private"}  // Khi chọn "Cá nhân" thì vô hiệu hóa trường số lượng
+        onChange={(e) => {
+          if (type === "public") {
+            setSoLuong(e.target.value);  // Cập nhật số lượng khi kiểu "Công khai"
+          }
+        }}
+        InputProps={{
+          style: {
+            textAlign: 'right', // Căn chỉnh văn bản bên phải
+          }
+        }}
       />
+
+
       <TextField
         label="Điều kiện"
+        inputRef={dieuKienRef}
         type="number"
         variant="outlined"
         size="small"
@@ -209,6 +322,7 @@ const ThemPhieuGiamGia = () => {
     <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
       <TextField
         label="Từ ngày"
+        inputRef={tuNgayRef}
         type="date"
         size="small"
         fullWidth
@@ -216,6 +330,7 @@ const ThemPhieuGiamGia = () => {
       />
       <TextField
         label="Đến ngày"
+        inputRef={denNgayRef}
         type="date"
         size="small"
         fullWidth
@@ -280,11 +395,12 @@ const ThemPhieuGiamGia = () => {
             <TableRow key={customer.email} sx={{ height: "40px" }}>
               <TableCell sx={{ width: "5%", padding: "6px 8px" }}>
                 <Checkbox
-                  checked={selectedCustomers.includes(customer.email)}
-                  onChange={() => handleSelectCustomer(customer.email)}
+                  checked={selectedCustomers.includes(customer)}  // So sánh đối tượng khách hàng
+                  onChange={() => handleSelectCustomer(customer.id)}  // Cập nhật khi chọn hoặc bỏ chọn
                   color="primary"
                 />
               </TableCell>
+
               <TableCell sx={{ width: "20%", padding: "6px 8px" }}>
                 {customer.tenKhachHang}
               </TableCell>
@@ -302,6 +418,7 @@ const ThemPhieuGiamGia = () => {
             </TableRow>
           ))}
         </TableBody>
+
       </Table>
     </TableContainer>
 
@@ -366,18 +483,11 @@ const ThemPhieuGiamGia = () => {
         },
         alignSelf: "flex-end",
       }}
-      onClick={() =>
-        alert(
-          `Khách hàng được chọn: ${
-            selectedCustomers.length
-              ? selectedCustomers.join(", ")
-              : "Không có khách hàng nào được chọn"
-          }`
-        )
-      }
+      onClick={handleAddNewCoupon}  // Thêm sự kiện gọi API
     >
       Thêm Mới
     </Button>
+
   </Box>
 </Box>
 

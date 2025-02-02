@@ -45,9 +45,8 @@ public class AppController {
     }
 
     //add phiếu giảm giá
-    @PostMapping("/phieu-giam-gia")
+    @PostMapping("/add-phieu-giam-gia")
     public ResponseEntity<String> createPhieuGiamGia(@RequestBody PhieuGiamGiaRequest request) {
-        // Tạo đối tượng phiếu giảm giá từ request
         LocalDateTime now = LocalDateTime.now();
 
         // Xác định trạng thái dựa trên thời gian hiện tại
@@ -73,13 +72,16 @@ public class AppController {
                 .ngayKetThuc(request.getNgayKetThuc())
                 .soLuong(request.getSoLuong())
                 .moTa(request.getMoTa())
-                .trangThai(trangThai)  // Đặt trạng thái đã xác định
+                .trangThai(trangThai)
                 .ngayTao(now)
-                .nguoiTao("admin")  // Giá trị ví dụ, có thể lấy từ session
+                .nguoiTao("admin")
                 .build();
 
         // Lưu phiếu giảm giá vào cơ sở dữ liệu
         phieuGiamGiaRepository.save(phieuGiamGia);
+
+        // Log thông tin về khách hàng và phiếu giảm giá
+        System.out.println("Khách hàng IDs: " + request.getKhachHangIds());
 
         // Nếu kiểu là "Cá nhân", thêm vào bảng `phieu_giam_gia_khach_hang`
         if ("Cá nhân".equalsIgnoreCase(request.getKieuGiamGia())) {
@@ -97,8 +99,9 @@ public class AppController {
             // Lưu danh sách vào bảng `phieu_giam_gia_khach_hang`
             phieuGiamGiaKhachHangRepository.saveAll(khachHangRecords);
         }
-
         return ResponseEntity.ok("Thêm mới phiếu giảm giá thành công!");
     }
+
+
 
 }
