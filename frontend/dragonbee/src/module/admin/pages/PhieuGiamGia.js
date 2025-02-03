@@ -218,9 +218,9 @@ const DiscountCoupons = () => {
                   />
                 </TableCell>
                 <TableCell sx={{ width: 150, whiteSpace: 'nowrap' }}>
-                  <IconButton onClick={() => alert(`Xem chi tiết ${row.tenPhieuGiamGia}`)}>
-                    <VisibilityIcon />
-                  </IconButton>
+                <IconButton onClick={() => navigate(`/detail-phieu-giam-gia/${row.ma}`)}>
+                  <VisibilityIcon />
+                </IconButton>
                   <IconButton onClick={() => alert(`Trạng thái của ${row.tenPhieuGiamGia} đã được chuyển đổi`)}>
                     <ChangeCircleIcon fontSize="large" />
                   </IconButton>

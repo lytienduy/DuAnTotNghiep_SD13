@@ -24,6 +24,7 @@ import {
 } from "@mui/material";
 import PercentIcon from "@mui/icons-material/Percent";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const ThemPhieuGiamGia = () => {
   const [type, setType] = useState("public");  // Kiểm tra kiểu: công khai hoặc cá nhân
@@ -34,7 +35,7 @@ const ThemPhieuGiamGia = () => {
   const [page, setPage] = useState(0);  // Trang hiện tại
   const [rowsPerPage, setRowsPerPage] = useState(5);  // Số dòng trên mỗi trang
   const [totalItems, setTotalItems] = useState(0);  // Tổng số bản ghi
-  const [soLuong, setSoLuong] = useState(0); // Tạo trạng thái cho số lượng
+  const [soLuong, setSoLuong] = useState(null);  // Giá trị khởi tạo là null
   const navigate = useNavigate(); // Tạo biến navigate để điều hướng
   // Tạo các ref cho các input
   const maRef = useRef();
@@ -45,6 +46,12 @@ const ThemPhieuGiamGia = () => {
   const giaTriToiDaRef = useRef();
   const tuNgayRef = useRef();
   const denNgayRef = useRef();
+
+// Hàm xử lý quay lại trang trước
+const handleBack = () => {
+  navigate("/phieu-giam-gia"); // Điều hướng về trang phiếu giảm giá
+};
+
   // Add phiếu giảm giá
   const handleAddNewCoupon = async () => {
     try {
@@ -58,7 +65,7 @@ const ThemPhieuGiamGia = () => {
     
       const formattedNgayBatDau = tuNgay ? new Date(tuNgay).toISOString() : null;
       const formattedNgayKetThuc = denNgay ? new Date(denNgay).toISOString() : null;
-    
+
       // Kiểm tra các trường bắt buộc
       if (!ma || !tenPhieuGiamGia || !formattedNgayBatDau || !formattedNgayKetThuc) {
         alert("Các trường bắt buộc không được để trống!");
@@ -157,37 +164,31 @@ const ThemPhieuGiamGia = () => {
       setSelectedCustomers([...selectedCustomers, selectedCustomer]);
     }
   };
-  
-  
-  
-  
-
 
   // Hàn xử lý sự kiện cho Pagination phân trang
   const handleChangePage = (newPage) => {
     setPage(newPage);  // Nhận giá trị page đúng cho API (0-indexed)
   };
   
-  
-  
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);  // Quay về trang đầu khi thay đổi số dòng
   };
   
-  
-
   return (
     <Box sx={{ padding: 3, marginBot: "10px" }}> {/* Thêm khoảng cách từ header */}
   {/* Header */}
-  <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-  <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
-  Phiếu Giảm Giá{" "}
-  <Box component="span" sx={{ color: "#b0b0b0", fontWeight: "bold" }}>
-    / Tạo Phiếu Giảm Giá
-  </Box>
-</Typography>
-</Box>
+  <Box display="flex" alignItems="center" mb={3}>
+        <IconButton onClick={handleBack} sx={{ marginRight: 2 }}>
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+          Phiếu Giảm Giá{" "}
+          <Box component="span" sx={{ color: "#b0b0b0", fontWeight: "bold" }}>
+            / Tạo Phiếu Giảm Giá
+          </Box>
+        </Typography>
+      </Box>
 
   {/* Form + Bảng khách hàng */}
   <Box
@@ -280,26 +281,27 @@ const ThemPhieuGiamGia = () => {
     </Box>
 
     <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-      <TextField
-        label="Số lượng"
-        inputRef={soLuongRef}
-        type="number"
-        variant="outlined"
-        size="small"
-        fullWidth
-        value={type === "private" ? selectedCustomers.length : soLuong}  // Khi kiểu "Cá nhân" thì lấy số lượng khách hàng
-        disabled={type === "private"}  // Khi chọn "Cá nhân" thì vô hiệu hóa trường số lượng
-        onChange={(e) => {
-          if (type === "public") {
-            setSoLuong(e.target.value);  // Cập nhật số lượng khi kiểu "Công khai"
-          }
-        }}
-        InputProps={{
-          style: {
-            textAlign: 'right', // Căn chỉnh văn bản bên phải
-          }
-        }}
-      />
+    <TextField
+  label="Số lượng"
+  inputRef={soLuongRef}
+  type="number"
+  variant="outlined"
+  size="small"
+  fullWidth
+  value={type === "private" ? selectedCustomers.length : (soLuong !== null ? soLuong : "")}  // Hiển thị trống nếu soLuong là null
+  disabled={type === "private"}  // Khi chọn "Cá nhân" thì vô hiệu hóa trường số lượng
+  onChange={(e) => {
+    if (type === "public") {
+      setSoLuong(e.target.value);  // Cập nhật số lượng khi kiểu "Công khai"
+    }
+  }}
+  InputProps={{
+    style: {
+      textAlign: 'right', // Căn chỉnh văn bản bên phải
+    }
+  }}
+/>
+
 
 
       <TextField

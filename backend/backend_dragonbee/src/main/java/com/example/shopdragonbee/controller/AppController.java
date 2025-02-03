@@ -35,7 +35,7 @@ public class AppController {
     //show All phiếu giảm giá
     @GetMapping("/phieu-giam-gia")
     public Page<PhieuGiamGiaResponse> getAllPhieuGiamGia(Pageable pageable) {
-        return phieuGiamGiaRepository.getPhieuGiamGiaList(pageable);
+        return phieuGiamGiaRepository.getPhieuGiamGiaList1(pageable);
     }
 
     //show khách hàng trong thêm mới phiếu giảm giá phần "cá nhân"
@@ -74,7 +74,7 @@ public class AppController {
                 .moTa(request.getMoTa())
                 .trangThai(trangThai)
                 .ngayTao(now)
-                .nguoiTao("admin")
+                .nguoiTao("Admin")
                 .build();
 
         // Lưu phiếu giảm giá vào cơ sở dữ liệu
@@ -92,7 +92,7 @@ public class AppController {
                             .phieuGiamGia(phieuGiamGia)
                             .trangThai("Đang sử dụng")
                             .ngayTao(now)
-                            .nguoiTao("admin")
+                            .nguoiTao("Admin")
                             .build())
                     .collect(Collectors.toList());
 
@@ -102,6 +102,42 @@ public class AppController {
         return ResponseEntity.ok("Thêm mới phiếu giảm giá thành công!");
     }
 
+    // API lấy chi tiết phiếu giảm giá theo mã
+    @GetMapping("/detail-phieu-giam-gia/{ma}")
+    public ResponseEntity<PhieuGiamGiaResponse> getPhieuGiamGiaByMa(@PathVariable String ma) {
+        // Tìm phiếu giảm giá theo mã
+        PhieuGiamGia phieuGiamGia = phieuGiamGiaRepository.findByMa(ma)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu giảm giá với mã: " + ma));
 
+        // Kiểm tra giá trị null của soTienGiamToiDa và thay thế nếu cần
+        Double giaTriGiamToiDa = phieuGiamGia.getSoTienGiamToiDa() != null ? phieuGiamGia.getSoTienGiamToiDa() : 0.0;
+
+        // Chuyển đổi entity sang DTO
+        PhieuGiamGiaResponse response = new PhieuGiamGiaResponse(
+                phieuGiamGia.getMa(),
+                phieuGiamGia.getTenPhieuGiamGia(),
+                phieuGiamGia.getKieuGiamGia(),
+                phieuGiamGia.getLoaiPhieuGiamGia(),
+                phieuGiamGia.getGiaTriGiam(),
+                phieuGiamGia.getSoLuong(),
+                phieuGiamGia.getNgayBatDau(),
+                phieuGiamGia.getNgayKetThuc(),
+                phieuGiamGia.getTrangThai(),
+                giaTriGiamToiDa,
+                phieuGiamGia.getSoTienToiThieu()
+        );
+
+        // Nếu kiểu giảm giá là "Cá nhân", lấy danh sách khách hàng liên quan
+        if ("Cá nhân".equalsIgnoreCase(phieuGiamGia.getKieuGiamGia())) {
+            List<Integer> khachHangIds = phieuGiamGiaKhachHangRepository.findByPhieuGiamGiaId(phieuGiamGia.getId())
+                    .stream()
+                    .map(kh -> kh.getKhachHang().getId())
+                    .collect(Collectors.toList());
+
+            response.setKhachHangIds(khachHangIds);
+        }
+
+        return ResponseEntity.ok(response);
+    }
 
 }

@@ -5,6 +5,7 @@ import Header from './module/admin/components/Header';
 import ThongKe from './module/admin/pages/ThongKe';
 import PhieuGiamGia from './module/admin/pages/PhieuGiamGia';
 import ThemPhieuGiamGia from './module/admin/pages/ThemPhieuGiamGia';
+import DetailPhieuGiamGia from './module/admin/pages/DetailPhieuGiamGia';
 import BanTaiQuay from './module/admin/pages/BanTaiQuay';
 import HoaDon from './module/admin/pages/HoaDon';
 import { Box } from '@mui/material';
@@ -28,6 +29,7 @@ const App = () => {
               <Route path="/hoaDon" element={<HoaDon />} />
               <Route path='/phieu-giam-gia' element={<PhieuGiamGia />} />
               <Route path="/them-phieu-giam-gia" element={<ThemPhieuGiamGia />} />
+              <Route path="/detail-phieu-giam-gia/:ma" element={<DetailPhieuGiamGia />} />
             </Routes>
           </Box>
         </Box>
