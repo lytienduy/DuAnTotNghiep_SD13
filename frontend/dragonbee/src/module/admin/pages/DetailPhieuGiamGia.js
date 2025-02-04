@@ -36,7 +36,7 @@ const DetailPhieuGiamGia = () => {
   const [page, setPage] = useState(0);  // Trang hiện tại
   const [rowsPerPage, setRowsPerPage] = useState(5);  // Số dòng trên mỗi trang
   const [totalItems, setTotalItems] = useState(0);  // Tổng số bản ghi
-  const [soLuong, setSoLuong] = useState(null);  // Giá trị khởi tạo là null
+  const [soLuong] = useState(null);  // Giá trị khởi tạo là null
   const navigate = useNavigate(); // Tạo biến navigate để điều hướng
   const { ma } = useParams(); // Lấy mã phiếu giảm giá từ URL
   const [phieuGiamGia, setPhieuGiamGia] = useState(null);
@@ -51,12 +51,17 @@ const DetailPhieuGiamGia = () => {
     const fetchPhieuGiamGiaDetail = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/dragonbee/detail-phieu-giam-gia/${ma}`);
-        setPhieuGiamGia(response.data);
-
-        // Nếu là "Cá nhân", lấy danh sách khách hàng đã chọn
+        
+        setPhieuGiamGia({
+          ...response.data,
+          giaTriGiamToiDa: response.data.giaTriGiamToiDa || "", // ✅ Gán giá trị rỗng nếu null
+        });
+  
+        setSelectedIcon(response.data.loaiPhieuGiamGia === "Phần trăm" ? "percent" : "dollar");
+  
         if (response.data.kieuGiamGia === "Cá nhân") {
           setType("private");
-          setSelectedCustomers(response.data.khachHangIds || []); // Set danh sách khách hàng
+          setSelectedCustomers(response.data.khachHangIds || []);
         } else {
           setType("public");
         }
@@ -64,9 +69,10 @@ const DetailPhieuGiamGia = () => {
         console.error("Lỗi khi lấy chi tiết phiếu giảm giá:", error);
       }
     };
-
+  
     fetchPhieuGiamGiaDetail();
   }, [ma]);
+  
 
   // Hàm gọi API để lấy danh sách khách hàng
   useEffect(() => {
@@ -87,6 +93,60 @@ const DetailPhieuGiamGia = () => {
 
     fetchCustomers();  // Gọi hàm bên trong useEffect
   }, [page, rowsPerPage]);
+
+  const handleChangeKieuGiamGia = (event) => {
+    const newType = event.target.value;
+  
+    setType(newType);
+  
+    setPhieuGiamGia((prev) => ({
+      ...prev,
+      kieuGiamGia: newType, // ✅ Cập nhật kiểu trong state
+    }));
+  
+    // Nếu chuyển từ Cá nhân -> Công khai, xóa danh sách khách hàng
+    if (newType === "public") {
+      setSelectedCustomers([]);
+    }
+  };  
+
+  const handleUpdate = async () => {
+    try {
+      const updatedData = {
+        tenPhieuGiamGia: phieuGiamGia.tenPhieuGiamGia,
+        giaTriGiam: phieuGiamGia.giaTriGiam,
+        loaiPhieuGiamGia: phieuGiamGia.loaiPhieuGiamGia,
+        soTienGiamToiDa: selectedIcon === "percent" ? phieuGiamGia.giaTriGiamToiDa : null, // ✅ Chỉ gửi nếu là phần trăm
+        soLuong: type === "private" ? selectedCustomers.length : phieuGiamGia.soLuong,
+        soTienToiThieu: phieuGiamGia.soTienToiThieu,
+        ngayBatDau: phieuGiamGia.ngayBatDau,
+        ngayKetThuc: phieuGiamGia.ngayKetThuc,
+        kieuGiamGia: type === "private" ? "Cá nhân" : "Công khai",
+        khachHangIds: type === "private" ? selectedCustomers : [],
+      };
+  
+      const response = await axios.put(
+        `http://localhost:8080/dragonbee/update-phieu-giam-gia/${ma}`,
+        updatedData
+      );
+  
+      if (response.status === 200) {
+        alert("Cập nhật phiếu giảm giá thành công!");
+  
+        setPhieuGiamGia((prev) => ({
+          ...prev,
+          ...updatedData,
+        }));
+  
+        navigate("/phieu-giam-gia");
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật phiếu giảm giá:", error);
+      alert("Cập nhật phiếu giảm giá không thành công.");
+    }
+  };
+  
+  
 
   // Xử lý chọn tất cả
   const handleSelectAll = (event) => {
@@ -168,65 +228,97 @@ const handleSelectCustomer = (id) => {
                 sx={{ mb: 2 }}
                 disabled
               />
-              <TextField
+             <TextField
                 label="Tên phiếu giảm giá"
                 value={phieuGiamGia.tenPhieuGiamGia}
                 variant="outlined"
                 size="small"
                 fullWidth
                 sx={{ mb: 2 }}
-                
+                onChange={(e) => setPhieuGiamGia({
+                  ...phieuGiamGia,
+                  tenPhieuGiamGia: e.target.value,
+                })}
               />
         <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
             {/* Giá trị */}
             <TextField
-                label="Giá trị"
-                value={phieuGiamGia.giaTriGiam}
-                type="number"
-                size="small"
-                fullWidth
-                InputProps={{
-                endAdornment: (
-                    <InputAdornment position="end">
-                    <IconButton
-                        onClick={() => setSelectedIcon("percent")}
-                        sx={{
-                        color: selectedIcon === "percent" ? "#1976D2" : "#757575",
-                        }}
-                    >
-                        <PercentIcon />
-                    </IconButton>
-                    <IconButton
-                        onClick={() => setSelectedIcon("dollar")}
-                        sx={{
-                        color: selectedIcon === "dollar" ? "#1976D2" : "#757575",
-                        }}
-                    >
-                        <AttachMoneyIcon />
-                    </IconButton>
-                    </InputAdornment>
-                ),
-                }}
-            />
+  label="Giá trị"
+  value={phieuGiamGia.giaTriGiam}
+  type="number"
+  size="small"
+  fullWidth
+  InputProps={{
+    endAdornment: (
+      <InputAdornment position="end">
+        <IconButton
+          onClick={() => {
+            setSelectedIcon("percent");
+            setPhieuGiamGia((prev) => ({
+              ...prev,
+              loaiPhieuGiamGia: "Phần trăm", 
+              giaTriGiamToiDa: prev.loaiPhieuGiamGia === "Cố định" ? "" : prev.giaTriGiamToiDa // Giữ giá trị khi là phần trăm
+            }));
+          }}
+          sx={{
+            color: selectedIcon === "percent" ? "#1976D2" : "#757575",
+          }}
+        >
+          <PercentIcon />
+        </IconButton>
+
+        <IconButton
+          onClick={() => {
+            setSelectedIcon("dollar");
+            setPhieuGiamGia((prev) => ({
+              ...prev,
+              loaiPhieuGiamGia: "Cố định", 
+              giaTriGiamToiDa: "" // Xóa dữ liệu khi chọn "Cố định"
+            }));
+          }}
+          sx={{
+            color: selectedIcon === "dollar" ? "#1976D2" : "#757575",
+          }}
+        >
+          <AttachMoneyIcon />
+        </IconButton>
+      </InputAdornment>
+    ),
+  }}
+  onChange={(e) => setPhieuGiamGia({
+    ...phieuGiamGia,
+    giaTriGiam: e.target.value,
+  })}
+/>
+
+
   
             {/* Giá trị giảm tối đa */}
             <TextField
-                label="Giá trị giảm tối đa"
-                value={phieuGiamGia.giaTriGiamToiDa || 0}  // Sử dụng giá trị mặc định 0 nếu giá trị là null
-                type="number"
-                variant="outlined"
-                size="small"
-                fullWidth
-                InputProps={{
-                endAdornment: (
-                    <InputAdornment position="end">
-                    {/* Giữ icon đô la cố định cho "Giá trị giảm tối đa" */}
-                    <AttachMoneyIcon style={{ color: "#1976D2" }} />
-                    </InputAdornment>
-                ),
-                }}
-                disabled={selectedIcon === "dollar"}  // Nếu chọn dollar thì disable trường này
-            />
+  label="Giá trị giảm tối đa"
+  value={phieuGiamGia.giaTriGiamToiDa || ""} // ✅ Hiển thị giá trị từ API, nếu null thì rỗng
+  type="number"
+  variant="outlined"
+  size="small"
+  fullWidth
+  InputProps={{
+    endAdornment: (
+      <InputAdornment position="end">
+        <AttachMoneyIcon style={{ color: "#1976D2" }} />
+      </InputAdornment>
+    ),
+  }}
+  disabled={selectedIcon === "dollar"} // ✅ Nếu chọn đô la thì bị disable
+  onChange={(e) => {
+    if (selectedIcon === "percent") {
+      setPhieuGiamGia({
+        ...phieuGiamGia,
+        giaTriGiamToiDa: e.target.value,
+      });
+    }
+  }}
+/>
+
         </Box>
 
               <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
@@ -239,9 +331,14 @@ const handleSelectCustomer = (id) => {
                     fullWidth
                     disabled={type === "private"} // Disable khi là "Cá nhân"
                     onChange={(e) => {
-                        if (type === "public") {
-                            setSoLuong(e.target.value);  // Cập nhật số lượng khi kiểu "Công khai"
-                        }
+                      if (type === "public") {
+                        // Cập nhật số lượng khi kiểu "Công khai"
+                        const updatedSoLuong = e.target.value;
+                        setPhieuGiamGia(prevState => ({
+                          ...prevState,
+                          soLuong: updatedSoLuong // Cập nhật trong phieuGiamGia
+                        }));
+                      }
                     }}
                     InputProps={{
                         style: {
@@ -263,34 +360,44 @@ const handleSelectCustomer = (id) => {
                         </InputAdornment>
                     ),
                     }}
+                    onChange={(e) => setPhieuGiamGia({
+                      ...phieuGiamGia,
+                      soTienToiThieu: e.target.value,
+                    })}
                 />
             </Box>
         <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-            <TextField
-                label="Từ ngày"
-                value={phieuGiamGia.ngayBatDau ? phieuGiamGia.ngayBatDau.split('T')[0] : ''} // Chuyển đổi ngày thành yyyy-MM-dd
-                type="date"
-                size="small"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                onChange={(e) => setPhieuGiamGia({
-                ...phieuGiamGia, 
-                ngayBatDau: e.target.value
-                })}
-            />
-            
-            <TextField
-                label="Đến ngày"
-                value={phieuGiamGia.ngayKetThuc ? phieuGiamGia.ngayKetThuc.split('T')[0] : ''} // Chuyển đổi ngày thành yyyy-MM-dd
-                type="date"
-                size="small"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                onChange={(e) => setPhieuGiamGia({
-                ...phieuGiamGia, 
-                ngayKetThuc: e.target.value
-                })}
-            />
+        <TextField
+          label="Từ ngày"
+          type="date"
+          size="small"
+          fullWidth
+          value={phieuGiamGia.ngayBatDau ? phieuGiamGia.ngayBatDau.split('T')[0] : ''}
+          InputLabelProps={{ shrink: true }}
+          onChange={(e) => {
+            const selectedDate = e.target.value;
+            setPhieuGiamGia((prev) => ({
+              ...prev,
+              ngayBatDau: selectedDate + "T00:00:00", // ✅ Định dạng ISO 8601
+            }));
+          }}
+        />
+
+        <TextField
+          label="Đến ngày"
+          type="date"
+          size="small"
+          fullWidth
+          value={phieuGiamGia.ngayKetThuc ? phieuGiamGia.ngayKetThuc.split('T')[0] : ''}
+          InputLabelProps={{ shrink: true }}
+          onChange={(e) => {
+            const selectedDate = e.target.value;
+            setPhieuGiamGia((prev) => ({
+              ...prev,
+              ngayKetThuc: selectedDate + "T23:59:59", // ✅ Định dạng ISO 8601
+            }));
+          }}
+        />
         </Box>
 
 
@@ -298,10 +405,11 @@ const handleSelectCustomer = (id) => {
               <Typography variant="body1" sx={{ mb: 1 }}>
                 Kiểu
               </Typography>
-              <RadioGroup row value={type} onChange={(e) => setType(e.target.value)} disabled>
+              <RadioGroup row value={type} onChange={handleChangeKieuGiamGia}>
                 <FormControlLabel value="public" control={<Radio />} label="Công khai" />
                 <FormControlLabel value="private" control={<Radio />} label="Cá nhân" />
               </RadioGroup>
+
             </>
           )}
         </Box>
@@ -411,7 +519,7 @@ const handleSelectCustomer = (id) => {
               },
               alignSelf: "flex-end",
             }}
-            // onClick={}  // Thêm sự kiện gọi API
+            onClick={handleUpdate}  // Gọi hàm handleUpdate khi nhấn nút
           >
             Cập nhật
           </Button>

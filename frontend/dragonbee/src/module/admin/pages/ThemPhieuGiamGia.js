@@ -227,7 +227,8 @@ const handleBack = () => {
       fullWidth
       sx={{ mb: 2 }}
     />
-    <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+   
+   <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
       <TextField
         label="Giá trị"
         inputRef={giaTriRef}
@@ -267,17 +268,12 @@ const handleBack = () => {
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              {selectedIcon === "dollar" ? (
-                <AttachMoneyIcon style={{ color: "#1976D2" }} />
-              ) : (
-                <PercentIcon style={{ color: "#1976D2" }} />
-              )}
+              <AttachMoneyIcon style={{ color: "#1976D2" }} />
             </InputAdornment>
           ),
         }}
         disabled={selectedIcon === "dollar"}  // Disable input if icon is dollar
       />
-
     </Box>
 
     <Box sx={{ display: "flex", gap: 2, mb: 2 }}>

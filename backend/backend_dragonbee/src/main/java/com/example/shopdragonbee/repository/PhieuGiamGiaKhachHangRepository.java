@@ -9,4 +9,7 @@ import java.util.List;
 @Repository
 public interface PhieuGiamGiaKhachHangRepository extends JpaRepository<PhieuGiamGiaKhachHang,Integer> {
     List<PhieuGiamGiaKhachHang> findByPhieuGiamGiaId(Integer phieuGiamGiaId);
+
+    // Thêm phương thức xóa theo phieuGiamGiaId
+    void deleteByPhieuGiamGiaId(Integer phieuGiamGiaId);
 }
