@@ -26,6 +26,7 @@ import {
 import PercentIcon from "@mui/icons-material/Percent";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SearchIcon from "@mui/icons-material/Search";
 
 const DetailPhieuGiamGia = () => {
   const [type, setType] = useState("public");  // Kiểm tra kiểu: công khai hoặc cá nhân
@@ -423,6 +424,11 @@ const handleSelectCustomer = (id) => {
               size="small"
               fullWidth
               sx={{ mb: 2 }}
+              InputProps={{
+                startAdornment: (
+                  <SearchIcon sx={{ color: "gray", marginRight: 1 }} />
+                ),
+              }}
             />
             <TableContainer component={Paper}>
               <Table stickyHeader>

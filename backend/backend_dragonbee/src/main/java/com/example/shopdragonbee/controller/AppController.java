@@ -8,14 +8,18 @@ import com.example.shopdragonbee.entity.PhieuGiamGiaKhachHang;
 import com.example.shopdragonbee.repository.KhachHangRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaKhachHangRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaRepository;
+import com.example.shopdragonbee.repository.PhieuGiamGiaSpecification;
 import com.example.shopdragonbee.service.PhieuGiamGiaService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +40,43 @@ public class AppController {
 
     @Autowired
     private PhieuGiamGiaService phieuGiamGiaService;
+
+    @GetMapping("/search-phieu-giam-gia")
+    public Page<PhieuGiamGiaResponse> searchPhieuGiamGia(
+            @RequestParam(value = "maOrTen", required = false) String maOrTen,
+            @RequestParam(value = "tuNgay", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate tuNgay,
+            @RequestParam(value = "denNgay", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate denNgay,
+            @RequestParam(value = "kieuGiamGia", required = false) String kieuGiamGia,
+            @RequestParam(value = "trangThai", required = false) String trangThai,
+            Pageable pageable) {
+
+        // Chuyển LocalDate thành LocalDateTime để tương thích với kiểu dữ liệu trong cơ sở dữ liệu
+        LocalDateTime tuNgayTime = (tuNgay != null) ? tuNgay.atStartOfDay() : null;
+        LocalDateTime denNgayTime = (denNgay != null) ? denNgay.atTime(23, 59, 59) : null;
+
+        // Tạo Specification dựa trên các tham số tìm kiếm
+        Specification<PhieuGiamGia> spec = PhieuGiamGiaSpecification.search(maOrTen, tuNgayTime, denNgayTime, kieuGiamGia, trangThai);
+
+        // Tìm kiếm theo Specification
+        return phieuGiamGiaRepository.findAll(spec, pageable).map(phieuGiamGia -> {
+            // Kiểm tra nếu soTienGiamToiDa là null và gán giá trị mặc định là 0.0 nếu cần
+            Double soTienGiamToiDa = phieuGiamGia.getSoTienGiamToiDa() != null ? phieuGiamGia.getSoTienGiamToiDa() : 0.0;
+
+            return new PhieuGiamGiaResponse(
+                    phieuGiamGia.getMa(),
+                    phieuGiamGia.getTenPhieuGiamGia(),
+                    phieuGiamGia.getKieuGiamGia(),
+                    phieuGiamGia.getLoaiPhieuGiamGia(),
+                    phieuGiamGia.getGiaTriGiam(),
+                    phieuGiamGia.getSoLuong(),
+                    phieuGiamGia.getNgayBatDau(),
+                    phieuGiamGia.getNgayKetThuc(),
+                    phieuGiamGia.getTrangThai(),
+                    soTienGiamToiDa, // Trả về giá trị đã được kiểm tra null
+                    phieuGiamGia.getSoTienToiThieu()
+            );
+        });
+    }
 
     // API cập nhật trạng thái phiếu giảm giá bằng icon chuyển đổi
     @PutMapping("/change-status/{ma}")

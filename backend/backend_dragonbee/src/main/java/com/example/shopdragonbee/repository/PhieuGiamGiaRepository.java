@@ -4,6 +4,8 @@ import com.example.shopdragonbee.dto.PhieuGiamGiaResponse;
 import com.example.shopdragonbee.entity.PhieuGiamGia;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface PhieuGiamGiaRepository extends CrudRepository<PhieuGiamGia, Integer> {
+public interface PhieuGiamGiaRepository extends JpaRepository<PhieuGiamGia, Integer>, JpaSpecificationExecutor<PhieuGiamGia> {
 
     // Truy vấn phiếu giảm giá
     @Query("SELECT new com.example.shopdragonbee.dto.PhieuGiamGiaResponse(" +

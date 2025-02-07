@@ -32,37 +32,74 @@ const DiscountCoupons = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [totalItems, setTotalItems] = useState(0);
 
-  // Hàm gọi API
+  const [ma, setMa] = useState("");
+  const [tuNgay, setTuNgay] = useState(""); 
+  const [denNgay, setDenNgay] = useState(""); 
+  const [kieuGiamGia, setKieuGiamGia] = useState(""); 
+  const [trangThai, setTrangThai] = useState(""); 
+  
+
+  // // Hàm gọi API
+  // useEffect(() => {
+  //   const fetchCoupons = async () => {
+  //     try {
+  //       const response = await axios.get("http://localhost:8080/dragonbee/phieu-giam-gia", {
+  //         params: {
+  //           page,
+  //           size: rowsPerPage,
+  //           sort: "ngayBatDau,desc",
+  //         },
+  //       });
+
+  //       console.log("Dữ liệu API trả về:", response.data);  // Thêm log ở đây
+
+  //       setData(response.data.content);
+  //       setTotalItems(response.data.totalElements);
+  //     } catch (error) {
+  //       console.error("Lỗi khi gọi API:", error);
+  //     }
+  //   };
+
+
+  //   fetchCoupons();  // Gọi hàm fetch dữ liệu
+  // }, [page, rowsPerPage]);
+
   useEffect(() => {
     const fetchCoupons = async () => {
-        try {
-          const response = await axios.get("http://localhost:8080/dragonbee/phieu-giam-gia", {
-            params: {
-              page,
-              size: rowsPerPage,
-              sort: "ngayBatDau,desc",
-            },
-          });
-      
-          console.log("Dữ liệu API trả về:", response.data);  // Thêm log ở đây
-      
-          setData(response.data.content);
-          setTotalItems(response.data.totalElements);
-        } catch (error) {
-          console.error("Lỗi khi gọi API:", error);
-        }
-      };
-      
-
-    fetchCoupons();  // Gọi hàm fetch dữ liệu
-}, [page, rowsPerPage]);
-
+      try {
+        console.log("Tham số tìm kiếm:", ma, tuNgay, denNgay, kieuGiamGia, trangThai);  // Kiểm tra tham số
+  
+        const response = await axios.get("http://localhost:8080/dragonbee/search-phieu-giam-gia", {
+          params: {
+            page,
+            size: rowsPerPage,
+            sort: "ngayBatDau,desc",
+            maOrTen: ma, 
+            tuNgay,           
+            denNgay,          
+            kieuGiamGia,      
+            trangThai         
+          },
+        });
+  
+        console.log("Dữ liệu API trả về:", response.data);  // Kiểm tra dữ liệu trả về
+  
+        setData(response.data.content);
+        setTotalItems(response.data.totalElements);
+      } catch (error) {
+        console.error("Lỗi khi gọi API:", error);
+      }
+    };
+  
+    fetchCoupons();
+  }, [page, rowsPerPage, ma, tuNgay, denNgay, kieuGiamGia, trangThai]);
+  
   // Hàm xử lý thay đổi trạng thái phiếu giảm giá
   const handleStatusChange = async (ma) => {
     try {
       const response = await axios.put(`http://localhost:8080/dragonbee/change-status/${ma}`);
       alert(`Trạng thái phiếu giảm giá đã được cập nhật thành: ${response.data}`);
-      
+
       // Cập nhật lại state sau khi thay đổi trạng thái
       setData((prevData) =>
         prevData.map((item) =>
@@ -80,18 +117,17 @@ const DiscountCoupons = () => {
     const now = new Date();
     return new Date(endDate) < now;
   };
-  
+
   // Hàm xử lý phân trang
   const handleChangePage = (newPage) => {
     setPage(newPage);  // Nhận giá trị page đúng cho API (0-indexed)
   };
-  
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);  // Quay lại trang đầu tiên khi thay đổi số lượng dòng
   };
-  
+
 
   return (
     <Box sx={{ padding: 3 }}>
@@ -145,40 +181,60 @@ const DiscountCoupons = () => {
           flexWrap: "wrap",
         }}
       >
-        <TextField
-          placeholder="Tìm phiếu giảm giá theo mã hoặc tên"
-          variant="outlined"
-          size="small"
-          sx={{ flex: 1 }}
-          InputProps={{
-            startAdornment: (
-              <SearchIcon sx={{ color: "gray", marginRight: 1 }} />
-            ),
-          }}
-        />
-        <TextField
-          label="Từ ngày"
-          type="date"
-          size="small"
-          InputLabelProps={{ shrink: true }}
-        />
-        <TextField
-          label="Đến ngày"
-          type="date"
-          size="small"
-          InputLabelProps={{ shrink: true }}
-        />
-        <Select size="small" displayEmpty defaultValue="">
-          <MenuItem value="">Kiểu</MenuItem>
-          <MenuItem value="Cá nhân">Cá nhân</MenuItem>
-          <MenuItem value="Công khai">Công khai</MenuItem>
-        </Select>
-        <Select size="small" displayEmpty defaultValue="">
-          <MenuItem value="">Trạng thái</MenuItem>
-          <MenuItem value="Đang diễn ra">Đang diễn ra</MenuItem>
-          <MenuItem value="Kết thúc">Kết thúc</MenuItem>
-          <MenuItem value="Chưa diễn ra">Chưa diễn ra</MenuItem>
-        </Select>
+       <TextField
+  placeholder="Tìm phiếu giảm giá theo mã hoặc tên"
+  variant="outlined"
+  size="small"
+  sx={{ flex: 1 }}
+  value={ma}
+  onChange={(e) => setMa(e.target.value)}  // Cập nhật state khi người dùng nhập vào
+  InputProps={{
+    startAdornment: <SearchIcon sx={{ color: "gray", marginRight: 1 }} />,
+  }}
+/>
+
+<TextField
+  label="Từ ngày"
+  type="date"
+  size="small"
+  value={tuNgay}
+  onChange={(e) => setTuNgay(e.target.value)} // Cập nhật tuNgay
+  InputLabelProps={{ shrink: true }}
+/>
+
+<TextField
+  label="Đến ngày"
+  type="date"
+  size="small"
+  value={denNgay}
+  onChange={(e) => setDenNgay(e.target.value)} // Cập nhật denNgay
+  InputLabelProps={{ shrink: true }}
+/>
+
+
+<Select
+  size="small"
+  value={kieuGiamGia}
+  onChange={(e) => setKieuGiamGia(e.target.value)} // Cập nhật kieuGiamGia
+  displayEmpty
+>
+  <MenuItem value="">Kiểu</MenuItem>
+  <MenuItem value="Cá nhân">Cá nhân</MenuItem>
+  <MenuItem value="Công khai">Công khai</MenuItem>
+</Select>
+
+<Select
+  size="small"
+  value={trangThai}
+  onChange={(e) => setTrangThai(e.target.value)} // Cập nhật trangThai
+  displayEmpty
+>
+  <MenuItem value="">Trạng thái</MenuItem>
+  <MenuItem value="Đang diễn ra">Đang diễn ra</MenuItem>
+  <MenuItem value="Đã kết thúc">Đã kết thúc</MenuItem>
+  <MenuItem value="Chưa diễn ra">Chưa diễn ra</MenuItem>
+</Select>
+
       </Box>
 
       {/* Table */}
@@ -199,79 +255,81 @@ const DiscountCoupons = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-          {data.map((row,index) => {
-            const isExpired = isDiscountExpired(row.ngayKetThuc);
-            const isEditable = !isExpired;  // Nếu đã hết hạn thì không thể thay đổi trạng thái
+  {data && data.length > 0 ? (
+    data.map((row, index) => {
+      const isExpired = isDiscountExpired(row.ngayKetThuc);
+      const isEditable = !isExpired;  // Nếu đã hết hạn thì không thể thay đổi trạng thái
 
-            return (
-              <TableRow key={row.ma}>
-                <TableCell>{page * rowsPerPage + index + 1}</TableCell>
-                <TableCell>{row.ma}</TableCell>
-                <TableCell>{row.tenPhieuGiamGia}</TableCell>
-                <TableCell>
-                    <Chip
-                    label={row.kieuGiamGia}
-                    sx={{
-                        bgcolor: row.kieuGiamGia === "Cá nhân" ? "#e3f2fd" : "#fce4ec",
-                        color: row.kieuGiamGia === "Cá nhân" ? "#1976d2" : "#d81b60",
-                    }}
-                    />
-                </TableCell>
-                <TableCell>
-                {row.formattedGiaTriGiam.replace(/(\d+)(\.\d+)?/, (match, intPart) => {
-                    return parseInt(intPart, 10).toLocaleString('en-US');
-                })}
-                </TableCell>
-                <TableCell>{row.soLuong}</TableCell>
-                <TableCell>{row.ngayBatDau}</TableCell>
-                <TableCell>{row.ngayKetThuc}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={row.trangThai}
-                    sx={{
-                      bgcolor:
-                        row.trangThai === "Đang diễn ra"
-                          ? "#e8f5e9"
-                          : row.trangThai === "Đã kết thúc"
-                          ? "#ffebee"
-                          : "#fff8e1",
-                      color:
-                        row.trangThai === "Đang diễn ra"
-                          ? "#2e7d32"
-                          : row.trangThai === "Đã kết thúc"
-                          ? "#c62828"
-                          : "#f57c00",
-                    }}
-                  />
-                </TableCell>
-                <TableCell sx={{ width: 150, whiteSpace: 'nowrap' }}>
-                <IconButton onClick={() => navigate(`/detail-phieu-giam-gia/${row.ma}`)}>
-                  <VisibilityIcon />
-                </IconButton>
-                <IconButton
-                    onClick={() => handleStatusChange(row.ma)}
-                    disabled={isExpired} // Disable icon if the discount is expired
-                  >
-                    <ChangeCircleIcon fontSize="large" color={isEditable ? "primary" : "disabled"} />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            
-            )})}
-          </TableBody>
+      return (
+        <TableRow key={row.ma}>
+          <TableCell>{page * rowsPerPage + index + 1}</TableCell>
+          <TableCell>{row.ma}</TableCell>
+          <TableCell>{row.tenPhieuGiamGia}</TableCell>
+          <TableCell>
+            <Chip
+              label={row.kieuGiamGia}
+              sx={{
+                bgcolor: row.kieuGiamGia === "Cá nhân" ? "#e3f2fd" : "#fce4ec",
+                color: row.kieuGiamGia === "Cá nhân" ? "#1976d2" : "#d81b60",
+              }}
+            />
+          </TableCell>
+          <TableCell>
+            {row.formattedGiaTriGiam.replace(/(\d+)(\.\d+)?/, (match, intPart) => {
+              return parseInt(intPart, 10).toLocaleString('en-US');
+            })}
+          </TableCell>
+          <TableCell>{row.soLuong}</TableCell>
+          <TableCell>{row.ngayBatDau}</TableCell>
+          <TableCell>{row.ngayKetThuc}</TableCell>
+          <TableCell>
+            <Chip
+              label={row.trangThai}
+              sx={{
+                bgcolor:
+                  row.trangThai === "Đang diễn ra"
+                    ? "#e8f5e9"
+                    : row.trangThai === "Đã kết thúc"
+                    ? "#ffebee"
+                    : "#fff8e1",
+                color:
+                  row.trangThai === "Đang diễn ra"
+                    ? "#2e7d32"
+                    : row.trangThai === "Đã kết thúc"
+                    ? "#c62828"
+                    : "#f57c00",
+              }}
+            />
+          </TableCell>
+          <TableCell sx={{ width: 150, whiteSpace: 'nowrap' }}>
+            <IconButton onClick={() => navigate(`/detail-phieu-giam-gia/${row.ma}`)}>
+              <VisibilityIcon />
+            </IconButton>
+            <IconButton
+              onClick={() => handleStatusChange(row.ma)}
+              disabled={isExpired} // Disable icon if the discount is expired
+            >
+              <ChangeCircleIcon fontSize="large" color={isEditable ? "primary" : "disabled"} />
+            </IconButton>
+          </TableCell>
+        </TableRow>
+      );
+    })
+  ) : (
+    <TableRow>
+      <TableCell colSpan={10} align="center">Không có dữ liệu</TableCell>
+    </TableRow>
+  )}
+</TableBody>
+
         </Table>
       </TableContainer>
 
-      {/* Phân trang */}  
+      {/* Phân trang */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Typography variant="body2">Xem</Typography>
-          <Select
-            value={rowsPerPage}
-            onChange={(e) => handleChangeRowsPerPage(e)}
-            size="small"
-            sx={{ minWidth: "60px" }}
-          >
+          <Select value={rowsPerPage} onChange={(e) => handleChangeRowsPerPage(e)} size="small" sx={{ minWidth: "60px" }}>
             <MenuItem value={1}>1</MenuItem>
             <MenuItem value={5}>5</MenuItem>
             <MenuItem value={10}>10</MenuItem>
@@ -283,7 +341,7 @@ const DiscountCoupons = () => {
         </Box>
 
         <Pagination
-          count={Math.ceil(totalItems / rowsPerPage)}
+          count={Math.ceil(totalItems / rowsPerPage)} // Sử dụng totalItems để tính số trang
           page={page + 1}  // Hiển thị trang với giá trị +1 cho người dùng
           onChange={(event, newPage) => handleChangePage(newPage - 1)}  // Chuyển đổi về 0-indexed cho API
           color="primary"
