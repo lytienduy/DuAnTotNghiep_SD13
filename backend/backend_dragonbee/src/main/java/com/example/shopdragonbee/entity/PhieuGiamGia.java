@@ -63,5 +63,9 @@ public class PhieuGiamGia {
 
     @Column(name = "nguoi_sua")
     private String nguoiSua;
+
+    // Thêm cột trang_thai_tuy_chinh
+    @Column(name = "trang_thai_tuy_chinh", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean trangThaiTuyChinh;
 }
 

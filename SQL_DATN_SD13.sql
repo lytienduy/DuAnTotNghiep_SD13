@@ -616,3 +616,6 @@ INSERT INTO dot_giam_gia_chi_tiet (id_dot_giam_gia, id_chi_tiet_san_pham, trang_
 (1, 101, N'Hoạt động', 'Admin'),
 (2, 102, N'Hoạt động', 'Admin'),
 (3, 103, N'Đang chờ', 'Admin');
+
+ALTER TABLE phieu_giam_gia ADD trang_thai_tuy_chinh BIT DEFAULT 0;
+

@@ -33,4 +33,6 @@ public interface PhieuGiamGiaRepository extends CrudRepository<PhieuGiamGia, Int
     // Thêm phương thức truy vấn khách hàng theo phiếu giảm giá
     @Query("SELECT p FROM PhieuGiamGia p WHERE p.ma = :ma")
     Optional<PhieuGiamGia> findPhieuGiamGiaByMa(String ma);
+
+
 }

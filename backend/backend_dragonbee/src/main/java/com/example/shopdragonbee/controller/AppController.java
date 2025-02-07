@@ -8,6 +8,7 @@ import com.example.shopdragonbee.entity.PhieuGiamGiaKhachHang;
 import com.example.shopdragonbee.repository.KhachHangRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaKhachHangRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaRepository;
+import com.example.shopdragonbee.service.PhieuGiamGiaService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,15 @@ public class AppController {
 
     @Autowired
     private KhachHangRepository khachHangRepository;
+
+    @Autowired
+    private PhieuGiamGiaService phieuGiamGiaService;
+
+    // API cập nhật trạng thái phiếu giảm giá bằng icon chuyển đổi
+    @PutMapping("/change-status/{ma}")
+    public ResponseEntity<?> changeDiscountStatus(@PathVariable String ma) {
+        return phieuGiamGiaService.updateDiscountStatus(ma);
+    }
 
     //show All phiếu giảm giá
     @GetMapping("/phieu-giam-gia")
@@ -161,6 +171,7 @@ public class AppController {
         phieuGiamGia.setNgayBatDau(request.getNgayBatDau());
         phieuGiamGia.setNgayKetThuc(request.getNgayKetThuc());
         phieuGiamGia.setKieuGiamGia(request.getKieuGiamGia());
+        phieuGiamGia.setTrangThaiTuyChinh(false);
 
         // Cập nhật trạng thái phiếu giảm giá
         LocalDateTime now = LocalDateTime.now();

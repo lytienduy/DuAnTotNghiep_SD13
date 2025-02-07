@@ -57,7 +57,30 @@ const DiscountCoupons = () => {
     fetchCoupons();  // Gọi hàm fetch dữ liệu
 }, [page, rowsPerPage]);
 
+  // Hàm xử lý thay đổi trạng thái phiếu giảm giá
+  const handleStatusChange = async (ma) => {
+    try {
+      const response = await axios.put(`http://localhost:8080/dragonbee/change-status/${ma}`);
+      alert(`Trạng thái phiếu giảm giá đã được cập nhật thành: ${response.data}`);
+      
+      // Cập nhật lại state sau khi thay đổi trạng thái
+      setData((prevData) =>
+        prevData.map((item) =>
+          item.ma === ma ? { ...item, trangThai: response.data, trangThaiTuyChinh: true } : item
+        )
+      );
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+      alert("Không thể cập nhật trạng thái: " + (error.response?.data || error.message));
+    }
+  };
 
+  // Kiểm tra phiếu giảm giá có hết hạn hay chưa
+  const isDiscountExpired = (endDate) => {
+    const now = new Date();
+    return new Date(endDate) < now;
+  };
+  
   // Hàm xử lý phân trang
   const handleChangePage = (newPage) => {
     setPage(newPage);  // Nhận giá trị page đúng cho API (0-indexed)
@@ -176,7 +199,11 @@ const DiscountCoupons = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((row, index) => (
+          {data.map((row,index) => {
+            const isExpired = isDiscountExpired(row.ngayKetThuc);
+            const isEditable = !isExpired;  // Nếu đã hết hạn thì không thể thay đổi trạng thái
+
+            return (
               <TableRow key={row.ma}>
                 <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                 <TableCell>{row.ma}</TableCell>
@@ -221,12 +248,16 @@ const DiscountCoupons = () => {
                 <IconButton onClick={() => navigate(`/detail-phieu-giam-gia/${row.ma}`)}>
                   <VisibilityIcon />
                 </IconButton>
-                  <IconButton onClick={() => alert(`Trạng thái của ${row.tenPhieuGiamGia} đã được chuyển đổi`)}>
-                    <ChangeCircleIcon fontSize="large" />
+                <IconButton
+                    onClick={() => handleStatusChange(row.ma)}
+                    disabled={isExpired} // Disable icon if the discount is expired
+                  >
+                    <ChangeCircleIcon fontSize="large" color={isEditable ? "primary" : "disabled"} />
                   </IconButton>
                 </TableCell>
               </TableRow>
-            ))}
+            
+            )})}
           </TableBody>
         </Table>
       </TableContainer>
