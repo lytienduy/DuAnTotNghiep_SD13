@@ -38,6 +38,7 @@ const ThemPhieuGiamGia = () => {
   const [totalItems, setTotalItems] = useState(0);  // Tổng số bản ghi
   const [soLuong, setSoLuong] = useState(null);  // Giá trị khởi tạo là null
   const navigate = useNavigate(); // Tạo biến navigate để điều hướng
+  const [searchTerm, setSearchTerm] = useState("");
   // Tạo các ref cho các input
   const maRef = useRef();
   const tenPhieuGiamGiaRef = useRef();
@@ -124,29 +125,29 @@ const ThemPhieuGiamGia = () => {
     }
   };
 
+  // Hàm gọi API lấy danh sách khách hàng
+  const fetchCustomers = async (keyword = "", pageNumber = 0, pageSize = 5) => {
+    try {
+      const response = await axios.get("http://localhost:8080/dragonbee/search-khach-hang", {
+        params: { keyword, page: pageNumber, size: pageSize }
+      });
+      setCustomers(response.data.content);
+      setTotalItems(response.data.totalElements);
+    } catch (error) {
+      console.error("Lỗi khi gọi API khách hàng:", error);
+    }
+  };
 
-  // Hàm gọi API để lấy danh sách khách hàng
+  // Gọi API khi component được mount hoặc khi tìm kiếm, phân trang thay đổi
   useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await axios.get("http://localhost:8080/dragonbee/khach-hang", {
-          params: {
-            page,  // Giữ nguyên giá trị page (0-indexed)
-            size: rowsPerPage,
-          },
-        });
-        setCustomers(response.data.content);
-        setTotalItems(response.data.totalElements);
-      } catch (error) {
-        console.error("Lỗi khi gọi API khách hàng:", error);
-      }
-    };
+    fetchCustomers(searchTerm, page, rowsPerPage);
+  }, [searchTerm, page, rowsPerPage]);
 
-
-    fetchCustomers();  // Gọi hàm bên trong useEffect
-  }, [page, rowsPerPage]);
-
-
+  // Xử lý thay đổi tìm kiếm
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setPage(0); // Reset về trang đầu khi tìm kiếm
+  };
 
   // Xử lý chọn tất cả
   const handleSelectAll = (event) => {
@@ -317,9 +318,6 @@ const ThemPhieuGiamGia = () => {
                     }
                   }}
                 />
-
-
-
                 <TextField
                   label="Điều kiện"
                   inputRef={dieuKienRef}
@@ -354,7 +352,6 @@ const ThemPhieuGiamGia = () => {
                   fullWidth
                   InputLabelProps={{ shrink: true }}
                 />
-
               </Box>
 
               {/* Kiểu */}
@@ -383,9 +380,13 @@ const ThemPhieuGiamGia = () => {
                   size="small"
                   fullWidth
                   sx={{ mb: 2 }}
+                  value={searchTerm}
+                  onChange={handleSearchChange} // Cập nhật keyword tìm kiếm
                   InputProps={{
                     startAdornment: (
-                      <SearchIcon sx={{ color: "gray", marginRight: 1 }} />
+                      <IconButton>
+                        <SearchIcon sx={{ color: "gray", marginRight: 1 }} />
+                      </IconButton>
                     ),
                   }}
                 />
@@ -442,7 +443,6 @@ const ThemPhieuGiamGia = () => {
                         </TableRow>
                       ))}
                     </TableBody>
-
                   </Table>
                 </TableContainer>
 
@@ -471,10 +471,7 @@ const ThemPhieuGiamGia = () => {
                     onChange={(event, newPage) => handleChangePage(newPage - 1)}  // Truyền giá trị -1 khi gọi API
                     color="primary"
                   />
-
-
                 </Box>
-
               </Box>
             )}
           </Box>
@@ -511,7 +508,6 @@ const ThemPhieuGiamGia = () => {
               >
                 Thêm Mới
               </Button>
-
             </Box>
           </Box>
         </Box>

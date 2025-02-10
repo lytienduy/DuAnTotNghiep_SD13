@@ -15,7 +15,8 @@ import {
   MenuItem,
   Chip,
   IconButton,
-  Pagination
+  Pagination,
+  Tooltip
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ModeEditOutlineIcon from '@mui/icons-material/ModeEditOutline';
@@ -337,15 +338,19 @@ const DiscountCoupons = () => {
                       />
                     </TableCell>
                     <TableCell align="center" sx={{ width: 150, whiteSpace: 'nowrap' }}>
-                      <IconButton onClick={() => navigate(`/detail-phieu-giam-gia/${row.ma}`)}>
-                        <ModeEditOutlineIcon />
-                      </IconButton>
+                      <Tooltip title="Chỉnh sửa" arrow>
+                        <IconButton onClick={() => navigate(`/detail-phieu-giam-gia/${row.ma}`)}>
+                          <ModeEditOutlineIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Chuyển trạng thái" arrow>
                       <IconButton
                         onClick={() => handleStatusChange(row.ma)}
                         disabled={isExpired} // Disable icon if the discount is expired
                       >
                         <ChangeCircleIcon fontSize="large" color={isEditable ? "primary" : "disabled"} />
                       </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 );

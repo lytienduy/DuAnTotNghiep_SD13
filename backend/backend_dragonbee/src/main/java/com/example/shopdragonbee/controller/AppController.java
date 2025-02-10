@@ -9,11 +9,14 @@ import com.example.shopdragonbee.repository.KhachHangPGGRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaKhachHangRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaSpecification;
+import com.example.shopdragonbee.service.KhachHangPGGService;
 import com.example.shopdragonbee.service.PhieuGiamGiaService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +33,9 @@ import java.util.stream.Collectors;
 public class AppController {
 
     @Autowired
+    private KhachHangPGGService khachHangPGGService;
+
+    @Autowired
     private PhieuGiamGiaRepository phieuGiamGiaRepository;
 
     @Autowired
@@ -40,6 +46,16 @@ public class AppController {
 
     @Autowired
     private PhieuGiamGiaService phieuGiamGiaService;
+
+    @GetMapping("/search-khach-hang")
+    public Page<KhachHangPGGResponse> searchKhachHang(
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        return khachHangPGGService.searchKhachHang(keyword, pageable);
+    }
 
     @GetMapping("/search-phieu-giam-gia")
     public Page<PhieuGiamGiaResponse> searchPhieuGiamGia(
