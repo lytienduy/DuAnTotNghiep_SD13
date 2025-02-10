@@ -52,14 +52,14 @@ const DetailPhieuGiamGia = () => {
     const fetchPhieuGiamGiaDetail = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/dragonbee/detail-phieu-giam-gia/${ma}`);
-        
+
         setPhieuGiamGia({
           ...response.data,
           giaTriGiamToiDa: response.data.giaTriGiamToiDa || "", // ✅ Gán giá trị rỗng nếu null
         });
-  
+
         setSelectedIcon(response.data.loaiPhieuGiamGia === "Phần trăm" ? "percent" : "dollar");
-  
+
         if (response.data.kieuGiamGia === "Cá nhân") {
           setType("private");
           setSelectedCustomers(response.data.khachHangIds || []);
@@ -70,10 +70,10 @@ const DetailPhieuGiamGia = () => {
         console.error("Lỗi khi lấy chi tiết phiếu giảm giá:", error);
       }
     };
-  
+
     fetchPhieuGiamGiaDetail();
   }, [ma]);
-  
+
 
   // Hàm gọi API để lấy danh sách khách hàng
   useEffect(() => {
@@ -97,19 +97,19 @@ const DetailPhieuGiamGia = () => {
 
   const handleChangeKieuGiamGia = (event) => {
     const newType = event.target.value;
-  
+
     setType(newType);
-  
+
     setPhieuGiamGia((prev) => ({
       ...prev,
       kieuGiamGia: newType, // ✅ Cập nhật kiểu trong state
     }));
-  
+
     // Nếu chuyển từ Cá nhân -> Công khai, xóa danh sách khách hàng
     if (newType === "public") {
       setSelectedCustomers([]);
     }
-  };  
+  };
 
   const handleUpdate = async () => {
     try {
@@ -125,20 +125,20 @@ const DetailPhieuGiamGia = () => {
         kieuGiamGia: type === "private" ? "Cá nhân" : "Công khai",
         khachHangIds: type === "private" ? selectedCustomers : [],
       };
-  
+
       const response = await axios.put(
         `http://localhost:8080/dragonbee/update-phieu-giam-gia/${ma}`,
         updatedData
       );
-  
+
       if (response.status === 200) {
         alert("Cập nhật phiếu giảm giá thành công!");
-  
+
         setPhieuGiamGia((prev) => ({
           ...prev,
           ...updatedData,
         }));
-  
+
         navigate("/phieu-giam-gia");
       }
     } catch (error) {
@@ -146,13 +146,13 @@ const DetailPhieuGiamGia = () => {
       alert("Cập nhật phiếu giảm giá không thành công.");
     }
   };
-  
-  
+
+
 
   // Xử lý chọn tất cả
   const handleSelectAll = (event) => {
     setSelectAll(event.target.checked);
-    
+
     if (event.target.checked) {
       setSelectedCustomers(customers.map(customer => customer.id));  // Chọn tất cả đối tượng khách hàng
     } else {
@@ -161,7 +161,7 @@ const DetailPhieuGiamGia = () => {
   };
 
   // Xử lý chọn từng khách hàng
-const handleSelectCustomer = (id) => {
+  const handleSelectCustomer = (id) => {
     if (selectedCustomers.includes(id)) {
       // Bỏ chọn khách hàng
       setSelectedCustomers(selectedCustomers.filter((customerId) => customerId !== id));
@@ -170,368 +170,381 @@ const handleSelectCustomer = (id) => {
       setSelectedCustomers([...selectedCustomers, id]);
     }
   };
-  
+
 
   // Hàn xử lý sự kiện cho Pagination phân trang
   const handleChangePage = (newPage) => {
     setPage(newPage);  // Nhận giá trị page đúng cho API (0-indexed)
   };
-  
+
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);  // Quay về trang đầu khi thay đổi số dòng
   };
 
   return (
-    <Box sx={{ padding: 3, marginBot: "10px" }}>
-      {/* Header */}
-      <Box display="flex" alignItems="center" mb={3}>
-        <IconButton onClick={handleBack} sx={{ marginRight: 2 }}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-          Phiếu Giảm Giá
-          <Box component="span" sx={{ color: "#b0b0b0", fontWeight: "bold" }}>
-            / Chi Tiết Phiếu Giảm Giá
-          </Box>
-        </Typography>
-      </Box>
-
-      {/* Form + Bảng khách hàng */}
-      <Box
+    <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", padding: 3 }}>
+      <Paper
+        elevation={3}
         sx={{
-          display: "flex",
-          gap: 3,
-          alignItems: "flex-start",
-          flexWrap: "nowrap",
-          overflowX: "hidden",
-          paddingTop: "10px",
+          maxWidth: "1200px",  // Giới hạn chiều rộng 
+          margin: "auto",  // Căn giữa nội dung
+          padding: 3,
+          borderRadius: 2,
+          backgroundColor: "#fff"  // Nền trắng cho nội dung
         }}
       >
-        {/* Form sẽ giãn rộng khi không có bảng khách hàng */}
-        <Box
-          sx={{
-            flex: type === "public" ? 1 : "0 0 40%", // Giãn hết cỡ nếu là "public", thu nhỏ khi là "private"
-            maxWidth: type === "public" ? "100%" : "40%",
-            minWidth: "300px",
-            transition: "all 0.3s ease", // Thêm hiệu ứng chuyển đổi mượt mà
-          }}
-        >
-          {/* Các thành phần form */}
-          {phieuGiamGia && (
-            <>
-              <TextField
-                label="Mã phiếu giảm giá"
-                value={phieuGiamGia.ma}
-                variant="outlined"
-                size="small"
-                fullWidth
-                sx={{ mb: 2 }}
-                disabled
-              />
-             <TextField
-                label="Tên phiếu giảm giá"
-                value={phieuGiamGia.tenPhieuGiamGia}
-                variant="outlined"
-                size="small"
-                fullWidth
-                sx={{ mb: 2 }}
-                onChange={(e) => setPhieuGiamGia({
-                  ...phieuGiamGia,
-                  tenPhieuGiamGia: e.target.value,
-                })}
-              />
-        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-            {/* Giá trị */}
-            <TextField
-  label="Giá trị"
-  value={phieuGiamGia.giaTriGiam}
-  type="number"
-  size="small"
-  fullWidth
-  InputProps={{
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton
-          onClick={() => {
-            setSelectedIcon("percent");
-            setPhieuGiamGia((prev) => ({
-              ...prev,
-              loaiPhieuGiamGia: "Phần trăm", 
-              giaTriGiamToiDa: prev.loaiPhieuGiamGia === "Cố định" ? "" : prev.giaTriGiamToiDa // Giữ giá trị khi là phần trăm
-            }));
-          }}
-          sx={{
-            color: selectedIcon === "percent" ? "#1976D2" : "#757575",
-          }}
-        >
-          <PercentIcon />
-        </IconButton>
+        <Box sx={{ padding: 3, marginBot: "10px" }}>
+          {/* Header */}
+          <Box display="flex" alignItems="center" mb={3}>
+            <IconButton onClick={handleBack} sx={{ marginRight: 2 }}>
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+              Phiếu Giảm Giá
+              <Box component="span" sx={{ color: "#b0b0b0", fontWeight: "bold" }}>
+                / Chi Tiết Phiếu Giảm Giá
+              </Box>
+            </Typography>
+          </Box>
 
-        <IconButton
-          onClick={() => {
-            setSelectedIcon("dollar");
-            setPhieuGiamGia((prev) => ({
-              ...prev,
-              loaiPhieuGiamGia: "Cố định", 
-              giaTriGiamToiDa: "" // Xóa dữ liệu khi chọn "Cố định"
-            }));
-          }}
-          sx={{
-            color: selectedIcon === "dollar" ? "#1976D2" : "#757575",
-          }}
-        >
-          <AttachMoneyIcon />
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-  onChange={(e) => setPhieuGiamGia({
-    ...phieuGiamGia,
-    giaTriGiam: e.target.value,
-  })}
-/>
-
-
-  
-            {/* Giá trị giảm tối đa */}
-            <TextField
-  label="Giá trị giảm tối đa"
-  value={phieuGiamGia.giaTriGiamToiDa || ""} // ✅ Hiển thị giá trị từ API, nếu null thì rỗng
-  type="number"
-  variant="outlined"
-  size="small"
-  fullWidth
-  InputProps={{
-    endAdornment: (
-      <InputAdornment position="end">
-        <AttachMoneyIcon style={{ color: "#1976D2" }} />
-      </InputAdornment>
-    ),
-  }}
-  disabled={selectedIcon === "dollar"} // ✅ Nếu chọn đô la thì bị disable
-  onChange={(e) => {
-    if (selectedIcon === "percent") {
-      setPhieuGiamGia({
-        ...phieuGiamGia,
-        giaTriGiamToiDa: e.target.value,
-      });
-    }
-  }}
-/>
-
-        </Box>
-
-              <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-                <TextField
-                    label="Số lượng"
-                    value={type === "private" ? selectedCustomers.length : soLuong || phieuGiamGia?.soLuong || ""} // Sử dụng phieuGiamGia.soLuong khi kiểu là "Công khai" và selectedCustomers.length khi kiểu là "Cá nhân"
-                    type="number"
+          {/* Form + Bảng khách hàng */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 3,
+              alignItems: "flex-start",
+              flexWrap: "nowrap",
+              overflowX: "hidden",
+              paddingTop: "10px",
+            }}
+          >
+            {/* Form sẽ giãn rộng khi không có bảng khách hàng */}
+            <Box
+              sx={{
+                flex: type === "public" ? 1 : "0 0 40%", // Giãn hết cỡ nếu là "public", thu nhỏ khi là "private"
+                maxWidth: type === "public" ? "100%" : "40%",
+                minWidth: "300px",
+                transition: "all 0.3s ease", // Thêm hiệu ứng chuyển đổi mượt mà
+              }}
+            >
+              {/* Các thành phần form */}
+              {phieuGiamGia && (
+                <>
+                  <TextField
+                    label="Mã phiếu giảm giá"
+                    value={phieuGiamGia.ma}
                     variant="outlined"
                     size="small"
                     fullWidth
-                    disabled={type === "private"} // Disable khi là "Cá nhân"
-                    onChange={(e) => {
-                      if (type === "public") {
-                        // Cập nhật số lượng khi kiểu "Công khai"
-                        const updatedSoLuong = e.target.value;
-                        setPhieuGiamGia(prevState => ({
-                          ...prevState,
-                          soLuong: updatedSoLuong // Cập nhật trong phieuGiamGia
-                        }));
-                      }
-                    }}
-                    InputProps={{
-                        style: {
-                            textAlign: 'right', // Căn chỉnh văn bản bên phải
-                        }
-                    }}
-                />
-                <TextField
-                    label="Điều kiện"
-                    value={phieuGiamGia.soTienToiThieu}
-                    type="number"
+                    sx={{ mb: 2 }}
+                    disabled
+                  />
+                  <TextField
+                    label="Tên phiếu giảm giá"
+                    value={phieuGiamGia.tenPhieuGiamGia}
                     variant="outlined"
                     size="small"
                     fullWidth
-                    InputProps={{
-                    endAdornment: (
-                        <InputAdornment position="end">
-                        <AttachMoneyIcon style={{ color: "#1976D2" }} />
-                        </InputAdornment>
-                    ),
-                    }}
+                    sx={{ mb: 2 }}
                     onChange={(e) => setPhieuGiamGia({
                       ...phieuGiamGia,
-                      soTienToiThieu: e.target.value,
+                      tenPhieuGiamGia: e.target.value,
                     })}
-                />
+                  />
+                  <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                    {/* Giá trị */}
+                    <TextField
+                      label="Giá trị"
+                      value={phieuGiamGia.giaTriGiam}
+                      type="number"
+                      size="small"
+                      fullWidth
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => {
+                                setSelectedIcon("percent");
+                                setPhieuGiamGia((prev) => ({
+                                  ...prev,
+                                  loaiPhieuGiamGia: "Phần trăm",
+                                  giaTriGiamToiDa: prev.loaiPhieuGiamGia === "Cố định" ? "" : prev.giaTriGiamToiDa // Giữ giá trị khi là phần trăm
+                                }));
+                              }}
+                              sx={{
+                                color: selectedIcon === "percent" ? "#1976D2" : "#757575",
+                              }}
+                            >
+                              <PercentIcon />
+                            </IconButton>
+
+                            <IconButton
+                              onClick={() => {
+                                setSelectedIcon("dollar");
+                                setPhieuGiamGia((prev) => ({
+                                  ...prev,
+                                  loaiPhieuGiamGia: "Cố định",
+                                  giaTriGiamToiDa: "" // Xóa dữ liệu khi chọn "Cố định"
+                                }));
+                              }}
+                              sx={{
+                                color: selectedIcon === "dollar" ? "#1976D2" : "#757575",
+                              }}
+                            >
+                              <AttachMoneyIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      onChange={(e) => setPhieuGiamGia({
+                        ...phieuGiamGia,
+                        giaTriGiam: e.target.value,
+                      })}
+                    />
+
+
+
+                    {/* Giá trị giảm tối đa */}
+                    <TextField
+                      label="Giá trị giảm tối đa"
+                      value={phieuGiamGia.giaTriGiamToiDa || ""} // ✅ Hiển thị giá trị từ API, nếu null thì rỗng
+                      type="number"
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <AttachMoneyIcon style={{ color: "#1976D2" }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                      disabled={selectedIcon === "dollar"} // ✅ Nếu chọn đô la thì bị disable
+                      onChange={(e) => {
+                        if (selectedIcon === "percent") {
+                          setPhieuGiamGia({
+                            ...phieuGiamGia,
+                            giaTriGiamToiDa: e.target.value,
+                          });
+                        }
+                      }}
+                    />
+
+                  </Box>
+
+                  <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                    <TextField
+                      label="Số lượng"
+                      value={type === "private" ? selectedCustomers.length : soLuong || phieuGiamGia?.soLuong || ""} // Sử dụng phieuGiamGia.soLuong khi kiểu là "Công khai" và selectedCustomers.length khi kiểu là "Cá nhân"
+                      type="number"
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      disabled={type === "private"} // Disable khi là "Cá nhân"
+                      onChange={(e) => {
+                        if (type === "public") {
+                          // Cập nhật số lượng khi kiểu "Công khai"
+                          const updatedSoLuong = e.target.value;
+                          setPhieuGiamGia(prevState => ({
+                            ...prevState,
+                            soLuong: updatedSoLuong // Cập nhật trong phieuGiamGia
+                          }));
+                        }
+                      }}
+                      InputProps={{
+                        style: {
+                          textAlign: 'right', // Căn chỉnh văn bản bên phải
+                        }
+                      }}
+                    />
+                    <TextField
+                      label="Điều kiện"
+                      value={phieuGiamGia.soTienToiThieu}
+                      type="number"
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <AttachMoneyIcon style={{ color: "#1976D2" }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                      onChange={(e) => setPhieuGiamGia({
+                        ...phieuGiamGia,
+                        soTienToiThieu: e.target.value,
+                      })}
+                    />
+                  </Box>
+                  <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                    <TextField
+                      label="Từ ngày"
+                      type="date"
+                      size="small"
+                      fullWidth
+                      value={phieuGiamGia.ngayBatDau ? phieuGiamGia.ngayBatDau.split('T')[0] : ''}
+                      InputLabelProps={{ shrink: true }}
+                      onChange={(e) => {
+                        const selectedDate = e.target.value;
+                        setPhieuGiamGia((prev) => ({
+                          ...prev,
+                          ngayBatDau: selectedDate + "T00:00:00", // ✅ Định dạng ISO 8601
+                        }));
+                      }}
+                    />
+
+                    <TextField
+                      label="Đến ngày"
+                      type="date"
+                      size="small"
+                      fullWidth
+                      value={phieuGiamGia.ngayKetThuc ? phieuGiamGia.ngayKetThuc.split('T')[0] : ''}
+                      InputLabelProps={{ shrink: true }}
+                      onChange={(e) => {
+                        const selectedDate = e.target.value;
+                        setPhieuGiamGia((prev) => ({
+                          ...prev,
+                          ngayKetThuc: selectedDate + "T23:59:59", // ✅ Định dạng ISO 8601
+                        }));
+                      }}
+                    />
+                  </Box>
+
+
+                  {/* Kiểu */}
+                  <Typography variant="body1" sx={{ mb: 1 }}>
+                    Kiểu
+                  </Typography>
+                  <RadioGroup row value={type} onChange={handleChangeKieuGiamGia}>
+                    <FormControlLabel value="public" control={<Radio />} label="Công khai" />
+                    <FormControlLabel value="private" control={<Radio />} label="Cá nhân" />
+                  </RadioGroup>
+
+                </>
+              )}
             </Box>
-        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <TextField
-          label="Từ ngày"
-          type="date"
-          size="small"
-          fullWidth
-          value={phieuGiamGia.ngayBatDau ? phieuGiamGia.ngayBatDau.split('T')[0] : ''}
-          InputLabelProps={{ shrink: true }}
-          onChange={(e) => {
-            const selectedDate = e.target.value;
-            setPhieuGiamGia((prev) => ({
-              ...prev,
-              ngayBatDau: selectedDate + "T00:00:00", // ✅ Định dạng ISO 8601
-            }));
-          }}
-        />
 
-        <TextField
-          label="Đến ngày"
-          type="date"
-          size="small"
-          fullWidth
-          value={phieuGiamGia.ngayKetThuc ? phieuGiamGia.ngayKetThuc.split('T')[0] : ''}
-          InputLabelProps={{ shrink: true }}
-          onChange={(e) => {
-            const selectedDate = e.target.value;
-            setPhieuGiamGia((prev) => ({
-              ...prev,
-              ngayKetThuc: selectedDate + "T23:59:59", // ✅ Định dạng ISO 8601
-            }));
-          }}
-        />
-        </Box>
-
-
-              {/* Kiểu */}
-              <Typography variant="body1" sx={{ mb: 1 }}>
-                Kiểu
-              </Typography>
-              <RadioGroup row value={type} onChange={handleChangeKieuGiamGia}>
-                <FormControlLabel value="public" control={<Radio />} label="Công khai" />
-                <FormControlLabel value="private" control={<Radio />} label="Cá nhân" />
-              </RadioGroup>
-
-            </>
-          )}
-        </Box>
-
-        {/* Bảng khách hàng */}
-        {type === "private" && (
-          <Box sx={{flex: "1 1 0%", maxWidth: "100%", overflowX: "auto", minWidth: "500px" }}>
-            <TextField
-              placeholder="Tìm kiếm khách hàng"
-              variant="outlined"
-              size="small"
-              fullWidth
-              sx={{ mb: 2 }}
-              InputProps={{
-                startAdornment: (
-                  <SearchIcon sx={{ color: "gray", marginRight: 1 }} />
-                ),
-              }}
-            />
-            <TableContainer component={Paper}>
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ padding: "6px 8px" }}>
-                      <Checkbox checked={selectAll} onChange={handleSelectAll} color="primary" />
-                    </TableCell>
-                    <TableCell sx={{ padding: "6px 8px" }}>
-                      <strong>Tên</strong>
-                    </TableCell>
-                    <TableCell sx={{ padding: "6px 8px" }}>
-                      <strong>Số điện thoại</strong>
-                    </TableCell>
-                    <TableCell sx={{ padding: "6px 8px" }}>
-                      <strong>Email</strong>
-                    </TableCell>
-                    <TableCell sx={{ padding: "6px 8px" }}>
-                      <strong>Ngày sinh</strong>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                    {customers.map((customer) => (
-                        <TableRow key={customer.id}>
+            {/* Bảng khách hàng */}
+            {type === "private" && (
+              <Box sx={{ flex: "1 1 0%", maxWidth: "100%", overflowX: "auto", minWidth: "500px" }}>
+                <TextField
+                  placeholder="Tìm kiếm khách hàng"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                  InputProps={{
+                    startAdornment: (
+                      <SearchIcon sx={{ color: "gray", marginRight: 1 }} />
+                    ),
+                  }}
+                />
+                <TableContainer component={Paper}>
+                  <Table stickyHeader>
+                    <TableHead>
+                      <TableRow>
                         <TableCell sx={{ padding: "6px 8px" }}>
-                            <Checkbox
-                            checked={selectedCustomers.includes(customer.id)}  // Kiểm tra xem customer.id có trong selectedCustomers không
-                            onChange={() => handleSelectCustomer(customer.id)}  // Gọi hàm chọn hoặc bỏ chọn
-                            color="primary"
-                            />
+                          <Checkbox checked={selectAll} onChange={handleSelectAll} color="primary" />
                         </TableCell>
-                        <TableCell sx={{ padding: "6px 8px" }}>{customer.tenKhachHang}</TableCell>
-                        <TableCell sx={{ padding: "6px 8px" }}>{customer.sdt}</TableCell>
-                        <TableCell sx={{ padding: "6px 8px" }}>{customer.email}</TableCell>
-                        <TableCell sx={{ padding: "6px 8px" }}>{customer.ngaySinh}</TableCell>
+                        <TableCell sx={{ padding: "6px 8px" }}>
+                          <strong>Tên</strong>
+                        </TableCell>
+                        <TableCell sx={{ padding: "6px 8px" }}>
+                          <strong>Số điện thoại</strong>
+                        </TableCell>
+                        <TableCell sx={{ padding: "6px 8px" }}>
+                          <strong>Email</strong>
+                        </TableCell>
+                        <TableCell sx={{ padding: "6px 8px" }}>
+                          <strong>Ngày sinh</strong>
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {customers.map((customer) => (
+                        <TableRow key={customer.id}>
+                          <TableCell sx={{ padding: "6px 8px" }}>
+                            <Checkbox
+                              checked={selectedCustomers.includes(customer.id)}  // Kiểm tra xem customer.id có trong selectedCustomers không
+                              onChange={() => handleSelectCustomer(customer.id)}  // Gọi hàm chọn hoặc bỏ chọn
+                              color="primary"
+                            />
+                          </TableCell>
+                          <TableCell sx={{ padding: "6px 8px" }}>{customer.tenKhachHang}</TableCell>
+                          <TableCell sx={{ padding: "6px 8px" }}>{customer.sdt}</TableCell>
+                          <TableCell sx={{ padding: "6px 8px" }}>{customer.email}</TableCell>
+                          <TableCell sx={{ padding: "6px 8px" }}>{customer.ngaySinh}</TableCell>
                         </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
 
-            {/* Phân trang */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography variant="body2">Xem</Typography>
-                <Select value={rowsPerPage} onChange={handleChangeRowsPerPage} size="small" sx={{ minWidth: "60px" }}>
-                  <MenuItem value={1}>1</MenuItem>
-                  <MenuItem value={5}>5</MenuItem>
-                  <MenuItem value={10}>10</MenuItem>
-                  <MenuItem value={25}>25</MenuItem>
-                  <MenuItem value={50}>50</MenuItem>
-                </Select>
-                <Typography variant="body2">khách hàng</Typography>
+                {/* Phân trang */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography variant="body2">Xem</Typography>
+                    <Select value={rowsPerPage} onChange={handleChangeRowsPerPage} size="small" sx={{ minWidth: "60px" }}>
+                      <MenuItem value={1}>1</MenuItem>
+                      <MenuItem value={5}>5</MenuItem>
+                      <MenuItem value={10}>10</MenuItem>
+                      <MenuItem value={25}>25</MenuItem>
+                      <MenuItem value={50}>50</MenuItem>
+                    </Select>
+                    <Typography variant="body2">khách hàng</Typography>
+                  </Box>
+
+                  <Pagination
+                    count={Math.ceil(totalItems / rowsPerPage)}
+                    page={page + 1}
+                    onChange={(event, newPage) => handleChangePage(newPage - 1)}
+                    color="primary"
+                  />
+                </Box>
               </Box>
+            )}
+          </Box>
 
-              <Pagination
-                count={Math.ceil(totalItems / rowsPerPage)}
-                page={page + 1}
-                onChange={(event, newPage) => handleChangePage(newPage - 1)}
-                color="primary"
-              />
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: type === "public" ? "flex-start" : "flex-end",
+              mt: 3,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: type === "public" ? "flex-start" : "flex-end",
+                alignItems: "center",
+                width: type === "private" ? "60%" : "100%", // Chỉ chiếm 60% nếu là "private"
+                ml: type === "private" ? "auto" : "0",     // Dịch sang bên phải nếu là "private"
+              }}
+            >
+              <Button
+                variant="outlined"
+                sx={{
+                  color: "#1976d2",
+                  borderColor: "#1976d2",
+                  backgroundColor: "#fff",
+                  "&:hover": {
+                    backgroundColor: "#e3f2fd",
+                    borderColor: "#1565c0",
+                    color: "#1565c0",
+                  },
+                  alignSelf: "flex-end",
+                }}
+                onClick={handleUpdate}  // Gọi hàm handleUpdate khi nhấn nút
+              >
+                Cập nhật
+              </Button>
+
             </Box>
           </Box>
-        )}
-      </Box>
-
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: type === "public" ? "flex-start" : "flex-end", 
-          mt: 3,
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: type === "public" ? "flex-start" : "flex-end",
-            alignItems: "center",
-            width: type === "private" ? "60%" : "100%", // Chỉ chiếm 60% nếu là "private"
-            ml: type === "private" ? "auto" : "0",     // Dịch sang bên phải nếu là "private"
-          }}
-        >
-          <Button
-            variant="outlined"
-            sx={{
-              color: "#1976d2",
-              borderColor: "#1976d2",
-              backgroundColor: "#fff",
-              "&:hover": {
-                backgroundColor: "#e3f2fd",
-                borderColor: "#1565c0",
-                color: "#1565c0",
-              },
-              alignSelf: "flex-end",
-            }}
-            onClick={handleUpdate}  // Gọi hàm handleUpdate khi nhấn nút
-          >
-            Cập nhật
-          </Button>
-      
         </Box>
-      </Box>
+      </Paper>
     </Box>
   );
 };

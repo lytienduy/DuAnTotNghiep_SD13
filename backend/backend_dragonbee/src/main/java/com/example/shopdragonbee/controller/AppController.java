@@ -1,11 +1,11 @@
 package com.example.shopdragonbee.controller;
 
-import com.example.shopdragonbee.dto.KhachHangResponse;
+import com.example.shopdragonbee.dto.KhachHangPGGResponse;
 import com.example.shopdragonbee.dto.PhieuGiamGiaRequest;
 import com.example.shopdragonbee.dto.PhieuGiamGiaResponse;
 import com.example.shopdragonbee.entity.PhieuGiamGia;
 import com.example.shopdragonbee.entity.PhieuGiamGiaKhachHang;
-import com.example.shopdragonbee.repository.KhachHangRepository;
+import com.example.shopdragonbee.repository.KhachHangPGGRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaKhachHangRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaSpecification;
@@ -36,7 +36,7 @@ public class AppController {
     private PhieuGiamGiaKhachHangRepository phieuGiamGiaKhachHangRepository;
 
     @Autowired
-    private KhachHangRepository khachHangRepository;
+    private KhachHangPGGRepository khachHangPGGRepository;
 
     @Autowired
     private PhieuGiamGiaService phieuGiamGiaService;
@@ -92,8 +92,8 @@ public class AppController {
 
     //show khách hàng trong thêm mới phiếu giảm giá phần "cá nhân"
     @GetMapping("/khach-hang")
-    public Page<KhachHangResponse> getAllKhachHang(Pageable pageable) {
-        return khachHangRepository.getKhachHangList(pageable);
+    public Page<KhachHangPGGResponse> getAllKhachHang(Pageable pageable) {
+        return khachHangPGGRepository.getKhachHangList(pageable);
     }
 
     //add phiếu giảm giá
@@ -139,7 +139,7 @@ public class AppController {
         if ("Cá nhân".equalsIgnoreCase(request.getKieuGiamGia())) {
             List<PhieuGiamGiaKhachHang> khachHangRecords = request.getKhachHangIds().stream()
                     .map(idKhachHang -> PhieuGiamGiaKhachHang.builder()
-                            .khachHang(khachHangRepository.findById(idKhachHang).orElseThrow(() ->
+                            .khachHang(khachHangPGGRepository.findById(idKhachHang).orElseThrow(() ->
                                     new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + idKhachHang)))
                             .phieuGiamGia(phieuGiamGia)
                             .trangThai("Đang sử dụng")
@@ -242,7 +242,7 @@ public class AppController {
             // Thêm khách hàng mới
             List<PhieuGiamGiaKhachHang> khachHangRecords = request.getKhachHangIds().stream()
                     .map(idKhachHang -> PhieuGiamGiaKhachHang.builder()
-                            .khachHang(khachHangRepository.findById(idKhachHang).orElseThrow(() ->
+                            .khachHang(khachHangPGGRepository.findById(idKhachHang).orElseThrow(() ->
                                     new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + idKhachHang)))
                             .phieuGiamGia(phieuGiamGia)
                             .trangThai("Đang sử dụng")

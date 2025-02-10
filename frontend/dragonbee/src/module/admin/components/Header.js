@@ -6,7 +6,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import PersonIcon from "@mui/icons-material/Person";
 
 const Header = () => {
-  
+
   return (
     <AppBar
       position="static"

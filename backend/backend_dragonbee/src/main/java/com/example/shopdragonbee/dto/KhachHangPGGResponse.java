@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Getter
 @Setter
-public class KhachHangResponse {
+public class KhachHangPGGResponse {
     private Integer id;
     private String tenKhachHang;
     private String sdt;

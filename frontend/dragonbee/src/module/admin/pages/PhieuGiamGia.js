@@ -18,7 +18,7 @@ import {
   Pagination
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import ModeEditOutlineIcon from '@mui/icons-material/ModeEditOutline';
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -33,11 +33,11 @@ const DiscountCoupons = () => {
   const [totalItems, setTotalItems] = useState(0);
 
   const [ma, setMa] = useState("");
-  const [tuNgay, setTuNgay] = useState(""); 
-  const [denNgay, setDenNgay] = useState(""); 
-  const [kieuGiamGia, setKieuGiamGia] = useState(""); 
-  const [trangThai, setTrangThai] = useState(""); 
-  
+  const [tuNgay, setTuNgay] = useState("");
+  const [denNgay, setDenNgay] = useState("");
+  const [kieuGiamGia, setKieuGiamGia] = useState("");
+  const [trangThai, setTrangThai] = useState("");
+
 
   // // Hàm gọi API
   // useEffect(() => {
@@ -68,32 +68,32 @@ const DiscountCoupons = () => {
     const fetchCoupons = async () => {
       try {
         console.log("Tham số tìm kiếm:", ma, tuNgay, denNgay, kieuGiamGia, trangThai);  // Kiểm tra tham số
-  
+
         const response = await axios.get("http://localhost:8080/dragonbee/search-phieu-giam-gia", {
           params: {
             page,
             size: rowsPerPage,
-            sort: "ngayBatDau,desc",
-            maOrTen: ma, 
-            tuNgay,           
-            denNgay,          
-            kieuGiamGia,      
-            trangThai         
+            sort: "ngayTao,desc",
+            maOrTen: ma,
+            tuNgay,
+            denNgay,
+            kieuGiamGia,
+            trangThai
           },
         });
-  
+
         console.log("Dữ liệu API trả về:", response.data);  // Kiểm tra dữ liệu trả về
-  
+
         setData(response.data.content);
         setTotalItems(response.data.totalElements);
       } catch (error) {
         console.error("Lỗi khi gọi API:", error);
       }
     };
-  
+
     fetchCoupons();
   }, [page, rowsPerPage, ma, tuNgay, denNgay, kieuGiamGia, trangThai]);
-  
+
   // Hàm xử lý thay đổi trạng thái phiếu giảm giá
   const handleStatusChange = async (ma) => {
     try {
@@ -172,155 +172,190 @@ const DiscountCoupons = () => {
       </Box>
 
       {/* Search and Filters */}
-      <Box
+      <Paper
+        elevation={3}
         sx={{
-          display: "flex",
-          gap: 2,
-          marginBottom: 3,
-          alignItems: "center",
-          flexWrap: "wrap",
+          padding: 3,
+          borderRadius: 2,
+          margin: "15px 0",
+          marginBottom: 3 // Khoảng cách 15px phía trên và dưới
         }}
       >
-       <TextField
-  placeholder="Tìm phiếu giảm giá theo mã hoặc tên"
-  variant="outlined"
-  size="small"
-  sx={{ flex: 1 }}
-  value={ma}
-  onChange={(e) => setMa(e.target.value)}  // Cập nhật state khi người dùng nhập vào
-  InputProps={{
-    startAdornment: <SearchIcon sx={{ color: "gray", marginRight: 1 }} />,
-  }}
-/>
+        <Typography sx={{ marginBottom: 2, fontWeight: "bold", fontSize: "16px" }}>
+          Bộ lọc
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            marginBottom: 3,
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <TextField
+            placeholder="Tìm phiếu giảm giá theo mã hoặc tên"
+            variant="outlined"
+            size="small"
+            sx={{ flex: 1 }}
+            value={ma}
+            onChange={(e) => setMa(e.target.value)}  // Cập nhật state khi người dùng nhập vào
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ color: "gray", marginRight: 1 }} />,
+            }}
+          />
 
-<TextField
-  label="Từ ngày"
-  type="date"
-  size="small"
-  value={tuNgay}
-  onChange={(e) => setTuNgay(e.target.value)} // Cập nhật tuNgay
-  InputLabelProps={{ shrink: true }}
-/>
+          <TextField
+            label="Từ ngày"
+            type="date"
+            size="small"
+            value={tuNgay}
+            onChange={(e) => setTuNgay(e.target.value)} // Cập nhật tuNgay
+            InputLabelProps={{ shrink: true }}
+          />
 
-<TextField
-  label="Đến ngày"
-  type="date"
-  size="small"
-  value={denNgay}
-  onChange={(e) => setDenNgay(e.target.value)} // Cập nhật denNgay
-  InputLabelProps={{ shrink: true }}
-/>
+          <TextField
+            label="Đến ngày"
+            type="date"
+            size="small"
+            value={denNgay}
+            onChange={(e) => setDenNgay(e.target.value)} // Cập nhật denNgay
+            InputLabelProps={{ shrink: true }}
+          />
 
 
-<Select
-  size="small"
-  value={kieuGiamGia}
-  onChange={(e) => setKieuGiamGia(e.target.value)} // Cập nhật kieuGiamGia
-  displayEmpty
->
-  <MenuItem value="">Kiểu</MenuItem>
-  <MenuItem value="Cá nhân">Cá nhân</MenuItem>
-  <MenuItem value="Công khai">Công khai</MenuItem>
-</Select>
+          <Select
+            size="small"
+            value={kieuGiamGia}
+            onChange={(e) => setKieuGiamGia(e.target.value)} // Cập nhật kieuGiamGia
+            displayEmpty
+          >
+            <MenuItem value="">Kiểu</MenuItem>
+            <MenuItem value="Cá nhân">Cá nhân</MenuItem>
+            <MenuItem value="Công khai">Công khai</MenuItem>
+          </Select>
 
-<Select
-  size="small"
-  value={trangThai}
-  onChange={(e) => setTrangThai(e.target.value)} // Cập nhật trangThai
-  displayEmpty
->
-  <MenuItem value="">Trạng thái</MenuItem>
-  <MenuItem value="Đang diễn ra">Đang diễn ra</MenuItem>
-  <MenuItem value="Đã kết thúc">Đã kết thúc</MenuItem>
-  <MenuItem value="Chưa diễn ra">Chưa diễn ra</MenuItem>
-</Select>
+          <Select
+            size="small"
+            value={trangThai}
+            onChange={(e) => setTrangThai(e.target.value)} // Cập nhật trangThai
+            displayEmpty
+          >
+            <MenuItem value="">Trạng thái</MenuItem>
+            <MenuItem value="Đang diễn ra">Đang diễn ra</MenuItem>
+            <MenuItem value="Đã kết thúc">Đã kết thúc</MenuItem>
+            <MenuItem value="Chưa diễn ra">Chưa diễn ra</MenuItem>
+          </Select>
 
-      </Box>
+        </Box>
+      </Paper>
+
 
       {/* Table */}
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>STT</TableCell>
-              <TableCell>Mã</TableCell>
-              <TableCell>Tên</TableCell>
-              <TableCell>Kiểu</TableCell>
-              <TableCell>Loại</TableCell>
-              <TableCell>Số lượng</TableCell>
-              <TableCell>Ngày bắt đầu</TableCell>
-              <TableCell>Ngày kết thúc</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Hành động</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", textAlign: "center" }}>STT</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", textAlign: "center" }}>Mã</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", textAlign: "center" }}>Tên</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", textAlign: "center" }}>Kiểu</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", textAlign: "center" }}>Loại</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", textAlign: "center", whiteSpace: "nowrap" }}>Số lượng</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", textAlign: "center" }}>Ngày bắt đầu</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", textAlign: "center" }}>Ngày kết thúc</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", textAlign: "center" }}>Trạng thái</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", textAlign: "center" }}>Hành động</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-  {data && data.length > 0 ? (
-    data.map((row, index) => {
-      const isExpired = isDiscountExpired(row.ngayKetThuc);
-      const isEditable = !isExpired;  // Nếu đã hết hạn thì không thể thay đổi trạng thái
 
-      return (
-        <TableRow key={row.ma}>
-          <TableCell>{page * rowsPerPage + index + 1}</TableCell>
-          <TableCell>{row.ma}</TableCell>
-          <TableCell>{row.tenPhieuGiamGia}</TableCell>
-          <TableCell>
-            <Chip
-              label={row.kieuGiamGia}
-              sx={{
-                bgcolor: row.kieuGiamGia === "Cá nhân" ? "#e3f2fd" : "#fce4ec",
-                color: row.kieuGiamGia === "Cá nhân" ? "#1976d2" : "#d81b60",
-              }}
-            />
-          </TableCell>
-          <TableCell>
-            {row.formattedGiaTriGiam.replace(/(\d+)(\.\d+)?/, (match, intPart) => {
-              return parseInt(intPart, 10).toLocaleString('en-US');
-            })}
-          </TableCell>
-          <TableCell>{row.soLuong}</TableCell>
-          <TableCell>{row.ngayBatDau}</TableCell>
-          <TableCell>{row.ngayKetThuc}</TableCell>
-          <TableCell>
-            <Chip
-              label={row.trangThai}
-              sx={{
-                bgcolor:
-                  row.trangThai === "Đang diễn ra"
-                    ? "#e8f5e9"
-                    : row.trangThai === "Đã kết thúc"
-                    ? "#ffebee"
-                    : "#fff8e1",
-                color:
-                  row.trangThai === "Đang diễn ra"
-                    ? "#2e7d32"
-                    : row.trangThai === "Đã kết thúc"
-                    ? "#c62828"
-                    : "#f57c00",
-              }}
-            />
-          </TableCell>
-          <TableCell sx={{ width: 150, whiteSpace: 'nowrap' }}>
-            <IconButton onClick={() => navigate(`/detail-phieu-giam-gia/${row.ma}`)}>
-              <VisibilityIcon />
-            </IconButton>
-            <IconButton
-              onClick={() => handleStatusChange(row.ma)}
-              disabled={isExpired} // Disable icon if the discount is expired
-            >
-              <ChangeCircleIcon fontSize="large" color={isEditable ? "primary" : "disabled"} />
-            </IconButton>
-          </TableCell>
-        </TableRow>
-      );
-    })
-  ) : (
-    <TableRow>
-      <TableCell colSpan={10} align="center">Không có dữ liệu</TableCell>
-    </TableRow>
-  )}
-</TableBody>
+          <TableBody>
+            {data && data.length > 0 ? (
+              data.map((row, index) => {
+                const isExpired = isDiscountExpired(row.ngayKetThuc);
+                const isEditable = !isExpired;  // Nếu đã hết hạn thì không thể thay đổi trạng thái
+
+                return (
+                  <TableRow key={row.ma}>
+                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                      {page * rowsPerPage + index + 1}
+                    </TableCell>
+                    <TableCell align="center">{row.ma}</TableCell>
+                    <TableCell align="center">{row.tenPhieuGiamGia}</TableCell>
+                    <TableCell align="center">
+                      <Chip
+                        label={row.kieuGiamGia}
+                        sx={{
+                          bgcolor: row.kieuGiamGia === "Cá nhân" ? "#e3f2fd" : "#fce4ec",
+                          color: row.kieuGiamGia === "Cá nhân" ? "#1976d2" : "#d81b60",
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      {row.formattedGiaTriGiam.replace(/(\d+)(\.\d+)?/, (match, intPart) => {
+                        return parseInt(intPart, 10).toLocaleString('en-US');
+                      })}
+                    </TableCell>
+                    <TableCell align="center">{row.soLuong}</TableCell>
+                    <TableCell align="center">
+                      {new Date(row.ngayBatDau).toLocaleString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </TableCell>
+
+                    <TableCell align="center">
+                      {new Date(row.ngayKetThuc).toLocaleString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </TableCell>
+
+                    <TableCell align="center">
+                      <Chip
+                        label={row.trangThai}
+                        sx={{
+                          bgcolor:
+                            row.trangThai === "Đang diễn ra"
+                              ? "#e8f5e9"
+                              : row.trangThai === "Đã kết thúc"
+                                ? "#ffebee"
+                                : "#fff8e1",
+                          color:
+                            row.trangThai === "Đang diễn ra"
+                              ? "#2e7d32"
+                              : row.trangThai === "Đã kết thúc"
+                                ? "#c62828"
+                                : "#f57c00",
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell align="center" sx={{ width: 150, whiteSpace: 'nowrap' }}>
+                      <IconButton onClick={() => navigate(`/detail-phieu-giam-gia/${row.ma}`)}>
+                        <ModeEditOutlineIcon />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => handleStatusChange(row.ma)}
+                        disabled={isExpired} // Disable icon if the discount is expired
+                      >
+                        <ChangeCircleIcon fontSize="large" color={isEditable ? "primary" : "disabled"} />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={10} align="center">Không có dữ liệu</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
 
         </Table>
       </TableContainer>
