@@ -31,7 +31,8 @@ import BrushIcon from '@mui/icons-material/Brush';
 import StyleIcon from '@mui/icons-material/Style';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
 import PanoramaHorizontalIcon from '@mui/icons-material/PanoramaHorizontal';
-import logo from '../img/dragonbee_logo_v1.png';
+import logo from '../../../img/dragonbee_logo_v1.png';
+
 
 
 
@@ -169,61 +170,63 @@ const Sidebar = ({ sx }) => {
         </ListItemButton>
         <Collapse in={openProducts} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton component={Link} to="/sanpham" sx={{ pl: 4 }}>
               <ListItemIcon>
                 <CheckroomIcon />
               </ListItemIcon>
               <ListItemText primary="Sản Phẩm" primaryTypographyProps={{ fontSize: '13.6px' }} />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton component={Link} to="/chatlieu" sx={{ pl: 4 }}>
               <ListItemIcon>
                 <WaterDropIcon />
               </ListItemIcon>
               <ListItemText primary="Chất Liệu" primaryTypographyProps={{ fontSize: '13.6px' }} />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton component={Link} to="/mausac" sx={{ pl: 4 }}>
               <ListItemIcon>
                 <PaletteIcon />
               </ListItemIcon>
               <ListItemText primary="Màu Sắc" primaryTypographyProps={{ fontSize: '13.6px' }} />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+
+            <ListItemButton component={Link} to="/danhmuc" sx={{ pl: 4 }}>
               <ListItemIcon>
                 <ViewListIcon />
               </ListItemIcon>
               <ListItemText primary="Danh Mục" primaryTypographyProps={{ fontSize: '13.6px' }} />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton component={Link} to="/size" sx={{ pl: 4 }}>
               <ListItemIcon>
                 <StraightenIcon />
               </ListItemIcon>
               <ListItemText primary="Kích Thước" primaryTypographyProps={{ fontSize: '13.6px' }} />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
-              <ListItemIcon>
-                <StarIcon />
-              </ListItemIcon>
-              <ListItemText primary="Thương Hiệu" primaryTypographyProps={{ fontSize: '13.6px' }} />
-            </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton component={Link} to="/thuonghieu" sx={{ pl: 4 }}>
+  <ListItemIcon>
+    <StarIcon />
+  </ListItemIcon>
+  <ListItemText primary="Thương Hiệu" primaryTypographyProps={{ fontSize: '13.6px' }} />
+</ListItemButton>
+
+            <ListItemButton component={Link} to="/kieudang" sx={{ pl: 4 }}>
               <ListItemIcon>
                 <StyleIcon />
               </ListItemIcon>
               <ListItemText primary="Kiểu Dáng" primaryTypographyProps={{ fontSize: '13.6px' }} />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton component={Link} to="/phongcach" sx={{ pl: 4 }}>
               <ListItemIcon>
                 <BrushIcon />
               </ListItemIcon>
               <ListItemText primary="Phong Cách" primaryTypographyProps={{ fontSize: '13.6px' }} />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton component={Link} to="/xuatsu" sx={{ pl: 4 }}>
               <ListItemIcon>
                 <PublicIcon />
               </ListItemIcon>
               <ListItemText primary="Xuất Xứ" primaryTypographyProps={{ fontSize: '13.6px' }} />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton component={Link} to="/kieudaiquan" sx={{ pl: 4 }}>
               <ListItemIcon>
                 <PanoramaHorizontalIcon />
               </ListItemIcon>
@@ -233,13 +236,13 @@ const Sidebar = ({ sx }) => {
         </Collapse>
 
         {/* Quản Lý Tài Khoản */}
-        <ListItemButton>
+        <ListItemButton >
           <ListItemIcon>
             <PeopleIcon />
           </ListItemIcon>
           {isSidebarOpen && <ListItemText primary="Khách Hàng" primaryTypographyProps={{ fontSize: '13.6px' }}/>}
         </ListItemButton>
-        <ListItemButton>
+        <ListItemButton component={Link} to="/nhanvien">
           <ListItemIcon>
             <PersonIcon />
           </ListItemIcon>

@@ -21,7 +21,7 @@ public class DotGiamGiaChiTiet {
     private DotGiamGia dotGiamGia;
 
     @ManyToOne
-    @Column(name = "id_chi_tiet_san_pham", nullable = false)
+    @JoinColumn(name = "id_chi_tiet_san_pham", nullable = false)
     private SanPhamChiTiet sanPhamChiTiet;
 
     @Column(name = "trang_thai")

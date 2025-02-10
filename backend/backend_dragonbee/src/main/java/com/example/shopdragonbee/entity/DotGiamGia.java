@@ -27,7 +27,7 @@ public class DotGiamGia {
     @Column(name = "ten_dot_giam_gia")
     private String tenDotGiamGia;
 
-    @Column(name = "gia_tri_giam", precision = 10, scale = 2)
+    @Column(name = "gia_tri_giam", precision = 10)
     private Double giaTriGiam;
 
     @Column(name = "trang_thai")
