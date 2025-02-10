@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";  // Đảm bảo bạn đã cài đặt axios
 import { Select, MenuItem } from "@mui/material";  // Thêm import cần thiết
+import { Dialog, DialogActions, DialogTitle } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -25,6 +26,7 @@ import {
 import PercentIcon from "@mui/icons-material/Percent";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 
 const ThemPhieuGiamGia = () => {
@@ -39,6 +41,9 @@ const ThemPhieuGiamGia = () => {
   const [soLuong, setSoLuong] = useState(null);  // Giá trị khởi tạo là null
   const navigate = useNavigate(); // Tạo biến navigate để điều hướng
   const [searchTerm, setSearchTerm] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [pendingRequestData, setPendingRequestData] = useState(null);
+
   // Tạo các ref cho các input
   const maRef = useRef();
   const tenPhieuGiamGiaRef = useRef();
@@ -111,19 +116,31 @@ const ThemPhieuGiamGia = () => {
         khachHangIds: khachHangIds,  // Gửi danh sách ID khách hàng nếu kiểu là "Cá nhân"
       };
 
-      // Gọi API để thêm mới phiếu giảm giá
-      const response = await axios.post("http://localhost:8080/dragonbee/add-phieu-giam-gia", requestData);
+      // Lưu request vào state và mở hộp thoại xác nhận
+      setPendingRequestData(requestData);
+      setOpenDialog(true);
 
-      // Kiểm tra phản hồi thành công
-      if (response.status === 200) {
-        alert("Thêm mới phiếu giảm giá thành công!");
-        navigate("/phieu-giam-gia"); // Điều hướng về trang danh sách phiếu giảm giá
-      }
     } catch (error) {
       console.error("Lỗi khi thêm mới phiếu giảm giá:", error.response?.data || error);
       alert("Thêm mới phiếu giảm giá thất bại!");
     }
   };
+
+  const handleConfirmAdd = async () => {
+    setOpenDialog(false);
+
+    try {
+      const response = await axios.post("http://localhost:8080/dragonbee/add-phieu-giam-gia", pendingRequestData);
+
+      if (response.status === 200) {
+        navigate("/phieu-giam-gia", { state: { successMessage: "Thêm mới phiếu giảm giá thành công" } });
+      }
+    } catch (error) {
+      console.error("Lỗi khi thêm mới phiếu giảm giá:", error);
+      alert("Thêm mới phiếu giảm giá thất bại!");
+    }
+  };
+
 
   // Hàm gọi API lấy danh sách khách hàng
   const fetchCustomers = async (keyword = "", pageNumber = 0, pageSize = 5) => {
@@ -186,6 +203,22 @@ const ThemPhieuGiamGia = () => {
 
   return (
     <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", padding: 3 }}>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle sx={{ textAlign: "center" }}>
+          <InfoOutlinedIcon sx={{ fontSize: 70, color: "#1976D2", marginBottom: 1 }} />
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            Bạn có chắc chắn muốn thêm phiếu giảm giá này không?
+          </Typography>
+        </DialogTitle>
+        <DialogActions sx={{ justifyContent: "center", gap: 2 }}>
+          <Button onClick={handleConfirmAdd} color="primary" variant="contained">
+            Vâng!
+          </Button>
+          <Button onClick={() => setOpenDialog(false)} color="error" variant="contained">
+            Hủy
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Paper
         elevation={3}
         sx={{

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { Snackbar, Alert } from "@mui/material";
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Button,
@@ -26,6 +28,9 @@ import axios from "axios";
 
 const DiscountCoupons = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [message, setMessage] = useState("");
 
   // State lưu dữ liệu
   const [data, setData] = useState([]);
@@ -40,32 +45,8 @@ const DiscountCoupons = () => {
   const [trangThai, setTrangThai] = useState("");
 
 
-  // // Hàm gọi API
-  // useEffect(() => {
-  //   const fetchCoupons = async () => {
-  //     try {
-  //       const response = await axios.get("http://localhost:8080/dragonbee/phieu-giam-gia", {
-  //         params: {
-  //           page,
-  //           size: rowsPerPage,
-  //           sort: "ngayBatDau,desc",
-  //         },
-  //       });
-
-  //       console.log("Dữ liệu API trả về:", response.data);  // Thêm log ở đây
-
-  //       setData(response.data.content);
-  //       setTotalItems(response.data.totalElements);
-  //     } catch (error) {
-  //       console.error("Lỗi khi gọi API:", error);
-  //     }
-  //   };
-
-
-  //   fetchCoupons();  // Gọi hàm fetch dữ liệu
-  // }, [page, rowsPerPage]);
-
   useEffect(() => {
+
     const fetchCoupons = async () => {
       try {
         console.log("Tham số tìm kiếm:", ma, tuNgay, denNgay, kieuGiamGia, trangThai);  // Kiểm tra tham số
@@ -92,8 +73,14 @@ const DiscountCoupons = () => {
       }
     };
 
+    // Kiểm tra nếu có thông báo từ `navigate`
+    if (location.state?.successMessage) {
+      setMessage(location.state.successMessage);
+      setOpenSnackbar(true);
+    }
+
     fetchCoupons();
-  }, [page, rowsPerPage, ma, tuNgay, denNgay, kieuGiamGia, trangThai]);
+  }, [page, rowsPerPage, ma, tuNgay, denNgay, kieuGiamGia, trangThai, location.state]);
 
   // Hàm xử lý thay đổi trạng thái phiếu giảm giá
   const handleStatusChange = async (ma) => {
@@ -132,6 +119,16 @@ const DiscountCoupons = () => {
 
   return (
     <Box sx={{ padding: 3 }}>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert onClose={() => setOpenSnackbar(false)} severity="success" sx={{ width: "100%" }}>
+          {message}
+        </Alert>
+      </Snackbar>
       {/* Header */}
       <Box
         sx={{
@@ -344,12 +341,12 @@ const DiscountCoupons = () => {
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Chuyển trạng thái" arrow>
-                      <IconButton
-                        onClick={() => handleStatusChange(row.ma)}
-                        disabled={isExpired} // Disable icon if the discount is expired
-                      >
-                        <ChangeCircleIcon fontSize="large" color={isEditable ? "primary" : "disabled"} />
-                      </IconButton>
+                        <IconButton
+                          onClick={() => handleStatusChange(row.ma)}
+                          disabled={isExpired} // Disable icon if the discount is expired
+                        >
+                          <ChangeCircleIcon fontSize="large" color={isEditable ? "primary" : "disabled"} />
+                        </IconButton>
                       </Tooltip>
                     </TableCell>
                   </TableRow>
