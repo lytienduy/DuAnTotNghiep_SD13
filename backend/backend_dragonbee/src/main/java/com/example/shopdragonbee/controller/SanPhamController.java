@@ -101,6 +101,10 @@ public class SanPhamController {
         try {
             System.out.println("Dữ liệu nhận từ frontend: " + sanPhamRequest);
 
+            // Lấy mã sản phẩm lớn nhất từ database và tạo mã mới
+            String lastMaSanPham = sanPhamRepository.findLastMaSanPham(); // Lấy mã lớn nhất hiện có
+            String newMaSanPham = generateNewMaSanPham(lastMaSanPham);
+
             // Kiểm tra nếu không có danh sách sản phẩm chi tiết
             if (sanPhamRequest.getSanPhamChiTietList() == null || sanPhamRequest.getSanPhamChiTietList().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Danh sách sản phẩm chi tiết không được để trống!");
@@ -108,7 +112,7 @@ public class SanPhamController {
 
             // Tạo sản phẩm chính (SanPham)
             SanPham sanPham = SanPham.builder()
-                    .ma(sanPhamRequest.getMa())
+                    .ma(newMaSanPham)
                     .tenSanPham(sanPhamRequest.getTenSanPham())
                     .moTa(sanPhamRequest.getMoTa())
                     .trangThai(sanPhamRequest.getTrangThai())
@@ -125,15 +129,22 @@ public class SanPhamController {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Màu sắc và kích cỡ không được để trống!");
                 }
 
+                MauSac mauSac = mauSacRepository.findById(chiTiet.getMauSac().getId()).orElse(null);
+                Size size = sizeRepository.findById(chiTiet.getSize().getId()).orElse(null);
+
+                if (mauSac == null || size == null) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Màu sắc hoặc kích cỡ không hợp lệ!");
+                }
+
                 SanPhamChiTiet sanPhamChiTiet = SanPhamChiTiet.builder()
-                        .ma(chiTiet.getMa())
+                        .ma(newMaSanPham + "-" + mauSac.getId() + "-" + size.getId()) // Tạo mã chi tiết sản phẩm
                         .soLuong(chiTiet.getSoLuong())
                         .gia(chiTiet.getGia())
                         .moTa(chiTiet.getMoTa())
                         .trangThai(chiTiet.getTrangThai())
                         .sanPham(sanPham)
-                        .mauSac(mauSacRepository.findById(chiTiet.getMauSac().getId()).orElse(null))
-                        .size(sizeRepository.findById(chiTiet.getSize().getId()).orElse(null))
+                        .mauSac(mauSac)
+                        .size(size)
                         .ngayTao(LocalDateTime.now())
                         .nguoiTao(chiTiet.getNguoiTao())
                         .build();
@@ -148,6 +159,17 @@ public class SanPhamController {
             System.err.println("Lỗi khi thêm sản phẩm: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi thêm sản phẩm: " + e.getMessage());
         }
+    }
+
+    // Hàm tạo mã sản phẩm mới theo định dạng SP001, SP002, ...
+    private String generateNewMaSanPham(String lastMa) {
+        if (lastMa == null || lastMa.isEmpty()) {
+            return "SP001";
+        }
+
+        String numericPart = lastMa.replaceAll("\\D+", ""); // Lấy phần số từ mã cuối cùng
+        int newNumber = Integer.parseInt(numericPart) + 1;
+        return String.format("SP%03d", newNumber); // Định dạng thành SPXXX
     }
 
 

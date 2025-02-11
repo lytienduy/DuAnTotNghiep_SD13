@@ -64,4 +64,7 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
             Pageable pageable
     );
 
+    @Query("SELECT s.ma FROM SanPham s ORDER BY s.ma DESC LIMIT 1")
+    String findLastMaSanPham();
+
 }

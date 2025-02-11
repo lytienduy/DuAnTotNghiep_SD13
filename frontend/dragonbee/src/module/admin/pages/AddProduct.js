@@ -7,12 +7,9 @@ import {
   FormControl,
   InputLabel,
   IconButton,
-  Card,
-  CardContent,
+  Paper,
   Typography,
   Grid,
-  Modal,
-  Box,
   Table,
   TableHead,
   TableCell,
@@ -39,9 +36,8 @@ const AddSanPham = () => {
 
   const [colors, setMauSacs] = useState([]);
   const [sizes, setSizes] = useState([]);
-  const [openColorSizeModal, setOpenColorSizeModal] = useState(false);
-  const [selectedMauSac, setSelectedMauSac] = useState("");
-  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColors, setSelectedColors] = useState([]);
+  const [selectedSizes, setSelectedSizes] = useState([]);
   // đổ danh mục
   useEffect(() => {
     axios
@@ -147,29 +143,35 @@ const AddSanPham = () => {
         )
       );
   }, []);
-  // màu sắc và kích cỡ
+  // màu sắc 
   useEffect(() => {
-    // API calls for categories and details (Danh mục, Thương hiệu, Phong cách, ...)
-    // Add the API for fetching colors and sizes
     axios.get("http://localhost:8080/api/mausac")
-      .then((res) => setMauSacs(res.data))
-      .catch((error) => console.error(error));
-    axios.get("http://localhost:8080/api/size")
-      .then((res) => setSizes(res.data))
+      .then((res) => {
+        console.log("Dữ liệu màu sắc từ API:", res.data);
+        setMauSacs(res.data);
+      })
       .catch((error) => console.error(error));
   }, []);
-  const handleColorSizeModal = () => {
-    setOpenColorSizeModal(!openColorSizeModal);
-  };
-  // lưu sản phẩm 
+ // size  
+ useEffect(() => {
+  axios.get("http://localhost:8080/api/size")
+    .then((res) => {
+      console.log("Dữ liệu kích cỡ từ API:", res.data);
+      setSizes(res.data);
+    })
+    .catch((error) => console.error(error));
+}, []);
+
+
+  // lưu sản phẩm
   const onSubmit = (data, event) => {
     event.preventDefault();
-  
+
     if (sanPhamChiTietList.length === 0) {
       alert("Vui lòng thêm ít nhất một chi tiết sản phẩm.");
       return;
     }
-  
+
     const requestData = {
       ...data,
       sanPhamChiTietList: sanPhamChiTietList.map((item) => ({
@@ -178,50 +180,46 @@ const AddSanPham = () => {
         size: { id: item.size },
       })),
     };
-  
+
     console.log("Dữ liệu gửi API:", JSON.stringify(requestData, null, 2));
-  
-    axios.post("http://localhost:8080/api/sanpham/add", requestData)
+
+    axios
+      .post("http://localhost:8080/api/sanpham/add", requestData)
       .then(() => {
         alert("Thêm sản phẩm thành công!");
         navigate("/sanpham");
       })
       .catch((error) => {
-        console.error("Lỗi khi gửi API:", error.response?.data || error.message);
+        console.error(
+          "Lỗi khi gửi API:",
+          error.response?.data || error.message
+        );
         alert("Lỗi khi thêm sản phẩm. Kiểm tra console.");
       });
   };
-  
-  // lưu màu sắc và size
+  // Lưu mà và kích cỡ
   const handleSaveColorSize = () => {
-    if (!selectedMauSac || !selectedSize) {
-      alert("Vui lòng chọn màu sắc và kích cỡ!");
+    if (selectedColors.length === 0 || selectedSizes.length === 0) {
+      alert("Vui lòng chọn ít nhất một màu sắc và một kích cỡ.");
       return;
     }
-  
-    // Cập nhật sản phẩm chi tiết cuối cùng
-    const updatedList = sanPhamChiTietList.map((item, index) =>
-      index === sanPhamChiTietList.length - 1
-        ? { ...item, mauSac: selectedMauSac, size: selectedSize }
-        : item
-    );
-  
-    setSanPhamChiTietList(updatedList);
-    setOpenColorSizeModal(false);
+    
+    console.log("Màu sắc đã chọn:", selectedColors);
+    console.log("Kích cỡ đã chọn:", selectedSizes);
   };
   
-
-    const handleSaveProduct = (data) => {
-      // Prepare data to send
-      const requestData = { ...data, sanPhamChiTietList };
-      axios.post("http://localhost:8080/api/sanpham/add", requestData)
-        .then(() => {
-          navigate("/sanpham");
-        })
-        .catch((error) => {
-          console.error("Error saving product", error);
-        });
-    };
+  const handleSaveProduct = (data) => {
+    // Prepare data to send
+    const requestData = { ...data, sanPhamChiTietList };
+    axios
+      .post("http://localhost:8080/api/sanpham/add", requestData)
+      .then(() => {
+        navigate("/sanpham");
+      })
+      .catch((error) => {
+        console.error("Error saving product", error);
+      });
+  };
 
   const addSanPhamChiTiet = () => {
     const newItem = {
@@ -239,17 +237,15 @@ const AddSanPham = () => {
       alert("Phải có ít nhất một sản phẩm chi tiết!");
       return;
     }
-    
+
     const newList = sanPhamChiTietList.filter((_, i) => i !== index);
     setSanPhamChiTietList(newList);
   };
-  
-
 
   return (
     <div>
       <Typography variant="h4">Thêm Sản Phẩm</Typography>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <Paper sx={{ padding: 2, mb: 2 }}>
         <Controller
           name="tenSanPham"
           control={control}
@@ -337,7 +333,7 @@ const AddSanPham = () => {
             </FormControl>
           </Grid>
           {/* Hàng 2: 3 cột */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={10} md={3}>
             <FormControl fullWidth margin="normal">
               <InputLabel>Kiểu Dáng</InputLabel>
               <Controller
@@ -355,7 +351,7 @@ const AddSanPham = () => {
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={10} md={3}>
             <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
               <InputLabel>Kiểu Đai Quần</InputLabel>
               <Controller
@@ -373,7 +369,7 @@ const AddSanPham = () => {
               />
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={10} md={3}>
             <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
               <InputLabel>Xuất Xứ</InputLabel>
               <Controller
@@ -391,125 +387,163 @@ const AddSanPham = () => {
               />
             </FormControl>
           </Grid>
+          <Grid item xs={10} md={3}>
+            <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
+              <InputLabel>Trạng Thái</InputLabel>
+              <Controller
+                name="trangThai"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} label="Trạng Thái">
+                    <MenuItem value="Đang bán">Đang bán</MenuItem>
+                    <MenuItem value="Ngừng bán">Ngừng bán</MenuItem>
+                  </Select>
+                )}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="moTa"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Mô Tả"
+                  fullWidth
+                  margin="dense"
+                  multiline
+                  rows={4}
+                  sx={{ width: "60%" }}
+                />
+              )}
+            />
+          </Grid>
         </Grid>
-        {/* bảng hiển thị danh sách */}
-        <div>
-      {/* <Typography variant="h4">Thêm Sản Phẩm</Typography> */}
-      <form onSubmit={handleSubmit(handleSaveProduct)}>
-        {/* Existing Fields for Tên Sản Phẩm, Danh Mục, Thương Hiệu, ... */}
+      </Paper>
+      {/* chọn màu và size */}
+      <Paper sx={{ padding: 2, mb: 2 }}>
+      <Typography variant="h5">Màu sắc & Kích Cỡ</Typography>
+        <form onSubmit={handleSubmit(onSubmit)}>
+        <FormControl fullWidth margin="normal" sx={{width:"30%"}}>
+  <InputLabel>Màu sắc</InputLabel>
+  <Select
+    multiple
+    value={selectedColors}
+    onChange={(e) => setSelectedColors(e.target.value)}
+    renderValue={(selected) => selected.map(color => color.tenMauSac).join(", ")}
+  >
+    {colors.map(color => (
+      <MenuItem key={color.id} value={color}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <div style={{ width: 20, height: 20, backgroundColor: color.code, marginRight: 10 }}></div>
+          {color.tenMauSac}
+        </div>
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
 
-        <Button
-          variant="contained"
-          onClick={addSanPhamChiTiet}
-          startIcon={<AddCircle />}
-        >
-          Thêm Chi Tiết
-        </Button>
 
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Tên Sản Phẩm</TableCell>
-              <TableCell>Kích Cỡ</TableCell>
-              <TableCell>Số Lượng</TableCell>
-              <TableCell>Giá</TableCell>
-              <TableCell>Xóa</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sanPhamChiTietList.map((item, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <TextField
-                    label="Tên Sản Phẩm"
-                    fullWidth
-                    value={item.tenSanPham || ""}
-                    onChange={(e) => {
-                      const newList = [...sanPhamChiTietList];
-                      newList[index].tenSanPham = e.target.value;
-                      setSanPhamChiTietList(newList);
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Button onClick={handleColorSizeModal}>Chọn Kích Cỡ</Button>
-                  <div>{item.tenSize}</div>
-                  <div>{item.tenMauSac}</div>
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    type="number"
-                    value={item.soLuong}
-                    onChange={(e) => {
-                      const newList = [...sanPhamChiTietList];
-                      newList[index].soLuong = e.target.value;
-                      setSanPhamChiTietList(newList);
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    type="number"
-                    value={item.gia}
-                    onChange={(e) => {
-                      const newList = [...sanPhamChiTietList];
-                      newList[index].gia = e.target.value;
-                      setSanPhamChiTietList(newList);
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <IconButton onClick={() => removeSanPhamChiTiet(index)}>
-                    <Delete color="error" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        <Button onClick={handleSaveColorSize} variant="contained">
-  Lưu
-</Button>
-
-      </form>
-
-      {/* Modal for Color and Size Selection */}
-      <Modal open={openColorSizeModal} onClose={handleColorSizeModal}>
-        <Box sx={{ p: 3, backgroundColor: 'white', maxWidth: 400, margin: 'auto' }}>
-          <Typography variant="h6">Chọn Màu và Kích Cỡ</Typography>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Màu Sắc</InputLabel>
+          <FormControl fullWidth margin="normal" sx={{width: "30%"}}>
+            <InputLabel>Kích cỡ</InputLabel>
             <Select
-              value={selectedMauSac}
-              onChange={(e) => setSelectedMauSac(e.target.value)}
+              multiple
+              value={selectedSizes}
+              onChange={(e) => setSelectedSizes(e.target.value)}
+              renderValue={(selected) => selected.join(", ")}
             >
-              {colors.map((color) => (
-                <MenuItem key={color.id} value={color.id}>
-                  {color.tenMauSac}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Kích Cỡ</InputLabel>
-            <Select
-              value={selectedSize}
-              onChange={(e) => setSelectedSize(e.target.value)}
-            >
-              {sizes.map((size) => (
-                <MenuItem key={size.id} value={size.id}>
+              {sizes.map(size => (
+                <MenuItem key={size.tenSize} value={size.id}>
                   {size.tenSize}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <Button onClick={handleColorSizeModal} variant="contained">
+
+          <Button type="submit" variant="contained">
             Lưu
           </Button>
-        </Box>
-      </Modal>
-    </div>
+        </form>
+      </Paper>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {/* bảng hiển thị danh sách */}
+        <div>
+          {/* <Typography variant="h4">Thêm Sản Phẩm</Typography> */}
+          <form onSubmit={handleSubmit(handleSaveProduct)}>
+            {/* Existing Fields for Tên Sản Phẩm, Danh Mục, Thương Hiệu, ... */}
+
+            <Button
+              variant="contained"
+              onClick={addSanPhamChiTiet}
+              startIcon={<AddCircle />}
+            >
+              Thêm Chi Tiết
+            </Button>
+
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Mã Sản Phẩm</TableCell>
+                  <TableCell>Tên Sản Phẩm</TableCell>
+                  <TableCell>Kích Cỡ</TableCell>
+                  <TableCell>Số Lượng</TableCell>
+                  <TableCell>Giá</TableCell>
+                  <TableCell>Xóa</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sanPhamChiTietList.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <TextField
+                        label="Tên Sản Phẩm"
+                        fullWidth
+                        value={item.tenSanPham || ""}
+                        onChange={(e) => {
+                          const newList = [...sanPhamChiTietList];
+                          newList[index].tenSanPham = e.target.value;
+                          setSanPhamChiTietList(newList);
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        type="number"
+                        value={item.soLuong}
+                        onChange={(e) => {
+                          const newList = [...sanPhamChiTietList];
+                          newList[index].soLuong = e.target.value;
+                          setSanPhamChiTietList(newList);
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        type="number"
+                        value={item.gia}
+                        onChange={(e) => {
+                          const newList = [...sanPhamChiTietList];
+                          newList[index].gia = e.target.value;
+                          setSanPhamChiTietList(newList);
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => removeSanPhamChiTiet(index)}>
+                        <Delete color="error" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
+            <Button onClick={handleSaveColorSize} variant="contained">
+              Lưu
+            </Button>
+          </form>
+        </div>
       </form>
     </div>
   );

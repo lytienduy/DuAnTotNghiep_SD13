@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import * as XLSX from "xlsx";
 import {
   Container,
   Typography,
@@ -16,6 +17,7 @@ import {
   TextField,
   MenuItem,
   Select,
+  Box,
   FormControl,
   Grid,
 } from "@mui/material";
@@ -77,6 +79,86 @@ const SanPham = () => {
     setPage(1); // 🔥 Reset về trang đầu khi thay đổi bộ lọc
   };
   
+// hàm export excel
+// Thêm thư viện XLSX nếu chưa có
+
+
+const exportToExcel = () => {
+  if (sanPhams.length === 0) {
+    alert("Không có dữ liệu để xuất Excel.");
+    return;
+  }
+
+  const data = sanPhams.map((sp, index) => ([
+    index + 1,
+    sp.ma || "N/A",                     // Mã sản phẩm
+    sp.tenSanPham || "Không rõ",         // Tên sản phẩm
+    sp.tongSoLuong ?? "0",              // Số lượng
+    sp.ngayTao
+      ? new Date(sp.ngayTao).toLocaleDateString("vi-VN")
+      : "Chưa cập nhật",               // Ngày tạo
+    sp.trangThai || "Không xác định"     // Trạng thái
+  ]));
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([
+    ["STT", "Mã Sản Phẩm", "Tên Sản Phẩm", "Số Lượng", "Ngày Tạo", "Trạng Thái"],
+    ...data,
+  ]);
+
+  // Định dạng header
+  const headerStyle = {
+    font: { bold: true, color: { rgb: "FFFFFF" } },
+    fill: { fgColor: { rgb: "4CAF50" } }, // Xanh lá nhạt
+    alignment: { horizontal: "center", vertical: "center" },
+    border: {
+      top: { style: "thin", color: { rgb: "000000" } },
+      bottom: { style: "thin", color: { rgb: "000000" } },
+      left: { style: "thin", color: { rgb: "000000" } },
+      right: { style: "thin", color: { rgb: "000000" } }
+    }
+  };
+
+  // Định dạng ô dữ liệu
+  const cellStyle = {
+    alignment: { horizontal: "center", vertical: "center" },
+    border: {
+      top: { style: "thin", color: { rgb: "000000" } },
+      bottom: { style: "thin", color: { rgb: "000000" } },
+      left: { style: "thin", color: { rgb: "000000" } },
+      right: { style: "thin", color: { rgb: "000000" } }
+    }
+  };
+
+  // Áp dụng định dạng cho tiêu đề
+  const headerRow = ["A1", "B1", "C1", "D1", "E1", "F1"];
+  headerRow.forEach((cell) => {
+    if (ws[cell]) ws[cell].s = headerStyle;
+  });
+
+  // Áp dụng định dạng cho dữ liệu
+  const numRows = data.length + 1;
+  for (let row = 2; row <= numRows + 1; row++) {
+    for (let col = 0; col < 6; col++) {
+      const cellRef = XLSX.utils.encode_cell({ r: row - 1, c: col });
+      if (ws[cellRef]) ws[cellRef].s = cellStyle;
+    }
+  }
+
+  // Đặt độ rộng cột
+  ws["!cols"] = [
+    { wch: 5 },   // STT
+    { wch: 15 },  // Mã sản phẩm
+    { wch: 25 },  // Tên sản phẩm
+    { wch: 12 },  // Số lượng
+    { wch: 15 },  // Ngày tạo
+    { wch: 15 }   // Trạng thái
+  ];
+
+  // Xuất file Excel
+  XLSX.utils.book_append_sheet(wb, ws, "Danh Sách Sản Phẩm");
+  XLSX.writeFile(wb, "DanhSachSanPham.xlsx");
+};
 
   return (
     <Container maxWidth="lg">
@@ -89,6 +171,8 @@ const SanPham = () => {
         <Typography variant="h4">Danh Sách Sản Phẩm</Typography>
 
         {/* Nút tạo mới di chuyển sang góc phải */}
+        <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
+        <Button variant="contained" color="primary" onClick={exportToExcel}>Xuất   Excel</Button>
         <Button
           variant="contained"
           color="primary"
@@ -97,6 +181,8 @@ const SanPham = () => {
         >
           Tạo Mới
         </Button>
+      </Box>
+       
       </Grid>
 
       {/* Bộ lọc và ô tìm kiếm */}
