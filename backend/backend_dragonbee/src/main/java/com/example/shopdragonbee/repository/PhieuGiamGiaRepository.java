@@ -35,5 +35,6 @@ public interface PhieuGiamGiaRepository extends JpaRepository<PhieuGiamGia, Inte
     @Query("SELECT p FROM PhieuGiamGia p WHERE p.ma = :ma")
     Optional<PhieuGiamGia> findPhieuGiamGiaByMa(String ma);
 
-
+    boolean existsByMa(String ma);  // Kiểm tra mã đã tồn tại
+    Optional<PhieuGiamGia> findTopByOrderByMaDesc();  // Lấy phiếu giảm giá có mã lớn nhất
 }

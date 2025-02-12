@@ -112,7 +112,6 @@ public class AppController {
         return khachHangPGGRepository.getKhachHangList(pageable);
     }
 
-    //add phiếu giảm giá
     @PostMapping("/add-phieu-giam-gia")
     public ResponseEntity<String> createPhieuGiamGia(@RequestBody PhieuGiamGiaRequest request) {
         LocalDateTime now = LocalDateTime.now();
@@ -127,9 +126,25 @@ public class AppController {
             trangThai = "Đang diễn ra";
         }
 
+        // Kiểm tra mã phiếu giảm giá (nếu người dùng nhập)
+        String maPhieuGiamGia;
+        if (request.getMa() != null && !request.getMa().isEmpty()) {
+            // Kiểm tra mã đã tồn tại chưa
+            boolean maExists = phieuGiamGiaRepository.existsByMa(request.getMa());
+            if (maExists) {
+                return ResponseEntity.badRequest().body("Mã phiếu giảm giá đã tồn tại!");
+            }
+            maPhieuGiamGia = request.getMa();
+        } else {
+            // Tự động sinh mã mới
+            String lastCode = phieuGiamGiaRepository.findTopByOrderByMaDesc().map(PhieuGiamGia::getMa).orElse("PGG000");
+            int nextCodeNumber = Integer.parseInt(lastCode.substring(3)) + 1;
+            maPhieuGiamGia = String.format("PGG%03d", nextCodeNumber);
+        }
+
         // Xây dựng đối tượng phiếu giảm giá
         PhieuGiamGia phieuGiamGia = PhieuGiamGia.builder()
-                .ma(request.getMa())
+                .ma(maPhieuGiamGia)
                 .tenPhieuGiamGia(request.getTenPhieuGiamGia())
                 .loaiPhieuGiamGia(request.getLoaiPhieuGiamGia())
                 .kieuGiamGia(request.getKieuGiamGia())
@@ -167,7 +182,15 @@ public class AppController {
             // Lưu danh sách vào bảng `phieu_giam_gia_khach_hang`
             phieuGiamGiaKhachHangRepository.saveAll(khachHangRecords);
         }
+
         return ResponseEntity.ok("Thêm mới phiếu giảm giá thành công!");
+    }
+
+    // check xem phiếu giảm giá đã tồn tại hay chưa
+    @GetMapping("/check-ma-phieu-giam-gia")
+    public ResponseEntity<Boolean> checkMaPhieuGiamGia(@RequestParam String ma) {
+        boolean exists = phieuGiamGiaRepository.existsByMa(ma);
+        return ResponseEntity.ok(exists);
     }
 
     // API lấy chi tiết phiếu giảm giá theo mã

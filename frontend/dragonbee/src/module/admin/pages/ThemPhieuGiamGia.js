@@ -54,6 +54,17 @@ const ThemPhieuGiamGia = () => {
   const tuNgayRef = useRef();
   const denNgayRef = useRef();
 
+  const [errors, setErrors] = useState({
+    tenPhieuGiamGia: "",
+    giaTri: "",
+    giaTriToiDa: "",
+    dieuKien: "",
+    soLuong: "",
+    tuNgay: "",
+    denNgay: "",
+    selectedCustomers: "",
+  });
+
   // Hàm xử lý quay lại trang trước
   const handleBack = () => {
     navigate("/phieu-giam-gia"); // Điều hướng về trang phiếu giảm giá
@@ -61,6 +72,76 @@ const ThemPhieuGiamGia = () => {
 
   // Add phiếu giảm giá
   const handleAddNewCoupon = async () => {
+
+    const newErrors = {};  // Dùng để lưu các lỗi
+
+    // Lấy ngày hiện tại và loại bỏ phần giờ, phút, giây, mili giây
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);  // Đặt giờ, phút, giây và mili giây bằng 0
+
+    // Kiểm tra tên phiếu giảm giá
+    const tenPhieuGiamGia = tenPhieuGiamGiaRef.current ? tenPhieuGiamGiaRef.current.value : "";
+    if (!tenPhieuGiamGia.trim()) {
+      newErrors.tenPhieuGiamGia = "Tên phiếu giảm giá không được để trống.";
+    }
+
+    // Kiểm tra giá trị
+    const giaTriGiam = giaTriRef.current ? parseFloat(giaTriRef.current.value) : 0;
+    if (selectedIcon === "percent") {
+      if (!giaTriGiam || giaTriGiam <= 0 || giaTriGiam > 100) {
+        newErrors.giaTri = "Giá trị phải là số dương và nhỏ hơn hoặc bằng 100.";
+      }
+    } else if (selectedIcon === "dollar") {
+      if (!giaTriGiam || giaTriGiam <= 0) {
+        newErrors.giaTri = "Giá trị phải là số dương.";
+      }
+    }
+
+    // Kiểm tra giá trị giảm tối đa
+    const giaTriToiDa = giaTriToiDaRef.current ? parseFloat(giaTriToiDaRef.current.value) : 0;
+    if (selectedIcon === "percent" && (giaTriToiDa <= 0 || isNaN(giaTriToiDa))) {
+      newErrors.giaTriToiDa = "Giá trị giảm tối đa không được để trống và không được âm.";
+    }
+
+    // Kiểm tra số lượng
+    const soLuong = soLuongRef.current ? parseInt(soLuongRef.current.value, 10) : 0;
+    if (!soLuong || soLuong <= 0) {
+      newErrors.soLuong = "Số lượng phải là số dương.";
+    }
+
+    // Kiểm tra điều kiện
+    const dieuKien = dieuKienRef.current ? parseFloat(dieuKienRef.current.value) : 0;
+    if (!dieuKien || dieuKien <= 0) {
+      newErrors.dieuKien = "Điều kiện phải là số dương.";
+    }
+
+    // Kiểm tra "Từ ngày"
+    const tuNgay = tuNgayRef.current ? tuNgayRef.current.value : "";
+    if (!tuNgay) {
+      newErrors.tuNgay = "Ngày bắt đầu không được để trống.";
+    } else {
+      const tuNgayDate = new Date(tuNgay);
+      tuNgayDate.setHours(0, 0, 0, 0);  // Cũng đặt giờ, phút, giây của ngày nhập vào bằng 0
+      if (tuNgayDate < currentDate) {
+        newErrors.tuNgay = "Ngày bắt đầu không được chọn trong quá khứ.";
+      }
+    }
+
+    const denNgay = denNgayRef.current ? denNgayRef.current.value : "";
+    if (!denNgay || new Date(denNgay) < new Date()) {
+      newErrors.denNgay = "Ngày kết thúc không được chọn trong quá khứ và không được để trống.";
+    }
+
+    // Kiểm tra khách hàng
+    if (type === "private" && selectedCustomers.length === 0) {
+      newErrors.selectedCustomers = "Vui lòng chọn ít nhất một khách hàng.";
+    }
+
+    // Nếu có lỗi thì không tiếp tục
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
     try {
       const ma = maRef.current ? maRef.current.value : "";
       const tenPhieuGiamGia = tenPhieuGiamGiaRef.current ? tenPhieuGiamGiaRef.current.value : "";
@@ -79,11 +160,14 @@ const ThemPhieuGiamGia = () => {
         })()
         : null;
 
+      // Kiểm tra mã phiếu giảm giá có tồn tại không
+      const checkResponse = await axios.get("http://localhost:8080/dragonbee/check-ma-phieu-giam-gia", {
+        params: { ma: ma }
+      });
 
-      // Kiểm tra các trường bắt buộc
-      if (!ma || !tenPhieuGiamGia || !formattedNgayBatDau || !formattedNgayKetThuc) {
-        alert("Các trường bắt buộc không được để trống!");
-        return;
+      if (checkResponse.data) {
+        alert("Mã phiếu giảm giá đã tồn tại!");
+        return; // Nếu mã đã tồn tại, không tiếp tục gửi yêu cầu tạo phiếu giảm giá
       }
 
       // Kiểm tra kiểu và tính số lượng
@@ -279,6 +363,8 @@ const ThemPhieuGiamGia = () => {
                 variant="outlined"
                 size="small"
                 fullWidth
+                error={Boolean(errors.tenPhieuGiamGia)}
+                helperText={errors.tenPhieuGiamGia}
                 sx={{ mb: 2 }}
               />
 
@@ -289,6 +375,8 @@ const ThemPhieuGiamGia = () => {
                   type="number"
                   size="small"
                   fullWidth
+                  error={Boolean(errors.giaTri)}
+                  helperText={errors.giaTri}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -319,6 +407,8 @@ const ThemPhieuGiamGia = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
+                  error={Boolean(errors.giaTriToiDa)}
+                  helperText={errors.giaTriToiDa}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -338,6 +428,8 @@ const ThemPhieuGiamGia = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
+                  error={Boolean(errors.soLuong)}
+                  helperText={errors.soLuong}
                   value={type === "private" ? selectedCustomers.length : (soLuong !== null ? soLuong : "")}  // Hiển thị trống nếu soLuong là null
                   disabled={type === "private"}  // Khi chọn "Cá nhân" thì vô hiệu hóa trường số lượng
                   onChange={(e) => {
@@ -358,6 +450,8 @@ const ThemPhieuGiamGia = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
+                  error={Boolean(errors.dieuKien)}
+                  helperText={errors.dieuKien}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -375,6 +469,8 @@ const ThemPhieuGiamGia = () => {
                   type="date"
                   size="small"
                   fullWidth
+                  error={Boolean(errors.tuNgay)}
+                  helperText={errors.tuNgay}
                   InputLabelProps={{ shrink: true }}
                 />
                 <TextField
@@ -383,6 +479,8 @@ const ThemPhieuGiamGia = () => {
                   type="date"
                   size="small"
                   fullWidth
+                  error={Boolean(errors.denNgay)}
+                  helperText={errors.denNgay}
                   InputLabelProps={{ shrink: true }}
                 />
               </Box>
@@ -423,6 +521,9 @@ const ThemPhieuGiamGia = () => {
                     ),
                   }}
                 />
+                <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+                  {errors.selectedCustomers}
+                </Typography>
                 <TableContainer component={Paper}>
                   <Table stickyHeader>
                     <TableHead>

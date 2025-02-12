@@ -47,6 +47,17 @@ const DetailPhieuGiamGia = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [pendingRequestData, setPendingRequestData] = useState(null);
 
+  const [errors, setErrors] = useState({
+    tenPhieuGiamGia: '',
+    giaTriGiam: '',
+    giaTriGiamToiDa: '',
+    soLuong: '',
+    soTienToiThieu: '',
+    ngayBatDau: '',
+    ngayKetThuc: '',
+    khachHangIds: ''
+  });
+
   // Hàm xử lý quay lại trang trước
   const handleBack = () => {
     navigate("/phieu-giam-gia"); // Điều hướng về trang phiếu giảm giá
@@ -120,28 +131,96 @@ const DetailPhieuGiamGia = () => {
     }
   };
 
-  const handleUpdate = async () => {
-    try {
-      const updatedData = {
-        tenPhieuGiamGia: phieuGiamGia.tenPhieuGiamGia,
-        giaTriGiam: phieuGiamGia.giaTriGiam,
-        loaiPhieuGiamGia: phieuGiamGia.loaiPhieuGiamGia,
-        soTienGiamToiDa: selectedIcon === "percent" ? phieuGiamGia.giaTriGiamToiDa : null, // ✅ Chỉ gửi nếu là phần trăm
-        soLuong: type === "private" ? selectedCustomers.length : phieuGiamGia.soLuong,
-        soTienToiThieu: phieuGiamGia.soTienToiThieu,
-        ngayBatDau: phieuGiamGia.ngayBatDau,
-        ngayKetThuc: phieuGiamGia.ngayKetThuc,
-        kieuGiamGia: type === "private" ? "Cá nhân" : "Công khai",
-        khachHangIds: type === "private" ? selectedCustomers : [],
-      };
+  const handleValidate = () => {
+    let validationErrors = {};
+    let isValid = true;
 
-      // Lưu request vào state và mở hộp thoại xác nhận
-      setPendingRequestData(updatedData);
-      setOpenDialog(true);
-      
-    } catch (error) {
-      console.error("Lỗi khi cập nhật phiếu giảm giá:", error);
-      alert("Cập nhật phiếu giảm giá thất bại.");
+    // Kiểm tra tên phiếu giảm giá
+    if (!phieuGiamGia.tenPhieuGiamGia) {
+      validationErrors.tenPhieuGiamGia = "Tên phiếu giảm giá không được để trống";
+      isValid = false;
+    }
+
+    // Kiểm tra giá trị giảm
+    if (selectedIcon === "percent") {
+      if (phieuGiamGia.giaTriGiam <= 0 || phieuGiamGia.giaTriGiam > 100 || !phieuGiamGia.giaTriGiam) {
+        validationErrors.giaTriGiam = "Giá trị phần trăm phải là số dương và không vượt quá 100";
+        isValid = false;
+      }
+    } else if (selectedIcon === "dollar") {
+      if (phieuGiamGia.giaTriGiam <= 0 || !phieuGiamGia.giaTriGiam) {
+        validationErrors.giaTriGiam = "Giá trị đô la phải là số dương và không được để trống";
+        isValid = false;
+      }
+    }
+
+    // Kiểm tra giá trị giảm tối đa (nếu là phần trăm)
+    if (selectedIcon === "percent") {
+      if (phieuGiamGia.giaTriGiamToiDa <= 0 || !phieuGiamGia.giaTriGiamToiDa) {
+        validationErrors.giaTriGiamToiDa = "Giá trị giảm tối đa không được để trống và không được âm";
+        isValid = false;
+      }
+    }
+
+    // Kiểm tra số lượng và điều kiện
+    if (type === "private" && selectedCustomers.length === 0) {
+      validationErrors.khachHangIds = "Vui lòng chọn ít nhất một khách hàng";
+      isValid = false;
+    }
+
+    if (phieuGiamGia.soLuong <= 0 || !phieuGiamGia.soLuong) {
+      validationErrors.soLuong = "Số lượng phải là số dương và không được để trống";
+      isValid = false;
+    }
+
+    // Kiểm tra điều kiện
+    if (phieuGiamGia.soTienToiThieu <= 0 || !phieuGiamGia.soTienToiThieu) {
+      validationErrors.soTienToiThieu = "Điều kiện không được để trống và phải là số dương";
+      isValid = false;
+    }
+
+    // Kiểm tra từ ngày và đến ngày
+    if (!phieuGiamGia.ngayBatDau) {
+      validationErrors.ngayBatDau = "Từ ngày không được để trống";
+      isValid = false;
+    }
+
+    if (!phieuGiamGia.ngayKetThuc) {
+      validationErrors.ngayKetThuc = "Đến ngày không được để trống";
+      isValid = false;
+    } else if (new Date(phieuGiamGia.ngayKetThuc) <= new Date(phieuGiamGia.ngayBatDau)) {
+      validationErrors.ngayKetThuc = "Ngày kết thúc phải lớn hơn ngày bắt đầu";
+      isValid = false;
+    }
+
+    setErrors(validationErrors);
+    return isValid;
+  };
+
+  const handleUpdate = async () => {
+    if (handleValidate()) {
+      try {
+        const updatedData = {
+          tenPhieuGiamGia: phieuGiamGia.tenPhieuGiamGia,
+          giaTriGiam: phieuGiamGia.giaTriGiam,
+          loaiPhieuGiamGia: phieuGiamGia.loaiPhieuGiamGia,
+          soTienGiamToiDa: selectedIcon === "percent" ? phieuGiamGia.giaTriGiamToiDa : null, // ✅ Chỉ gửi nếu là phần trăm
+          soLuong: type === "private" ? selectedCustomers.length : phieuGiamGia.soLuong,
+          soTienToiThieu: phieuGiamGia.soTienToiThieu,
+          ngayBatDau: phieuGiamGia.ngayBatDau,
+          ngayKetThuc: phieuGiamGia.ngayKetThuc,
+          kieuGiamGia: type === "private" ? "Cá nhân" : "Công khai",
+          khachHangIds: type === "private" ? selectedCustomers : [],
+        };
+
+        // Lưu request vào state và mở hộp thoại xác nhận
+        setPendingRequestData(updatedData);
+        setOpenDialog(true);
+
+      } catch (error) {
+        console.error("Lỗi khi cập nhật phiếu giảm giá:", error);
+        alert("Cập nhật phiếu giảm giá thất bại.");
+      }
     }
   };
 
@@ -283,6 +362,8 @@ const DetailPhieuGiamGia = () => {
                     variant="outlined"
                     size="small"
                     fullWidth
+                    error={!!errors.tenPhieuGiamGia}
+                    helperText={errors.tenPhieuGiamGia}
                     sx={{ mb: 2 }}
                     onChange={(e) => setPhieuGiamGia({
                       ...phieuGiamGia,
@@ -297,6 +378,8 @@ const DetailPhieuGiamGia = () => {
                       type="number"
                       size="small"
                       fullWidth
+                      error={!!errors.giaTriGiam}
+                      helperText={errors.giaTriGiam}
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
@@ -350,6 +433,8 @@ const DetailPhieuGiamGia = () => {
                       variant="outlined"
                       size="small"
                       fullWidth
+                      error={!!errors.giaTriGiamToiDa}
+                      helperText={errors.giaTriGiamToiDa}
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
@@ -378,6 +463,8 @@ const DetailPhieuGiamGia = () => {
                       variant="outlined"
                       size="small"
                       fullWidth
+                      error={!!errors.soLuong}
+                      helperText={errors.soLuong}
                       disabled={type === "private"} // Disable khi là "Cá nhân"
                       onChange={(e) => {
                         if (type === "public") {
@@ -402,6 +489,8 @@ const DetailPhieuGiamGia = () => {
                       variant="outlined"
                       size="small"
                       fullWidth
+                      error={!!errors.soTienToiThieu}
+                      helperText={errors.soTienToiThieu}
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
@@ -421,13 +510,15 @@ const DetailPhieuGiamGia = () => {
                       type="date"
                       size="small"
                       fullWidth
+                      error={!!errors.ngayBatDau}
+                      helperText={errors.ngayBatDau}
                       value={phieuGiamGia.ngayBatDau ? phieuGiamGia.ngayBatDau.split('T')[0] : ''}
                       InputLabelProps={{ shrink: true }}
                       onChange={(e) => {
                         const selectedDate = e.target.value;
                         setPhieuGiamGia((prev) => ({
                           ...prev,
-                          ngayBatDau: selectedDate + "T00:00:00", // ✅ Định dạng ISO 8601
+                          ngayBatDau: selectedDate ? selectedDate + "T00:00:00" : null, // ✅ Định dạng ISO 8601
                         }));
                       }}
                     />
@@ -437,18 +528,19 @@ const DetailPhieuGiamGia = () => {
                       type="date"
                       size="small"
                       fullWidth
+                      error={!!errors.ngayKetThuc}  // Hiển thị lỗi nếu có
+                      helperText={errors.ngayKetThuc}
                       value={phieuGiamGia.ngayKetThuc ? phieuGiamGia.ngayKetThuc.split('T')[0] : ''}
                       InputLabelProps={{ shrink: true }}
                       onChange={(e) => {
                         const selectedDate = e.target.value;
                         setPhieuGiamGia((prev) => ({
                           ...prev,
-                          ngayKetThuc: selectedDate + "T23:59:59", // ✅ Định dạng ISO 8601
+                          ngayKetThuc: selectedDate ? selectedDate + "T23:59:59" : null, // ✅ Định dạng ISO 8601
                         }));
                       }}
                     />
                   </Box>
-
 
                   {/* Kiểu */}
                   <Typography variant="body1" sx={{ mb: 1 }}>
@@ -482,6 +574,9 @@ const DetailPhieuGiamGia = () => {
                     ),
                   }}
                 />
+                <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+                  {errors.khachHangIds}
+                </Typography>
                 <TableContainer component={Paper}>
                   <Table stickyHeader>
                     <TableHead>
