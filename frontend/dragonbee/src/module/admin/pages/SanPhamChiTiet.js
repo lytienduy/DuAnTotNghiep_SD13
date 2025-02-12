@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ArrowBack } from "@mui/icons-material";
+import { ArrowBack,Visibility, VisibilityOff  } from "@mui/icons-material";
 import {
   Container,
   Typography,
@@ -14,6 +14,8 @@ import {
   Paper,
   CircularProgress,
   Button,
+  Snackbar,
+  Alert,
   Grid,
   TextField,
   MenuItem,
@@ -27,6 +29,8 @@ const SanPhamChiTiet = () => {
   const navigate = useNavigate();
   const [chiTietList, setChiTietList] = useState([]); // Khởi tạo mặc định là mảng trống
   const [loading, setLoading] = useState(true);
+    const [openSnackbar, setOpenSnackbar] = useState(false); // Mở đóng Snackbar
+    const [snackbarMessage, setSnackbarMessage] = useState(""); // Nội dung thông báo
   const [filters, setFilters] = useState({
     search: "",
     trangThai: "",
@@ -42,11 +46,11 @@ const SanPhamChiTiet = () => {
     priceRange: [100000, 5000000],
   });
 
+
   const [showAllDetails, setShowAllDetails] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -54,9 +58,7 @@ const SanPhamChiTiet = () => {
         const response = await axios.get(
           `http://localhost:8080/api/sanpham/${id}/chi-tiet`,
           {
-            params: showAllDetails
-              ? { page: page - 1, size: 5 } // Hiển thị toàn bộ có phân trang
-              : {}, // Hiển thị danh sách ban đầu không phân trang
+            params: showAllDetails ? { page: page - 1, size: itemsPerPage } : {},
           }
         );
 
@@ -65,7 +67,7 @@ const SanPhamChiTiet = () => {
           setTotalPages(response.data.totalPages || 0);
         } else {
           setChiTietList(response.data || []);
-          setTotalPages(0); // Ẩn phân trang khi không có phân trang
+          setTotalPages(0);
         }
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
@@ -76,11 +78,14 @@ const SanPhamChiTiet = () => {
     };
 
     fetchData();
-  }, [id, showAllDetails, page]);
+  }, [id, showAllDetails, page, itemsPerPage]);
+  
 
   const handleShowAllToggle = () => {
     setShowAllDetails(!showAllDetails);
-    setPage(1); // Reset về trang 1 khi thay đổi chế độ
+    setPage(1);
+    setSnackbarMessage(!showAllDetails ? "Đang hiển thị toàn bộ sản phẩm chi tiết." : "Đã ẩn sản phẩm chi tiết.");
+    setOpenSnackbar(true);
   };
 
   const handleFilterChange = (e) => {
@@ -121,6 +126,8 @@ const SanPhamChiTiet = () => {
     kieuDang: "Kiểu Dáng",
     kieuDaiQuan: "Kiểu Đai Quần",
   };
+
+  // thông báo hiển thị dánh sách sản phâm chi tiết
 
   return (
     <Container maxWidth="lg">
@@ -199,16 +206,25 @@ const SanPhamChiTiet = () => {
         </Grid>
       </Paper>
 
+      <Button color="black" sx={{ mr: 2 }} onClick={() => navigate("/sanpham")}>
+        <ArrowBack />
+      </Button>
+
+      {/* Toggle Button */}
       <Button
         variant="contained"
-        color="primary"
         onClick={handleShowAllToggle}
-        sx={{ mb: 2 }}
+        sx={{
+          mb: 2,
+          backgroundColor: "lightblue",
+          "&:hover": { backgroundColor: "lightblue" },
+        }}
+        startIcon={showAllDetails ? <VisibilityOff /> : <Visibility />}
       >
-        {showAllDetails
-          ? "Ẩn Toàn Bộ Sản Phẩm Chi Tiết"
-          : "Hiển Thị Toàn Bộ Sản Phẩm Chi Tiết"}
+        {showAllDetails ? "Ẩn chi tiết" : "Hiển thị toàn bộ"}
       </Button>
+
+
 
       {loading ? (
         <CircularProgress />
@@ -297,30 +313,43 @@ const SanPhamChiTiet = () => {
         </TableContainer>
       )}
 
-      {/* Hiển thị phân trang */}
-      {showAllDetails && totalPages > 1 && (
-        <Grid container justifyContent="center" sx={{ mt: 3 }}>
+{/* Pagination - Only show when "Hiển thị toàn bộ" is active */}
+{showAllDetails && totalPages > 1 && (
+        <Grid container justifyContent="center" alignItems="center" sx={{ mt: 3 }}>
           <Button
             variant="outlined"
-            disabled={page === 1}
-            onClick={() => setPage(page - 1)}
+            disabled={page <= 1}
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
           >
             Prev
           </Button>
+
           <Typography sx={{ mx: 2 }} variant="h6">
-            {` ${page} ... ${totalPages}`}
+            {`${page} / ${totalPages}`}
           </Typography>
+
           <Button
             variant="outlined"
-            disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
+            disabled={page >= totalPages}
+            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
           >
             Next
           </Button>
-          
         </Grid>
-      )}
+)}
+
+       {/* Snackbar thông báo */}
+       <Snackbar
+      open={openSnackbar}
+      autoHideDuration={3000}
+      onClose={() => setOpenSnackbar(false)}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }} // Hiển thị ở góc phải trên
+    >
+      <Alert severity="success">{snackbarMessage}</Alert>
+    </Snackbar>
     </Container>
+    
+      
   );
 };
 

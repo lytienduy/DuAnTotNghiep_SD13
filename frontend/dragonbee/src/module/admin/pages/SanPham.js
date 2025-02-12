@@ -17,9 +17,12 @@ import {
   TextField,
   MenuItem,
   Select,
+  Switch,
   Box,
   FormControl,
   Grid,
+  Snackbar, // Import Snackbar
+  Alert, // Import Alert component for better notification display
 } from "@mui/material";
 
 import { Add, Visibility } from "@mui/icons-material";
@@ -32,6 +35,10 @@ const SanPham = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [trangThai, setTrangThai] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false); // Mở đóng Snackbar
+  const [snackbarMessage, setSnackbarMessage] = useState(""); // Nội dung thông báo
+  const [size, setSize] = useState(5);
+
 
   const navigate = useNavigate();
 
@@ -42,8 +49,8 @@ const SanPham = () => {
     axios
       .get(`http://localhost:8080/api/sanpham/search`, {
         params: {
-          page: page - 1, // 🔥 Truyền giá trị page hiện tại (Spring Boot sử dụng 0-based index)
-          size: 5,
+          page: page - 1, // Truyền giá trị page hiện tại (Spring Boot sử dụng 0-based index)
+          size: size, // Sử dụng giá trị size động
           tenSanPham: search.trim() || null,
           trangThai: trangThai || null,
         },
@@ -57,108 +64,134 @@ const SanPham = () => {
         console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
         setLoading(false);
       });
-  }, [page, search, trangThai]); // 🔥 Cập nhật khi `page`, `search`, `trangThai` thay đổi
+  }, [page, search, trangThai, size]); // Đảm bảo fetch lại khi size thay đổi
   
+
   // Gọi API khi search, trangThai hoặc page thay đổi
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       fetchData();
     }, 500); // Debounce để tránh gọi API quá nhiều lần
-  
+
     return () => clearTimeout(delayDebounce);
   }, [fetchData]); // 🔥 Đảm bảo gọi lại khi `fetchData` thay đổi
-  
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
     setPage(1); // 🔥 Reset về trang đầu khi tìm kiếm
   };
-  
+
   const handleTrangThaiChange = (e) => {
     setTrangThai(e.target.value);
     setPage(1); // 🔥 Reset về trang đầu khi thay đổi bộ lọc
   };
-  
-// hàm export excel
-// Thêm thư viện XLSX nếu chưa có
 
-
-const exportToExcel = () => {
-  if (sanPhams.length === 0) {
-    alert("Không có dữ liệu để xuất Excel.");
-    return;
-  }
-
-  const data = sanPhams.map((sp, index) => ([
-    index + 1,
-    sp.ma || "N/A",                     // Mã sản phẩm
-    sp.tenSanPham || "Không rõ",         // Tên sản phẩm
-    sp.tongSoLuong ?? "0",              // Số lượng
-    sp.ngayTao
-      ? new Date(sp.ngayTao).toLocaleDateString("vi-VN")
-      : "Chưa cập nhật",               // Ngày tạo
-    sp.trangThai || "Không xác định"     // Trạng thái
-  ]));
-
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet([
-    ["STT", "Mã Sản Phẩm", "Tên Sản Phẩm", "Số Lượng", "Ngày Tạo", "Trạng Thái"],
-    ...data,
-  ]);
-
-  // Định dạng header
-  const headerStyle = {
-    font: { bold: true, color: { rgb: "FFFFFF" } },
-    fill: { fgColor: { rgb: "4CAF50" } }, // Xanh lá nhạt
-    alignment: { horizontal: "center", vertical: "center" },
-    border: {
-      top: { style: "thin", color: { rgb: "000000" } },
-      bottom: { style: "thin", color: { rgb: "000000" } },
-      left: { style: "thin", color: { rgb: "000000" } },
-      right: { style: "thin", color: { rgb: "000000" } }
+  // hàm export excel
+  const exportToExcel = () => {
+    if (sanPhams.length === 0) {
+      alert("Không có dữ liệu để xuất Excel.");
+      return;
     }
+
+    const data = sanPhams.map((sp, index) => [
+      index + 1,
+      sp.ma || "N/A", // Mã sản phẩm
+      sp.tenSanPham || "Không rõ", // Tên sản phẩm
+      sp.tongSoLuong ?? "0", // Số lượng
+      sp.ngayTao
+        ? new Date(sp.ngayTao).toLocaleDateString("vi-VN")
+        : "Chưa cập nhật", // Ngày tạo
+      sp.trangThai || "Không xác định", // Trạng thái
+    ]);
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+      [
+        "STT",
+        "Mã Sản Phẩm",
+        "Tên Sản Phẩm",
+        "Số Lượng",
+        "Ngày Tạo",
+        "Trạng Thái",
+      ],
+      ...data,
+    ]);
+
+    // Định dạng header
+    const headerStyle = {
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "4CAF50" } }, // Xanh lá nhạt
+      alignment: { horizontal: "center", vertical: "center" },
+      border: {
+        top: { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left: { style: "thin", color: { rgb: "000000" } },
+        right: { style: "thin", color: { rgb: "000000" } },
+      },
+    };
+
+    // Định dạng ô dữ liệu
+    const cellStyle = {
+      alignment: { horizontal: "center", vertical: "center" },
+      border: {
+        top: { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left: { style: "thin", color: { rgb: "000000" } },
+        right: { style: "thin", color: { rgb: "000000" } },
+      },
+    };
+
+    // Áp dụng định dạng cho tiêu đề
+    const headerRow = ["A1", "B1", "C1", "D1", "E1", "F1"];
+    headerRow.forEach((cell) => {
+      if (ws[cell]) ws[cell].s = headerStyle;
+    });
+
+    // Áp dụng định dạng cho dữ liệu
+    const numRows = data.length + 1;
+    for (let row = 2; row <= numRows + 1; row++) {
+      for (let col = 0; col < 6; col++) {
+        const cellRef = XLSX.utils.encode_cell({ r: row - 1, c: col });
+        if (ws[cellRef]) ws[cellRef].s = cellStyle;
+      }
+    }
+
+    // Đặt độ rộng cột
+    ws["!cols"] = [
+      { wch: 5 }, // STT
+      { wch: 15 }, // Mã sản phẩm
+      { wch: 25 }, // Tên sản phẩm
+      { wch: 12 }, // Số lượng
+      { wch: 15 }, // Ngày tạo
+      { wch: 15 }, // Trạng thái
+    ];
+
+    // Xuất file Excel
+    XLSX.utils.book_append_sheet(wb, ws, "Danh Sách Sản Phẩm");
+    XLSX.writeFile(wb, "DanhSachSanPham.xlsx");
+
+    // Hiển thị thông báo thành công
+    setSnackbarMessage("Xuất Excel thành công!");
+    setOpenSnackbar(true);
   };
 
-  // Định dạng ô dữ liệu
-  const cellStyle = {
-    alignment: { horizontal: "center", vertical: "center" },
-    border: {
-      top: { style: "thin", color: { rgb: "000000" } },
-      bottom: { style: "thin", color: { rgb: "000000" } },
-      left: { style: "thin", color: { rgb: "000000" } },
-      right: { style: "thin", color: { rgb: "000000" } }
+  // chuyển đổi trạng thái switch
+  const toggleTrangThai = async (id) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:8080/api/sanpham/${id}/toggle-trang-thai`
+      );
+      alert(response.data); // Hiển thị thông báo thành công
+      fetchData(); // Tải lại dữ liệu sản phẩm
+
+      // Hiển thị thông báo thành công
+      setSnackbarMessage("Cập nhật trạng thái thành công!");
+      setOpenSnackbar(true);
+    } catch (error) {
+      console.error("Lỗi khi chuyển trạng thái:", error);
+      alert("Có lỗi xảy ra khi cập nhật trạng thái sản phẩm!");
     }
   };
-
-  // Áp dụng định dạng cho tiêu đề
-  const headerRow = ["A1", "B1", "C1", "D1", "E1", "F1"];
-  headerRow.forEach((cell) => {
-    if (ws[cell]) ws[cell].s = headerStyle;
-  });
-
-  // Áp dụng định dạng cho dữ liệu
-  const numRows = data.length + 1;
-  for (let row = 2; row <= numRows + 1; row++) {
-    for (let col = 0; col < 6; col++) {
-      const cellRef = XLSX.utils.encode_cell({ r: row - 1, c: col });
-      if (ws[cellRef]) ws[cellRef].s = cellStyle;
-    }
-  }
-
-  // Đặt độ rộng cột
-  ws["!cols"] = [
-    { wch: 5 },   // STT
-    { wch: 15 },  // Mã sản phẩm
-    { wch: 25 },  // Tên sản phẩm
-    { wch: 12 },  // Số lượng
-    { wch: 15 },  // Ngày tạo
-    { wch: 15 }   // Trạng thái
-  ];
-
-  // Xuất file Excel
-  XLSX.utils.book_append_sheet(wb, ws, "Danh Sách Sản Phẩm");
-  XLSX.writeFile(wb, "DanhSachSanPham.xlsx");
-};
 
   return (
     <Container maxWidth="lg">
@@ -172,17 +205,27 @@ const exportToExcel = () => {
 
         {/* Nút tạo mới di chuyển sang góc phải */}
         <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
-        <Button variant="contained" color="primary" onClick={exportToExcel}>Xuất   Excel</Button>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Add />}
-          onClick={() => navigate("/sanpham/addProduct")}
-        >
-          Tạo Mới
-        </Button>
-      </Box>
-       
+          <Button variant="contained" color="primary" onClick={exportToExcel}>
+            Xuất Excel
+          </Button>
+          <Button
+            variant="outlined" // Kiểu nút với viền
+            sx={{
+              color: "lightblue", // Màu chữ xanh nhạt
+              backgroundColor: "white", // Màu nền trắng
+              borderColor: "lightblue", // Màu viền xanh nhạt
+              "&:hover": {
+                backgroundColor: "lightblue", // Màu nền khi hover
+                color: "white", // Màu chữ khi hover
+                borderColor: "lightblue", // Màu viền khi hover
+              },
+            }}
+            startIcon={<Add sx={{ color: "lightblue" }} />} // Màu của biểu tượng dấu "+"
+            onClick={() => navigate("/sanpham/addProduct")}
+          >
+            Tạo Mới
+          </Button>
+        </Box>
       </Grid>
 
       {/* Bộ lọc và ô tìm kiếm */}
@@ -231,6 +274,9 @@ const exportToExcel = () => {
                     <strong>STT</strong>
                   </TableCell>
                   <TableCell>
+                    <strong>Mã Sản Phẩm</strong>
+                  </TableCell>
+                  <TableCell>
                     <strong>Tên Sản Phẩm</strong>
                   </TableCell>
                   <TableCell>
@@ -252,7 +298,7 @@ const exportToExcel = () => {
                   sanPhams.map((sp, index) => (
                     <TableRow key={sp.id}>
                       <TableCell>{(page - 1) * 5 + index + 1}</TableCell>
-
+                      <TableCell>{sp.ma}</TableCell>
                       <TableCell>{sp.tenSanPham}</TableCell>
                       <TableCell>{sp.tongSoLuong ?? "0"}</TableCell>
                       <TableCell>
@@ -273,6 +319,12 @@ const exportToExcel = () => {
                         >
                           <Visibility />
                         </Button>
+
+                        <Switch
+                          checked={sp.trangThai === "Còn hàng"}
+                          onChange={() => toggleTrangThai(sp.id)}
+                          color="success"
+                        />
                       </TableCell>
                     </TableRow>
                   ))
@@ -287,16 +339,64 @@ const exportToExcel = () => {
             </Table>
           </TableContainer>
 
-          {/* Phân trang */}
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={(event, value) => setPage(value)}
-            color="primary"
-            sx={{ mt: 2, display: "flex", justifyContent: "center" }}
-          />
+         <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ mt: 2, p: 1, background: "#f1f1f1", borderRadius: "5px" }}>
+  {/* Dropdown to select number of items per page */}
+  <Box display="flex" alignItems="center">
+    <Typography variant="body2" sx={{ mr: 1 }}>
+      Xem
+    </Typography>
+    <Select
+      value={size}
+      onChange={(e) => {
+        setSize(e.target.value);
+        setPage(1); // Reset to first page
+      }}
+      size="small"
+      sx={{ width: 70, backgroundColor: "white" }}
+    >
+      <MenuItem value={5}>5</MenuItem>
+      <MenuItem value={10}>10</MenuItem>
+      <MenuItem value={20}>20</MenuItem>
+    </Select>
+    <Typography variant="body2" sx={{ ml: 1 }}>
+      sản phẩm
+    </Typography>
+  </Box>
+
+  {/* Pagination controls */}
+  <Pagination
+    count={totalPages}
+    page={page}
+    onChange={(event, value) => setPage(value)}
+    variant="outlined"
+    shape="rounded"
+    color="primary"
+    siblingCount={0} // Keep it compact
+    sx={{
+      "& .MuiPaginationItem-root": {
+        backgroundColor: "white",
+        border: "1px solid #ddd",
+        "&.Mui-selected": {
+          backgroundColor: "lightblue",
+          color: "white",
+        },
+      },
+    }}
+  />
+</Box>
+
         </>
       )}
+
+      {/* Snackbar thông báo */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }} // Hiển thị ở góc phải trên
+      >
+        <Alert severity="success">{snackbarMessage}</Alert>
+      </Snackbar>
     </Container>
   );
 };
