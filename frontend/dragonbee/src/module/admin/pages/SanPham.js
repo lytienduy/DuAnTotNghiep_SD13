@@ -39,13 +39,12 @@ const SanPham = () => {
   const [snackbarMessage, setSnackbarMessage] = useState(""); // Nội dung thông báo
   const [size, setSize] = useState(5);
 
-
   const navigate = useNavigate();
 
   // Hàm gọi API với debounce
   const fetchData = useCallback(() => {
     setLoading(true);
-  
+
     axios
       .get(`http://localhost:8080/api/sanpham/search`, {
         params: {
@@ -65,7 +64,6 @@ const SanPham = () => {
         setLoading(false);
       });
   }, [page, search, trangThai, size]); // Đảm bảo fetch lại khi size thay đổi
-  
 
   // Gọi API khi search, trangThai hoặc page thay đổi
   useEffect(() => {
@@ -181,14 +179,17 @@ const SanPham = () => {
       const response = await axios.put(
         `http://localhost:8080/api/sanpham/${id}/toggle-trang-thai`
       );
-      alert(response.data); // Hiển thị thông báo thành công
-      fetchData(); // Tải lại dữ liệu sản phẩm
 
-      // Hiển thị thông báo thành công
+      console.log("Phản hồi API:", response.data);
+
       setSnackbarMessage("Cập nhật trạng thái thành công!");
       setOpenSnackbar(true);
+      fetchData(); // Tải lại danh sách sản phẩm
     } catch (error) {
-      console.error("Lỗi khi chuyển trạng thái:", error);
+      console.error(
+        "Lỗi khi chuyển trạng thái:",
+        error.response?.data || error
+      );
       alert("Có lỗi xảy ra khi cập nhật trạng thái sản phẩm!");
     }
   };
@@ -319,7 +320,6 @@ const SanPham = () => {
                         >
                           <Visibility />
                         </Button>
-
                         <Switch
                           checked={sp.trangThai === "Còn hàng"}
                           onChange={() => toggleTrangThai(sp.id)}
@@ -339,52 +339,56 @@ const SanPham = () => {
             </Table>
           </TableContainer>
 
-         <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ mt: 2, p: 1, background: "#f1f1f1", borderRadius: "5px" }}>
-  {/* Dropdown to select number of items per page */}
-  <Box display="flex" alignItems="center">
-    <Typography variant="body2" sx={{ mr: 1 }}>
-      Xem
-    </Typography>
-    <Select
-      value={size}
-      onChange={(e) => {
-        setSize(e.target.value);
-        setPage(1); // Reset to first page
-      }}
-      size="small"
-      sx={{ width: 70, backgroundColor: "white" }}
-    >
-      <MenuItem value={5}>5</MenuItem>
-      <MenuItem value={10}>10</MenuItem>
-      <MenuItem value={20}>20</MenuItem>
-    </Select>
-    <Typography variant="body2" sx={{ ml: 1 }}>
-      sản phẩm
-    </Typography>
-  </Box>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mt: 2, p: 1, background: "#f1f1f1", borderRadius: "5px" }}
+          >
+            {/* Dropdown to select number of items per page */}
+            <Box display="flex" alignItems="center">
+              <Typography variant="body2" sx={{ mr: 1 }}>
+                Xem
+              </Typography>
+              <Select
+                value={size}
+                onChange={(e) => {
+                  setSize(e.target.value);
+                  setPage(1); // Reset to first page
+                }}
+                size="small"
+                sx={{ width: 70, backgroundColor: "white" }}
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+              </Select>
+              <Typography variant="body2" sx={{ ml: 1 }}>
+                sản phẩm
+              </Typography>
+            </Box>
 
-  {/* Pagination controls */}
-  <Pagination
-    count={totalPages}
-    page={page}
-    onChange={(event, value) => setPage(value)}
-    variant="outlined"
-    shape="rounded"
-    color="primary"
-    siblingCount={0} // Keep it compact
-    sx={{
-      "& .MuiPaginationItem-root": {
-        backgroundColor: "white",
-        border: "1px solid #ddd",
-        "&.Mui-selected": {
-          backgroundColor: "lightblue",
-          color: "white",
-        },
-      },
-    }}
-  />
-</Box>
-
+            {/* Pagination controls */}
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={(event, value) => setPage(value)}
+              variant="outlined"
+              shape="rounded"
+              color="primary"
+              siblingCount={0} // Keep it compact
+              sx={{
+                "& .MuiPaginationItem-root": {
+                  backgroundColor: "white",
+                  border: "1px solid #ddd",
+                  "&.Mui-selected": {
+                    backgroundColor: "lightblue",
+                    color: "white",
+                  },
+                },
+              }}
+            />
+          </Box>
         </>
       )}
 

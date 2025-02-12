@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -228,6 +230,29 @@ public class SanPhamController {
 
         return ResponseEntity.ok(result);
     }
+// Ai swtich
+@PutMapping("/{id}/toggle-trang-thai")
+public ResponseEntity<?> toggleProductStatus(@PathVariable Integer id) {
+    System.out.println("Gọi API chuyển trạng thái cho sản phẩm ID: " + id);
+
+    Optional<SanPham> optionalSanPham = sanPhamRepository.findById(id);
+    if (optionalSanPham.isPresent()) {
+        SanPham sanPham = optionalSanPham.get();
+        String oldStatus = sanPham.getTrangThai();
+        String newStatus = oldStatus.equals("Còn hàng") ? "Hết hàng" : "Còn hàng";
+
+        sanPham.setTrangThai(newStatus);
+        sanPhamRepository.save(sanPham);
+
+        System.out.println("Trạng thái đã chuyển từ " + oldStatus + " -> " + newStatus);
+        return ResponseEntity.ok("Trạng thái đã được cập nhật.");
+    }
+
+    System.out.println("Không tìm thấy sản phẩm với ID: " + id);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy sản phẩm.");
+}
+
+
 
 
 
