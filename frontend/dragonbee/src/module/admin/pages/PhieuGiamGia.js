@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Snackbar, Alert } from "@mui/material";
+import { Dialog, DialogTitle, DialogActions,   } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import {
   Box,
@@ -23,6 +24,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ModeEditOutlineIcon from '@mui/icons-material/ModeEditOutline';
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -44,6 +46,8 @@ const DiscountCoupons = () => {
   const [kieuGiamGia, setKieuGiamGia] = useState("");
   const [trangThai, setTrangThai] = useState("");
 
+  const [openDialog, setOpenDialog] = useState(false);  // Mở/Đóng dialog
+  const [selectedDiscountCode, setSelectedDiscountCode] = useState(null);
 
   useEffect(() => {
 
@@ -83,21 +87,33 @@ const DiscountCoupons = () => {
   }, [page, rowsPerPage, ma, tuNgay, denNgay, kieuGiamGia, trangThai, location.state]);
 
   // Hàm xử lý thay đổi trạng thái phiếu giảm giá
-  const handleStatusChange = async (ma) => {
+  const handleStatusChange = (ma) => {
+    setSelectedDiscountCode(ma);  // Lưu mã phiếu giảm giá
+    setOpenDialog(true);  // Mở dialog xác nhận
+  };
+
+  // Hàm xác nhận thay đổi trạng thái
+  const handleConfirmChange = async () => {
     try {
-      const response = await axios.put(`http://localhost:8080/dragonbee/change-status/${ma}`);
-      alert(`Trạng thái phiếu giảm giá đã được cập nhật thành: ${response.data}`);
+      const response = await axios.put(`http://localhost:8080/dragonbee/change-status/${selectedDiscountCode}`);
 
       // Cập nhật lại state sau khi thay đổi trạng thái
       setData((prevData) =>
         prevData.map((item) =>
-          item.ma === ma ? { ...item, trangThai: response.data, trangThaiTuyChinh: true } : item
+          item.ma === selectedDiscountCode ? { ...item, trangThai: response.data, trangThaiTuyChinh: true } : item
         )
       );
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái:", error);
       alert("Không thể cập nhật trạng thái: " + (error.response?.data || error.message));
     }
+
+    setOpenDialog(false);  // Đóng dialog sau khi xác nhận
+  };
+
+  // Hàm hủy thay đổi
+  const handleCancelChange = () => {
+    setOpenDialog(false);  // Đóng dialog khi hủy
   };
 
   // Kiểm tra phiếu giảm giá có hết hạn hay chưa
@@ -119,6 +135,23 @@ const DiscountCoupons = () => {
 
   return (
     <Box sx={{ padding: 3 }}>
+      {/* Dialog xác nhận */}
+      <Dialog open={openDialog} onClose={handleCancelChange}>
+        <DialogTitle sx={{ textAlign: "center" }}>
+          <InfoOutlinedIcon sx={{ fontSize: 70, color: "#1976D2", marginBottom: 1 }} />
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            Bạn có chắc chắn muốn chuyển trạng thái của phiếu giảm giá: <strong>{selectedDiscountCode}</strong> này không?
+          </Typography>
+        </DialogTitle>
+        <DialogActions sx={{ justifyContent: "center", gap: 2 }}>
+          <Button onClick={handleConfirmChange} color="primary" variant="contained">
+            Vâng!
+          </Button>
+          <Button onClick={handleCancelChange} color="error" variant="contained">
+            Hủy
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={openSnackbar}
         autoHideDuration={3000}

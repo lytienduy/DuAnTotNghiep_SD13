@@ -9,6 +9,7 @@ import com.example.shopdragonbee.repository.KhachHangPGGRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaKhachHangRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaSpecification;
+import com.example.shopdragonbee.service.EmailService;
 import com.example.shopdragonbee.service.KhachHangPGGService;
 import com.example.shopdragonbee.service.PhieuGiamGiaService;
 import jakarta.transaction.Transactional;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +46,17 @@ public class AppController {
 
     @Autowired
     private PhieuGiamGiaService phieuGiamGiaService;
+
+    @Autowired
+    private EmailService emailService;
+
+    public void PhieuGiamGiaController(PhieuGiamGiaRepository phieuGiamGiaRepository,
+                                       KhachHangPGGRepository khachHangPGGRepository,
+                                       EmailService emailService) {
+        this.phieuGiamGiaRepository = phieuGiamGiaRepository;
+        this.khachHangPGGRepository = khachHangPGGRepository;
+        this.emailService = emailService;
+    }
 
     @GetMapping("/search-khach-hang")
     public Page<KhachHangPGGResponse> searchKhachHang(
@@ -173,7 +184,7 @@ public class AppController {
                             .khachHang(khachHangPGGRepository.findById(idKhachHang).orElseThrow(() ->
                                     new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + idKhachHang)))
                             .phieuGiamGia(phieuGiamGia)
-                            .trangThai("Đang sử dụng")
+                            .trangThai("Còn hạn")
                             .ngayTao(now)
                             .nguoiTao("Admin")
                             .build())
@@ -181,6 +192,14 @@ public class AppController {
 
             // Lưu danh sách vào bảng `phieu_giam_gia_khach_hang`
             phieuGiamGiaKhachHangRepository.saveAll(khachHangRecords);
+
+            // Lấy danh sách email của các khách hàng đã thêm
+            List<String> emailAddresses = khachHangRecords.stream()
+                    .map(khachHangRecord -> khachHangRecord.getKhachHang().getEmail())  // Lấy email của khách hàng
+                    .collect(Collectors.toList());
+
+            // Gửi thông báo email cho khách hàng
+            emailService.sendDiscountNotification(emailAddresses, phieuGiamGia);
         }
 
         return ResponseEntity.ok("Thêm mới phiếu giảm giá thành công!");
@@ -284,7 +303,7 @@ public class AppController {
                             .khachHang(khachHangPGGRepository.findById(idKhachHang).orElseThrow(() ->
                                     new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + idKhachHang)))
                             .phieuGiamGia(phieuGiamGia)
-                            .trangThai("Đang sử dụng")
+                            .trangThai("Còn hạn")
                             .ngayTao(now)
                             .nguoiTao("Admin")
                             .build())

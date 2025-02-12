@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PhieuGiamGiaService {
@@ -21,6 +22,9 @@ public class PhieuGiamGiaService {
 
     @Autowired
     private PhieuGiamGiaKhachHangRepository phieuGiamGiaKhachHangRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     public ResponseEntity<?> updateDiscountStatus(String ma) {
         Optional<PhieuGiamGia> optionalPhieuGiamGia = phieuGiamGiaRepository.findByMa(ma);
@@ -46,6 +50,7 @@ public class PhieuGiamGiaService {
             phieuGiamGia.setTrangThaiTuyChinh(false);
         }
 
+        String oldStatus = phieuGiamGia.getTrangThai();
         // Chuyển đổi trạng thái
         if ("Đang diễn ra".equals(phieuGiamGia.getTrangThai())) {
             phieuGiamGia.setTrangThai("Đã kết thúc");
@@ -72,26 +77,44 @@ public class PhieuGiamGiaService {
         if ("Cá nhân".equalsIgnoreCase(phieuGiamGia.getKieuGiamGia())) {
             List<PhieuGiamGiaKhachHang> phieuGiamGiaKhachHangList = phieuGiamGiaKhachHangRepository.findByPhieuGiamGia(phieuGiamGia);
 
+            // Gửi email thông báo nếu trạng thái có thay đổi từ "Đang diễn ra" hoặc "Chưa diễn ra" sang "Hết hạn"
+            if (("Đang diễn ra".equals(oldStatus) || "Chưa diễn ra".equals(oldStatus)) && "Đã kết thúc".equals(phieuGiamGia.getTrangThai())) {
+                List<String> emailsToSuspend = phieuGiamGiaKhachHangList.stream()
+                        .map(phieuGiamGiaKhachHang -> phieuGiamGiaKhachHang.getKhachHang().getEmail())
+                        .collect(Collectors.toList());
+                emailService.sendDiscountSuspendedNotification(emailsToSuspend, phieuGiamGia);
+            }
+
+            // Gửi email thông báo nếu trạng thái có thay đổi từ "Đã kết thúc" sang "Đang diễn ra"
+            if ("Đã kết thúc".equals(oldStatus) && "Đang diễn ra".equals(phieuGiamGia.getTrangThai())) {
+                List<String> emailsToActivate = phieuGiamGiaKhachHangList.stream()
+                        .map(phieuGiamGiaKhachHang -> phieuGiamGiaKhachHang.getKhachHang().getEmail())
+                        .collect(Collectors.toList());
+                emailService.sendDiscountResumedNotification(emailsToActivate, phieuGiamGia);
+            }
+
+            // Gửi email thông báo nếu trạng thái chuyển từ "Đã kết thúc" sang "Chưa diễn ra"
+            if ("Đã kết thúc".equals(oldStatus) && "Chưa diễn ra".equals(phieuGiamGia.getTrangThai())) {
+                List<String> emailsToNotify = phieuGiamGiaKhachHangList.stream()
+                        .map(phieuGiamGiaKhachHang -> phieuGiamGiaKhachHang.getKhachHang().getEmail())
+                        .collect(Collectors.toList());
+                emailService.sendDiscountResumedNotification(emailsToNotify, phieuGiamGia);  // Cùng hàm thông báo như khi phiếu trở lại "Đang diễn ra"
+            }
+
             // Cập nhật trạng thái khách hàng
             for (PhieuGiamGiaKhachHang phieuGiamGiaKhachHang : phieuGiamGiaKhachHangList) {
-                // Nếu trạng thái phiếu giảm giá là "Đã kết thúc", cập nhật trạng thái của khách hàng thành "Đã kết thúc"
                 if ("Đã kết thúc".equals(phieuGiamGia.getTrangThai())) {
                     phieuGiamGiaKhachHang.setTrangThai("Hết hạn");
-                }
-                // Nếu trạng thái phiếu giảm giá là "Đang diễn ra", cập nhật trạng thái của khách hàng thành "Đang sử dụng"
-                else if ("Đang diễn ra".equals(phieuGiamGia.getTrangThai())) {
+                } else if ("Đang diễn ra".equals(phieuGiamGia.getTrangThai())) {
                     phieuGiamGiaKhachHang.setTrangThai("Còn hạn");
-                }
-                // Nếu trạng thái phiếu giảm giá là "Chưa diễn ra", cập nhật trạng thái của khách hàng thành "Chưa sử dụng"
-                else if ("Chưa diễn ra".equals(phieuGiamGia.getTrangThai())) {
+                } else if ("Chưa diễn ra".equals(phieuGiamGia.getTrangThai())) {
                     phieuGiamGiaKhachHang.setTrangThai("Chưa tới ngày");
                 }
 
-                // Lưu lại bản ghi trong bảng khách hàng
+                phieuGiamGiaKhachHang.setNgaySua(now);
                 phieuGiamGiaKhachHangRepository.save(phieuGiamGiaKhachHang);
             }
         }
-
 
         return ResponseEntity.ok(phieuGiamGia.getTrangThai());
     }
