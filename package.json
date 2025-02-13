@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "@mui/lab": "^6.0.0-beta.27",
-    "@mui/x-date-pickers": "^7.26.0",
-    "dayjs": "^1.11.13",
-    "react-datepicker": "^8.0.0",
-    "react-router-dom": "^7.1.5"
-  }
-}
