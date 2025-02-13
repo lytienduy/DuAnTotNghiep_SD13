@@ -96,7 +96,6 @@ public class SanPhamController {
     }
 
 
-    // AI add sản phẩm
     @Transactional
     @PostMapping("/add")
     public ResponseEntity<?> addSanPham(@Valid @RequestBody SanPham sanPhamRequest) {
@@ -127,10 +126,12 @@ public class SanPhamController {
             // Thêm danh sách sản phẩm chi tiết
             List<SanPhamChiTiet> chiTietList = new ArrayList<>();
             for (SanPhamChiTiet chiTiet : sanPhamRequest.getSanPhamChiTietList()) {
+                // Kiểm tra dữ liệu chi tiết sản phẩm
                 if (chiTiet.getMauSac() == null || chiTiet.getSize() == null) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Màu sắc và kích cỡ không được để trống!");
                 }
 
+                // Kiểm tra màu sắc và kích cỡ hợp lệ
                 MauSac mauSac = mauSacRepository.findById(chiTiet.getMauSac().getId()).orElse(null);
                 Size size = sizeRepository.findById(chiTiet.getSize().getId()).orElse(null);
 
@@ -138,6 +139,7 @@ public class SanPhamController {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Màu sắc hoặc kích cỡ không hợp lệ!");
                 }
 
+                // Tạo chi tiết sản phẩm
                 SanPhamChiTiet sanPhamChiTiet = SanPhamChiTiet.builder()
                         .ma(newMaSanPham + "-" + mauSac.getId() + "-" + size.getId()) // Tạo mã chi tiết sản phẩm
                         .soLuong(chiTiet.getSoLuong())
@@ -154,24 +156,32 @@ public class SanPhamController {
                 chiTietList.add(sanPhamChiTiet);
             }
 
-            sanPhamChiTietRepository.saveAll(chiTietList); // Lưu danh sách sản phẩm chi tiết
+            // Lưu danh sách sản phẩm chi tiết
+            sanPhamChiTietRepository.saveAll(chiTietList);
 
             return ResponseEntity.ok("Thêm sản phẩm thành công!");
         } catch (Exception e) {
             System.err.println("Lỗi khi thêm sản phẩm: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi thêm sản phẩm: " + e.getMessage());
         }
-    }
 
-    // Hàm tạo mã sản phẩm mới theo định dạng SP001, SP002, ...
+
+    }
     private String generateNewMaSanPham(String lastMa) {
+        // Kiểm tra nếu mã sản phẩm là null hoặc rỗng
         if (lastMa == null || lastMa.isEmpty()) {
-            return "SP001";
+            return "SP001"; // Mã sản phẩm bắt đầu từ "SP001" nếu không có mã trước
         }
 
+        // Kiểm tra định dạng mã sản phẩm, giả sử mã có định dạng "SP001", "SP002", ...
+        if (!lastMa.matches("SP\\d{3}")) {
+            throw new IllegalArgumentException("Mã sản phẩm không hợp lệ: " + lastMa);
+        }
+
+        // Lấy phần số từ mã sản phẩm (phần sau chữ "SP")
         String numericPart = lastMa.replaceAll("\\D+", ""); // Lấy phần số từ mã cuối cùng
-        int newNumber = Integer.parseInt(numericPart) + 1;
-        return String.format("SP%03d", newNumber); // Định dạng thành SPXXX
+        int newNumber = Integer.parseInt(numericPart) + 1; // Tăng số lên 1
+        return String.format("SP%03d", newNumber); // Định dạng lại mã theo dạng "SP001", "SP002", ...
     }
 
 

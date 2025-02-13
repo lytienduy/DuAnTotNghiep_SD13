@@ -205,11 +205,6 @@ const SanPhamChiTiet = () => {
           </Grid>
         </Grid>
       </Paper>
-
-      <Button color="black" sx={{ mr: 2 }} onClick={() => navigate("/sanpham")}>
-        <ArrowBack />
-      </Button>
-
       {/* Toggle Button */}
       <Button
         variant="contained"

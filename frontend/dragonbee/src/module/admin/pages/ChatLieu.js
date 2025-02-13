@@ -2,14 +2,16 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { 
   Container, Typography, Button, Table, TableBody, TableCell, 
-  TableContainer, TableHead, TableRow, Paper, IconButton, CircularProgress 
+  TableContainer, TableHead, TableRow, Paper, IconButton, CircularProgress ,Grid
 } from "@mui/material";
-import { Add, Visibility, Edit, Delete } from "@mui/icons-material";
+import { Add, Visibility} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const ChatLieu = () => {
   const [chatLieuList, setChatLieuList] = useState([]);
   const [loading, setLoading] = useState(true);
-
+    
+  const navigate = useNavigate();
   // Gọi API từ Spring Boot
   useEffect(() => {
     axios.get("http://localhost:8080/api/chatlieu")
@@ -31,15 +33,27 @@ const ChatLieu = () => {
       </Typography>
 
       {/* Nút tạo mới */}
-      <Button 
-        variant="contained" 
-        color="primary" 
-        startIcon={<Add />} 
-        sx={{ mb: 2 }}
-      >
-        Tạo Mới
-      </Button>
-
+      <Grid item xs={6} container justifyContent="space-between">
+            
+            <Button
+                  variant="outlined" // Kiểu nút với viền
+                  sx={{
+                    color: "lightblue", // Màu chữ xanh nhạt
+                    backgroundColor: "white", // Màu nền trắng
+                    borderColor: "lightblue", // Màu viền xanh nhạt
+                    "&:hover": {
+                      backgroundColor: "lightblue", // Màu nền khi hover
+                      color: "white", // Màu chữ khi hover
+                      borderColor: "lightblue", // Màu viền khi hover
+                    },
+                  }}
+                  startIcon={<Add sx={{ color: "lightblue" }} />} // Màu của biểu tượng dấu "+"
+                  onClick={() => navigate("/chatlieu/addChatLieu")}
+                >
+                  Tạo Mới
+                </Button>
+          </Grid>
+    
       {/* Hiển thị loading */}
       {loading ? (
         <CircularProgress />

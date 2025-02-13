@@ -18,6 +18,7 @@ import DanhMuc from './module/admin/pages/DanhMuc';
 import ThuongHieu from './module/admin/pages/ThuongHieu';
 import SanPhamChiTiet from './module/admin/pages/SanPhamChiTiet';
 import AddProduct from './module/admin/pages/AddProduct';
+import AddChatLieu from './module/admin/pages/AddChatLieu';
 
 const App = () => {
   return (
@@ -60,8 +61,8 @@ const App = () => {
               <Route path="/sanpham/:id" element={<SanPhamChiTiet />} />
               {/* ADD San Pham */}
               <Route path="/sanpham/addProduct" element={<AddProduct />} />
-              {/* Nhan viên */}
-            
+              {/* Add Chất liệu */}
+              <Route path="/chatlieu/addChatLieu" element={<AddChatLieu />} />
             </Routes>
           </Box>
         </Box>

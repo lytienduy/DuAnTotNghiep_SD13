@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import AddIcon from "@mui/icons-material/Add";
 import {
   TextField,
   Button,
@@ -143,25 +144,26 @@ const AddSanPham = () => {
         )
       );
   }, []);
-  // màu sắc 
+  // màu sắc
   useEffect(() => {
-    axios.get("http://localhost:8080/api/mausac")
+    axios
+      .get("http://localhost:8080/api/mausac")
       .then((res) => {
         console.log("Dữ liệu màu sắc từ API:", res.data);
         setMauSacs(res.data);
       })
       .catch((error) => console.error(error));
   }, []);
- // size  
- useEffect(() => {
-  axios.get("http://localhost:8080/api/size")
-    .then((res) => {
-      console.log("Dữ liệu kích cỡ từ API:", res.data);
-      setSizes(res.data);
-    })
-    .catch((error) => console.error(error));
-}, []);
-
+  // size
+  useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/size")
+      .then((res) => {
+        console.log("Dữ liệu kích cỡ từ API:", res.data);
+        setSizes(res.data);
+      })
+      .catch((error) => console.error(error));
+  }, []);
 
   // lưu sản phẩm
   const onSubmit = (data, event) => {
@@ -203,11 +205,11 @@ const AddSanPham = () => {
       alert("Vui lòng chọn ít nhất một màu sắc và một kích cỡ.");
       return;
     }
-    
+
     console.log("Màu sắc đã chọn:", selectedColors);
     console.log("Kích cỡ đã chọn:", selectedSizes);
   };
-  
+
   const handleSaveProduct = (data) => {
     // Prepare data to send
     const requestData = { ...data, sanPhamChiTietList };
@@ -246,22 +248,23 @@ const AddSanPham = () => {
     <div>
       <Typography variant="h4">Thêm Sản Phẩm</Typography>
       <Paper sx={{ padding: 2, mb: 2 }}>
-        <Controller
-          name="tenSanPham"
-          control={control}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              label="Tên Sản Phẩm"
-              fullWidth
-              margin="normal"
-              sx={{ width: "50%" }}
-            />
+      <Typography variant="h5">Thuộc Tính</Typography>
+      <Controller
+              name="tenSanPham"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Tên sản phẩm"
+                  fullWidth
+                  value={productData.tenSanPham}
+                  onChange={(e) => setProductData({ ...productData, tenSanPham: e.target.value })}
+                />
           )}
         />
         <Grid container spacing={2}>
           <Grid item xs={12} md={3}>
-            <FormControl fullWidth margin="normal">
+            <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
               <InputLabel>Danh Mục</InputLabel>
               <Controller
                 name="danhMuc"
@@ -277,9 +280,22 @@ const AddSanPham = () => {
                 )}
               />
             </FormControl>
+            <IconButton
+              color="primary"
+              aria-label="add"
+              sx={{
+                width: 50, // Chiều rộng của button
+                height: 50, // Chiều cao của button
+                padding: 0, // Bỏ padding để icon không bị co lại
+                borderRadius: 0, // Đảm bảo button có góc vuông
+              }}
+            >
+              <AddIcon sx={{ fontSize: 30 }} />{" "}
+              {/* Điều chỉnh kích thước icon */}
+            </IconButton>
           </Grid>
           <Grid item xs={12} md={3}>
-            <FormControl fullWidth margin="normal">
+            <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
               <InputLabel>Thương Hiệu</InputLabel>
               <Controller
                 name="thuongHieu"
@@ -295,9 +311,22 @@ const AddSanPham = () => {
                 )}
               />
             </FormControl>
+            <IconButton
+              color="primary"
+              aria-label="add"
+              sx={{
+                width: 50, // Chiều rộng của button
+                height: 50, // Chiều cao của button
+                padding: 0, // Bỏ padding để icon không bị co lại
+                borderRadius: 0, // Đảm bảo button có góc vuông
+              }}
+            >
+              <AddIcon sx={{ fontSize: 30 }} />{" "}
+              {/* Điều chỉnh kích thước icon */}
+            </IconButton>
           </Grid>
           <Grid item xs={12} md={3}>
-            <FormControl fullWidth margin="normal">
+            <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
               <InputLabel>Phong Cách</InputLabel>
               <Controller
                 name="phongCach"
@@ -313,9 +342,22 @@ const AddSanPham = () => {
                 )}
               />
             </FormControl>
+            <IconButton
+              color="primary"
+              aria-label="add"
+              sx={{
+                width: 50, // Chiều rộng của button
+                height: 50, // Chiều cao của button
+                padding: 0, // Bỏ padding để icon không bị co lại
+                borderRadius: 0, // Đảm bảo button có góc vuông
+              }}
+            >
+              <AddIcon sx={{ fontSize: 30 }} />{" "}
+              {/* Điều chỉnh kích thước icon */}
+            </IconButton>
           </Grid>
           <Grid item xs={12} md={3}>
-            <FormControl fullWidth margin="normal">
+            <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
               <InputLabel>Chất Liệu</InputLabel>
               <Controller
                 name="chatLieu"
@@ -331,16 +373,28 @@ const AddSanPham = () => {
                 )}
               />
             </FormControl>
+            <IconButton
+      color="primary"
+      aria-label="add"
+      sx={{
+        width: 50,  // Chiều rộng của button
+        height: 50, // Chiều cao của button
+        padding: 0, // Bỏ padding để icon không bị co lại
+        borderRadius: 0, // Đảm bảo button có góc vuông
+      }}
+    >
+      <AddIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước icon */}
+    </IconButton>
           </Grid>
           {/* Hàng 2: 3 cột */}
-          <Grid item xs={10} md={3}>
-            <FormControl fullWidth margin="normal">
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth margin="normal"sx={{ width: "60%" }} >
               <InputLabel>Kiểu Dáng</InputLabel>
               <Controller
                 name="kieuDang"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} label="Kiểu Dáng" sx={{ width: "60%" }}>
+                  <Select {...field} label="Kiểu Dáng" >
                     {kieuDangs.map((kd) => (
                       <MenuItem key={kd.id} value={kd.id}>
                         {kd.tenKieuDang}
@@ -350,6 +404,19 @@ const AddSanPham = () => {
                 )}
               />
             </FormControl>
+            <IconButton
+              color="primary"
+              aria-label="add"
+              sx={{
+                width: 50, // Chiều rộng của button
+                height: 50, // Chiều cao của button
+                padding: 0, // Bỏ padding để icon không bị co lại
+                borderRadius: 0, // Đảm bảo button có góc vuông
+              }}
+            >
+              <AddIcon sx={{ fontSize: 30 }} />{" "}
+              {/* Điều chỉnh kích thước icon */}
+            </IconButton>
           </Grid>
           <Grid item xs={10} md={3}>
             <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
@@ -368,6 +435,19 @@ const AddSanPham = () => {
                 )}
               />
             </FormControl>
+            <IconButton
+              color="primary"
+              aria-label="add"
+              sx={{
+                width: 50, // Chiều rộng của button
+                height: 50, // Chiều cao của button
+                padding: 0, // Bỏ padding để icon không bị co lại
+                borderRadius: 0, // Đảm bảo button có góc vuông
+              }}
+            >
+              <AddIcon sx={{ fontSize: 30 }} />{" "}
+              {/* Điều chỉnh kích thước icon */}
+            </IconButton>
           </Grid>
           <Grid item xs={10} md={3}>
             <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
@@ -386,6 +466,19 @@ const AddSanPham = () => {
                 )}
               />
             </FormControl>
+            <IconButton
+              color="primary"
+              aria-label="add"
+              sx={{
+                width: 50, // Chiều rộng của button
+                height: 50, // Chiều cao của button
+                padding: 0, // Bỏ padding để icon không bị co lại
+                borderRadius: 0, // Đảm bảo button có góc vuông
+              }}
+            >
+              <AddIcon sx={{ fontSize: 30 }} />{" "}
+              {/* Điều chỉnh kích thước icon */}
+            </IconButton>
           </Grid>
           <Grid item xs={10} md={3}>
             <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
@@ -401,6 +494,19 @@ const AddSanPham = () => {
                 )}
               />
             </FormControl>
+            <IconButton
+              color="primary"
+              aria-label="add"
+              sx={{
+                width: 50, // Chiều rộng của button
+                height: 50, // Chiều cao của button
+                padding: 0, // Bỏ padding để icon không bị co lại
+                borderRadius: 0, // Đảm bảo button có góc vuông
+              }}
+            >
+              <AddIcon sx={{ fontSize: 30 }} />{" "}
+              {/* Điều chỉnh kích thước icon */}
+            </IconButton>
           </Grid>
           <Grid item xs={12} md={6}>
             <Controller
@@ -423,29 +529,37 @@ const AddSanPham = () => {
       </Paper>
       {/* chọn màu và size */}
       <Paper sx={{ padding: 2, mb: 2 }}>
-      <Typography variant="h5">Màu sắc & Kích Cỡ</Typography>
+        <Typography variant="h5">Màu sắc & Kích Cỡ</Typography>
         <form onSubmit={handleSubmit(onSubmit)}>
-        <FormControl fullWidth margin="normal" sx={{width:"30%"}}>
-  <InputLabel>Màu sắc</InputLabel>
-  <Select
-    multiple
-    value={selectedColors}
-    onChange={(e) => setSelectedColors(e.target.value)}
-    renderValue={(selected) => selected.map(color => color.tenMauSac).join(", ")}
-  >
-    {colors.map(color => (
-      <MenuItem key={color.id} value={color}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <div style={{ width: 20, height: 20, backgroundColor: color.code, marginRight: 10 }}></div>
-          {color.tenMauSac}
-        </div>
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
+          <FormControl fullWidth margin="normal" sx={{ width: "30%" }}>
+            <InputLabel>Màu sắc</InputLabel>
+            <Select
+              multiple
+              value={selectedColors}
+              onChange={(e) => setSelectedColors(e.target.value)}
+              renderValue={(selected) =>
+                selected.map((color) => color.tenMauSac).join(", ")
+              }
+            >
+              {colors.map((color) => (
+                <MenuItem key={color.id} value={color}>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <div
+                      style={{
+                        width: 20,
+                        height: 20,
+                        backgroundColor: color.code,
+                        marginRight: 10,
+                      }}
+                    ></div>
+                    {color.tenMauSac}
+                  </div>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-
-          <FormControl fullWidth margin="normal" sx={{width: "30%"}}>
+          <FormControl fullWidth margin="normal" sx={{ width: "30%" }}>
             <InputLabel>Kích cỡ</InputLabel>
             <Select
               multiple
@@ -453,17 +567,14 @@ const AddSanPham = () => {
               onChange={(e) => setSelectedSizes(e.target.value)}
               renderValue={(selected) => selected.join(", ")}
             >
-              {sizes.map(size => (
-                <MenuItem key={size.tenSize} value={size.id}>
+              {sizes.map((size) => (
+                <MenuItem key={size.id} value={size.tenSize}>
                   {size.tenSize}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          <Button type="submit" variant="contained">
-            Lưu
-          </Button>
         </form>
       </Paper>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -490,11 +601,15 @@ const AddSanPham = () => {
                   <TableCell>Số Lượng</TableCell>
                   <TableCell>Giá</TableCell>
                   <TableCell>Xóa</TableCell>
+                  <TableCell>Ảnh</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {sanPhamChiTietList.map((item, index) => (
                   <TableRow key={index}>
+                    <TableCell>
+
+                    </TableCell>
                     <TableCell>
                       <TextField
                         label="Tên Sản Phẩm"

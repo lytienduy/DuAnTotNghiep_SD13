@@ -24,6 +24,6 @@ public class ChatLieu {
     @Column(name = "mo_ta")
     private String moTa;
 
-    @Column(name = "trang_thai")
+    @Column(name = "trang_thai", nullable = false)
     private String trangThai;
 }
