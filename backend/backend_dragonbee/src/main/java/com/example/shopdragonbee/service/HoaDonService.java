@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,8 +23,24 @@ public class HoaDonService {
     public List<HoaDonResponseDTO> getAllHoaDons() {
         List<HoaDon> hoaDons = hoaDonRepository.findAll();
         return hoaDons.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
 
-        
+    public Map<String, Integer> laySoLuongHoaDonTrangThaiVaHoaDon(String loaiDon) {
+        Map<String, Integer> countMap = new HashMap<>();
+
+        // Các trạng thái cần đếm
+        String[] trangThais = { "Chờ xác nhận", "Đã xác nhận", "Chờ giao hàng", "Đang vận chuyển", "Đã giao hàng","Đã thanh toán","Chờ thanh toán","Hoàn thành","Đã hủy" };
+        for (String trangThai : trangThais) {
+            int count;
+            if (loaiDon == null) {
+                count = hoaDonRepository.countByTrangThai(trangThai);
+            } else {
+                count = hoaDonRepository.countByTrangThaiAndLoaiDon(trangThai, loaiDon);
+            }
+            countMap.put(trangThai, count);
+        }
+
+        return countMap;
     }
 
 

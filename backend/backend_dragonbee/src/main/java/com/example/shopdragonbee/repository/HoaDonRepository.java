@@ -9,11 +9,9 @@ import java.util.List;
 
 @Repository
 public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpecificationExecutor<HoaDon> {
-    List<HoaDon> findByTrangThai(String trangThai);
-    List<HoaDon> findByLoaiDon(String loaiDon);
+    Integer countByTrangThai(String trangThai);
+    Integer countByTrangThaiAndLoaiDon(String trangThai,String loaiDon);
 
-    List<HoaDon> findByTrangThaiAndLoaiDon(String trangThai, String loaiDon);
 
-//    List<HoaDon> findByTrangThaiAndLoaiDonAndnAndNgayTaoBetween(String trangThai, String loaiDon);
 
 }
