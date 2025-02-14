@@ -2,12 +2,13 @@ package com.example.shopdragonbee.repository;
 
 import com.example.shopdragonbee.entity.HoaDon;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface HoaDonRepository extends JpaRepository<HoaDon, Integer> {
+public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpecificationExecutor<HoaDon> {
     List<HoaDon> findByTrangThai(String trangThai);
     List<HoaDon> findByLoaiDon(String loaiDon);
 
