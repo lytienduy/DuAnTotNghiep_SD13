@@ -31,11 +31,10 @@ public class HoaDonController {
             return hoaDonService.getAllHoaDons();
         }
     }
-
-    @GetMapping("/hoa-don-chi-tiet/{id}")
-    public List<HoaDonResponseDTO> locTheoLoaiDonVaTrangThai(@PathVariable Integer id) {
-
-    }
+//    @GetMapping("/hoa-don-chi-tiet/{id}")
+//    public List<HoaDonResponseDTO> locTheoLoaiDonVaTrangThai(@PathVariable Integer id) {
+//
+//    }
 
     //    @GetMapping("/{ma}")
 //    public ResponseEntity<HoaDon> getHoaDonByMa(@PathVariable String ma) {
