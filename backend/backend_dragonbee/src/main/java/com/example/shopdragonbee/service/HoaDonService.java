@@ -21,7 +21,10 @@ public class HoaDonService {
     public List<HoaDonResponseDTO> getAllHoaDons() {
         List<HoaDon> hoaDons = hoaDonRepository.findAll();
         return hoaDons.stream().map(this::convertToDTO).collect(Collectors.toList());
+
+        
     }
+
 
     public List<HoaDonResponseDTO> locHoaDon(String timKiem, String tuNgay, String denNgay, String loaiDon, String trangThai) {
         List<HoaDon> hoaDons = hoaDonRepository.findAll((root, query, criteriaBuilder) -> {
