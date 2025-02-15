@@ -25,21 +25,26 @@ public class HoaDonService {
         return hoaDons.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public Map<String, Integer> laySoLuongHoaDonTrangThaiVaHoaDon(String loaiDon) {
-        Map<String, Integer> countMap = new HashMap<>();
+    public List<Integer> laySoLuongHoaDonTrangThaiVaHoaDon(String loaiDon) {
+        List<Integer> countMap = new ArrayList<>();
 
         // Các trạng thái cần đếm
-        String[] trangThais = { "Chờ xác nhận", "Đã xác nhận", "Chờ giao hàng", "Đang vận chuyển", "Đã giao hàng","Đã thanh toán","Chờ thanh toán","Hoàn thành","Đã hủy" };
+        String[] trangThais = {"Chờ xác nhận", "Đã xác nhận", "Chờ giao hàng", "Đang vận chuyển", "Đã giao hàng", "Đã thanh toán", "Chờ thanh toán", "Hoàn thành", "Đã hủy"};
+
+        if (loaiDon == null || loaiDon.equalsIgnoreCase("all")) {
+            countMap.add(hoaDonRepository.findAll().size());
+        } else {
+            countMap.add(hoaDonRepository.countByLoaiDon(loaiDon));
+        }
         for (String trangThai : trangThais) {
             int count;
-            if (loaiDon == null) {
+            if (loaiDon == null || loaiDon.equalsIgnoreCase("all")) {
                 count = hoaDonRepository.countByTrangThai(trangThai);
             } else {
                 count = hoaDonRepository.countByTrangThaiAndLoaiDon(trangThai, loaiDon);
             }
-            countMap.put(trangThai, count);
+            countMap.add(count);
         }
-
         return countMap;
     }
 
@@ -53,7 +58,7 @@ public class HoaDonService {
                         criteriaBuilder.like(root.get("ma"), "%" + timKiem + "%"),
                         criteriaBuilder.like(root.get("tenNguoiNhan"), "%" + timKiem + "%"),
                         criteriaBuilder.like(root.get("sdt"), "%" + timKiem + "%")
-                        );
+                );
                 predicates.add(searchPredicate);
             }
 

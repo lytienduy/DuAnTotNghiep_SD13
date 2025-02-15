@@ -10,7 +10,10 @@ import java.util.List;
 @Repository
 public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpecificationExecutor<HoaDon> {
     Integer countByTrangThai(String trangThai);
+    Integer countByLoaiDon(String loaiDon);
     Integer countByTrangThaiAndLoaiDon(String trangThai,String loaiDon);
+
+
 
 
 

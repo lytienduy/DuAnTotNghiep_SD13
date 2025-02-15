@@ -7,10 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/hoa-don")
-@CrossOrigin(origins = "http://localhost:3000") // Cho phép gọi API từ frontend
+@CrossOrigin(origins = "http://localhost:3001") // Cho phép gọi API từ frontend
 public class HoaDonController {
 
     @Autowired
@@ -26,6 +27,14 @@ public class HoaDonController {
 
         List<HoaDonResponseDTO> hoaDons = hoaDonService.locHoaDon(timKiem, tuNgay, denNgay, loaiDon, trangThai);
         return hoaDons;
+    }
+
+    @GetMapping("/count")
+    public List<Integer> getHoaDonCount(
+            @RequestParam(required = false) String loaiDon) {
+
+        List<Integer> countMap = hoaDonService.laySoLuongHoaDonTrangThaiVaHoaDon(loaiDon);
+        return countMap;
     }
 
     @GetMapping
