@@ -58,7 +58,8 @@ const KhachHang = () => {
     }
 
     const statusChangeHandler = (event) => { setStatus(event.target.value); }
-
+    console.log(status)
+    console.log(khachHang)
     const filterKhachHang = khachHang.filter((kh) => (kh.tenKhachHang.includes(key) || kh.sdt.includes(key) || kh.email.includes(key)) && (kh.gioiTinh.includes(gender) || gender === '') && (kh.trangThai.includes(status) || status === ''));
     const showKhachHang = filterKhachHang.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -131,8 +132,8 @@ const KhachHang = () => {
                             onChange={statusChangeHandler}
                         >
                             <MenuItem value={''}>Chọn trạng thái</MenuItem>
-                            <MenuItem value={'Hoạt động'}>Hoạt động</MenuItem>
-                            <MenuItem value={'Tạm ngừng'}>Tạm ngưng</MenuItem>
+                            <MenuItem value={'Hoạt động'}>Hoạt động</MenuItem>
+                            <MenuItem value={'Tạm ngừng'}>Tạm ngừng</MenuItem>
                         </Select>
                     </FormControl>
                     {/* <DownloadTableExcel
@@ -178,7 +179,7 @@ const KhachHang = () => {
                                     <TableCell >{kh.ngaySinh}</TableCell>
                                     <TableCell >{kh.sdt}</TableCell>
                                     <TableCell >{kh.gioiTinh}</TableCell>
-                                    <TableCell >{kh.trangThai === 'Hoạt động' ? <Chip label="Hoạt động" color="success" /> : <Chip label="Tạm ngưng" color="error" />}</TableCell>
+                                    <TableCell >{kh.trangThai.includes('Hoạt động') ? <Chip label="Hoạt động" color="success" /> : <Chip label="Tạm ngừng" color="error" />}</TableCell>
                                     <TableCell onClick={viewDetailHandler.bind(this, kh.ma)}>
                                         <Tooltip title="Xem chi tiết" placement="bottom-start"><IconButton><Visibility style={{ color: 'orange' }} /></IconButton></Tooltip>
                                     </TableCell>
