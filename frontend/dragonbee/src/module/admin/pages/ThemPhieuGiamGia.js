@@ -350,7 +350,7 @@ const ThemPhieuGiamGia = () => {
             >
               {/* Các thành phần form */}
               <TextField
-                label="Mã phiếu giảm giá"
+                label="Mã phiếu giảm giá (Có thể nhập hoặc không)"
                 inputRef={maRef}
                 variant="outlined"
                 size="small"

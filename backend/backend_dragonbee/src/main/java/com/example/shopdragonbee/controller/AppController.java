@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -254,10 +255,19 @@ public class AppController {
     @Transactional
     @PutMapping("/update-phieu-giam-gia/{ma}")
     public ResponseEntity<String> updatePhieuGiamGia(@PathVariable String ma, @RequestBody PhieuGiamGiaRequest request) {
+        // Lấy phiếu giảm giá cũ
         PhieuGiamGia phieuGiamGia = phieuGiamGiaRepository.findByMa(ma)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu giảm giá với mã: " + ma));
 
-        // Kiểm tra kiểu phiếu giảm giá hiện tại
+        // Lưu lại giá trị cũ của phiếu giảm giá trước khi thay đổi
+        String currentTenPhieuGiamGia = phieuGiamGia.getTenPhieuGiamGia();
+        Float currentGiaTriGiam = phieuGiamGia.getGiaTriGiam();
+        String currentLoaiPhieuGiamGia = phieuGiamGia.getLoaiPhieuGiamGia();
+        Float currentSoTienGiamToiDa = phieuGiamGia.getSoTienGiamToiDa();
+        Integer currentSoLuong = phieuGiamGia.getSoLuong();
+        Float currentSoTienToiThieu = phieuGiamGia.getSoTienToiThieu();
+        LocalDateTime currentNgayBatDau = phieuGiamGia.getNgayBatDau();
+        LocalDateTime currentNgayKetThuc = phieuGiamGia.getNgayKetThuc();
         String currentKieuGiamGia = phieuGiamGia.getKieuGiamGia();
 
         // Cập nhật các trường của phiếu giảm giá
@@ -289,19 +299,44 @@ public class AppController {
 
         // Nếu kiểu phiếu giảm giá chuyển từ "Cá nhân" sang "Công khai", cần xóa tất cả khách hàng
         if ("Cá nhân".equalsIgnoreCase(currentKieuGiamGia) && "Công khai".equalsIgnoreCase(request.getKieuGiamGia())) {
+            List<PhieuGiamGiaKhachHang> khachHangList = phieuGiamGiaKhachHangRepository.findByPhieuGiamGia(phieuGiamGia);
+            List<String> emailAddresses = khachHangList.stream()
+                    .map(kh -> kh.getKhachHang().getEmail())
+                    .collect(Collectors.toList());
+
+            // Gửi email thông báo tạm ngừng cho tất cả khách hàng
+            emailService.sendDiscountSuspendedNotification(emailAddresses, phieuGiamGia);
+
+            // Xóa tất cả khách hàng đã liên kết với phiếu giảm giá này
             phieuGiamGiaKhachHangRepository.deleteByPhieuGiamGiaId(phieuGiamGia.getId());
         }
 
-// Nếu kiểu là "Cá nhân", cập nhật khách hàng liên quan
+        // Nếu kiểu là "Cá nhân", cập nhật khách hàng liên quan
         if ("Cá nhân".equalsIgnoreCase(request.getKieuGiamGia())) {
-            // Xoá các khách hàng cũ trước khi thêm mới
-            phieuGiamGiaKhachHangRepository.deleteByPhieuGiamGiaId(phieuGiamGia.getId());
+            List<PhieuGiamGiaKhachHang> oldKhachHangRecords = phieuGiamGiaKhachHangRepository.findByPhieuGiamGia(phieuGiamGia);
+            List<Integer> newKhachHangIds = request.getKhachHangIds();
 
-            // Thêm khách hàng mới
-            List<PhieuGiamGiaKhachHang> khachHangRecords = request.getKhachHangIds().stream()
+            // Tìm khách hàng cần xóa (khách hàng cũ không còn trong danh sách)
+            List<PhieuGiamGiaKhachHang> khachHangToRemove = oldKhachHangRecords.stream()
+                    .filter(record -> !newKhachHangIds.contains(record.getKhachHang().getId()))
+                    .collect(Collectors.toList());
+
+            // Xóa khách hàng bị loại bỏ và gửi email thông báo
+            for (PhieuGiamGiaKhachHang removeRecord : khachHangToRemove) {
+                phieuGiamGiaKhachHangRepository.delete(removeRecord);
+                emailService.sendDiscountSuspendedNotification(
+                        List.of(removeRecord.getKhachHang().getEmail()),
+                        phieuGiamGia
+                );
+            }
+
+            // Thêm khách hàng mới vào danh sách và gửi email thông báo chỉ cho khách hàng mới
+            List<PhieuGiamGiaKhachHang> khachHangRecordsToAdd = newKhachHangIds.stream()
+                    .filter(idKhachHang -> oldKhachHangRecords.stream()
+                            .noneMatch(record -> record.getKhachHang().getId().equals(idKhachHang)))
                     .map(idKhachHang -> PhieuGiamGiaKhachHang.builder()
-                            .khachHang(khachHangPGGRepository.findById(idKhachHang).orElseThrow(() ->
-                                    new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + idKhachHang)))
+                            .khachHang(khachHangPGGRepository.findById(idKhachHang)
+                                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + idKhachHang)))
                             .phieuGiamGia(phieuGiamGia)
                             .trangThai("Còn hạn")
                             .ngayTao(now)
@@ -309,15 +344,42 @@ public class AppController {
                             .build())
                     .collect(Collectors.toList());
 
-            // Lưu danh sách vào bảng `phieu_giam_gia_khach_hang`
-            phieuGiamGiaKhachHangRepository.saveAll(khachHangRecords);
+            // Lưu danh sách khách hàng mới
+            phieuGiamGiaKhachHangRepository.saveAll(khachHangRecordsToAdd);
 
-            // ✅ Cập nhật số lượng phiếu giảm giá bằng số lượng khách hàng
-            phieuGiamGia.setSoLuong(request.getKhachHangIds().size());
+            // Gửi email thông báo phiếu giảm giá cho khách hàng mới (chỉ gửi một lần)
+            for (PhieuGiamGiaKhachHang newRecord : khachHangRecordsToAdd) {
+                emailService.sendDiscountNotification(
+                        List.of(newRecord.getKhachHang().getEmail()),
+                        phieuGiamGia
+                );
+            }
+
+            // Cập nhật số lượng phiếu giảm giá bằng số lượng khách hàng
+            phieuGiamGia.setSoLuong(newKhachHangIds.size());
         }
 
-// Lưu lại thay đổi
-        phieuGiamGiaRepository.save(phieuGiamGia);
+        // Kiểm tra sự thay đổi trong phiếu giảm giá và gửi email cho khách hàng cũ nếu có sự thay đổi
+        boolean hasChange = !Objects.equals(currentTenPhieuGiamGia, phieuGiamGia.getTenPhieuGiamGia()) ||
+                !Objects.equals(currentGiaTriGiam, phieuGiamGia.getGiaTriGiam()) ||
+                !Objects.equals(currentLoaiPhieuGiamGia, phieuGiamGia.getLoaiPhieuGiamGia()) ||
+                !Objects.equals(currentSoTienGiamToiDa, phieuGiamGia.getSoTienGiamToiDa()) ||
+                !Objects.equals(currentSoLuong, phieuGiamGia.getSoLuong()) ||
+                !Objects.equals(currentSoTienToiThieu, phieuGiamGia.getSoTienToiThieu()) ||
+                !Objects.equals(currentNgayBatDau, phieuGiamGia.getNgayBatDau()) ||
+                !Objects.equals(currentNgayKetThuc, phieuGiamGia.getNgayKetThuc()) ||
+                !Objects.equals(currentKieuGiamGia, phieuGiamGia.getKieuGiamGia());
+
+        if (hasChange) {
+            // Gửi email cho tất cả khách hàng cũ nếu có sự thay đổi trong phiếu giảm giá
+            List<PhieuGiamGiaKhachHang> currentKhachHangs = phieuGiamGiaKhachHangRepository.findByPhieuGiamGia(phieuGiamGia);
+            for (PhieuGiamGiaKhachHang khachHang : currentKhachHangs) {
+                emailService.sendDiscountNotification(
+                        List.of(khachHang.getKhachHang().getEmail()),
+                        phieuGiamGia
+                );
+            }
+        }
 
         return ResponseEntity.ok("Cập nhật phiếu giảm giá thành công!");
     }
