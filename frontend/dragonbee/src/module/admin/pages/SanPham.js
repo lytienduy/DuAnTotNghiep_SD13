@@ -44,17 +44,18 @@ const SanPham = () => {
   // Hàm gọi API với debounce
   const fetchData = useCallback(() => {
     setLoading(true);
-
+  
     axios
       .get(`http://localhost:8080/api/sanpham/search`, {
         params: {
-          page: page - 1, // Truyền giá trị page hiện tại (Spring Boot sử dụng 0-based index)
-          size: size, // Sử dụng giá trị size động
+          page: page - 1,
+          size: size,
           tenSanPham: search.trim() || null,
           trangThai: trangThai || null,
         },
       })
       .then((response) => {
+        console.log(response.data); // Kiểm tra dữ liệu trả về
         setSanPhams(response.data.content);
         setTotalPages(response.data.totalPages);
         setLoading(false);
@@ -63,7 +64,8 @@ const SanPham = () => {
         console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
         setLoading(false);
       });
-  }, [page, search, trangThai, size]); // Đảm bảo fetch lại khi size thay đổi
+  }, [page, search, trangThai, size]);
+  
 
   // Gọi API khi search, trangThai hoặc page thay đổi
   useEffect(() => {
@@ -176,23 +178,31 @@ const SanPham = () => {
   // chuyển đổi trạng thái switch
   const toggleTrangThai = async (id) => {
     try {
+      // Gọi API để cập nhật trạng thái
       const response = await axios.put(
         `http://localhost:8080/api/sanpham/${id}/toggle-trang-thai`
       );
-
+  
       console.log("Phản hồi API:", response.data);
-
+  
+      // Cập nhật trực tiếp trạng thái trong sanPhams state
+      setSanPhams((prevSanPhams) =>
+        prevSanPhams.map((sp) =>
+          sp.id === id ? { ...sp, trangThai: sp.trangThai === "Đang bán" ? "Ngừng bán" : "Đang bán" } : sp
+        )
+      );
+  
       setSnackbarMessage("Cập nhật trạng thái thành công!");
       setOpenSnackbar(true);
-      fetchData(); // Tải lại danh sách sản phẩm
     } catch (error) {
-      console.error(
-        "Lỗi khi chuyển trạng thái:",
-        error.response?.data || error
-      );
+      console.error("Lỗi khi chuyển trạng thái:", error);
       alert("Có lỗi xảy ra khi cập nhật trạng thái sản phẩm!");
     }
   };
+  
+  
+  
+  
 
   return (
     <Container maxWidth="lg">
@@ -202,7 +212,7 @@ const SanPham = () => {
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant="h4">Danh Sách Sản Phẩm</Typography>
+        <Typography variant="h4">Quản Lý Sản Phẩm</Typography>
 
         {/* Nút tạo mới di chuyển sang góc phải */}
         <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
@@ -212,16 +222,16 @@ const SanPham = () => {
           <Button
             variant="outlined" // Kiểu nút với viền
             sx={{
-              color: "lightblue", // Màu chữ xanh nhạt
+              color: "primary", // Màu chữ xanh nhạt
               backgroundColor: "white", // Màu nền trắng
               borderColor: "lightblue", // Màu viền xanh nhạt
               "&:hover": {
                 backgroundColor: "lightblue", // Màu nền khi hover
                 color: "white", // Màu chữ khi hover
-                borderColor: "lightblue", // Màu viền khi hover
+                borderColor: "primary", // Màu viền khi hover
               },
             }}
-            startIcon={<Add sx={{ color: "lightblue" }} />} // Màu của biểu tượng dấu "+"
+            startIcon={<Add sx={{ color: "primary" }} />} // Màu của biểu tượng dấu "+"
             onClick={() => navigate("/sanpham/addProduct")}
           >
             Tạo Mới
@@ -254,8 +264,8 @@ const SanPham = () => {
                 displayEmpty
               >
                 <MenuItem value="">Tất cả</MenuItem>
-                <MenuItem value="Còn hàng">Còn hàng</MenuItem>
-                <MenuItem value="Hết hàng">Hết hàng</MenuItem>
+                <MenuItem value="Đang bán">Đang bán</MenuItem>
+                <MenuItem value="Ngừng bán">Ngừng bán</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -307,7 +317,7 @@ const SanPham = () => {
                       </TableCell>
                       <TableCell
                         sx={{
-                          color: sp.trangThai === "Còn hàng" ? "green" : "red",
+                          color: sp.trangThai === "Đang bán" ? "green" : "red",
                         }}
                       >
                         {sp.trangThai ?? "Không xác định"}
@@ -321,7 +331,7 @@ const SanPham = () => {
                           <Visibility />
                         </Button>
                         <Switch
-                          checked={sp.trangThai === "Còn hàng"}
+                          checked={sp.trangThai === "Đang bán"} // Kiểm tra nếu trạng thái là "Đang bán"
                           onChange={() => toggleTrangThai(sp.id)}
                           color="success"
                         />

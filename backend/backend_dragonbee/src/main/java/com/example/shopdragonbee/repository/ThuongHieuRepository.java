@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.repository;
 
+import com.example.shopdragonbee.dto.ThuongHieuDTO;
 import com.example.shopdragonbee.entity.ThuongHieu;
 import com.example.shopdragonbee.respone.ThuongHieuRespone;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,10 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface ThuongHieuRepository extends JpaRepository<ThuongHieu,Integer> {
+public interface ThuongHieuRepository extends JpaRepository<ThuongHieu, Integer> {
 
     @Query("""
-        select new com.example.shopdragonbee.respone.ThuongHieuRespone(
+        select new com.example.shopdragonbee.dto.ThuongHieuDTO(
             th.id,
             th.ma,
             th.tenThuongHieu,
@@ -18,6 +19,13 @@ public interface ThuongHieuRepository extends JpaRepository<ThuongHieu,Integer> 
             th.trangThai
         )
         from ThuongHieu th
-""")
-    public List<ThuongHieuRespone> getAll();
+    """)
+    List<ThuongHieuDTO> getAll();
+
+    // Kiểm tra xem tên thương hiệu có tồn tại trong DB không
+    boolean existsByTenThuongHieu(String tenThuongHieu);
+
+    // Lấy mã lớn nhất hiện tại trong DB
+    @Query("SELECT MAX(CAST(SUBSTRING(th.ma, 3) AS int)) FROM ThuongHieu th")
+    Integer findMaxMa();
 }

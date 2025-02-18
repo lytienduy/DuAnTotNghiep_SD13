@@ -1,13 +1,9 @@
 package com.example.shopdragonbee.controller;
 
-import com.example.shopdragonbee.repository.DanhMucRepository;
-import com.example.shopdragonbee.repository.ThuongHieuRepository;
-import com.example.shopdragonbee.respone.DanhMucRespone;
-import com.example.shopdragonbee.respone.ThuongHieuRespone;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.shopdragonbee.service.ThuongHieuService;
+import com.example.shopdragonbee.dto.ThuongHieuDTO;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,15 +12,21 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 public class ThuongHieuController {
 
-    private final ThuongHieuRepository thuongHieuRepository;
+    private final ThuongHieuService thuongHieuService;
 
-    public ThuongHieuController(ThuongHieuRepository thuongHieuRepository) {
-        this.thuongHieuRepository = thuongHieuRepository;
+    public ThuongHieuController(ThuongHieuService thuongHieuService) {
+        this.thuongHieuService = thuongHieuService;
     }
 
-    // API lấy danh sách sản phẩm
+    // API lấy danh sách thương hiệu
     @GetMapping
-    public List<ThuongHieuRespone> getAllThuongHieu() {
-        return thuongHieuRepository.getAll();
+    public List<ThuongHieuDTO> getAllThuongHieu() {
+        return thuongHieuService.getAllThuongHieu();
+    }
+
+    // API thêm thương hiệu
+    @PostMapping("/add")
+    public ResponseEntity<?> addThuongHieu(@RequestBody ThuongHieuDTO thuongHieuDTO) {
+        return thuongHieuService.addThuongHieu(thuongHieuDTO.getTenThuongHieu(), thuongHieuDTO.getMoTa());
     }
 }

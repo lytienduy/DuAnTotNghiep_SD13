@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SizeRepository extends JpaRepository<Size,Integer> {
 
@@ -20,4 +21,5 @@ public interface SizeRepository extends JpaRepository<Size,Integer> {
         from Size s
 """)
     public List<SizeRespone> getAll();
+    Optional<Size> findByTenSize(String tenSize);
 }

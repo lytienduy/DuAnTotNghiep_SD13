@@ -1,37 +1,27 @@
 package com.example.shopdragonbee.controller;
 
 
-import com.example.shopdragonbee.entity.ChatLieu;
-import com.example.shopdragonbee.entity.DanhMuc;
-import com.example.shopdragonbee.entity.MauSac;
+import com.example.shopdragonbee.dto.SanPhamChiTietDTO;
+import com.example.shopdragonbee.dto.SanPhamDTO;
 import com.example.shopdragonbee.entity.SanPham;
 import com.example.shopdragonbee.entity.SanPhamChiTiet;
-import com.example.shopdragonbee.entity.Size;
-import com.example.shopdragonbee.entity.ThuongHieu;
 import com.example.shopdragonbee.repository.ChatLieuRepository;
 import com.example.shopdragonbee.repository.DanhMucRepository;
 import com.example.shopdragonbee.repository.MauSacRepository;
 import com.example.shopdragonbee.repository.SizeRepository;
 import com.example.shopdragonbee.repository.ThuongHieuRepository;
-import com.example.shopdragonbee.respone.SanPhamChiTietRespone;
 import com.example.shopdragonbee.respone.SanPhamRespone;
-import com.example.shopdragonbee.repository.SanPhamChiTietRepository;
-import com.example.shopdragonbee.repository.SanPhamRepository;
-import jakarta.validation.Valid;
+import com.example.shopdragonbee.service.SanPhamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -39,8 +29,14 @@ import java.util.Optional;
 
 public class SanPhamController {
 
-    private final SanPhamRepository sanPhamRepository;
-    private final SanPhamChiTietRepository sanPhamChiTietRepository;
+    private final SanPhamService sanPhamService;
+    @Autowired
+    public SanPhamController(SanPhamService sanPhamService) {
+        this.sanPhamService = sanPhamService;
+    }
+
+//    private final SanPhamRepository sanPhamRepository;
+//    private final SanPhamChiTietRepository sanPhamChiTietRepository;
     @Autowired
     private MauSacRepository mauSacRepository;
 
@@ -56,29 +52,23 @@ public class SanPhamController {
     @Autowired
     private ChatLieuRepository chatLieuRepository;
 
-    @Autowired
-    public SanPhamController(SanPhamRepository sanPhamRepository, SanPhamChiTietRepository sanPhamChiTietRepository) {
-        this.sanPhamRepository = sanPhamRepository;
-        this.sanPhamChiTietRepository = sanPhamChiTietRepository;
-    }
-
-    @GetMapping
+    // API lấy tất cả sản phẩm (không phân trang)
+    @GetMapping("/all")
     public ResponseEntity<List<SanPhamRespone>> getAllSanPham() {
-        List<SanPhamRespone> sanPhams = sanPhamRepository.getAll();
+        List<SanPhamRespone> sanPhams = sanPhamService.getAllSanPham();
         return ResponseEntity.ok(sanPhams);
     }
 
-    // API lấy danh sách sản phẩm có phân trang
+    // API lấy tất cả sản phẩm có phân trang
     @GetMapping("/paged")
     public ResponseEntity<Page<SanPhamRespone>> getAllSanPhamPaged(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<SanPhamRespone> sanPhams = sanPhamRepository.getAllPaged(pageable);
+        Page<SanPhamRespone> sanPhams = sanPhamService.getAllSanPhamPaged(pageable);
         return ResponseEntity.ok(sanPhams);
     }
 
-    // API lấy chi tiết sản phẩm
     @GetMapping("/{id}/chi-tiet")
     public ResponseEntity<?> getSanPhamChiTietBySanPhamId(
             @PathVariable Integer id,
@@ -86,148 +76,27 @@ public class SanPhamController {
             @RequestParam(required = false) Integer size) {
 
         if (page != null && size != null) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<SanPhamChiTietRespone> chiTietPage = sanPhamChiTietRepository.getChiTietPaged(pageable);
-            return ResponseEntity.ok(chiTietPage);
+            // Lấy chi tiết sản phẩm có phân trang
+            return ResponseEntity.ok(sanPhamService.getChiTietSanPhamPaged(page, size));
         } else {
-            List<SanPhamChiTietRespone> chiTietList = sanPhamChiTietRepository.findBySanPhamId(id);
-            return ResponseEntity.ok(chiTietList);
+            // Lấy chi tiết sản phẩm không phân trang
+            return ResponseEntity.ok(sanPhamService.getChiTietSanPhamById(id));
         }
     }
 
-
-    @Transactional
-    @PostMapping("/add")
-    public ResponseEntity<?> addSanPham(@Valid @RequestBody SanPham sanPhamRequest) {
+    // add sản phẩm
+    @PostMapping("/add/sanpham")
+    public ResponseEntity<?> addSanPham(@RequestBody SanPham sanPham) {
         try {
-            System.out.println("Dữ liệu nhận từ frontend: " + sanPhamRequest);
-
-            // Lấy mã sản phẩm lớn nhất từ database và tạo mã mới
-            String lastMaSanPham = sanPhamRepository.findLastMaSanPham(); // Lấy mã lớn nhất hiện có
-            String newMaSanPham = generateNewMaSanPham(lastMaSanPham);
-
-            // Kiểm tra nếu không có danh sách sản phẩm chi tiết
-            if (sanPhamRequest.getSanPhamChiTietList() == null || sanPhamRequest.getSanPhamChiTietList().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Danh sách sản phẩm chi tiết không được để trống!");
-            }
-
-            // Tạo sản phẩm chính (SanPham)
-            SanPham sanPham = SanPham.builder()
-                    .ma(newMaSanPham)
-                    .tenSanPham(sanPhamRequest.getTenSanPham())
-                    .moTa(sanPhamRequest.getMoTa())
-                    .trangThai(sanPhamRequest.getTrangThai())
-                    .ngayTao(LocalDateTime.now())
-                    .nguoiTao(sanPhamRequest.getNguoiTao())
-                    .build();
-
-            sanPham = sanPhamRepository.save(sanPham); // Lưu sản phẩm chính
-
-            // Thêm danh sách sản phẩm chi tiết
-            List<SanPhamChiTiet> chiTietList = new ArrayList<>();
-            for (SanPhamChiTiet chiTiet : sanPhamRequest.getSanPhamChiTietList()) {
-                // Kiểm tra dữ liệu chi tiết sản phẩm
-                if (chiTiet.getMauSac() == null || chiTiet.getSize() == null) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Màu sắc và kích cỡ không được để trống!");
-                }
-
-                // Kiểm tra màu sắc và kích cỡ hợp lệ
-                MauSac mauSac = mauSacRepository.findById(chiTiet.getMauSac().getId()).orElse(null);
-                Size size = sizeRepository.findById(chiTiet.getSize().getId()).orElse(null);
-
-                if (mauSac == null || size == null) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Màu sắc hoặc kích cỡ không hợp lệ!");
-                }
-
-                // Tạo chi tiết sản phẩm
-                SanPhamChiTiet sanPhamChiTiet = SanPhamChiTiet.builder()
-                        .ma(newMaSanPham + "-" + mauSac.getId() + "-" + size.getId()) // Tạo mã chi tiết sản phẩm
-                        .soLuong(chiTiet.getSoLuong())
-                        .gia(chiTiet.getGia())
-                        .moTa(chiTiet.getMoTa())
-                        .trangThai(chiTiet.getTrangThai())
-                        .sanPham(sanPham)
-                        .mauSac(mauSac)
-                        .size(size)
-                        .ngayTao(LocalDateTime.now())
-                        .nguoiTao(chiTiet.getNguoiTao())
-                        .build();
-
-                chiTietList.add(sanPhamChiTiet);
-            }
-
-            // Lưu danh sách sản phẩm chi tiết
-            sanPhamChiTietRepository.saveAll(chiTietList);
-
-            return ResponseEntity.ok("Thêm sản phẩm thành công!");
+            SanPham newSanPham = sanPhamService.addSanPham(sanPham);
+            return ResponseEntity.ok(newSanPham);
         } catch (Exception e) {
-            System.err.println("Lỗi khi thêm sản phẩm: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi thêm sản phẩm: " + e.getMessage());
-        }
-
-
-    }
-    private String generateNewMaSanPham(String lastMa) {
-        // Kiểm tra nếu mã sản phẩm là null hoặc rỗng
-        if (lastMa == null || lastMa.isEmpty()) {
-            return "SP001"; // Mã sản phẩm bắt đầu từ "SP001" nếu không có mã trước
-        }
-
-        // Kiểm tra định dạng mã sản phẩm, giả sử mã có định dạng "SP001", "SP002", ...
-        if (!lastMa.matches("SP\\d{3}")) {
-            throw new IllegalArgumentException("Mã sản phẩm không hợp lệ: " + lastMa);
-        }
-
-        // Lấy phần số từ mã sản phẩm (phần sau chữ "SP")
-        String numericPart = lastMa.replaceAll("\\D+", ""); // Lấy phần số từ mã cuối cùng
-        int newNumber = Integer.parseInt(numericPart) + 1; // Tăng số lên 1
-        return String.format("SP%03d", newNumber); // Định dạng lại mã theo dạng "SP001", "SP002", ...
-    }
-
-
-    // AI sửa sản phẩm
-    @Transactional
-    @PutMapping("/chi-tiet/update-multiple")
-    public ResponseEntity<?> updateMultipleSanPhamChiTiet(@RequestBody List<SanPhamChiTiet> sanPhamChiTietList) {
-        try {
-            // Tạo danh sách để lưu các sản phẩm chi tiết đã cập nhật
-            List<SanPhamChiTiet> updatedSanPhamChiTietList = new ArrayList<>();
-
-            // Duyệt qua từng sản phẩm chi tiết trong danh sách
-            for (SanPhamChiTiet sanPhamChiTiet : sanPhamChiTietList) {
-                // Lấy sản phẩm chi tiết hiện tại từ DB
-                SanPhamChiTiet existingSanPhamChiTiet = sanPhamChiTietRepository.findById(sanPhamChiTiet.getId()).orElseThrow(() -> new RuntimeException("Sản phẩm chi tiết không tồn tại"));
-
-                // Cập nhật các trường thông tin
-                existingSanPhamChiTiet.setMa(sanPhamChiTiet.getMa());
-                existingSanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong());
-                existingSanPhamChiTiet.setMoTa(sanPhamChiTiet.getMoTa());
-                existingSanPhamChiTiet.setTrangThai(sanPhamChiTiet.getTrangThai());
-                existingSanPhamChiTiet.setGia(sanPhamChiTiet.getGia());
-                existingSanPhamChiTiet.setMauSac(mauSacRepository.findById(sanPhamChiTiet.getMauSac().getId()).orElse(null));
-                existingSanPhamChiTiet.setChatLieu(chatLieuRepository.findById(sanPhamChiTiet.getChatLieu().getId()).orElse(null));
-                existingSanPhamChiTiet.setDanhMuc(danhMucRepository.findById(sanPhamChiTiet.getDanhMuc().getId()).orElse(null));
-                existingSanPhamChiTiet.setSize(sizeRepository.findById(sanPhamChiTiet.getSize().getId()).orElse(null));
-                existingSanPhamChiTiet.setThuongHieu(thuongHieuRepository.findById(sanPhamChiTiet.getThuongHieu().getId()).orElse(null));
-                existingSanPhamChiTiet.setKieuDang(sanPhamChiTiet.getKieuDang());
-                existingSanPhamChiTiet.setKieuDaiQuan(sanPhamChiTiet.getKieuDaiQuan());
-                existingSanPhamChiTiet.setXuatXu(sanPhamChiTiet.getXuatXu());
-                existingSanPhamChiTiet.setPhongCach(sanPhamChiTiet.getPhongCach());
-                existingSanPhamChiTiet.setNguoiSua(sanPhamChiTiet.getNguoiSua());
-                existingSanPhamChiTiet.setNgaySua(LocalDateTime.now());
-
-                // Lưu lại sản phẩm chi tiết đã cập nhật
-                updatedSanPhamChiTietList.add(sanPhamChiTietRepository.save(existingSanPhamChiTiet));
-            }
-
-            // Trả về danh sách các sản phẩm chi tiết đã sửa
-            return ResponseEntity.ok(updatedSanPhamChiTietList);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi cập nhật: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // tìm kiếm và bộ lọc
+// api tìm kiếm và bộ lọc
+
     @GetMapping("/search")
     public ResponseEntity<Page<SanPhamRespone>> searchSanPham(
             @RequestParam(required = false) String tenSanPham,
@@ -236,30 +105,33 @@ public class SanPhamController {
             @RequestParam(defaultValue = "5") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<SanPhamRespone> result = sanPhamRepository.searchSanPham(tenSanPham, trangThai, pageable);
+        Page<SanPhamRespone> result = sanPhamService.searchSanPham(tenSanPham, trangThai, pageable);
 
         return ResponseEntity.ok(result);
     }
-// Ai swtich
-@PutMapping("/{id}/toggle-trang-thai")
-public ResponseEntity<?> toggleProductStatus(@PathVariable Integer id) {
-    System.out.println("Gọi API chuyển trạng thái cho sản phẩm ID: " + id);
+    @PutMapping("/{id}/sua-sp")
+    public ResponseEntity<SanPhamChiTiet> updateSanPhamChiTiet(@PathVariable Integer id,
+                                                               @RequestBody SanPhamChiTietDTO sanPhamChiTietDTO) {
+        SanPhamChiTiet updatedSanPhamChiTiet = sanPhamService.updateSanPhamChiTiet(id, sanPhamChiTietDTO);
 
-    Optional<SanPham> optionalSanPham = sanPhamRepository.findById(id);
-    if (optionalSanPham.isPresent()) {
-        SanPham sanPham = optionalSanPham.get();
-        String oldStatus = sanPham.getTrangThai();
-        String newStatus = oldStatus.equals("Còn hàng") ? "Hết hàng" : "Còn hàng";
-
-        sanPham.setTrangThai(newStatus);
-        sanPhamRepository.save(sanPham);
-
-        System.out.println("Trạng thái đã chuyển từ " + oldStatus + " -> " + newStatus);
-        return ResponseEntity.ok("Trạng thái đã được cập nhật.");
+        if (updatedSanPhamChiTiet != null) {
+            return ResponseEntity.ok(updatedSanPhamChiTiet);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    System.out.println("Không tìm thấy sản phẩm với ID: " + id);
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy sản phẩm.");
+    @PutMapping("/{id}/toggle-trang-thai")
+    public ResponseEntity<?> toggleProductStatus(@PathVariable Integer id) {
+        String message = sanPhamService.toggleProductStatus(id);
+        if (message.startsWith("Trạng thái")) {
+            return ResponseEntity.ok(message);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+        }
+    }
+
+
 }
 
 
@@ -269,4 +141,3 @@ public ResponseEntity<?> toggleProductStatus(@PathVariable Integer id) {
 
 
 
-}

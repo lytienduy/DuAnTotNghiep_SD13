@@ -1,14 +1,8 @@
 package com.example.shopdragonbee.controller;
 
-import com.example.shopdragonbee.repository.KieuDangRepository;
-import com.example.shopdragonbee.repository.ThuongHieuRepository;
-import com.example.shopdragonbee.respone.KieuDaiQuanRespone;
-import com.example.shopdragonbee.respone.KieuDangRespone;
-import com.example.shopdragonbee.respone.ThuongHieuRespone;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.shopdragonbee.dto.KieuDangDTO;
+import com.example.shopdragonbee.service.KieuDangService;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,15 +11,21 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 public class KieuDangController {
 
-    private final KieuDangRepository kieuDangRepository;
+    private final KieuDangService kieuDangService;
 
-    public KieuDangController(KieuDangRepository kieuDangRepository) {
-        this.kieuDangRepository = kieuDangRepository;
+    public KieuDangController(KieuDangService kieuDangService) {
+        this.kieuDangService = kieuDangService;
     }
 
-    // API lấy danh sách sản phẩm
+    // API lấy danh sách kiểu dáng
     @GetMapping
-    public List<KieuDangRespone> getAllKieuDang() {
-        return kieuDangRepository.getAll();
+    public List<KieuDangDTO> getAllKieuDang() {
+        return kieuDangService.getAllKieuDang();
+    }
+
+    // API thêm kiểu dáng
+    @PostMapping("/add")
+    public String addKieuDang(@RequestBody KieuDangDTO kieuDangDTO) {
+        return kieuDangService.addKieuDang(kieuDangDTO);
     }
 }

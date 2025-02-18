@@ -51,6 +51,9 @@ const SanPhamChiTiet = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+   const [selectedItems, setSelectedItems] = useState([]); // Dùng để lưu trữ các sản phẩm được chọn
+  const [newQuantity, setNewQuantity] = useState(""); // Lưu trữ giá trị số lượng nhập vào
+  const [newPrice, setNewPrice] = useState(""); // Lưu trữ giá trị giá nhập vào
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -61,7 +64,6 @@ const SanPhamChiTiet = () => {
             params: showAllDetails ? { page: page - 1, size: itemsPerPage } : {},
           }
         );
-
         if (showAllDetails) {
           setChiTietList(response.data.content || []);
           setTotalPages(response.data.totalPages || 0);
@@ -76,7 +78,6 @@ const SanPhamChiTiet = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [id, showAllDetails, page, itemsPerPage]);
   
@@ -84,7 +85,11 @@ const SanPhamChiTiet = () => {
   const handleShowAllToggle = () => {
     setShowAllDetails(!showAllDetails);
     setPage(1);
-    setSnackbarMessage(!showAllDetails ? "Đang hiển thị toàn bộ sản phẩm chi tiết." : "Đã ẩn sản phẩm chi tiết.");
+    setSnackbarMessage(
+      !showAllDetails
+        ? "Đang hiển thị toàn bộ sản phẩm chi tiết."
+        : "Đã ẩn sản phẩm chi tiết."
+    );
     setOpenSnackbar(true);
   };
 
@@ -95,9 +100,38 @@ const SanPhamChiTiet = () => {
   const handlePriceChange = (event, newValue) => {
     setFilters({ ...filters, priceRange: newValue });
   };
+  // Hàm xử lý thay đổi số lượng và giá
+  const handleUpdateDetails = async () => {
+    const updatedItems = selectedItems.map((item) => ({
+      id: item.id,
+      soLuong: newQuantity || item.soLuong, // Nếu không có số lượng mới, giữ nguyên
+      gia: newPrice || item.gia, // Nếu không có giá mới, giữ nguyên
+    }));
 
+    try {
+      const response = await axios.put(
+        `http://localhost:8080/api/sanpham/${id}/chi-tiet/sua`,
+        updatedItems
+      );
+      setSnackbarMessage("Cập nhật sản phẩm chi tiết thành công!");
+      setOpenSnackbar(true);
+      setSelectedItems([]); // Reset selected items after update
+    } catch (error) {
+      console.error("Lỗi khi cập nhật sản phẩm chi tiết:", error);
+      setSnackbarMessage("Lỗi khi cập nhật sản phẩm chi tiết!");
+      setOpenSnackbar(true);
+    }
+  };
+
+  const handleCheckboxChange = (itemId) => {
+    setSelectedItems((prevSelected) =>
+      prevSelected.includes(itemId)
+        ? prevSelected.filter((id) => id !== itemId)
+        : [...prevSelected, itemId]
+    );
+  };
   // Kiểm tra chiTietList có phải là mảng và lọc dữ liệu hợp lý
-  const filteredData = (Array.isArray(chiTietList) ? chiTietList : []).filter(
+  const filteredData = chiTietList.filter(
     (item) =>
       item.tenSanPham.toLowerCase().includes(filters.search.toLowerCase()) &&
       (filters.trangThai === "" || item.trangThai === filters.trangThai) &&
@@ -109,12 +143,10 @@ const SanPhamChiTiet = () => {
       (filters.mauSac === "" || item.mauSac === filters.mauSac) &&
       (filters.size === "" || item.size === filters.size) &&
       (filters.kieuDang === "" || item.kieuDang === filters.kieuDang) &&
-      (filters.kieuDaiQuan === "" ||
-        item.kieuDaiQuan === filters.kieuDaiQuan) &&
+      (filters.kieuDaiQuan === "" || item.kieuDaiQuan === filters.kieuDaiQuan) &&
       item.gia >= filters.priceRange[0] &&
       item.gia <= filters.priceRange[1]
   );
-
   const fieldLabels = {
     thuongHieu: "Thương Hiệu",
     danhMuc: "Danh Mục",
@@ -127,7 +159,7 @@ const SanPhamChiTiet = () => {
     kieuDaiQuan: "Kiểu Đai Quần",
   };
 
-  // thông báo hiển thị dánh sách sản phâm chi tiết
+
 
   return (
     <Container maxWidth="lg">
@@ -139,8 +171,8 @@ const SanPhamChiTiet = () => {
       >
         <Typography variant="h4">Chi Tiết Sản Phẩm</Typography>
         <Grid>
-          <Button variant="contained" color="primary">
-            Sửa
+          <Button variant="contained" color="primary" onClick={handleUpdateDetails}>
+            Cập Nhật Sản Phẩm
           </Button>
         </Grid>
       </Grid>
@@ -228,6 +260,7 @@ const SanPhamChiTiet = () => {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell></TableCell>
                 <TableCell>
                   <strong>STT</strong>
                 </TableCell>
@@ -285,6 +318,13 @@ const SanPhamChiTiet = () => {
               ) : (
                 filteredData.map((item, index) => (
                   <TableRow key={item.id}>
+                      <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.includes(item.id)}
+                        onChange={() => handleCheckboxChange(item.id)}
+                      />
+                    </TableCell>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{item.ma}</TableCell>
                     <TableCell>{item.tenSanPham}</TableCell>

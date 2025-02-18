@@ -1,16 +1,17 @@
 package com.example.shopdragonbee.repository;
 
+import com.example.shopdragonbee.dto.KieuDangDTO;
 import com.example.shopdragonbee.entity.KieuDang;
-import com.example.shopdragonbee.respone.KieuDangRespone;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface KieuDangRepository extends JpaRepository<KieuDang,Integer> {
+public interface KieuDangRepository extends JpaRepository<KieuDang, Integer> {
 
     @Query("""
-    select new com.example.shopdragonbee.respone.KieuDangRespone(
+    select new com.example.shopdragonbee.dto.KieuDangDTO(
         kd.id,
         kd.ma,
         kd.tenKieuDang,
@@ -18,6 +19,9 @@ public interface KieuDangRepository extends JpaRepository<KieuDang,Integer> {
         kd.trangThai
     )
     from KieuDang kd
-""")
-    public List<KieuDangRespone> getAll();
+    """)
+    public List<KieuDangDTO> getAll();
+
+    // Tìm kiểu dáng theo tên
+    Optional<KieuDang> findByTenKieuDang(String tenKieuDang);
 }

@@ -1,23 +1,20 @@
 package com.example.shopdragonbee.repository;
 
 import com.example.shopdragonbee.entity.PhongCach;
-import com.example.shopdragonbee.respone.PhongCachRespone;
+import com.example.shopdragonbee.dto.PhongCachDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface PhongCachRepository extends JpaRepository<PhongCach,Integer> {
+public interface PhongCachRepository extends JpaRepository<PhongCach, Integer> {
 
-    @Query("""
-        select new com.example.shopdragonbee.respone.PhongCachRespone(
-            pc.id,
-            pc.ma,
-            pc.tenPhongCach,
-            pc.moTa,
-            pc.trangThai
-        )
-        from PhongCach  pc
-""")
-    public List<PhongCachRespone> getAll();
+    @Query("SELECT new com.example.shopdragonbee.dto.PhongCachDTO(pc.id, pc.ma, pc.tenPhongCach, pc.moTa, pc.trangThai) FROM PhongCach pc")
+    List<PhongCachDTO> getAll();
+
+    @Query("SELECT MAX(pc.ma) FROM PhongCach pc")
+    Optional<String> findLastCode();
+
+    boolean existsByTenPhongCach(String tenPhongCach);
 }

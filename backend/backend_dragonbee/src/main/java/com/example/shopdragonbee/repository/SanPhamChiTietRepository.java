@@ -67,4 +67,6 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet,I
             + "LEFT JOIN spct.xuatXu xx "
             + "LEFT JOIN spct.phongCach pc ")
     Page<SanPhamChiTietRespone> getChiTietPaged(Pageable pageable);
+    @Query("SELECT COALESCE(MAX(spct.id), 0) FROM SanPhamChiTiet spct")
+    Integer getMaxId();
 }

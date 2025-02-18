@@ -9,6 +9,7 @@ import com.example.shopdragonbee.entity.SanPham;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
 
@@ -64,7 +65,9 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
             Pageable pageable
     );
 
-    @Query("SELECT s.ma FROM SanPham s ORDER BY s.ma DESC LIMIT 1")
+    @Query("SELECT MAX(s.ma) FROM SanPham s")
     String findLastMaSanPham();
+
+    Optional<SanPham> findByTenSanPham(String tenSanPham);
 
 }

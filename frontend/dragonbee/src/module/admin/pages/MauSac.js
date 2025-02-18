@@ -78,7 +78,7 @@ const MauSac = () => {
               {mauSacList.map((mauSac, index) => (
                 <TableRow key={mauSac.id}>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{mauSac.tenMau || "Chưa có tên"}</TableCell> {/* Sửa đúng trường dữ liệu */}
+                  <TableCell>{mauSac.tenMauSac || "Chưa có tên"}</TableCell> {/* Sửa đúng trường dữ liệu */}
                   <TableCell>{mauSac.moTa || "Không có mô tả"}</TableCell>
                   <TableCell sx={{ color: mauSac.trangThai === "Hoạt động" ? "green" : "red" }}>
                     {mauSac.trangThai === "Hoạt động" ? "Hoạt động" : "Ngưng hoạt động"}

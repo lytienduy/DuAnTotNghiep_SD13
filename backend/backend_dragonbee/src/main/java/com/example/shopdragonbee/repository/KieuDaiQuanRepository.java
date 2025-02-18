@@ -1,17 +1,20 @@
 package com.example.shopdragonbee.repository;
 
+import com.example.shopdragonbee.dto.KieuDaiQuanDTO;
 import com.example.shopdragonbee.entity.KieuDaiQuan;
-import com.example.shopdragonbee.respone.DanhMucRespone;
-import com.example.shopdragonbee.respone.KieuDaiQuanRespone;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface KieuDaiQuanRepository extends JpaRepository<KieuDaiQuan,Integer> {
+@Repository
+public interface KieuDaiQuanRepository extends JpaRepository<KieuDaiQuan, Integer> {
 
+    // Query lấy tất cả kiểu đai quần dưới dạng DTO
     @Query("""
-        select new com.example.shopdragonbee.respone.KieuDaiQuanRespone(
+        select new com.example.shopdragonbee.dto.KieuDaiQuanDTO(
             kdq.id,
             kdq.ma,
             kdq.tenKieuDaiQuan,
@@ -19,6 +22,13 @@ public interface KieuDaiQuanRepository extends JpaRepository<KieuDaiQuan,Integer
             kdq.trangThai
         )
         from KieuDaiQuan kdq
-""")
-    public List<KieuDaiQuanRespone> getAll();
+    """)
+    public List<KieuDaiQuanDTO> getAll();
+
+    // Query lấy mã kiểu đai quần lớn nhất
+    @Query("select max(kdq.ma) from KieuDaiQuan kdq")
+    Optional<String> findMaxId();
+
+    // Kiểm tra tên kiểu đai quần đã tồn tại trong DB
+    boolean existsByTenKieuDaiQuan(String tenKieuDaiQuan);
 }

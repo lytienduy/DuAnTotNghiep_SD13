@@ -1,14 +1,10 @@
 package com.example.shopdragonbee.controller;
 
-import com.example.shopdragonbee.repository.ChatLieuRepository;
-import com.example.shopdragonbee.repository.PhongCachRepository;
-import com.example.shopdragonbee.respone.ChatLieuRespone;
-import com.example.shopdragonbee.respone.PhongCachRespone;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.shopdragonbee.dto.PhongCachDTO;
+import com.example.shopdragonbee.entity.PhongCach;
+import com.example.shopdragonbee.service.PhongCachService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,16 +13,19 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 public class PhongCachController {
 
-    private final PhongCachRepository phongCachRepository;
+    private final PhongCachService phongCachService;
 
-    public PhongCachController(PhongCachRepository phongCachRepository) {
-        this.phongCachRepository = phongCachRepository;
+    public PhongCachController(PhongCachService phongCachService) {
+        this.phongCachService = phongCachService;
     }
 
-    // API lấy danh sách sản phẩm
     @GetMapping
-    public List<PhongCachRespone> getAllPhongCach() {
-        return phongCachRepository.getAll();
+    public List<PhongCachDTO> getAllPhongCach() {
+        return phongCachService.getAllPhongCach();
+    }
+    @PostMapping("/add")
+    public ResponseEntity<?> addPhongCach(@RequestBody PhongCachDTO phongCachDTO) {
+        return phongCachService.addPhongCach(phongCachDTO);
     }
 
 }
