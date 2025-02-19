@@ -15,7 +15,7 @@ import {
   RadioGroup,
   FormControlLabel,
   FormControl,
-  IconButton
+  IconButton,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -27,7 +27,6 @@ const NhanVienEdit = () => {
   const [errorNgaySinh, setErrorNgaySinh] = useState("");
   const [errorSdt, setErrorSdt] = useState("");
   const [originalSdt, setOriginalSdt] = useState(""); // Lưu số điện thoại ban đầu
-  
 
   const [nhanVien, setNhanVien] = useState({
     tenNhanVien: "",
@@ -338,13 +337,11 @@ const NhanVienEdit = () => {
               <Typography
                 variant="h6"
                 sx={{ fontWeight: "bold", marginTop: "50px" }}
-              >
-               
-              </Typography>
+              ></Typography>
 
               <img
-                src={nhanVien.anh} alt={nhanVien.tenNhanVien}
-               
+                src={nhanVien.anh}
+                alt={nhanVien.tenNhanVien}
                 style={{ width: "160px", height: "160px", borderRadius: "50%" }}
               />
               <Typography
@@ -466,7 +463,13 @@ const NhanVienEdit = () => {
               justifyContent: "center",
             }}
           >
-           
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: "bold", marginBottom: "30px" }}
+              align="center"
+            >
+              Thông tin nhân viên
+            </Typography>
 
             <form onSubmit={handleSubmit}>
               <Grid container spacing={2}>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Container,
   Typography,
@@ -19,10 +19,12 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSnackbar } from "notistack";
-import { Html5QrcodeScanner } from "html5-qrcode";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import QrCodeIcon from "@mui/icons-material/QrCode"; // Import icon
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 const TaoMoiNhanVien = () => {
+  const scannerRef = useRef(null);
   const [nhanVien, setNhanVien] = useState({
     ma: "",
     tenNhanVien: "",
@@ -33,32 +35,74 @@ const TaoMoiNhanVien = () => {
     gioiTinh: "Nam",
     trangThai: "Hoạt động",
     anh: null,
-    diaChi: "",
+    diaChi: {
+      tinh: "",
+      quan: "",
+      xa: "",
+      soNha: "",
+    },
   });
 
+  const [openQR, setOpenQR] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [scanner, setScanner] = useState(null);
+  const qrCodeScannerRef = useRef(null);
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (openQR) {
+      scannerRef.current = new Html5QrcodeScanner("qr-scanner", {
+        fps: 10,
+        qrbox: 250,
+      });
+
+      scannerRef.current.render(
+        (decodedText) => {
+          try {
+            const data = JSON.parse(decodedText);
+            setNhanVien((prev) => ({
+              ...prev,
+              tenNhanVien: data.tenNhanVien || "",
+              ngaySinh: data.ngaySinh || "",
+              cccd: data.cccd || "",
+              gioiTinh: data.gioiTinh || "Nam",
+              diaChi: data.diaChi || {}, // Giữ nguyên nếu không có dữ liệu
+            }));
+            // Cập nhật `diaChiParts`
+            setDiaChiParts(data.diaChi || {});
+            setOpenQR(false);
+          } catch (error) {
+            console.error("Lỗi đọc QR:", error);
+          }
+        },
+        (errorMessage) => {
+          console.log(errorMessage);
+        }
+      );
+    }
+
+    return () => {
+      scannerRef.current?.clear();
+    };
+  }, [openQR]);
+
   const [showScanner, setShowScanner] = useState(false);
   const [error, setError] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const { enqueueSnackbar } = useSnackbar();
   const [errors, setErrors] = useState({});
   const [cccdError, setCccdError] = useState("");
   const [tenError, setTenError] = useState("");
   const [ngaySinhError, setNgaySinhError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [sdtError, setSdtError] = useState("");
-  const [diaChiErrors, setDiaChiErrors] = useState({
-    tinh: "",
-    quan: "",
-    xa: "",
-    soNha: "",
-  });
 
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/nhanvien"); // Điều hướng về trang phiếu giảm giá
+    navigate("/nhanvien");
   };
 
   const [tinhList, setTinhList] = useState([]);
@@ -525,6 +569,63 @@ const TaoMoiNhanVien = () => {
             >
               Thông tin nhân viên
             </Typography>
+
+            {/* Dialog mở modal quét QR */}
+            {/* QR Scan Button */}
+            {/* QR Scan Button */}
+           <Box display="flex" justifyContent="flex-end">
+           <Button
+              variant="outlined"
+              startIcon={<QrCodeIcon />}
+              onClick={() => setOpenQR(true)}
+            >
+              Quét QR
+            </Button>
+           </Box>
+
+            {/* Modal Quét QR */}
+            {openQR && (
+              <Box
+                sx={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 1300,
+                }}
+              >
+                <Box
+                  sx={{
+                    backgroundColor: "white",
+                    padding: 3,
+                    borderRadius: 2,
+                    width: "90%",
+                    maxWidth: "300px",
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography variant="h6" mb={2}>
+                    Quét mã QR
+                  </Typography>
+                  <Box
+                    id="qr-scanner"
+                    sx={{ width: "300px", height: "300px", marginBottom: 2 }}
+                  ></Box>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => setOpenQR(false)}
+                  >
+                    Đóng
+                  </Button>
+                </Box>
+              </Box>
+            )}
 
             <form onSubmit={handleSubmit}>
               <Grid container spacing={2}>

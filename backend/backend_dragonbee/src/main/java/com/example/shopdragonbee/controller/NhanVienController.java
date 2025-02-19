@@ -183,5 +183,24 @@ public class NhanVienController {
         return ResponseEntity.ok(Collections.singletonMap("exists", exists));
     }
 
+    @PostMapping("/scan-qr")
+    public ResponseEntity<?> scanQR(@RequestBody String qrData) {
+        try {
+            // Phân tích dữ liệu QR thành DTO
+            NhanVienRequestDTO nhanVienDTO = nhanVienService.parseQRCodeData(qrData);
+
+            // Kiểm tra xem CCCD đã tồn tại chưa
+            if (nhanVienService.isNhanVienExists(nhanVienDTO.getCccd())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Nhân viên này đã tồn tại.");
+            }
+
+            // Trả về thông tin nhân viên
+            return ResponseEntity.ok(nhanVienDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Lỗi trong quá trình quét QR hoặc dữ liệu không hợp lệ.");
+        }
+    }
 
 }

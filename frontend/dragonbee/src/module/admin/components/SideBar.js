@@ -44,7 +44,7 @@ const Sidebar = ({ sx }) => {
 
   const handleToggleProducts = () => setOpenProducts((prev) => !prev);
   const isActive = (path) => location.pathname === path; // Check if current path matches
-
+  
   return (
     <Box sx={{ ...sx }}>
       <Typography variant="h6" sx={{ p: 2 }}>
