@@ -630,13 +630,13 @@ const HoaDonChiTiet = () => {
         {/* Tổng tiền hàng */}
         <Box display="flex" justifyContent="space-between" mb={1}>
           <Typography variant="body1" fontWeight={500}>Tổng tiền hàng:</Typography>
-          <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienHang} đ</Typography>
+          <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienHang.toLocaleString()} ₫</Typography>
         </Box>
 
         {/* Phí ship */}
         <Box display="flex" justifyContent="space-between" mb={1}>
           <Typography variant="body1" fontWeight={500}>Phí vận chuyển:</Typography>
-          <Typography variant="body1" fontWeight={500}>{hoaDon.phiVanChuyen} đ</Typography>
+          <Typography variant="body1" fontWeight={500}>{hoaDon.phiVanChuyen.toLocaleString()} đ</Typography>
         </Box>
 
         {/* Mã voucher */}
@@ -662,7 +662,7 @@ const HoaDonChiTiet = () => {
               // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
             }}
           >
-            {hoaDon.tongTienHang + hoaDon.phiVanChuyen}
+            {(hoaDon.tongTienHang + hoaDon.phiVanChuyen).toLocaleString()} VNĐ
           </Typography>
         </Box>
       </Box>
