@@ -6,6 +6,8 @@ import ThongKe from './module/admin/pages/ThongKe';
 import BanTaiQuay from './module/admin/pages/BanTaiQuay';
 import HoaDon from './module/admin/pages/HoaDon';
 import { Box } from '@mui/material';
+import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
+
 
 const App = () => {
   return (
@@ -24,6 +26,7 @@ const App = () => {
               <Route path="/thongKe" element={<ThongKe />} />
               <Route path="/banTaiQuay" element={<BanTaiQuay />} />
               <Route path="/hoaDon" element={<HoaDon />} />
+              <Route path="/hoaDon/:id" element={<HoaDonChiTiet />} />
             </Routes>
           </Box>
         </Box>
