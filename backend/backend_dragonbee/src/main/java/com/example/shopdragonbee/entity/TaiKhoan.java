@@ -3,7 +3,8 @@ package com.example.shopdragonbee.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-
+@Setter
+@Getter
 @Entity
 @Table(name = "tai_khoan")
 @Data

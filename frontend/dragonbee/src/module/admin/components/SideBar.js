@@ -240,7 +240,7 @@ const Sidebar = ({ sx }) => {
           </ListItemIcon>
           {isSidebarOpen && <ListItemText primary="Khách Hàng" primaryTypographyProps={{ fontSize: '13.6px' }}/>}
         </ListItemButton>
-        <ListItemButton>
+        <ListItemButton component={Link} to="/nhanvien">
           <ListItemIcon>
             <PersonIcon />
           </ListItemIcon>

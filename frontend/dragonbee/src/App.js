@@ -5,6 +5,9 @@ import Header from './module/admin/components/Header';
 import ThongKe from './module/admin/pages/ThongKe';
 import BanTaiQuay from './module/admin/pages/BanTaiQuay';
 import HoaDon from './module/admin/pages/HoaDon';
+import NhanVien from './module/admin/pages/NhanVien';
+import TaoMoiNhanVien from './module/admin/pages/TaoMoiNhanVien';
+import NhanVienEdit from './module/admin/pages/NhanVienEdit';
 import { Box } from '@mui/material';
 
 const App = () => {
@@ -24,6 +27,9 @@ const App = () => {
               <Route path="/thongKe" element={<ThongKe />} />
               <Route path="/banTaiQuay" element={<BanTaiQuay />} />
               <Route path="/hoaDon" element={<HoaDon />} />
+              <Route path="/nhanvien" element={<NhanVien />} />
+              <Route path="/nhanvien/tao-moi" element={<TaoMoiNhanVien />} />
+              <Route path="/nhanvien/chinh-sua/:id" element={<NhanVienEdit />} />
             </Routes>
           </Box>
         </Box>
