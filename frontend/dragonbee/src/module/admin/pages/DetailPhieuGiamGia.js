@@ -152,6 +152,10 @@ const DetailPhieuGiamGia = () => {
         validationErrors.giaTriGiam = "Giá trị đô la phải là số dương và không được để trống";
         isValid = false;
       }
+      if (phieuGiamGia.giaTriGiam > phieuGiamGia.soTienToiThieu) {
+        validationErrors.giaTriGiam = "Giá trị giảm không thể lớn hơn điều kiện giảm giá.";
+        isValid = false;
+      }
     }
 
     // Kiểm tra giá trị giảm tối đa (nếu là phần trăm)

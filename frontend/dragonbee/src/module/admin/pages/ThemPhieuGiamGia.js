@@ -87,6 +87,7 @@ const ThemPhieuGiamGia = () => {
 
     // Kiểm tra giá trị
     const giaTriGiam = giaTriRef.current ? parseFloat(giaTriRef.current.value) : 0;
+    const dieuKien = dieuKienRef.current ? parseFloat(dieuKienRef.current.value) : 0;
     if (selectedIcon === "percent") {
       if (!giaTriGiam || giaTriGiam <= 0 || giaTriGiam > 100) {
         newErrors.giaTri = "Giá trị phải là số dương và nhỏ hơn hoặc bằng 100.";
@@ -94,6 +95,9 @@ const ThemPhieuGiamGia = () => {
     } else if (selectedIcon === "dollar") {
       if (!giaTriGiam || giaTriGiam <= 0) {
         newErrors.giaTri = "Giá trị phải là số dương.";
+      }
+      if (giaTriGiam > dieuKien) {
+        newErrors.giaTri = "Giá trị giảm không thể lớn hơn điều kiện.";
       }
     }
 
@@ -110,8 +114,8 @@ const ThemPhieuGiamGia = () => {
     }
 
     // Kiểm tra điều kiện
-    const dieuKien = dieuKienRef.current ? parseFloat(dieuKienRef.current.value) : 0;
-    if (!dieuKien || dieuKien <= 0) {
+    const dieuKien1 = dieuKienRef.current ? parseFloat(dieuKienRef.current.value) : 0;
+    if (!dieuKien1 || dieuKien1 <= 0) {
       newErrors.dieuKien = "Điều kiện phải là số dương.";
     }
 
