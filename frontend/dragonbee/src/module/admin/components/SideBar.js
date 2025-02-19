@@ -115,11 +115,11 @@ const Sidebar = ({ sx }) => {
             )}
           </ListItemButton>
 
-
           {/* POS */}
           <ListItemButton
             component={Link}
             to="/banTaiQuay"
+
             sx={{
               borderRadius: 3,
               backgroundColor: isActive('/banTaiQuay') ? 'rgb(52, 152, 234)' : 'transparent',
@@ -240,7 +240,7 @@ const Sidebar = ({ sx }) => {
             </ListItemIcon>
             {isSidebarOpen && <ListItemText primary="Khách Hàng" primaryTypographyProps={{ fontSize: '13.6px' }} />}
           </ListItemButton>
-          <ListItemButton>
+          <ListItemButton component={Link} to="/nhanvien">
             <ListItemIcon>
               <PersonIcon />
             </ListItemIcon>

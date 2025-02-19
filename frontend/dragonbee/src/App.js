@@ -8,6 +8,9 @@ import ThemPhieuGiamGia from './module/admin/pages/ThemPhieuGiamGia';
 import DetailPhieuGiamGia from './module/admin/pages/DetailPhieuGiamGia';
 import BanTaiQuay from './module/admin/pages/BanTaiQuay';
 import HoaDon from './module/admin/pages/HoaDon';
+import NhanVien from './module/admin/pages/NhanVien';
+import TaoMoiNhanVien from './module/admin/pages/TaoMoiNhanVien';
+import NhanVienEdit from './module/admin/pages/NhanVienEdit';
 import { Box } from '@mui/material';
 import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
 
@@ -29,10 +32,16 @@ const App = () => {
               <Route path="/thongKe" element={<ThongKe />} />
               <Route path="/banTaiQuay" element={<BanTaiQuay />} />
               <Route path="/hoaDon" element={<HoaDon />} />
+
               <Route path="/hoaDon/:id" element={<HoaDonChiTiet />} />
               <Route path='/phieu-giam-gia' element={<PhieuGiamGia />} />
               <Route path="/them-phieu-giam-gia" element={<ThemPhieuGiamGia />} />
               <Route path="/detail-phieu-giam-gia/:ma" element={<DetailPhieuGiamGia />} />
+
+              <Route path="/nhanvien" element={<NhanVien />} />
+              <Route path="/nhanvien/tao-moi" element={<TaoMoiNhanVien />} />
+              <Route path="/nhanvien/chinh-sua/:id" element={<NhanVienEdit />} />
+
             </Routes>
           </Box>
         </Box>
