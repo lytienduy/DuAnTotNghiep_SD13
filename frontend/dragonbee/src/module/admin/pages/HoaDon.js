@@ -13,9 +13,6 @@ import HoaDonPrint from "./HoaDonPrint";
 import * as XLSX from "xlsx";
 
 
-
-
-
 const HoaDon = () => {
   // Khái báo useState
   const [tabValue, setTabValue] = useState(0); //Giá trị TabValue
