@@ -407,7 +407,7 @@ const DiscountCoupons = () => {
             <MenuItem value={20}>20</MenuItem>
             <MenuItem value={25}>25</MenuItem>
           </Select>
-          <Typography variant="body2">sản phẩm</Typography>
+          <Typography variant="body2">phiếu giảm giá</Typography>
         </Box>
 
         <Pagination

@@ -24,7 +24,7 @@ public class PhieuGiamGiaService {
     private PhieuGiamGiaKhachHangRepository phieuGiamGiaKhachHangRepository;
 
     @Autowired
-    private EmailService emailService;
+    private EmailPGGService emailPGGService;
 
     public ResponseEntity<?> updateDiscountStatus(String ma) {
         Optional<PhieuGiamGia> optionalPhieuGiamGia = phieuGiamGiaRepository.findByMa(ma);
@@ -82,7 +82,7 @@ public class PhieuGiamGiaService {
                 List<String> emailsToSuspend = phieuGiamGiaKhachHangList.stream()
                         .map(phieuGiamGiaKhachHang -> phieuGiamGiaKhachHang.getKhachHang().getEmail())
                         .collect(Collectors.toList());
-                emailService.sendDiscountSuspendedNotification(emailsToSuspend, phieuGiamGia);
+                emailPGGService.sendDiscountSuspendedNotification(emailsToSuspend, phieuGiamGia);
             }
 
             // Gửi email thông báo nếu trạng thái có thay đổi từ "Đã kết thúc" sang "Đang diễn ra"
@@ -90,7 +90,7 @@ public class PhieuGiamGiaService {
                 List<String> emailsToActivate = phieuGiamGiaKhachHangList.stream()
                         .map(phieuGiamGiaKhachHang -> phieuGiamGiaKhachHang.getKhachHang().getEmail())
                         .collect(Collectors.toList());
-                emailService.sendDiscountResumedNotification(emailsToActivate, phieuGiamGia);
+                emailPGGService.sendDiscountResumedNotification(emailsToActivate, phieuGiamGia);
             }
 
             // Gửi email thông báo nếu trạng thái chuyển từ "Đã kết thúc" sang "Chưa diễn ra"
@@ -98,7 +98,7 @@ public class PhieuGiamGiaService {
                 List<String> emailsToNotify = phieuGiamGiaKhachHangList.stream()
                         .map(phieuGiamGiaKhachHang -> phieuGiamGiaKhachHang.getKhachHang().getEmail())
                         .collect(Collectors.toList());
-                emailService.sendDiscountResumedNotification(emailsToNotify, phieuGiamGia);  // Cùng hàm thông báo như khi phiếu trở lại "Đang diễn ra"
+                emailPGGService.sendDiscountResumedNotification(emailsToNotify, phieuGiamGia);  // Cùng hàm thông báo như khi phiếu trở lại "Đang diễn ra"
             }
 
             // Cập nhật trạng thái khách hàng

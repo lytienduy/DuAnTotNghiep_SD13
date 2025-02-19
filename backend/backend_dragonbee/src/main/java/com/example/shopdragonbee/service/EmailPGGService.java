@@ -14,13 +14,13 @@ import java.text.DecimalFormat;
 
 
 @Service
-public class EmailService {
+public class EmailPGGService {
     // Định dạng số để có dấu phân cách hàng nghìn và không có phần thập phân
     DecimalFormat df = new DecimalFormat("#,###");
 
     private final JavaMailSender mailSender;
 
-    public EmailService(JavaMailSender mailSender) {
+    public EmailPGGService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 

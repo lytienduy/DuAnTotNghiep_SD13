@@ -9,7 +9,7 @@ import com.example.shopdragonbee.repository.KhachHangPGGRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaKhachHangRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaSpecification;
-import com.example.shopdragonbee.service.EmailService;
+import com.example.shopdragonbee.service.EmailPGGService;
 import com.example.shopdragonbee.service.KhachHangPGGService;
 import com.example.shopdragonbee.service.PhieuGiamGiaService;
 import jakarta.transaction.Transactional;
@@ -49,14 +49,14 @@ public class AppController {
     private PhieuGiamGiaService phieuGiamGiaService;
 
     @Autowired
-    private EmailService emailService;
+    private EmailPGGService emailPGGService;
 
     public void PhieuGiamGiaController(PhieuGiamGiaRepository phieuGiamGiaRepository,
                                        KhachHangPGGRepository khachHangPGGRepository,
-                                       EmailService emailService) {
+                                       EmailPGGService emailPGGService) {
         this.phieuGiamGiaRepository = phieuGiamGiaRepository;
         this.khachHangPGGRepository = khachHangPGGRepository;
-        this.emailService = emailService;
+        this.emailPGGService = emailPGGService;
     }
 
     @GetMapping("/search-khach-hang")
@@ -200,7 +200,7 @@ public class AppController {
                     .collect(Collectors.toList());
 
             // Gửi thông báo email cho khách hàng
-            emailService.sendDiscountNotification(emailAddresses, phieuGiamGia);
+            emailPGGService.sendDiscountNotification(emailAddresses, phieuGiamGia);
         }
 
         return ResponseEntity.ok("Thêm mới phiếu giảm giá thành công!");
@@ -305,7 +305,7 @@ public class AppController {
                     .collect(Collectors.toList());
 
             // Gửi email thông báo tạm ngừng cho tất cả khách hàng
-            emailService.sendDiscountSuspendedNotification(emailAddresses, phieuGiamGia);
+            emailPGGService.sendDiscountSuspendedNotification(emailAddresses, phieuGiamGia);
 
             // Xóa tất cả khách hàng đã liên kết với phiếu giảm giá này
             phieuGiamGiaKhachHangRepository.deleteByPhieuGiamGiaId(phieuGiamGia.getId());
@@ -324,7 +324,7 @@ public class AppController {
             // Xóa khách hàng bị loại bỏ và gửi email thông báo
             for (PhieuGiamGiaKhachHang removeRecord : khachHangToRemove) {
                 phieuGiamGiaKhachHangRepository.delete(removeRecord);
-                emailService.sendDiscountSuspendedNotification(
+                emailPGGService.sendDiscountSuspendedNotification(
                         List.of(removeRecord.getKhachHang().getEmail()),
                         phieuGiamGia
                 );
@@ -349,7 +349,7 @@ public class AppController {
 
             // Gửi email thông báo phiếu giảm giá cho khách hàng mới (chỉ gửi một lần)
             for (PhieuGiamGiaKhachHang newRecord : khachHangRecordsToAdd) {
-                emailService.sendDiscountNotification(
+                emailPGGService.sendDiscountNotification(
                         List.of(newRecord.getKhachHang().getEmail()),
                         phieuGiamGia
                 );
@@ -374,7 +374,7 @@ public class AppController {
             // Gửi email cho tất cả khách hàng cũ nếu có sự thay đổi trong phiếu giảm giá
             List<PhieuGiamGiaKhachHang> currentKhachHangs = phieuGiamGiaKhachHangRepository.findByPhieuGiamGia(phieuGiamGia);
             for (PhieuGiamGiaKhachHang khachHang : currentKhachHangs) {
-                emailService.sendDiscountNotification(
+                emailPGGService.sendDiscountNotification(
                         List.of(khachHang.getKhachHang().getEmail()),
                         phieuGiamGia
                 );
