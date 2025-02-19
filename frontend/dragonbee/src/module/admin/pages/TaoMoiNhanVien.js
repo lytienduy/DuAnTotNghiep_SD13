@@ -49,6 +49,17 @@ const TaoMoiNhanVien = () => {
   const [scanner, setScanner] = useState(null);
   const qrCodeScannerRef = useRef(null);
 
+  
+  const [tinhList, setTinhList] = useState([]);
+  const [quanList, setQuanList] = useState([]);
+  const [xaList, setXaList] = useState([]);
+  const [diaChiParts, setDiaChiParts] = useState({
+    tinh: "",
+    quan: "",
+    xa: "",
+    soNha: "",
+  });
+
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
@@ -57,21 +68,64 @@ const TaoMoiNhanVien = () => {
         fps: 10,
         qrbox: 250,
       });
-
+  
       scannerRef.current.render(
-        (decodedText) => {
+        async (decodedText) => {
           try {
             const data = JSON.parse(decodedText);
+            console.log("Dữ liệu từ QR:", data); // Kiểm tra dữ liệu nhận được
+  
+            // Tìm `code` của tỉnh/thành phố
+            const foundTinh = tinhList.find((t) => t.name === data.diaChi?.tinh);
+            const tinhCode = foundTinh?.code || "";
+  
+            let quanCode = "";
+            let xaCode = "";
+  
+            if (tinhCode) {
+              // Lấy danh sách quận/huyện của tỉnh đó
+              const quanResponse = await axios.get(
+                `https://provinces.open-api.vn/api/p/${tinhCode}?depth=2`
+              );
+              const foundQuan = quanResponse.data.districts.find(
+                (q) => q.name === data.diaChi?.quan
+              );
+              quanCode = foundQuan?.code || "";
+  
+              if (quanCode) {
+                // Lấy danh sách xã/phường của quận đó
+                const xaResponse = await axios.get(
+                  `https://provinces.open-api.vn/api/d/${quanCode}?depth=2`
+                );
+                const foundXa = xaResponse.data.wards.find(
+                  (x) => x.name === data.diaChi?.xa
+                );
+                xaCode = foundXa?.code || "";
+              }
+            }
+  
             setNhanVien((prev) => ({
               ...prev,
-              tenNhanVien: data.tenNhanVien || "",
-              ngaySinh: data.ngaySinh || "",
-              cccd: data.cccd || "",
-              gioiTinh: data.gioiTinh || "Nam",
-              diaChi: data.diaChi || {}, // Giữ nguyên nếu không có dữ liệu
+              tenNhanVien: data.tenNhanVien || prev.tenNhanVien,
+              cccd: data.cccd || prev.cccd,
+              ngaySinh: data.ngaySinh || prev.ngaySinh,
+              gioiTinh: data.gioiTinh || prev.gioiTinh,
+              diaChi: {
+                tinh: data.diaChi?.tinh || prev.diaChi.tinh,
+                quan: data.diaChi?.quan || prev.diaChi.quan,
+                xa: data.diaChi?.xa || prev.diaChi.xa,
+                soNha: data.diaChi?.soNha || prev.diaChi.soNha,
+              },
             }));
-            // Cập nhật `diaChiParts`
-            setDiaChiParts(data.diaChi || {});
+  
+            // Cập nhật `diaChiParts` với `code`
+            setDiaChiParts({
+              tinh: tinhCode,
+              quan: quanCode,
+              xa: xaCode,
+              soNha: data.diaChi?.soNha || "",
+            });
+  
             setOpenQR(false);
           } catch (error) {
             console.error("Lỗi đọc QR:", error);
@@ -82,11 +136,12 @@ const TaoMoiNhanVien = () => {
         }
       );
     }
-
+  
     return () => {
       scannerRef.current?.clear();
     };
-  }, [openQR]);
+  }, [openQR, tinhList]);
+  
 
   const [showScanner, setShowScanner] = useState(false);
   const [error, setError] = useState(null);
@@ -105,15 +160,6 @@ const TaoMoiNhanVien = () => {
     navigate("/nhanvien");
   };
 
-  const [tinhList, setTinhList] = useState([]);
-  const [quanList, setQuanList] = useState([]);
-  const [xaList, setXaList] = useState([]);
-  const [diaChiParts, setDiaChiParts] = useState({
-    tinh: "",
-    quan: "",
-    xa: "",
-    soNha: "",
-  });
 
   useEffect(() => {
     axios
@@ -573,15 +619,15 @@ const TaoMoiNhanVien = () => {
             {/* Dialog mở modal quét QR */}
             {/* QR Scan Button */}
             {/* QR Scan Button */}
-           <Box display="flex" justifyContent="flex-end">
-           <Button
-              variant="outlined"
-              startIcon={<QrCodeIcon />}
-              onClick={() => setOpenQR(true)}
-            >
-              Quét QR
-            </Button>
-           </Box>
+            <Box display="flex" justifyContent="flex-end">
+              <Button
+                variant="outlined"
+                startIcon={<QrCodeIcon />}
+                onClick={() => setOpenQR(true)}
+              >
+                Quét QR
+              </Button>
+            </Box>
 
             {/* Modal Quét QR */}
             {openQR && (
@@ -748,7 +794,7 @@ const TaoMoiNhanVien = () => {
                     <Grid item xs={6}>
                       <TextField
                         select
-                        label="Tỉnh/Thành phố"
+                        label="*Tỉnh/Thành phố"
                         name="tinh"
                         value={diaChiParts?.tinh || ""}
                         onChange={handleDiaChiChange}
@@ -764,7 +810,7 @@ const TaoMoiNhanVien = () => {
                     <Grid item xs={6}>
                       <TextField
                         select
-                        label="Quận/Huyện"
+                        label=" *Quận/Huyện"
                         name="quan"
                         value={diaChiParts?.quan || ""}
                         onChange={handleDiaChiChange}
@@ -780,7 +826,7 @@ const TaoMoiNhanVien = () => {
                     <Grid item xs={6}>
                       <TextField
                         select
-                        label="Xã/Phường"
+                        label="*Xã/Phường"
                         name="xa"
                         value={diaChiParts?.xa || ""}
                         onChange={handleDiaChiChange}
@@ -795,7 +841,7 @@ const TaoMoiNhanVien = () => {
                     </Grid>
                     <Grid item xs={6}>
                       <TextField
-                        label="Số nhà/Ngõ/Đường"
+                        label="*Số nhà/Ngõ/Đường"
                         name="soNha"
                         value={diaChiParts?.soNha || ""}
                         onChange={handleDiaChiChange}
