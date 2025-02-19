@@ -3,6 +3,7 @@ package com.example.shopdragonbee.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "san_pham_chi_tiet")
@@ -82,4 +83,7 @@ public class SanPhamChiTiet {
 
     @Column(name = "nguoi_sua")
     private String nguoiSua;
+
+    @OneToMany(mappedBy = "sanPhamChiTiet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AnhSanPham> listAnh;
 }

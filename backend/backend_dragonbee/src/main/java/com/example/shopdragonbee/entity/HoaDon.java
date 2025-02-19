@@ -75,5 +75,12 @@ public class HoaDon {
     private String nguoiSua;
 
     @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HoaDonChiTiet> hoaDonChiTietList;
+    private List<HoaDonChiTiet> listHoaDonChiTiet;
+
+    @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ThanhToanHoaDon> listThanhToanHoaDon;
+
+    @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LichSuHoaDon> listLichSuHoaDon;
+
 }

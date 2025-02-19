@@ -9,6 +9,8 @@ import DetailPhieuGiamGia from './module/admin/pages/DetailPhieuGiamGia';
 import BanTaiQuay from './module/admin/pages/BanTaiQuay';
 import HoaDon from './module/admin/pages/HoaDon';
 import { Box } from '@mui/material';
+import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
+
 
 const App = () => {
   return (
@@ -27,6 +29,7 @@ const App = () => {
               <Route path="/thongKe" element={<ThongKe />} />
               <Route path="/banTaiQuay" element={<BanTaiQuay />} />
               <Route path="/hoaDon" element={<HoaDon />} />
+              <Route path="/hoaDon/:id" element={<HoaDonChiTiet />} />
               <Route path='/phieu-giam-gia' element={<PhieuGiamGia />} />
               <Route path="/them-phieu-giam-gia" element={<ThemPhieuGiamGia />} />
               <Route path="/detail-phieu-giam-gia/:ma" element={<DetailPhieuGiamGia />} />
