@@ -11,9 +11,9 @@ import PrintIcon from "@mui/icons-material/Print";
 import { useNavigate } from "react-router-dom";
 import HoaDonPrint from "./HoaDonPrint";
 import * as XLSX from "xlsx";
-
-
-
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 
 
 const HoaDon = () => {
@@ -28,10 +28,49 @@ const HoaDon = () => {
   const [dateError, setDateError] = useState(false); // Boolean báo lỗi của bộ lọc khoảng ngày
   const [counts, setCounts] = useState({}); // List những count số lượng hóa đơn theo danh sách trạng thái(Vị trí listCount liên quan trong backend theo listTrangThai trong backend)
 
+  //Thông báo
+  const showSuccessToast = (message) => {
+    toast.success(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: {
+        backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+        color: "white", // Chữ trắng nổi bật
+        fontSize: "14px", // Nhỏ hơn một chút
+        fontWeight: "500",
+        borderRadius: "8px",
+      }
+    });
+  };
+  const showErrorToast = (message) => {
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: {
+        backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+        color: "white", // Chữ trắng nổi bật
+        fontSize: "14px", // Nhỏ hơn một chút
+        fontWeight: "500",
+        borderRadius: "8px",
+      }
+    });
+  };
+
+
   //Export Excel
   const handleExportExcel = async () => {
     if (!orders || orders.length === 0) {
-      alert("Không có dữ liệu để xuất!");
+      showErrorToast("Không có dữ liệu xuất file Excel")
       return;
     }
 
@@ -71,9 +110,9 @@ const HoaDon = () => {
       const writable = await handle.createWritable();
       await writable.write(blob);
       await writable.close();
-      alert("Xuất file thành công!");
+      showSuccessToast("Xuất file Excel thành công");
     } catch (error) {
-      console.error("Xuất file thất bại:", error);
+      showErrorToast("Đã có lỗi xảy ra khi xuất file Excel")
     }
   };
 
@@ -83,19 +122,68 @@ const HoaDon = () => {
 
   const handlePrint = async (id) => {
     // Lấy thông tin hóa đơn từ API hoặc dữ liệu có sẵn và gán vào state
-    const response = await axios.get(`http://localhost:8080/hoa-don/${id}`);
-    if (response.data) {
-      setHoaDon(response.data);
-      // Mở cửa sổ in
-      setTimeout(() => {
-        const printContent = document.getElementById("hoaDonPrint"); // Lấy phần tử cần in
-        const printWindow = window.open("", "_blank");
-        printWindow.document.write(printContent.innerHTML); // Ghi nội dung vào cửa sổ in
-        printWindow.document.close(); // Đóng cửa sổ
-        printWindow.print(); // Thực hiện in
-      }, 1000);  // Đợi một chút để nội dung được set xong
+    try {
+      const response = await axios.get(`http://localhost:8080/hoa-don/${id}`);
+      if (response.data) {
+        setHoaDon(response.data);
+
+        setTimeout(() => {
+          const printContent = document.getElementById("hoaDonPrint");
+          if (!printContent) {
+            showErrorToast("Không tìm thấy nội dung hóa đơn để in!");
+            return;
+          }
+
+          const printWindow = window.open("", "_blank");
+          printWindow.document.write(printContent.innerHTML);
+          printWindow.document.close();
+
+          // Thêm sự kiện khi in xong
+          printWindow.onafterprint = () => {
+            showSuccessToast("In hóa đơn thành công!");
+          };
+
+          printWindow.print();
+        }, 1000);
+      }
+    } catch (error) {
+      showErrorToast("Lỗi khi tải hóa đơn, vui lòng thử lại!");
+      console.error("Lỗi khi lấy dữ liệu hóa đơn:", error);
     }
   };
+  // const componentRef = useRef(null);
+  // const layHoaDonIn = async (id) => {
+  //   console.log("Đây nè Mai Thế Phong" + id)
+  //   try {
+  //     const response = await axios.get(`http://localhost:8080/hoa-don/${id}`);
+  //     if (response.data) {
+
+  //       setHoaDon(response.data); console.log(hoaDon);
+  //       setTimeout(() => {
+  //         if (componentRef.current) {
+  //           handlePrint(); // Gọi in sau khi cập nhật xong
+  //           console.log("Gọi xong rồi nè Mai THế Phonggggggg")
+  //         } else {
+  //           showErrorToast("Không tìm thấy nội dung hóa đơn để in!");
+  //         }
+  //       }, 500); // Chờ 500ms để state cập nhật
+  //     }
+  //   }
+  //   catch (error) {
+  //     console.error("Lỗi khi lấy hóa đơn:", error);
+  //     showErrorToast("Lỗi khi tải hóa đơn, vui lòng thử lại!");
+  //   }
+
+  // }
+  // const handlePrint = useReactToPrint({
+  //   content: () => {if (!componentRef.current) {
+  //     showErrorToast("Không tìm thấy nội dung để in!");
+  //     return null;
+  //   }
+  //   return componentRef.current;},
+  //   documentTitle: `HoaDon_${hoaDon?.id}`,
+  //   onAfterPrint: () => showSuccessToast("In hóa đơn thành công!"),
+  // });
 
   // Lấy CSS hóa đơn cho từng trạng thái
   const getStatusStyles = (status) => {
@@ -137,8 +225,8 @@ const HoaDon = () => {
     "ĐÃ HỦY",
   ] : [
     "TẤT CẢ",
-    "ĐÃ THANH TOÁN", "CHỜ THANH TOÁN",
-
+    "CHỜ THANH TOÁN",
+    "ĐÃ THANH TOÁN", 
     "HOÀN THÀNH",
     "ĐÃ HỦY",
   ];
@@ -250,48 +338,11 @@ const HoaDon = () => {
       setLoading(false);
     }
   };
-
-
   //Phân trang
-  // const rowsPerPage = 3; // Số lượng mỗi trang có mấy phần tử
-  // const totalPages = Math.ceil(orders.length / rowsPerPage); // Tổng số trang
-  // const [page, setPage] = useState(0);
-  // const [pageGroup, setPageGroup] = useState(0); // Nhóm trang (0-4, 5-9,...)
-
-  // Lấy dữ liệu phân trang
-  // const paginatedOrders = orders.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
-
-  // Số trang tối đa hiển thị cùng lúc
-  // const pagesToShow = 5;
-  // const startPage = pageGroup * pagesToShow;
-  // const endPage = Math.min(startPage + pagesToShow, totalPages); // Không vượt quá tổng số trang
-
-  // Chuyển trang
-  // const handleChangePage = (newPage) => {
-  //   if (newPage >= 0 && newPage < totalPages) {
-  //     setPage(newPage);
-  //   }
-  // };
-
-  // // Chuyển nhóm trang tiếp theo
-  // const handleNextGroup = () => {
-  //   if ((pageGroup + 1) * pagesToShow < totalPages) {
-  //     setPageGroup(pageGroup + 1);
-  //     setPage((pageGroup + 1) * pagesToShow);
-  //   }
-  // };
-
-  // // Chuyển nhóm trang trước đó
-  // const handlePrevGroup = () => {
-  //   if (pageGroup > 0) {
-  //     setPageGroup(pageGroup - 1);
-  //     setPage((pageGroup - 1) * pagesToShow);
-  //   }
-  // };
   const [rowsPerPage, setRowsPerPage] = useState(5); // Số lượng mỗi trang
   const [page, setPage] = useState(0);
   const totalPages = Math.ceil(orders.length / rowsPerPage);
-  
+
   // Nhóm trang (hiển thị tối đa 5 trang)
   const pagesToShow = 5;
   const startPage = Math.floor(page / pagesToShow) * pagesToShow;
@@ -520,83 +571,61 @@ const HoaDon = () => {
 
       {/* In hóa đơn */}
       {hoaDon && (
-        <Box id="hoaDonPrint" style={{ display: "none" }}>
-          <HoaDonPrint hoaDon={hoaDon} />
+        <Box id="hoaDonPrint" style={{ display: "none" }}> {/* Thay display: none bằng block */}
+          <HoaDonPrint  hoaDon={hoaDon} />
         </Box>
       )}
 
 
-      {/* Thanh phân trang */}
-      {/* <Stack direction="row" spacing={1} justifyContent="center" mt={2}>
-      
-        <Button variant="outlined" onClick={handlePrevGroup} disabled={pageGroup === 0}>
-          {"<<"}
-        </Button>
-
-        
-        {Array.from({ length: endPage - startPage }, (_, i) => startPage + i).map((pageNum) => (
-          <Button
-            key={pageNum}
-            variant={pageNum === page ? "contained" : "outlined"}
-            onClick={() => handleChangePage(pageNum)}
-          >
-            {pageNum + 1}
-          </Button>
-        ))}
-
-        
-        <Button variant="outlined" onClick={handleNextGroup} disabled={endPage >= totalPages}>
-          {">>"}
-        </Button>
-      </Stack> */}
+      {/* Phân trang */}
       <Stack direction="row" alignItems="center" justifyContent="space-between" mt={2}>
-  {/* Bên trái: Chọn số sản phẩm hiển thị */}
-  <Stack direction="row" alignItems="center" spacing={1}>
-    <span>Xem</span>
-    <Select value={rowsPerPage} onChange={(e) => setRowsPerPage(e.target.value)} size="small">
-      {[5, 10, 20].map((num) => (
-        <MenuItem key={num} value={num}>{num}</MenuItem>
-      ))}
-    </Select>
-    <span>hóa đơn</span>
-  </Stack>
+        {/* Bên trái: Chọn số sản phẩm hiển thị */}
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <span>Xem</span>
+          <Select value={rowsPerPage} onChange={(e) => setRowsPerPage(e.target.value)} size="small">
+            {[5, 10, 20].map((num) => (
+              <MenuItem key={num} value={num}>{num}</MenuItem>
+            ))}
+          </Select>
+          <span>hóa đơn</span>
+        </Stack>
 
-  {/* Bên phải: Các nút phân trang */}
-  <Stack direction="row" spacing={1} alignItems="center">
-    {/* Nút trang trước */}
-    <Button 
-      variant="outlined" 
-      onClick={() => handleChangePage(page - 1)} 
-      disabled={page === 0}
-      sx={{ borderRadius: "50%", minWidth: 40, width: 40, height: 40 }}
-    >
-      ‹
-    </Button>
+        {/* Bên phải: Các nút phân trang */}
+        <Stack direction="row" spacing={1} alignItems="center">
+          {/* Nút trang trước */}
+          <Button
+            variant="outlined"
+            onClick={() => handleChangePage(page - 1)}
+            disabled={page === 0}
+            sx={{ borderRadius: "50%", minWidth: 40, width: 40, height: 40 }}
+          >
+            ‹
+          </Button>
 
-    {/* Các số trang */}
-    {Array.from({ length: endPage - startPage }, (_, i) => startPage + i).map((pageNum) => (
-      <Button
-        key={pageNum}
-        variant={pageNum === page ? "contained" : "outlined"}
-        onClick={() => handleChangePage(pageNum)}
-        sx={{ borderRadius: "50%", minWidth: 40, width: 40, height: 40 }}
-      >
-        {pageNum + 1}
-      </Button>
-    ))}
+          {/* Các số trang */}
+          {Array.from({ length: endPage - startPage }, (_, i) => startPage + i).map((pageNum) => (
+            <Button
+              key={pageNum}
+              variant={pageNum === page ? "contained" : "outlined"}
+              onClick={() => handleChangePage(pageNum)}
+              sx={{ borderRadius: "50%", minWidth: 40, width: 40, height: 40 }}
+            >
+              {pageNum + 1}
+            </Button>
+          ))}
 
-    {/* Nút trang sau */}
-    <Button 
-      variant="outlined" 
-      onClick={() => handleChangePage(page + 1)} 
-      disabled={page + 1 >= totalPages}
-      sx={{ borderRadius: "50%", minWidth: 40, width: 40, height: 40 }}
-    >
-      ›
-    </Button>
-  </Stack>
-</Stack>
-
+          {/* Nút trang sau */}
+          <Button
+            variant="outlined"
+            onClick={() => handleChangePage(page + 1)}
+            disabled={page + 1 >= totalPages}
+            sx={{ borderRadius: "50%", minWidth: 40, width: 40, height: 40 }}
+          >
+            ›
+          </Button>
+        </Stack>
+      </Stack>
+      <ToastContainer /> {/* Quan trọng để hiển thị toast */}
 
     </Container>
   );

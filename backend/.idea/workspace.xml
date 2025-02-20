@@ -5,14 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="12efc775-e7fc-4068-92ed-d638b78328ae" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/backend.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/ThanhToanHoaDonRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/HoaDonController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/HoaDonController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/HoaDonChiTietResponseDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/HoaDonChiTietResponseDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/HoaDonService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/HoaDonService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/ThanhToanHoaDonRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/ThanhToanHoaDonRepository.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +66,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1740021291886</updated>
-      <workItem from="1740021293349" duration="4520000" />
+      <workItem from="1740021293349" duration="5890000" />
     </task>
     <servers />
   </component>

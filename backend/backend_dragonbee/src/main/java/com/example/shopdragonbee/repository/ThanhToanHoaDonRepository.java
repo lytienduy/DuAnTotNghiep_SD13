@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ThanhToanHoaDonRepository extends JpaRepository<ThanhToanHoaDon,Integer> {
-    @Query("SELECT COALESCE(SUM(hdct.soTienThanhToan), 0) FROM ThanhToanHoaDon hdct WHERE hdct.hoaDon.id = :idHoaDon")
-    Float tinhTongTienDaThanhToanByHoaDonId(@Param("idHoaDon") Integer idHoaDon);
+//    @Query("SELECT COALESCE(SUM(hdct.soTienThanhToan), 0) FROM ThanhToanHoaDon hdct WHERE hdct.hoaDon.id = :idHoaDon")
+//    Float tinhTongTienDaThanhToanByHoaDonId(@Param("idHoaDon") Integer idHoaDon);
 }
