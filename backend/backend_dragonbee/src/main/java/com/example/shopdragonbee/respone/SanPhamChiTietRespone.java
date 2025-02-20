@@ -11,26 +11,21 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class SanPhamChiTietRespone {
-
     private Integer id;
     private String ma;
-    private Integer soLuong;
-    private String moTa;
-    private String trangThai;
-    private Double gia;
-    private String maSanPham;
     private String tenSanPham;
-    private String mauSac;
-    private String chatLieu;
     private String danhMuc;
-    private String size;
     private String thuongHieu;
+    private String phongCach;
+    private String chatLieu;
+    private String mauSac;
+    private String size;
     private String kieuDang;
     private String kieuDaiQuan;
     private String xuatXu;
-    private String phongCach;
-    private LocalDateTime ngayTao;
-    private LocalDateTime ngaySua;
-    private String nguoiTao;
-    private String nguoiSua;
+    private Integer soLuong;
+    private Double gia;
+    private String trangThai;
+
+    // Getter và Setter
 }

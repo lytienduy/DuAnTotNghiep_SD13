@@ -44,7 +44,7 @@ const SanPham = () => {
   // Hàm gọi API với debounce
   const fetchData = useCallback(() => {
     setLoading(true);
-  
+
     axios
       .get(`http://localhost:8080/api/sanpham/search`, {
         params: {
@@ -65,7 +65,6 @@ const SanPham = () => {
         setLoading(false);
       });
   }, [page, search, trangThai, size]);
-  
 
   // Gọi API khi search, trangThai hoặc page thay đổi
   useEffect(() => {
@@ -182,16 +181,22 @@ const SanPham = () => {
       const response = await axios.put(
         `http://localhost:8080/api/sanpham/${id}/toggle-trang-thai`
       );
-  
+
       console.log("Phản hồi API:", response.data);
-  
+
       // Cập nhật trực tiếp trạng thái trong sanPhams state
       setSanPhams((prevSanPhams) =>
         prevSanPhams.map((sp) =>
-          sp.id === id ? { ...sp, trangThai: sp.trangThai === "Đang bán" ? "Ngừng bán" : "Đang bán" } : sp
+          sp.id === id
+            ? {
+                ...sp,
+                trangThai:
+                  sp.trangThai === "Đang bán" ? "Ngừng bán" : "Đang bán",
+              }
+            : sp
         )
       );
-  
+
       setSnackbarMessage("Cập nhật trạng thái thành công!");
       setOpenSnackbar(true);
     } catch (error) {
@@ -199,10 +204,6 @@ const SanPham = () => {
       alert("Có lỗi xảy ra khi cập nhật trạng thái sản phẩm!");
     }
   };
-  
-  
-  
-  
 
   return (
     <Container maxWidth="lg">
@@ -216,9 +217,20 @@ const SanPham = () => {
 
         {/* Nút tạo mới di chuyển sang góc phải */}
         <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
-          <Button variant="contained" color="primary" onClick={exportToExcel}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={exportToExcel}
+            sx={{
+              "&:hover": {
+                backgroundColor: "lightblue", // Màu nền khi hover
+                color: "blue", // Màu chữ khi hover
+              },
+            }}
+          >
             Xuất Excel
           </Button>
+
           <Button
             variant="outlined" // Kiểu nút với viền
             sx={{

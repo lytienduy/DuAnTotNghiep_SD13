@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.repository;
 
+import com.example.shopdragonbee.dto.SanPhamDTO;
 import com.example.shopdragonbee.respone.SanPhamRespone;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,22 +15,24 @@ import java.util.Optional;
 public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
 
     @Query("""
-        SELECT new com.example.shopdragonbee.respone.SanPhamRespone(
-            sp.id,
-            sp.ma,
-            sp.tenSanPham,
-            COALESCE(SUM(spct.soLuong), 0), 
-            sp.ngayTao,
-            sp.trangThai
-        )
-        FROM SanPham sp
-        LEFT JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id
-        GROUP BY sp.id, sp.ma, sp.tenSanPham, sp.ngayTao, sp.trangThai
-    """)
-    List<SanPhamRespone> getAll();
+    SELECT new com.example.shopdragonbee.dto.SanPhamDTO(
+        sp.id,
+        sp.ma,
+        sp.tenSanPham,
+        COALESCE(SUM(spct.soLuong), 0), 
+        sp.ngayTao,
+        sp.trangThai
+    )
+    FROM SanPham sp
+    LEFT JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id
+    GROUP BY sp.id, sp.ma, sp.tenSanPham, sp.ngayTao, sp.trangThai
+    ORDER BY sp.ngayTao DESC
+""")
+    List<SanPhamDTO> getAll();
+
 
     @Query("""
-        SELECT new com.example.shopdragonbee.respone.SanPhamRespone(
+        SELECT new com.example.shopdragonbee.dto.SanPhamDTO(
             sp.id,
             sp.ma,
             sp.tenSanPham,
@@ -41,11 +44,11 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
         LEFT JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id
         GROUP BY sp.id, sp.ma, sp.tenSanPham, sp.ngayTao, sp.trangThai
     """)
-    Page<SanPhamRespone> getAllPaged(Pageable pageable);
+    Page<SanPhamDTO> getAllPaged(Pageable pageable);
 
     // tìm kiếm và bộ lọc
     @Query("""
-    SELECT new com.example.shopdragonbee.respone.SanPhamRespone(
+    SELECT new com.example.shopdragonbee.dto.SanPhamDTO(
         sp.id,
         sp.ma,
         sp.tenSanPham,
@@ -59,7 +62,7 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
     AND (:trangThai IS NULL OR LOWER(sp.trangThai) = LOWER(:trangThai))
     GROUP BY sp.id, sp.ma, sp.tenSanPham, sp.ngayTao, sp.trangThai
 """)
-    Page<SanPhamRespone> searchSanPham(
+    Page<SanPhamDTO> searchSanPham(
             @Param("tenSanPham") String tenSanPham,
             @Param("trangThai") String trangThai,
             Pageable pageable

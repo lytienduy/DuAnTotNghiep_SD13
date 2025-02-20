@@ -2,6 +2,8 @@ package com.example.shopdragonbee.dto;
 
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -9,19 +11,19 @@ import lombok.*;
 public class SanPhamChiTietDTO {
     private Integer id;
     private String ma;
-    private String sanPham; // Tên sản phẩm
-    private String danhMuc; // Danh mục
-    private String thuongHieu; // Thương hiệu
-    private String phongCach; // Phong cách
-    private String chatLieu; // Chất liệu
-    private String mauSac; // Màu sắc
-    private String size; // Kích cỡ
-    private String kieuDang; // Kiểu dáng
-    private String kieuDaiQuan; // Kiểu đai quần
-    private String xuatXu; // Xuất xứ
-    private Integer soLuong; // Số lượng
-    private Double gia; // Giá
-    private String anh; // Ảnh
-    private String trangThai; // Trạng thái
+    private Integer sanPhamId; // ID sản phẩm cha
+    private Integer danhMucId;
+    private Integer thuongHieuId;
+    private Integer phongCachId;
+    private Integer chatLieuId;
+    private Integer mauSacId;
+    private Integer sizeId;
+    private Integer kieuDangId;
+    private Integer kieuDaiQuanId;
+    private Integer xuatXuId;
+    private Integer soLuong = 0;
+    private Double gia = 0.0;
+    private String trangThai;
     private String moTa;
+    private List<AnhSanPhamDTO> anhSanPham;
 }

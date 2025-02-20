@@ -2,21 +2,28 @@ package com.example.shopdragonbee.dto;
 
 import lombok.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SanPhamDTO {
+
+    private Integer id;
+    private String ma;
+    private Long tongSoLuong;
     private String tenSanPham;
-    private String danhMuc;
-    private String thuongHieu;
-    private String phongCach;
-    private String xuatXu;
-    private String chatLieu;
-    private String kieuDang;
-    private String kieuDaiQuan;
+    private LocalDateTime ngayTao;
     private String trangThai;
-    private List<SanPhamChiTietDTO> sanPhamChiTietList;
+
+    // Constructor phù hợp với query trong Repository
+    public SanPhamDTO(Integer id, String ma, String tenSanPham, Long tongSoLuong, LocalDateTime ngayTao, String trangThai) {
+        this.id = id;
+        this.ma = ma;
+        this.tongSoLuong = tongSoLuong;
+        this.tenSanPham = tenSanPham;
+        this.ngayTao = ngayTao;
+        this.trangThai = trangThai;
+    }
 }

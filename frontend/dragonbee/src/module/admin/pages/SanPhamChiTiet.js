@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ArrowBack,Visibility, VisibilityOff  } from "@mui/icons-material";
+import { ArrowBack, Visibility, VisibilityOff } from "@mui/icons-material";
 import {
   Container,
   Typography,
@@ -12,10 +12,12 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Box,
   CircularProgress,
   Button,
   Snackbar,
   Alert,
+  Pagination,
   Grid,
   TextField,
   MenuItem,
@@ -29,8 +31,8 @@ const SanPhamChiTiet = () => {
   const navigate = useNavigate();
   const [chiTietList, setChiTietList] = useState([]); // Khởi tạo mặc định là mảng trống
   const [loading, setLoading] = useState(true);
-    const [openSnackbar, setOpenSnackbar] = useState(false); // Mở đóng Snackbar
-    const [snackbarMessage, setSnackbarMessage] = useState(""); // Nội dung thông báo
+  const [openSnackbar, setOpenSnackbar] = useState(false); // Mở đóng Snackbar
+  const [snackbarMessage, setSnackbarMessage] = useState(""); // Nội dung thông báo
   const [filters, setFilters] = useState({
     search: "",
     trangThai: "",
@@ -45,31 +47,84 @@ const SanPhamChiTiet = () => {
     kieuDaiQuan: "",
     priceRange: [100000, 5000000],
   });
-
+  const [size, setSize] = useState(5); // Hoặc giá trị mặc định phù hợp
 
   const [showAllDetails, setShowAllDetails] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-   const [selectedItems, setSelectedItems] = useState([]); // Dùng để lưu trữ các sản phẩm được chọn
+  const [itemsPerPage, setItemsPerPage] = useState(5); // Mặc định là 5 item mỗi trang
+  const [selectedItems, setSelectedItems] = useState([]); // Dùng để lưu trữ các sản phẩm được chọn
   const [newQuantity, setNewQuantity] = useState(""); // Lưu trữ giá trị số lượng nhập vào
   const [newPrice, setNewPrice] = useState(""); // Lưu trữ giá trị giá nhập vào
+  const fetchSanPhamChiTietById = async (id) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/sanpham/by-san-pham/${id}`, {
+        params: {
+          page: page - 1,
+          size: itemsPerPage,
+        },
+      });
+      setChiTietList(response.data.content);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết theo ID:", error);
+    }
+  };
+  
+  // Hàm tải mã QR cho sản phẩm chi tiết
+  const handleDownloadQRCode = async (productDetailId) => {
+    try {
+      // Kiểm tra nếu sản phẩm chi tiết đã có trong chiTietList
+      const productDetail = chiTietList.find(item => item.id === productDetailId);
+      if (!productDetail) {
+        alert("Sản phẩm chi tiết không tồn tại.");
+        return;
+      }
+  
+      // Lấy mã sản phẩm chi tiết
+      const response = await axios.get(`http://localhost:8080/api/qr-code/${productDetailId}`, {
+        responseType: 'arraybuffer', // Để nhận dữ liệu hình ảnh dưới dạng binary
+      });
+  
+      const blob = new Blob([response.data], { type: 'image/png' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${productDetail.ma}.png`;  // Tên file là mã sản phẩm
+      link.click();
+    } catch (error) {
+      console.error("Lỗi khi tải mã QR:", error);
+      alert("Có lỗi khi tải mã QR.");
+    }
+  };
+  
+  // Hàm lấy tất cả sản phẩm chi tiết
+  const fetchAllSanPhamChiTiet = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/sanpham/chi-tiet/all', {
+        params: {
+          page: page - 1,
+          size: itemsPerPage,
+        },
+      });
+      setChiTietList(response.data.content);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
+    }
+  };
+  
+
+  // useEffect để gọi API khi id, page, hoặc itemsPerPage thay đổi
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          `http://localhost:8080/api/sanpham/${id}/chi-tiet`,
-          {
-            params: showAllDetails ? { page: page - 1, size: itemsPerPage } : {},
-          }
-        );
-        if (showAllDetails) {
-          setChiTietList(response.data.content || []);
-          setTotalPages(response.data.totalPages || 0);
+        if (!showAllDetails) {
+          // Nếu không hiển thị toàn bộ sản phẩm, lấy theo ID sản phẩm cha
+          await fetchSanPhamChiTietById(id);
         } else {
-          setChiTietList(response.data || []);
-          setTotalPages(0);
+          // Nếu hiển thị toàn bộ, lấy tất cả sản phẩm chi tiết
+          await fetchAllSanPhamChiTiet();
         }
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
@@ -78,13 +133,14 @@ const SanPhamChiTiet = () => {
         setLoading(false);
       }
     };
+
     fetchData();
-  }, [id, showAllDetails, page, itemsPerPage]);
-  
+  }, [id, page, itemsPerPage, showAllDetails]); // Gọi lại khi id, page, itemsPerPage, showAllDetails thay đổi
 
   const handleShowAllToggle = () => {
     setShowAllDetails(!showAllDetails);
-    setPage(1);
+    setPage(1); // Khi đổi trạng thái, reset lại trang về 1
+
     setSnackbarMessage(
       !showAllDetails
         ? "Đang hiển thị toàn bộ sản phẩm chi tiết."
@@ -92,7 +148,6 @@ const SanPhamChiTiet = () => {
     );
     setOpenSnackbar(true);
   };
-
   const handleFilterChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
@@ -130,6 +185,10 @@ const SanPhamChiTiet = () => {
         : [...prevSelected, itemId]
     );
   };
+  // Dowload QR
+  
+
+
   // Kiểm tra chiTietList có phải là mảng và lọc dữ liệu hợp lý
   const filteredData = chiTietList.filter(
     (item) =>
@@ -143,7 +202,8 @@ const SanPhamChiTiet = () => {
       (filters.mauSac === "" || item.mauSac === filters.mauSac) &&
       (filters.size === "" || item.size === filters.size) &&
       (filters.kieuDang === "" || item.kieuDang === filters.kieuDang) &&
-      (filters.kieuDaiQuan === "" || item.kieuDaiQuan === filters.kieuDaiQuan) &&
+      (filters.kieuDaiQuan === "" ||
+        item.kieuDaiQuan === filters.kieuDaiQuan) &&
       item.gia >= filters.priceRange[0] &&
       item.gia <= filters.priceRange[1]
   );
@@ -159,8 +219,6 @@ const SanPhamChiTiet = () => {
     kieuDaiQuan: "Kiểu Đai Quần",
   };
 
-
-
   return (
     <Container maxWidth="lg">
       <Grid
@@ -171,9 +229,14 @@ const SanPhamChiTiet = () => {
       >
         <Typography variant="h4">Chi Tiết Sản Phẩm</Typography>
         <Grid>
-          <Button variant="contained" color="primary" onClick={handleUpdateDetails}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleUpdateDetails}
+          >
             Cập Nhật Sản Phẩm
           </Button>
+          
         </Grid>
       </Grid>
       <Button color="black" sx={{ mr: 2 }} onClick={() => navigate("/sanpham")}>
@@ -238,24 +301,27 @@ const SanPhamChiTiet = () => {
         </Grid>
       </Paper>
       {/* Toggle Button */}
-      <Button
-        variant="contained"
-        onClick={handleShowAllToggle}
-        sx={{
-          mb: 2,
-          backgroundColor: "lightblue",
-          "&:hover": { backgroundColor: "lightblue" },
-        }}
-        startIcon={showAllDetails ? <VisibilityOff /> : <Visibility />}
-      >
-        {showAllDetails ? "Ẩn chi tiết" : "Hiển thị toàn bộ"}
-      </Button>
-
-
+      <Grid container justifyContent="flex-end" spacing={1}>
+  <Grid item>
+    <Button
+      variant="contained"
+      onClick={handleShowAllToggle}
+      sx={{
+        backgroundColor: "lightblue",
+        "&:hover": { backgroundColor: "lightblue" },
+      }}
+      startIcon={showAllDetails ? <VisibilityOff /> : <Visibility />}
+    >
+      {showAllDetails ? "Ẩn chi tiết" : "Hiển thị toàn bộ"}
+    </Button>
+  </Grid>
+  
+</Grid>
 
       {loading ? (
         <CircularProgress />
       ) : (
+        <>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -306,19 +372,20 @@ const SanPhamChiTiet = () => {
                 <TableCell>
                   <strong>Trạng Thái</strong>
                 </TableCell>
+                <TableCell>Download QR</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredData.length === 0 ? (
+              {chiTietList.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={14} align="center">
                     Không có dữ liệu phù hợp
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredData.map((item, index) => (
+                chiTietList.map((item, index) => (
                   <TableRow key={item.id}>
-                      <TableCell>
+                    <TableCell>
                       <input
                         type="checkbox"
                         checked={selectedItems.includes(item.id)}
@@ -340,51 +407,102 @@ const SanPhamChiTiet = () => {
                     <TableCell>{item.soLuong}</TableCell>
                     <TableCell>{item.gia}</TableCell>
                     <TableCell>{item.trangThai}</TableCell>
+                    <TableCell>
+                    <Button
+    variant="contained"
+    color="primary"
+    onClick={() => handleDownloadQRCode(item.id)}
+    sx={{
+        backgroundColor: 'primary', // Màu xanh nhạt
+        '&:hover': {
+            backgroundColor: '#lightblue', // Màu khi di chuột vào (highlight)
+            transform: 'scale(0.9)', // Kích thước nhỏ lại khi hover (giảm 10% kích thước)
+            transition: 'transform 0.2s ease-in-out', // Thêm hiệu ứng chuyển động khi hover
+        },
+        padding: '6px 12px', // Giảm padding để làm button nhỏ hơn
+        fontSize: '0.875rem', // Giảm kích thước chữ để button nhỏ gọn hơn
+        borderRadius: '4px', // Thêm border radius nếu muốn
+        boxShadow: 'none', // Tắt bóng đổ nếu không cần
+        textTransform: 'none', // Tắt chữ in hoa nếu muốn
+        minWidth: '120px', // Đặt chiều rộng tối thiểu cho button
+    }}
+>
+    Download QR
+</Button>
+
+
+                    </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
           </Table>
         </TableContainer>
+
+        <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mt: 2, p: 1, background: "#f1f1f1", borderRadius: "5px" }}
+          >
+            {/* Dropdown to select number of items per page */}
+            <Box display="flex" alignItems="center">
+              <Typography variant="body2" sx={{ mr: 1 }}>
+                Xem
+              </Typography>
+              <Select
+                value={size}
+                onChange={(e) => {
+                  setSize(e.target.value);
+                  setPage(1); // Reset to first page
+                }}
+                size="small"
+                sx={{ width: 70, backgroundColor: "white" }}
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+              </Select>
+              <Typography variant="body2" sx={{ ml: 1 }}>
+                sản phẩm
+              </Typography>
+            </Box>
+
+            {/* Pagination controls */}
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={(event, value) => setPage(value)}
+              variant="outlined"
+              shape="rounded"
+              color="primary"
+              siblingCount={0} // Keep it compact
+              sx={{
+                "& .MuiPaginationItem-root": {
+                  backgroundColor: "white",
+                  border: "1px solid #ddd",
+                  "&.Mui-selected": {
+                    backgroundColor: "lightblue",
+                    color: "white",
+                  },
+                },
+              }}
+            />
+          </Box>
+        </>
+        
       )}
 
-{/* Pagination - Only show when "Hiển thị toàn bộ" is active */}
-{showAllDetails && totalPages > 1 && (
-        <Grid container justifyContent="center" alignItems="center" sx={{ mt: 3 }}>
-          <Button
-            variant="outlined"
-            disabled={page <= 1}
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          >
-            Prev
-          </Button>
-
-          <Typography sx={{ mx: 2 }} variant="h6">
-            {`${page} / ${totalPages}`}
-          </Typography>
-
-          <Button
-            variant="outlined"
-            disabled={page >= totalPages}
-            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-          >
-            Next
-          </Button>
-        </Grid>
-)}
-
-       {/* Snackbar thông báo */}
-       <Snackbar
-      open={openSnackbar}
-      autoHideDuration={3000}
-      onClose={() => setOpenSnackbar(false)}
-      anchorOrigin={{ vertical: "top", horizontal: "right" }} // Hiển thị ở góc phải trên
-    >
-      <Alert severity="success">{snackbarMessage}</Alert>
-    </Snackbar>
+      {/* Snackbar thông báo */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }} // Hiển thị ở góc phải trên
+      >
+        <Alert severity="success">{snackbarMessage}</Alert>
+      </Snackbar>
     </Container>
-    
-      
   );
 };
 

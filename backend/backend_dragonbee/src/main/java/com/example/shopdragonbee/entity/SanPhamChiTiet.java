@@ -20,7 +20,7 @@ public class SanPhamChiTiet {
     private String ma;
 
     @Column(name = "so_luong", nullable = false)
-    private Integer soLuong;
+    private Integer soLuong = 0;
 
     @Column(name = "mo_ta")
     private String moTa;
@@ -29,7 +29,7 @@ public class SanPhamChiTiet {
     private String trangThai;
 
     @Column(name = "gia", nullable = false)
-    private Double gia;
+    private Double gia = 0.0;
 
     @ManyToOne
     @JoinColumn(name = "id_san_pham", nullable = false)
