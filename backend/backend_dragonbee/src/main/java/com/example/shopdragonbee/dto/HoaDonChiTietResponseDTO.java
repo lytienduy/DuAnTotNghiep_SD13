@@ -40,6 +40,8 @@ public class HoaDonChiTietResponseDTO {
         private List<DanhSachSanPhamDTO> listDanhSachSanPham;
 
         private List<LichSuHoaDonDTO> listLichSuHoaDon;
+
+        private Float tongTienKhachHangDaThanhToan;
     }
 
     //    private List<ThanhToanHoaDon> listThanhToanHoaDon;

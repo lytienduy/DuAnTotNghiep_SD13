@@ -7,6 +7,7 @@ import com.example.shopdragonbee.entity.HoaDon;
 import com.example.shopdragonbee.entity.LichSuHoaDon;
 import com.example.shopdragonbee.repository.HoaDonRepository;
 import com.example.shopdragonbee.repository.LichSuHoaDonRepository;
+import com.example.shopdragonbee.repository.ThanhToanHoaDonRepository;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ public class HoaDonService {
 
     @Autowired
     private LichSuHoaDonRepository lichSuHoaDonRepository;
+
+    @Autowired
+    private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
 
     public List<HoaDonResponseDTO> getAllHoaDons() {
         List<HoaDon> hoaDons = hoaDonRepository.findAll();
@@ -115,7 +119,7 @@ public class HoaDonService {
                 LichSuHoaDon lichSuHoaDon = new LichSuHoaDon();
                 lichSuHoaDon.setHoaDon(hoaDon);
                 lichSuHoaDon.setHanhDong(hanhDong);
-                lichSuHoaDon.setGhiChu(hanhDong + " trạng thái hóa đơn(" + trangThai + ")\n" +
+                lichSuHoaDon.setGhiChu(hanhDong + " trạng thái hóa đơn(" + trangThai + ") \n" +
                         "Lý do: " + lyDo);
                 lichSuHoaDon.setNgayTao(LocalDateTime.now());
                 lichSuHoaDon.setNguoiTao("Mai The Phong");
@@ -167,7 +171,8 @@ public class HoaDonService {
                 hoaDon.getTrangThai(),
                 listThanhToan,
                 listDanhSachSanPham,
-                listLichSuHoaDon
+                listLichSuHoaDon,
+                thanhToanHoaDonRepository.tinhTongTienDaThanhToanByHoaDonId(hoaDon.getId())
         );
     }
 

@@ -2,12 +2,9 @@ package com.example.shopdragonbee.controller;
 
 import com.example.shopdragonbee.dto.HoaDonChiTietResponseDTO;
 import com.example.shopdragonbee.dto.HoaDonResponseDTO;
-import com.example.shopdragonbee.entity.HoaDon;
 import com.example.shopdragonbee.service.HoaDonService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +12,7 @@ import java.util.Map;
 @RequestMapping("/hoa-don")
 // Cho phép gọi API từ frontend
 //@CrossOrigin(origins = "*")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001","http://localhost:3002"})
 public class HoaDonController {
 
     @Autowired
@@ -28,7 +25,6 @@ public class HoaDonController {
             @RequestParam(required = false) String denNgay,
             @RequestParam(required = false) String loaiDon,
             @RequestParam(required = false) String trangThai) {
-
         List<HoaDonResponseDTO> hoaDons = hoaDonService.locHoaDon(timKiem, tuNgay, denNgay, loaiDon, trangThai);
         return hoaDons;
     }

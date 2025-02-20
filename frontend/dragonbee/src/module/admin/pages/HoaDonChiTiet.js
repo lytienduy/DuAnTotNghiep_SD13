@@ -2,12 +2,15 @@ import React, { useRef, useEffect, useState } from "react";
 import axios from "axios"; // Import axios
 import {
   Box, Table, TableBody,
-  TableCell, TableContainer, TableHead, TableRow, Typography, Button, Chip, Paper, Container, CircularProgress, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Stack,
-  
+  TableCell, TableContainer, TableHead, TableRow, Typography, Button, Chip, Paper, Container, CircularProgress, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Stack, Snackbar, Alert
+
 } from "@mui/material";
-import { Delete, History, Close, ArrowBack, ArrowForward} from '@mui/icons-material';
+import { Delete, History, Close, ArrowBack, ArrowForward } from '@mui/icons-material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useParams,useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 
 
 const HoaDonChiTiet = () => {
@@ -17,12 +20,55 @@ const HoaDonChiTiet = () => {
   const { id } = useParams(); //Lấy id khi truyền đến trang này bằng useParams
   const [hoaDon, setHoaDon] = useState({}); //Biến lưu dữ liệu hóa đơn
   const [loading, setLoading] = useState(true);//Biến lưu giá trị loading dữ liệu
-  const [error, setError] = useState(null);//Biến báo lỗi
+  const [error, setError] = useState(false);//Biến báo lỗi
   const [imageIndexes, setImageIndexes] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại 
-  const [lyDoHuy, setLyDoHuy] = useState(""); // Biến lưu lý do hủy hóa đơn khi thực hiện chức năng hủy hóa đơn
   const [openLyDo, setOpenLyDo] = useState(false);  // Biến lưu giá trị mở modal nhập lý do khi thực hiện chức năng hủy hóa đơn
   const [openConfirm, setOpenConfirm] = useState(false); // Mở modal xác nhận
   const [open, setOpen] = useState(false);//Biến lưu giá trị mở modal xem lịch sử hóa đơn
+  const [openGhiChuPrevious, setOpenGhiChuPrevious] = useState(false);  // Biến lưu giá trị mở modal nhập lý do khi thực hiện chức năng hủy hóa đơn
+  const [openConfirmPrevious, setOpenConfirmPrevious] = useState(false); // Mở modal xác nhận
+  const [openGhiChuNext, setOpenGhiChuNext] = useState(false);
+  const [openConfirmNext, setOpenConfirmNext] = useState(false); // Mở modal xác nhận
+  const [ghiChuTrangThai, setGhiChuTrangThai] = useState("");
+
+  //Thông báo thành công
+  const showSuccessToast = (message) => {
+    toast.success(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: {
+        backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+        color: "white", // Chữ trắng nổi bật
+        fontSize: "14px", // Nhỏ hơn một chút
+        fontWeight: "500",
+        borderRadius: "8px",
+      }
+    });
+  };
+  const showErrorToast = (message) => {
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: {
+        backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+        color: "white", // Chữ trắng nổi bật
+        fontSize: "14px", // Nhỏ hơn một chút
+        fontWeight: "500",
+        borderRadius: "8px",
+      }
+    });
+  };
+
   //Hàm mở modal nhập lý do hủy hóa đơn khi thực hiện chức năng hủy hóa đơn
   const handleOpenLyDo = () => {
     setOpenLyDo(true);
@@ -30,38 +76,50 @@ const HoaDonChiTiet = () => {
 
   //Hàm kiểm tra check nhạp lý do chưa để mở confirm khi thực hiện chức năng hủy hóa đơn
   const handleNextConfirm = () => {
-    if (!lyDoHuy.trim()) { //Check nếu nhập lý do hủy hóa đơn
-      alert("⚠️ Vui lòng nhập lý do hủy hóa đơn!");
-      return;
+    if (!ghiChuTrangThai.trim()) { //Check nếu nhập lý do hủy hóa đơn
+      setError(true);
+    } else {
+      setError(false);
+      setOpenLyDo(false);
+      setOpenConfirm(true);
     }
-    setOpenLyDo(false);
-    setOpenConfirm(true);
+  };
+  const handleNextConfirmPrevious = () => {
+    if (!ghiChuTrangThai.trim()) { //Check nếu nhập lý do hủy hóa đơn
+      setError(true);
+    } else {
+      setError(false);
+      setOpenGhiChuPrevious(false);
+      setOpenConfirmPrevious(true);
+    }
+
+  };
+  const handleNextConfirmNext = () => {
+    setOpenGhiChuNext(false);
+    setOpenConfirmNext(true);
   };
 
   //Hàm thực hiện chức năng hủy hóa đơn gọi api
   const handleHuyHoaDon = async () => {
     try {
       const response = await axios.post(`http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, {
-        lyDo: lyDoHuy,
+        lyDo: ghiChuTrangThai,
         trangThai: "Đã hủy",
         hanhDong: "Hủy"
       });
       if (response.data) {
-        alert("✅ Hóa đơn đã được hủy thành công!");
+        setOpenConfirm(false);
+        setGhiChuTrangThai("");
         fetchHoaDon();
+        showSuccessToast("Hủy hóa đơn thành công")
       } else {
-        alert("❌ Hủy hóa đơn thất bại. Vui lòng thử lại!");
+        showErrorToast("Hủy hóa đơn đã có lỗi xảy ra");
       }
     } catch (error) {
-      alert("⚠️ Đã có lỗi xảy ra khi hủy hóa đơn!");
+      showErrorToast("Hủy hóa đơn đã có lỗi xảy ra");
       console.error(error);
     }
-    setOpenConfirm(false);
   };
-
-  //Hàm đống mỏ lịch sử hóa đơn
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
 
 
   //Hàm trả về CSS khung theo trạng thái
@@ -105,7 +163,7 @@ const HoaDonChiTiet = () => {
       const response = await axios.get(`http://localhost:8080/hoa-don/${id}`);
       setHoaDon(response.data); // Dữ liệu được lấy từ response.data
     } catch (err) {
-      setError(err.message);
+      console.log(err)
     } finally {
       setLoading(false);
     }
@@ -131,7 +189,6 @@ const HoaDonChiTiet = () => {
         return newIndexes;
       });
     }, 3000); // Chuyển ảnh sau mỗi 3 giây
-
     return () => clearInterval(interval);
   }, [hoaDon?.listDanhSachSanPham]);
 
@@ -141,14 +198,6 @@ const HoaDonChiTiet = () => {
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
         <CircularProgress />
         <Typography ml={2}>Đang tải dữ liệu...</Typography>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box textAlign="center" color="error.main">
-        <Typography variant="h5">❌ Lỗi: {error}</Typography>
       </Box>
     );
   }
@@ -173,20 +222,22 @@ const HoaDonChiTiet = () => {
       const trangThaiCanDoi = steps[currentStep - 1];
       // Gọi API để thay đổi trạng thái
       const response = await axios.post(
-        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: "Hoàn tác" }
+        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: "Hoàn tác", lyDo: ghiChuTrangThai }
       );
       if (response.data) {
-        alert("Cập nhật trạng thái thành công!");
+        setGhiChuTrangThai("");
+        setOpenConfirmPrevious(false);
         fetchHoaDon();
+        showSuccessToast("Hoàn tác trạng thái hóa đơn thành công");
       } else {
-        alert("Cập nhật thất bại, thử lại!");
+        showErrorToast("Hoàn tác thất bại, thử lại!");
       }
-      console.log(response.data);  // In kết quả trả về
     } catch (error) {
-      alert("Lỗi khi cập nhật trạng thái!");
+      showErrorToast("Lỗi khi hoàn tác hóa đơn!");
       console.error(error.response || error.message);
     }
   };
+
   const handleNext = async () => {
     if (currentStep === steps.length - 1) return;
 
@@ -195,37 +246,35 @@ const HoaDonChiTiet = () => {
       const trangThaiCanDoi = steps[currentStep + 1];
       // Gọi API để thay đổi trạng thái
       const response = await axios.post(
-        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: trangThaiCanDoi === "Hoàn thành" ? "Hoàn thành" : "Cập nhật" }
+        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: trangThaiCanDoi === "Hoàn thành" ? "Hoàn thành" : "Cập nhật", lyDo: ghiChuTrangThai }
       );
       if (response.data) {
-        alert("Cập nhật trạng thái thành công!");
+        setGhiChuTrangThai("");
+        setOpenConfirmNext(false);
         fetchHoaDon();
+        showSuccessToast("Cập nhật trạng thái hóa đơn thành công");
       } else {
-        alert("Cập nhật thất bại, thử lại!");
+        showErrorToast("Cập nhật thất bại, thử lại!");
       }
       console.log(response.data);  // In kết quả trả về
     } catch (error) {
-      alert("Lỗi khi cập nhật trạng thái!");
+      showErrorToast("Lỗi khi cập nhật hóa đơn!");
       console.error(error.response || error.message);
     }
   };
 
 
-  //Trở lại hóa đơn
-  const handleBack = () => {
-    navigate(`/hoaDon`);
-  }
 
   return (
     <Container>
       <Box display="flex" alignItems="center" mb={3}>
-        <IconButton onClick={handleBack} sx={{ marginRight: 2 }}>
+        <IconButton onClick={() => navigate(`/hoaDon`)} sx={{ marginRight: 2 }}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" sx={{ fontWeight: "bold" }}>
           Quản lý đơn hàng{" "}
           <Box component="span" sx={{ color: "#b0b0b0", fontWeight: "bold" }} >
-            / Chi tiết hóa đơn {hoaDon.ma} 
+            / Chi tiết hóa đơn {hoaDon.ma}
           </Box>
         </Typography>
       </Box>
@@ -315,11 +364,50 @@ const HoaDonChiTiet = () => {
               background: "#2e7d32",
               "&:hover": { background: "#2e7d32" },
             }}
-            onClick={handlePrevious}
-            disabled={currentStep === 0 || isCanceled || isComplete} // Vô hiệu hóa khi ở trạng thái đầu tiên
+            onClick={() => setOpenGhiChuPrevious(true)}
+            disabled={currentStep === 0 || isCanceled || isComplete} // Vô hiệu hóa khi ở trạng thái đầu tiên hoặc khi hóa đơn đã hủy hoặc hoàn thành
           >
             Previous
           </Button>
+          <Dialog open={openGhiChuPrevious} onClose={() => setOpenGhiChuPrevious(false)}>
+            <DialogTitle>Nhập lý do hoàn tác trạng thái</DialogTitle>
+            <DialogContent>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="* Nhập lý do hoàn tác trạng thái:"
+                variant="outlined"
+                value={ghiChuTrangThai}
+                onChange={(e) => { setGhiChuTrangThai(e.target.value); setError(false) }}
+                error={error} // Hiển thị lỗi nếu có
+                helperText={error ? "Bạn chưa nhập lý do!" : ""} // Nội dung lỗi
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenGhiChuPrevious(false)} color="primary">
+                Hủy bỏ
+              </Button>
+              <Button onClick={handleNextConfirmPrevious} color="warning" variant="contained">
+                Tiếp tục
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog open={openConfirmPrevious} onClose={() => setOpenConfirmPrevious(false)}>
+            <DialogTitle>Xác nhận hoàn tác trạng thái hóa đơn</DialogTitle>
+            <DialogContent>
+              <p><b>Lý do hoàn tác trạng thái:</b> {ghiChuTrangThai}</p>
+              <p>Bạn có chắc chắn muốn hoàn tác trạng thái hóa đơn này không?</p>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenConfirmPrevious(false)} color="primary">
+                Quay lại
+              </Button>
+              <Button onClick={handlePrevious} color="warning" variant="contained">
+                Xác nhận hoàn tác
+              </Button>
+            </DialogActions>
+          </Dialog>
 
           {/* Nút Next */}
           <Button
@@ -332,11 +420,60 @@ const HoaDonChiTiet = () => {
               background: "#3498EA",
               "&:hover": { background: "#3498EA" },
             }}
-            onClick={handleNext}
-            disabled={isCanceled || isComplete} // Vô hiệu hóa khi ở trạng thái đầu tiên
+            onClick={() => setOpenGhiChuNext(true)}
+            disabled={isCanceled || isComplete ||
+              (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Chờ thanh toán"
+                (!hoaDon.listThanhToanHoaDon ||              // Nếu danh sách lịch sử thanh toán không tồn tại
+                  hoaDon.listThanhToanHoaDon.length === 0 ||  // Hoặc danh sách rỗng
+                  hoaDon.listThanhToanHoaDon.reduce((sum, item) => sum + item.soTien, 0) < hoaDon.tongTienHang)) ||
+              (hoaDon.trangThai === "Đã xác nhận" &&  // Nếu trạng thái là "Đã xác nhận"
+                (!hoaDon.listDanhSachSanPham || hoaDon.listDanhSachSanPham.length === 0)) ||  // Nếu danh sách sản phẩm rỗng thì vô hiệu hóa
+              (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Đã xác nhận"
+                (!hoaDon.listDanhSachSanPham || hoaDon.listDanhSachSanPham.length === 0))
+            }
           >
             Next
           </Button>
+          <Dialog open={openGhiChuNext} onClose={() => setOpenGhiChuNext(false)}>
+            <DialogTitle>Nhập lý do thay đổi trạng thái</DialogTitle>
+            <DialogContent>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Nhập lý do cập nhật trạng thái trạng thái(Có thể nhập hoặc không):"
+                variant="outlined"
+                placeholder="Có thể nhập hoặc để trống"
+                value={ghiChuTrangThai}
+                onChange={(e) => { setGhiChuTrangThai(e.target.value); setError(false) }}
+              // error={error} // Hiển thị lỗi nếu có
+              // helperText={error ? "Bạn chưa nhập lý do!" : ""} // Nội dung lỗi
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenGhiChuNext(false)} color="primary">
+                Hủy bỏ
+              </Button>
+              <Button onClick={handleNextConfirmNext} color="primary" variant="contained">
+                Tiếp tục
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog open={openConfirmNext} onClose={() => setOpenConfirmNext(false)}>
+            <DialogTitle>Xác nhận hoàn tác trạng thái hóa đơn</DialogTitle>
+            <DialogContent>
+              <p><b>Lý do hoàn tác trạng thái:</b> {ghiChuTrangThai}</p>
+              <p>Bạn có chắc chắn muốn hoàn tác trạng thái hóa đơn này không?</p>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenConfirmNext(false)} color="primary">
+                Quay lại
+              </Button>
+              <Button onClick={handleNext} color="primary" variant="contained">
+                Xác nhận cập nhật
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Stack>
 
         <Button disabled={isCanceled || isComplete} variant="outlined" color="error" startIcon={<Delete />} sx={{ borderRadius: 3, px: 3 }} onClick={() => handleOpenLyDo()}>
@@ -351,8 +488,10 @@ const HoaDonChiTiet = () => {
               rows={3}
               label="Lý do hủy"
               variant="outlined"
-              value={lyDoHuy}
-              onChange={(e) => setLyDoHuy(e.target.value)}
+              value={ghiChuTrangThai}
+              onChange={(e) => { setGhiChuTrangThai(e.target.value); setError(false) }}
+              error={error} // Hiển thị lỗi nếu có
+              helperText={error ? "Bạn chưa nhập lý do!" : ""} // Nội dung lỗi
             />
           </DialogContent>
           <DialogActions>
@@ -367,7 +506,7 @@ const HoaDonChiTiet = () => {
         <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
           <DialogTitle>Xác nhận hủy hóa đơn</DialogTitle>
           <DialogContent>
-            <p><b>Lý do hủy:</b> {lyDoHuy}</p>
+            <p><b>Lý do hủy:</b> {ghiChuTrangThai}</p>
             <p>Bạn có chắc chắn muốn hủy hóa đơn này không?</p>
           </DialogContent>
           <DialogActions>
@@ -379,13 +518,13 @@ const HoaDonChiTiet = () => {
             </Button>
           </DialogActions>
         </Dialog>
-        <Button variant="outlined" color="secondary" startIcon={<History />} sx={{ borderRadius: 3, px: 3 }} onClick={handleOpen} >
+        <Button variant="outlined" color="secondary" startIcon={<History />} sx={{ borderRadius: 3, px: 3 }} onClick={()=>setOpen(true)} >
           Lịch sử hóa đơn
         </Button>
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <Dialog open={open} onClose={()=>setOpen(false)} maxWidth="md" fullWidth>
           <DialogTitle>
             Lịch sử hóa đơn
-            <IconButton onClick={handleClose} sx={{ position: "absolute", right: 16, top: 16 }}>
+            <IconButton onClick={()=>setOpen(false)}sx={{ position: "absolute", right: 16, top: 16 }}>
               <Close />
             </IconButton>
           </DialogTitle>
@@ -428,7 +567,7 @@ const HoaDonChiTiet = () => {
 
           {/* Nút đóng dialog */}
           <DialogActions>
-            <Button onClick={handleClose} color="primary" variant="contained">
+            <Button onClick={()=>setOpen(false)} color="primary" variant="contained">
               Đóng
             </Button>
           </DialogActions>
@@ -666,7 +805,7 @@ const HoaDonChiTiet = () => {
           </Typography>
         </Box>
       </Box>
-
+      <ToastContainer /> {/* Quan trọng để hiển thị toast */}
     </Container>
 
 

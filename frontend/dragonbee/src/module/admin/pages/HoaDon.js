@@ -37,7 +37,7 @@ const HoaDon = () => {
 
 
     // Chuẩn bị dữ liệu Excel
-    const data = paginatedOrders.map((order, index) => ({
+    const data = orders.map((order, index) => ({
       STT: index + 1,
       "Mã hóa đơn": order.ma,
       "Người nhận hàng": order.nguoiNhanHang,
