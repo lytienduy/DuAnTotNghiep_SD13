@@ -773,10 +773,11 @@ const HoaDonChiTiet = () => {
         </Box>
 
         {/* Phí ship */}
-        <Box display="flex" justifyContent="space-between" mb={1}>
-          <Typography variant="body1" fontWeight={500}>Phí vận chuyển:</Typography>
-          <Typography variant="body1" fontWeight={500}>{hoaDon.phiVanChuyen.toLocaleString()} đ</Typography>
-        </Box>
+        {hoaDon.phiVanChuyen && (
+          <Box display="flex" justifyContent="space-between" mb={1}>
+            <Typography variant="body1" fontWeight={500}>Phí vận chuyển:</Typography>
+            <Typography variant="body1" fontWeight={500}>{hoaDon.phiVanChuyen.toLocaleString()} đ</Typography>
+          </Box>)}
 
         {/* Mã voucher */}
         {hoaDon.maVoucher && (

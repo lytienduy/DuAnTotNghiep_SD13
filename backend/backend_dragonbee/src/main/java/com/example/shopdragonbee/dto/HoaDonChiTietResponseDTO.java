@@ -36,6 +36,7 @@ public class HoaDonChiTietResponseDTO {
         private Float phiVanChuyen;
         private String maVoucher;
         private String trangThai;
+        private LocalDateTime ngayTao;
         private List<ThanhToanHoaDonDTO> listThanhToanHoaDon;
 
         private List<DanhSachSanPhamDTO> listDanhSachSanPham;

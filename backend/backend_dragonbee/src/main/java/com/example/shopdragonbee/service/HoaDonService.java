@@ -164,6 +164,14 @@ public class HoaDonService {
         if (hoaDon.getPhieuGiamGia() != null) {
             maPhieuGiamGia = hoaDon.getPhieuGiamGia().getMa();
         }
+        String maKhachHang = null;
+        String tenKhachHang = null;
+        String sdtKhachHang = null;
+        if (hoaDon.getKhachHang() != null) {
+            maKhachHang = hoaDon.getKhachHang().getMa();
+            tenKhachHang = hoaDon.getKhachHang().getTenKhachHang();
+            sdtKhachHang = hoaDon.getKhachHang().getSdt();
+        }
         return new HoaDonChiTietResponseDTO.HoaDonDTO(
                 hoaDon.getId(),
                 hoaDon.getMa(),
@@ -173,14 +181,15 @@ public class HoaDonService {
                 hoaDon.getSdt(),
                 hoaDon.getEmailNguoiNhan(),
                 hoaDon.getDiaChiNhanHang(),
-                hoaDon.getKhachHang().getMa(),
-                hoaDon.getKhachHang().getTenKhachHang(),
-                hoaDon.getKhachHang().getSdt(),
+                maKhachHang,
+                tenKhachHang,
+                sdtKhachHang,
                 hoaDon.getTongTien(),
                 hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()),
                 hoaDon.getPhiShip(),
                 maPhieuGiamGia,
                 hoaDon.getTrangThai(),
+                hoaDon.getNgayTao(),
                 listThanhToan,
                 listDanhSachSanPham,
                 listLichSuHoaDon
