@@ -12,7 +12,7 @@ import java.util.Map;
 @RequestMapping("/hoa-don")
 // Cho phép gọi API từ frontend
 //@CrossOrigin(origins = "*")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001","http://localhost:3002","http://localhost:3004"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class HoaDonController {
 
     @Autowired
