@@ -144,7 +144,7 @@ const HoaDon = () => {
           };
 
           printWindow.print();
-        }, 1000);
+        }, 500);
       }
     } catch (error) {
       showErrorToast("Lỗi khi tải hóa đơn, vui lòng thử lại!");
@@ -598,10 +598,9 @@ const HoaDon = () => {
             onClick={() => handleChangePage(page - 1)}
             disabled={page === 0}
             sx={{ borderRadius: "50%", minWidth: 40, width: 40, height: 40 }}
-          >
+          >          
             ‹
           </Button>
-
           {/* Các số trang */}
           {Array.from({ length: endPage - startPage }, (_, i) => startPage + i).map((pageNum) => (
             <Button
