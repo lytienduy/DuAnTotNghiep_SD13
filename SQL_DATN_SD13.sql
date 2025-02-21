@@ -619,3 +619,9 @@ INSERT INTO dot_giam_gia_chi_tiet (id_dot_giam_gia, id_chi_tiet_san_pham, trang_
 
 ALTER TABLE phieu_giam_gia ADD trang_thai_tuy_chinh BIT DEFAULT 0;
 
+ALTER TABLE nhan_vien
+ADD cccd NVARCHAR(20),    -- Thêm cột CCCD
+    anh NVARCHAR(250);
+
+ALTER TABLE nhan_vien
+ADD CONSTRAINT UC_cccd UNIQUE (cccd);
