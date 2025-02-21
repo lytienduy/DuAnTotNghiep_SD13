@@ -290,7 +290,8 @@ const ThemPhieuGiamGia = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", padding: 3 }}>
+    <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", padding: 3, margin: "auto",  // Căn giữa nội dung
+      borderRadius: 2 }}>
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle sx={{ textAlign: "center" }}>
           <InfoOutlinedIcon sx={{ fontSize: 70, color: "#1976D2", marginBottom: 1 }} />
@@ -310,7 +311,7 @@ const ThemPhieuGiamGia = () => {
       <Paper
         elevation={3}
         sx={{
-          maxWidth: "1200px",  // Giới hạn chiều rộng 
+          // maxWidth: "1200px",  // Giới hạn chiều rộng 
           margin: "auto",  // Căn giữa nội dung
           padding: 3,
           borderRadius: 2,

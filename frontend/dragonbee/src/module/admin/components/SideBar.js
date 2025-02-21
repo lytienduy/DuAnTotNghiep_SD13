@@ -117,9 +117,9 @@ const Sidebar = ({ sx }) => {
 
           {/* POS */}
           <ListItemButton
-            component={Link}
-            to="/banTaiQuay"
-
+            component="a"
+            href="/banTaiQuay"
+            target="_blank" // Mở trong tab mới
             sx={{
               borderRadius: 3,
               backgroundColor: isActive('/banTaiQuay') ? 'rgb(52, 152, 234)' : 'transparent',
@@ -241,20 +241,20 @@ const Sidebar = ({ sx }) => {
             {isSidebarOpen && <ListItemText primary="Khách Hàng" primaryTypographyProps={{ fontSize: '13.6px' }} />}
           </ListItemButton>
           <ListItemButton component={Link} to="/nhanvien"
-          sx={{
-            borderRadius: 3,
-            backgroundColor: isActive('/nhanvien') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
-            color: isActive('/nhanvien') ? '#fff' : 'inherit',
-            '&:hover': {
-              backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
-              color: '#fff', // Chữ màu trắng khi hover
-            },
-          }}
+            sx={{
+              borderRadius: 3,
+              backgroundColor: isActive('/nhanvien') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
+              color: isActive('/nhanvien') ? '#fff' : 'inherit',
+              '&:hover': {
+                backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
+                color: '#fff', // Chữ màu trắng khi hover
+              },
+            }}
           >
             <ListItemIcon sx={{
-                color: isActive('/nhanvien') ? '#fff' : 'inherit',
-                minWidth: '40px',
-              }}>
+              color: isActive('/nhanvien') ? '#fff' : 'inherit',
+              minWidth: '40px',
+            }}>
               <PersonIcon />
             </ListItemIcon>
             {isSidebarOpen && <ListItemText primary="Nhân Viên" primaryTypographyProps={{ fontSize: '13.6px' }} />}
