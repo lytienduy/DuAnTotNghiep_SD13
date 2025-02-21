@@ -31,15 +31,19 @@ public class HoaDonChiTietResponseDTO {
         private String maKhachHang;
         private String tenKhachHang;
         private String sdtKhachHang;
-        private Float tongTienHang;
+        private Float tongTienThanhToan;
+        private Float tongTienSanPham;
         private Float phiVanChuyen;
         private String maVoucher;
         private String trangThai;
+        private LocalDateTime ngayTao;
         private List<ThanhToanHoaDonDTO> listThanhToanHoaDon;
 
         private List<DanhSachSanPhamDTO> listDanhSachSanPham;
 
         private List<LichSuHoaDonDTO> listLichSuHoaDon;
+
+//        private Float tongTienKhachHangDaThanhToan;
     }
 
     //    private List<ThanhToanHoaDon> listThanhToanHoaDon;

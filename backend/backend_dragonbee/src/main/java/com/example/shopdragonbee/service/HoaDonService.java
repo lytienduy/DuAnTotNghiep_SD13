@@ -5,8 +5,10 @@ import com.example.shopdragonbee.dto.HoaDonResponseDTO;
 import com.example.shopdragonbee.entity.AnhSanPham;
 import com.example.shopdragonbee.entity.HoaDon;
 import com.example.shopdragonbee.entity.LichSuHoaDon;
+import com.example.shopdragonbee.entity.PhieuGiamGia;
 import com.example.shopdragonbee.repository.HoaDonRepository;
 import com.example.shopdragonbee.repository.LichSuHoaDonRepository;
+import com.example.shopdragonbee.repository.ThanhToanHoaDonRepository;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,9 @@ public class HoaDonService {
 
     @Autowired
     private LichSuHoaDonRepository lichSuHoaDonRepository;
+
+    @Autowired
+    private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
 
     public List<HoaDonResponseDTO> getAllHoaDons() {
         List<HoaDon> hoaDons = hoaDonRepository.findAll();
@@ -115,7 +120,7 @@ public class HoaDonService {
                 LichSuHoaDon lichSuHoaDon = new LichSuHoaDon();
                 lichSuHoaDon.setHoaDon(hoaDon);
                 lichSuHoaDon.setHanhDong(hanhDong);
-                lichSuHoaDon.setGhiChu(hanhDong + " trạng thái hóa đơn(" + trangThai + ")\n" +
+                lichSuHoaDon.setGhiChu(hanhDong + " trạng thái hóa đơn(" + trangThai + ") \n" +
                         "Lý do: " + lyDo);
                 lichSuHoaDon.setNgayTao(LocalDateTime.now());
                 lichSuHoaDon.setNguoiTao("Mai The Phong");
@@ -128,6 +133,16 @@ public class HoaDonService {
         return false;
     }
 
+
+//    public Float tinhToanVoucherGiaDuocGiam(PhieuGiamGia phieuGiamGia,Float tienSanPham){
+//        if(phieuGiamGia.getLoaiPhieuGiamGia().equalsIgnoreCase("Phần trăm")){
+//            if(tienSanPham * phieuGiamGia.getGiaTriGiam()/100 > s){
+//
+//            }
+//        }else if(phieuGiamGia.getLoaiPhieuGiamGia().equalsIgnoreCase("Cố định")){
+//
+//        }
+//    }
 
     private HoaDonChiTietResponseDTO.HoaDonDTO convertHoaDonChiTietToDTO(HoaDon hoaDon) {
 
@@ -149,6 +164,14 @@ public class HoaDonService {
         if (hoaDon.getPhieuGiamGia() != null) {
             maPhieuGiamGia = hoaDon.getPhieuGiamGia().getMa();
         }
+        String maKhachHang = null;
+        String tenKhachHang = null;
+        String sdtKhachHang = null;
+        if (hoaDon.getKhachHang() != null) {
+            maKhachHang = hoaDon.getKhachHang().getMa();
+            tenKhachHang = hoaDon.getKhachHang().getTenKhachHang();
+            sdtKhachHang = hoaDon.getKhachHang().getSdt();
+        }
         return new HoaDonChiTietResponseDTO.HoaDonDTO(
                 hoaDon.getId(),
                 hoaDon.getMa(),
@@ -158,16 +181,19 @@ public class HoaDonService {
                 hoaDon.getSdt(),
                 hoaDon.getEmailNguoiNhan(),
                 hoaDon.getDiaChiNhanHang(),
-                hoaDon.getKhachHang().getMa(),
-                hoaDon.getKhachHang().getTenKhachHang(),
-                hoaDon.getKhachHang().getSdt(),
+                maKhachHang,
+                tenKhachHang,
+                sdtKhachHang,
+                hoaDon.getTongTien(),
                 hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()),
                 hoaDon.getPhiShip(),
                 maPhieuGiamGia,
                 hoaDon.getTrangThai(),
+                hoaDon.getNgayTao(),
                 listThanhToan,
                 listDanhSachSanPham,
                 listLichSuHoaDon
+//                thanhToanHoaDonRepository.tinhTongTienDaThanhToanByHoaDonId(hoaDon.getId())
         );
     }
 
