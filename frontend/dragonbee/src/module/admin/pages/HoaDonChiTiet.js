@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import axios from "axios"; // Import axios
 import {
   Box, Table, TableBody,
-  TableCell, TableContainer, TableHead, TableRow, Typography, Button, Chip, Paper, Container, CircularProgress, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Stack, Snackbar, Alert
+  TableCell, TableContainer, TableHead, TableRow, Typography, Button, Chip, Paper, Container, CircularProgress, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Stack
 
 } from "@mui/material";
 import { Delete, History, Close, ArrowBack, ArrowForward } from '@mui/icons-material';
@@ -518,13 +518,13 @@ const HoaDonChiTiet = () => {
             </Button>
           </DialogActions>
         </Dialog>
-        <Button variant="outlined" color="secondary" startIcon={<History />} sx={{ borderRadius: 3, px: 3 }} onClick={()=>setOpen(true)} >
+        <Button variant="outlined" color="secondary" startIcon={<History />} sx={{ borderRadius: 3, px: 3 }} onClick={() => setOpen(true)} >
           Lịch sử hóa đơn
         </Button>
-        <Dialog open={open} onClose={()=>setOpen(false)} maxWidth="md" fullWidth>
+        <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
           <DialogTitle>
             Lịch sử hóa đơn
-            <IconButton onClick={()=>setOpen(false)}sx={{ position: "absolute", right: 16, top: 16 }}>
+            <IconButton onClick={() => setOpen(false)} sx={{ position: "absolute", right: 16, top: 16 }}>
               <Close />
             </IconButton>
           </DialogTitle>
@@ -567,7 +567,7 @@ const HoaDonChiTiet = () => {
 
           {/* Nút đóng dialog */}
           <DialogActions>
-            <Button onClick={()=>setOpen(false)} color="primary" variant="contained">
+            <Button onClick={() => setOpen(false)} color="primary" variant="contained">
               Đóng
             </Button>
           </DialogActions>
@@ -769,7 +769,7 @@ const HoaDonChiTiet = () => {
         {/* Tổng tiền hàng */}
         <Box display="flex" justifyContent="space-between" mb={1}>
           <Typography variant="body1" fontWeight={500}>Tổng tiền hàng:</Typography>
-          <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienHang.toLocaleString()} ₫</Typography>
+          <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienSanPham.toLocaleString()} ₫</Typography>
         </Box>
 
         {/* Phí ship */}
@@ -779,12 +779,14 @@ const HoaDonChiTiet = () => {
         </Box>
 
         {/* Mã voucher */}
-        <Box display="flex" justifyContent="space-between" mb={2}>
-          <Typography variant="body1" fontWeight={500}>Mã giảm giá:</Typography>
-          <Typography variant="body1" fontWeight={500} color="error">
-            {hoaDon.maVoucher}
-          </Typography>
-        </Box>
+        {hoaDon.maVoucher && (
+          <Box display="flex" justifyContent="space-between" mb={2}>
+            <Typography variant="body1" fontWeight={500}>Mã giảm giá:</Typography>
+            <Typography variant="body1" fontWeight={500} color="error">
+              {hoaDon.maVoucher} - {(hoaDon.tongTienSanPham + hoaDon.phiVanChuyen - hoaDon.tongTienThanhToan).toLocaleString()} đ
+            </Typography>
+          </Box>
+        )}
 
         <Divider sx={{ my: 2 }} />
 
@@ -801,7 +803,7 @@ const HoaDonChiTiet = () => {
               // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
             }}
           >
-            {(hoaDon.tongTienHang + hoaDon.phiVanChuyen).toLocaleString()} VNĐ
+            {(hoaDon.tongTienSanPham + hoaDon.phiVanChuyen).toLocaleString()} VNĐ
           </Typography>
         </Box>
       </Box>

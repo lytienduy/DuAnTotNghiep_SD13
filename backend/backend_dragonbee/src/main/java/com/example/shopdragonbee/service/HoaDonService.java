@@ -5,6 +5,7 @@ import com.example.shopdragonbee.dto.HoaDonResponseDTO;
 import com.example.shopdragonbee.entity.AnhSanPham;
 import com.example.shopdragonbee.entity.HoaDon;
 import com.example.shopdragonbee.entity.LichSuHoaDon;
+import com.example.shopdragonbee.entity.PhieuGiamGia;
 import com.example.shopdragonbee.repository.HoaDonRepository;
 import com.example.shopdragonbee.repository.LichSuHoaDonRepository;
 import com.example.shopdragonbee.repository.ThanhToanHoaDonRepository;
@@ -133,6 +134,16 @@ public class HoaDonService {
     }
 
 
+//    public Float tinhToanVoucherGiaDuocGiam(PhieuGiamGia phieuGiamGia,Float tienSanPham){
+//        if(phieuGiamGia.getLoaiPhieuGiamGia().equalsIgnoreCase("Phần trăm")){
+//            if(tienSanPham * phieuGiamGia.getGiaTriGiam()/100 > s){
+//
+//            }
+//        }else if(phieuGiamGia.getLoaiPhieuGiamGia().equalsIgnoreCase("Cố định")){
+//
+//        }
+//    }
+
     private HoaDonChiTietResponseDTO.HoaDonDTO convertHoaDonChiTietToDTO(HoaDon hoaDon) {
 
         List<HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO> listThanhToan = hoaDon.getListThanhToanHoaDon().stream()
@@ -165,14 +176,15 @@ public class HoaDonService {
                 hoaDon.getKhachHang().getMa(),
                 hoaDon.getKhachHang().getTenKhachHang(),
                 hoaDon.getKhachHang().getSdt(),
+                hoaDon.getTongTien(),
                 hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()),
                 hoaDon.getPhiShip(),
                 maPhieuGiamGia,
                 hoaDon.getTrangThai(),
                 listThanhToan,
                 listDanhSachSanPham,
-                listLichSuHoaDon,
-                thanhToanHoaDonRepository.tinhTongTienDaThanhToanByHoaDonId(hoaDon.getId())
+                listLichSuHoaDon
+//                thanhToanHoaDonRepository.tinhTongTienDaThanhToanByHoaDonId(hoaDon.getId())
         );
     }
 

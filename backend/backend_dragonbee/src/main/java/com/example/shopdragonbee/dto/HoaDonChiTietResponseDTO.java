@@ -31,7 +31,8 @@ public class HoaDonChiTietResponseDTO {
         private String maKhachHang;
         private String tenKhachHang;
         private String sdtKhachHang;
-        private Float tongTienHang;
+        private Float tongTienThanhToan;
+        private Float tongTienSanPham;
         private Float phiVanChuyen;
         private String maVoucher;
         private String trangThai;
@@ -41,7 +42,7 @@ public class HoaDonChiTietResponseDTO {
 
         private List<LichSuHoaDonDTO> listLichSuHoaDon;
 
-        private Float tongTienKhachHangDaThanhToan;
+//        private Float tongTienKhachHangDaThanhToan;
     }
 
     //    private List<ThanhToanHoaDon> listThanhToanHoaDon;
