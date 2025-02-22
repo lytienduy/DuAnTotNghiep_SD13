@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import {
   AppBar, Toolbar, Typography, TextField, InputAdornment, Button, IconButton, Box, Grid, Paper, Input, Snackbar, Alert,
-  Dialog, DialogContent, DialogTitle, Modal, FormControl, InputLabel, Select, MenuItem
+  Dialog, DialogContent, DialogTitle, Modal, FormControl, InputLabel, Select, MenuItem, RadioGroup, Radio,
+  FormControlLabel
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
@@ -120,6 +121,13 @@ const BanTaiQuay = () => {
     setMoneyGiven(newValue);
   };
 
+  // radioButton chọn phương thức thanh toán
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+
+  const handlePaymentChange = (event) => {
+    setPaymentMethod(event.target.value);
+  };
+
   return (
     <div>
       {/* Header */}
@@ -127,6 +135,25 @@ const BanTaiQuay = () => {
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', width: '67%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: '1px solid #ccc',
+                  borderRadius: 1,
+                  padding: '0 8px',
+                  backgroundColor: 'white',
+                  marginRight: 2 
+                }}
+                onClick={handleHomeClick}
+              >
+                <Box
+                  component="img"
+                  src="https://raw.githubusercontent.com/lytienduy/DuAnTotNghiep_SD13/refs/heads/main/frontend/dragonbee/src/img/dragonbee_logo_v1.png"
+                  alt="logo"
+                  sx={{ width: 50, height: 50}}
+                />
+              </Box>
               <TextField
                 variant="outlined"
                 size="small"
@@ -213,26 +240,6 @@ const BanTaiQuay = () => {
             {isShippingIconClicked && (
               <Grid item xs={12} sm={6} md={3}>
                 <Paper sx={{ padding: 2, maxHeight: 600, overflowY: 'auto' }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 2 }}>
-                    {/* TextField với biểu tượng tìm kiếm */}
-                    <TextField
-                      placeholder="Tìm khách hàng"
-                      variant="standard"
-                      sx={{ width: '100%' }} // 90% chiều rộng cho TextField
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <SearchIcon sx={{ color: 'gray' }} />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position="end" onClick={handleOpen}>
-                            <AddIcon sx={{ color: 'gray' }} />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Box>
 
                   <Typography variant="h7" sx={{ fontWeight: 'bold' }}>Địa chỉ nhận hàng</Typography>
 
@@ -363,12 +370,12 @@ const BanTaiQuay = () => {
             {/* bên phải */}
             <Grid item xs={12} sm={6} md={isShippingIconClicked ? 3 : 4}>
               <Paper sx={{ padding: 2, borderRadius: 0, minHeight: 598 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <Box sx={{ width: '100%' }}>
                   {/* TextField với biểu tượng tìm kiếm */}
                   <TextField
                     placeholder="Thêm khách hàng vào đơn"
                     variant="standard"
-                    sx={{ width: '100%' }} // 90% chiều rộng cho TextField
+                    sx={{ width: '100%' }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -478,10 +485,44 @@ const BanTaiQuay = () => {
                   <Switch defaultChecked /> {/* Thêm một nút chuyển */}
                 </Box>
 
-                <Button variant="contained" fullWidth sx={{ marginTop: 6, height: 80, backgroundColor: '#43a047', fontSize: 25 }}>
-                  Thanh toán
-                </Button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <FormControl component="fieldset" size="small">
+                    <RadioGroup
+                      value={paymentMethod}
+                      onChange={handlePaymentChange}
+                      row
+                      sx={{ justifyContent: 'center' }}
+                    >
+                      <FormControlLabel
+                        value="cash"
+                        control={<Radio sx={{ transform: 'scale(0.5)' }} />}
+                        label={<Typography sx={{ fontSize: '0.9rem' }}>Tiền mặt</Typography>}
+                      />
+                      <FormControlLabel
+                        value="transfer"
+                        control={<Radio sx={{ transform: 'scale(0.5)' }} />}
+                        label={<Typography sx={{ fontSize: '0.9rem' }}>Chuyển khoản</Typography>}
+                      />
+                      <FormControlLabel
+                        value="both"
+                        control={<Radio sx={{ transform: 'scale(0.5)' }} />}
+                        label={<Typography sx={{ fontSize: '0.9rem' }}>Cả 2</Typography>}
+                      />
+                    </RadioGroup>
+                  </FormControl>
 
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      height: 80,
+                      backgroundColor: '#43a047',
+                      fontSize: 25,
+                    }}
+                  >
+                    Thanh toán
+                  </Button>
+                </div>
               </Paper>
             </Grid>
           </Grid>
