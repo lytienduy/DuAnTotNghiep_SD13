@@ -120,6 +120,7 @@ const Sidebar = ({ sx }) => {
             component="a"
             href="/banTaiQuay"
             target="_blank" // Mở trong tab mới
+
             sx={{
               borderRadius: 3,
               backgroundColor: isActive('/banTaiQuay') ? 'rgb(52, 152, 234)' : 'transparent',
@@ -234,7 +235,18 @@ const Sidebar = ({ sx }) => {
           </Collapse>
 
           {/* Quản Lý Tài Khoản */}
-          <ListItemButton>
+          <ListItemButton
+            component={Link}
+            to="/khachHang"
+            sx={{
+              borderRadius: 3,
+              backgroundColor: isActive('/khachHang') ? 'rgb(52, 152, 234)' : 'transparent',
+              color: isActive('/khachHang') ? '#fff' : 'inherit',
+              '&:hover': {
+                backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
+                color: '#fff', // Chữ màu trắng khi hover
+              },
+            }}>
             <ListItemIcon>
               <PeopleIcon />
             </ListItemIcon>

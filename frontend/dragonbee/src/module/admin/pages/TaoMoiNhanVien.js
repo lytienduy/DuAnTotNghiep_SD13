@@ -168,7 +168,7 @@ const TaoMoiNhanVien = () => {
       .catch(() =>
         enqueueSnackbar("Lỗi tải danh sách tỉnh/thành!", { variant: "error" })
       );
-  }, []);
+  }, [enqueueSnackbar]);
 
   useEffect(() => {
     if (diaChiParts.tinh) {
@@ -182,7 +182,7 @@ const TaoMoiNhanVien = () => {
           enqueueSnackbar("Lỗi tải danh sách quận/huyện!", { variant: "error" })
         );
     }
-  }, [diaChiParts.tinh]);
+  }, [diaChiParts.tinh,enqueueSnackbar]);
 
   useEffect(() => {
     if (diaChiParts.quan) {
@@ -196,7 +196,7 @@ const TaoMoiNhanVien = () => {
           enqueueSnackbar("Lỗi tải danh sách xã/phường!", { variant: "error" })
         );
     }
-  }, [diaChiParts.quan]);
+  }, [diaChiParts.quan,enqueueSnackbar]);
 
   // Cập nhật địa chỉ khi thay đổi
   const handleDiaChiChange = (event) => {
@@ -363,7 +363,8 @@ const TaoMoiNhanVien = () => {
       });
       setLoading(false);
       return;
-    } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(nhanVien.email)) {
+      // (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(nhanVien.email))
+    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(nhanVien.email)) {
       setEmailError("Email không hợp lệ!");
       enqueueSnackbar("Email không hợp lệ!", {
         variant: "error",

@@ -12,6 +12,10 @@ import NhanVien from './module/admin/pages/NhanVien';
 import TaoMoiNhanVien from './module/admin/pages/TaoMoiNhanVien';
 import NhanVienEdit from './module/admin/pages/NhanVienEdit';
 import { Box } from '@mui/material';
+
+import KhachHang from './module/admin/pages/KhachHang';
+import ThongTinKhachHang from './module/admin/pages/ThongTinKhachHang';
+
 import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
 
 const Layout = ({ children }) => {
@@ -51,6 +55,9 @@ const App = () => {
         <Route path="/nhanvien" element={<Layout><NhanVien /></Layout>} />
         <Route path="/nhanvien/tao-moi" element={<Layout><TaoMoiNhanVien /></Layout>} />
         <Route path="/nhanvien/chinh-sua/:id" element={<Layout><NhanVienEdit /></Layout>} />
+        <Route path="/khachHang" element={<Layout><KhachHang /></Layout>} />
+        <Route path="/khachHang/detail/:id" element={<Layout><ThongTinKhachHang /></Layout>} />
+        <Route path="/khachHang/add/" element={<Layout><ThongTinKhachHang /></Layout>} />
       </Routes>
     </Router>
   );
