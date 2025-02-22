@@ -234,12 +234,23 @@ const Sidebar = ({ sx }) => {
         </Collapse>
 
         {/* Quản Lý Tài Khoản */}
-        <ListItemButton>
-          <ListItemIcon>
-            <PeopleIcon />
-          </ListItemIcon>
-          {isSidebarOpen && <ListItemText primary="Khách Hàng" primaryTypographyProps={{ fontSize: '13.6px' }}/>}
-        </ListItemButton>
+        <ListItemButton
+            component={Link}
+            to="/khachHang"
+            sx={{
+              borderRadius: 3,
+              backgroundColor: isActive('/khachHang') ? 'rgb(52, 152, 234)' : 'transparent',
+              color: isActive('/khachHang') ? '#fff' : 'inherit',
+              '&:hover': {
+                backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
+                color: '#fff', // Chữ màu trắng khi hover
+              },
+            }}>
+            <ListItemIcon>
+              <PeopleIcon />
+            </ListItemIcon>
+            {isSidebarOpen && <ListItemText primary="Khách Hàng" primaryTypographyProps={{ fontSize: '13.6px' }} />}
+          </ListItemButton>
         <ListItemButton>
           <ListItemIcon>
             <PersonIcon />
