@@ -198,5 +198,18 @@ public class NhanVienController {
                     .body("Lỗi trong quá trình quét QR hoặc dữ liệu không hợp lệ.");
         }
     }
+    @PostMapping("/import")
+    public ResponseEntity<Map<String, String>> importExcel(@RequestParam("file") MultipartFile file) {
+        Map<String, String> response = new HashMap<>();
+        if (file.isEmpty()) {
+            response.put("message", "File không được để trống!");
+            return ResponseEntity.badRequest().body(response);
+        }
+        String message = nhanVienService.importNhanVien(file);
+        response.put("message", message);
+        return ResponseEntity.ok(response);
+    }
+
+
 
 }

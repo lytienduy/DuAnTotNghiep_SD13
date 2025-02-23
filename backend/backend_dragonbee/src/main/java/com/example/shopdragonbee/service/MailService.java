@@ -20,7 +20,7 @@ public class MailService {
             helper.setSubject(subject);
             helper.setText(htmlContent, true); // Set HTML content
             mailSender.send(message);
-            System.out.println("Email đã được gửi thành công đến: " + to);
+            System.out.println("Email đã gửi thành công đến: " + to);
         } catch (MessagingException e) {
             System.err.println("Lỗi khi gửi email: " + e.getMessage());
         }
