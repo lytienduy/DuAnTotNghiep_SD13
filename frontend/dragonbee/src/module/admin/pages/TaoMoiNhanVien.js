@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
-  Container,
   Typography,
   TextField,
   Button,
@@ -15,6 +14,11 @@ import {
   Snackbar,
   Alert,
   IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -48,8 +52,11 @@ const TaoMoiNhanVien = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [scanner, setScanner] = useState(null);
   const qrCodeScannerRef = useRef(null);
+  const [openConfirm, setOpenConfirm] = useState(false);
 
-  
+  const handleOpenConfirm = () => setOpenConfirm(true);
+  const handleCloseConfirm = () => setOpenConfirm(false);
+
   const [tinhList, setTinhList] = useState([]);
   const [quanList, setQuanList] = useState([]);
   const [xaList, setXaList] = useState([]);
@@ -68,42 +75,80 @@ const TaoMoiNhanVien = () => {
         fps: 10,
         qrbox: 250,
       });
-  
+
       scannerRef.current.render(
         async (decodedText) => {
           try {
-            const data = JSON.parse(decodedText);
-            console.log("Dữ liệu từ QR:", data); // Kiểm tra dữ liệu nhận được
-  
+            console.log("📌 Raw QR Data:", decodedText);
+
+            // Xử lý JSON & loại bỏ BOM nếu có
+            const cleanedData = decodedText.replace(/\uFEFF/g, "").trim();
+            const data = JSON.parse(cleanedData);
+            console.log("✅ Dữ liệu JSON từ QR:", data);
+
+            // Kiểm tra dữ liệu địa chỉ hợp lệ
+            if (
+              !data.diaChi?.tinh ||
+              !data.diaChi?.quan ||
+              !data.diaChi?.xa ||
+              !data.diaChi?.soNha
+            ) {
+              console.warn("⚠️ Thiếu thông tin địa chỉ từ QR Code");
+              return;
+            }
+
             // Tìm `code` của tỉnh/thành phố
-            const foundTinh = tinhList.find((t) => t.name === data.diaChi?.tinh);
-            const tinhCode = foundTinh?.code || "";
-  
-            let quanCode = "";
-            let xaCode = "";
-  
-            if (tinhCode) {
-              // Lấy danh sách quận/huyện của tỉnh đó
+            const foundTinh = tinhList.find((t) => t.name === data.diaChi.tinh);
+            if (!foundTinh) {
+              console.warn("⚠️ Không tìm thấy tỉnh:", data.diaChi.tinh);
+              return;
+            }
+
+            const tinhCode = foundTinh.code;
+
+            // Gọi API lấy danh sách quận/huyện
+            let quanList = [];
+            try {
               const quanResponse = await axios.get(
                 `https://provinces.open-api.vn/api/p/${tinhCode}?depth=2`
               );
-              const foundQuan = quanResponse.data.districts.find(
-                (q) => q.name === data.diaChi?.quan
-              );
-              quanCode = foundQuan?.code || "";
-  
-              if (quanCode) {
-                // Lấy danh sách xã/phường của quận đó
-                const xaResponse = await axios.get(
-                  `https://provinces.open-api.vn/api/d/${quanCode}?depth=2`
-                );
-                const foundXa = xaResponse.data.wards.find(
-                  (x) => x.name === data.diaChi?.xa
-                );
-                xaCode = foundXa?.code || "";
-              }
+              quanList = quanResponse.data.districts || [];
+            } catch (error) {
+              console.error("❌ Lỗi khi lấy danh sách quận/huyện:", error);
+              return;
             }
-  
+
+            // Tìm `code` của quận/huyện
+            const foundQuan = quanList.find((q) => q.name === data.diaChi.quan);
+            if (!foundQuan) {
+              console.warn("⚠️ Không tìm thấy quận/huyện:", data.diaChi.quan);
+              return;
+            }
+
+            const quanCode = foundQuan.code;
+
+            // Gọi API lấy danh sách xã/phường
+            let xaList = [];
+            try {
+              const xaResponse = await axios.get(
+                `https://provinces.open-api.vn/api/d/${quanCode}?depth=2`
+              );
+              xaList = xaResponse.data.wards || [];
+            } catch (error) {
+              console.error("❌ Lỗi khi lấy danh sách xã/phường:", error);
+              return;
+            }
+
+            // Tìm `code` của xã/phường
+            const foundXa = xaList.find((x) => x.name === data.diaChi.xa);
+            if (!foundXa) {
+              console.warn("⚠️ Không tìm thấy xã/phường:", data.diaChi.xa);
+              return;
+            }
+
+            const xaCode = foundXa.code;
+
+            // Cập nhật state nhân viên
             setNhanVien((prev) => ({
               ...prev,
               tenNhanVien: data.tenNhanVien || prev.tenNhanVien,
@@ -111,37 +156,40 @@ const TaoMoiNhanVien = () => {
               ngaySinh: data.ngaySinh || prev.ngaySinh,
               gioiTinh: data.gioiTinh || prev.gioiTinh,
               diaChi: {
-                tinh: data.diaChi?.tinh || prev.diaChi.tinh,
-                quan: data.diaChi?.quan || prev.diaChi.quan,
-                xa: data.diaChi?.xa || prev.diaChi.xa,
-                soNha: data.diaChi?.soNha || prev.diaChi.soNha,
+                tinh: data.diaChi.tinh || prev.diaChi.tinh,
+                quan: data.diaChi.quan || prev.diaChi.quan,
+                xa: data.diaChi.xa || prev.diaChi.xa,
+                soNha: data.diaChi.soNha || prev.diaChi.soNha,
               },
             }));
-  
-            // Cập nhật `diaChiParts` với `code`
+
+            // Cập nhật danh sách dropdown trước khi thiết lập xã
+            setQuanList(quanList);
+            setXaList(xaList);
+
+            // Cập nhật `diaChiParts`
             setDiaChiParts({
               tinh: tinhCode,
               quan: quanCode,
               xa: xaCode,
-              soNha: data.diaChi?.soNha || "",
+              soNha: data.diaChi.soNha || "",
             });
-  
+
             setOpenQR(false);
           } catch (error) {
-            console.error("Lỗi đọc QR:", error);
+            console.error("❌ Lỗi khi phân tích dữ liệu từ QR:", error);
           }
         },
         (errorMessage) => {
-          console.log(errorMessage);
+          console.log("⚠️ Không thể quét QR:", errorMessage);
         }
       );
     }
-  
+
     return () => {
       scannerRef.current?.clear();
     };
   }, [openQR, tinhList]);
-  
 
   const [showScanner, setShowScanner] = useState(false);
   const [error, setError] = useState(null);
@@ -159,7 +207,6 @@ const TaoMoiNhanVien = () => {
   const handleBack = () => {
     navigate("/nhanvien");
   };
-
 
   useEffect(() => {
     axios
@@ -245,10 +292,13 @@ const TaoMoiNhanVien = () => {
     setNhanVien({ ...nhanVien, [name]: value });
   };
 
+  // Submit
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const fullDiaChi = getDiaChiFull();
     setLoading(true);
+    handleCloseConfirm(); // Đóng hộp thoại xác nhận
     setError(null);
 
     const cccdRegex = /^[0-9]{12}$/; // CCCD phải có 12 chữ số
@@ -511,7 +561,7 @@ const TaoMoiNhanVien = () => {
   };
 
   return (
-    <Container maxWidth="lg">
+    <Box margin={3}>
       <Box display="flex" alignItems="center" mb={3}>
         <IconButton onClick={handleBack} sx={{ marginRight: 2 }}>
           <ArrowBackIcon />
@@ -709,7 +759,7 @@ const TaoMoiNhanVien = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         height: "40px",
-                        color: "text.secondary",
+                        // color: "text.secondary",
                       },
                     }}
                   />
@@ -857,12 +907,83 @@ const TaoMoiNhanVien = () => {
                     <Button
                       variant="contained"
                       color="primary"
-                      type="submit"
+                      onClick={handleOpenConfirm}
                       disabled={loading}
                     >
                       {loading ? "Đang thêm..." : "Thêm"}
                     </Button>
                   </Box>
+
+                  {/* Hộp thoại xác nhận */}
+                  <Dialog open={openConfirm} onClose={handleCloseConfirm}>
+                    <DialogTitle>
+                      <Box display="flex" justifyContent="center">
+                        {/* Hình tròn có viền cam, nền trắng */}
+                        <Box
+                          sx={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: "50%",
+                            border: "3px solid #FFA500",
+                            backgroundColor: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              color: "#FFA500",
+                              fontSize: "32px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            !
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </DialogTitle>
+                    <DialogContent>
+                      <DialogContentText
+                        sx={{
+                          fontSize: "18px",
+                          fontWeight: "500",
+                          textAlign: "center",
+                        }}
+                      >
+                        Xác nhận thêm mới nhân viên?
+                      </DialogContentText>
+                    </DialogContent>
+                    <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+                      <Button
+                        onClick={handleSubmit}
+                        sx={{
+                          backgroundColor: "#FFA500",
+                          color: "#fff",
+                          fontWeight: "bold",
+                          borderRadius: "8px",
+                          px: 3,
+                          "&:hover": { backgroundColor: "#e69500" },
+                        }}
+                        autoFocus
+                      >
+                        Vâng!
+                      </Button>
+                      <Button
+                        onClick={handleCloseConfirm}
+                        sx={{
+                          backgroundColor: "#d32f2f",
+                          color: "#fff",
+                          fontWeight: "bold",
+                          borderRadius: "8px",
+                          px: 3,
+                          "&:hover": { backgroundColor: "#b71c1c" },
+                        }}
+                      >
+                        Hủy
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
                 </Grid>
               </Grid>
             </form>
@@ -880,7 +1001,7 @@ const TaoMoiNhanVien = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </Container>
+    </Box>
   );
 };
 

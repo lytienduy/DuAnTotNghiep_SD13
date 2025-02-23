@@ -12,11 +12,27 @@ import NhanVien from './module/admin/pages/NhanVien';
 import TaoMoiNhanVien from './module/admin/pages/TaoMoiNhanVien';
 import NhanVienEdit from './module/admin/pages/NhanVienEdit';
 import { Box } from '@mui/material';
-
+import { SnackbarProvider } from 'notistack';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import KhachHang from './module/admin/pages/KhachHang';
 import ThongTinKhachHang from './module/admin/pages/ThongTinKhachHang';
 
 import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
+const theme = createTheme({
+  components: {
+    MuiSnackbarContent: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "white", // Nền trắng
+          color: "green", // Chữ xanh lá
+          border: "1px solid green",
+        },
+      },
+    },
+  },
+});
+
+
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -28,6 +44,8 @@ const Layout = ({ children }) => {
   };
 
   return (
+    <ThemeProvider theme={theme}>
+      <SnackbarProvider maxSnack={3}>
     <Box sx={{ display: 'flex' }}>
       {/* Sidebar */}
       {!isBanTaiQuay && <Sidebar isSidebarOpen={isSidebarOpen} />}
@@ -42,6 +60,8 @@ const Layout = ({ children }) => {
         </Box>
       </Box>
     </Box>
+    </SnackbarProvider>
+    </ThemeProvider>
   );
 };
 

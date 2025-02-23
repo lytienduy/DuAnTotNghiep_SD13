@@ -5,17 +5,27 @@ import com.example.shopdragonbee.entity.NhanVien;
 import com.example.shopdragonbee.entity.TaiKhoan;
 import com.example.shopdragonbee.repository.NhanVienRepository;
 import com.example.shopdragonbee.repository.TaiKhoanRepository;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class NhanVienService {
@@ -28,6 +38,9 @@ public class NhanVienService {
 
     @Autowired
     private MailService mailService;
+
+    @Autowired
+    private JavaMailSender mailSender;
 
 
     private static final String UPLOAD_DIR = "E:/uploads/";
@@ -167,6 +180,59 @@ public class NhanVienService {
     // Kiểm tra xem nhân viên đã tồn tại theo CCCD
     public boolean isNhanVienExists(String cccd) {
         return nhanVienRepository.findByCccd(cccd) != null;
+    }
+
+    @Transactional
+    public String importNhanVien(MultipartFile file) {
+        List<NhanVien> nhanViens = new ArrayList<>();
+        try {
+            InputStream inputStream = file.getInputStream();
+            Workbook workbook = new XSSFWorkbook(inputStream);
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) continue; // Bỏ qua dòng tiêu đề
+
+                NhanVien nv = NhanVien.builder()
+                        .ma(getCellValue(row.getCell(1)))
+                        .tenNhanVien(getCellValue(row.getCell(2)))
+                        .email(getCellValue(row.getCell(3)))
+                        .sdt(getCellValue(row.getCell(4)))
+                        .ngaySinh(parseDate(row.getCell(5)))
+                        .gioiTinh(getCellValue(row.getCell(6)))
+                        .trangThai("Hoạt động") // Mặc định trạng thái "Hoạt động"
+                        .diaChi(getCellValue(row.getCell(8))) // Lưu địa chỉ
+                        .build();
+
+                nhanViens.add(nv);
+                nhanVienRepository.save(nv); // Lưu từng nhân viên để đảm bảo gửi email ngay
+
+                // Gửi email cho nhân viên
+                try {
+                    mailService.sendMail(nv.getEmail(), "Chào mừng bạn đến với công ty!",
+                            "Xin chào " + nv.getTenNhanVien() + ",<br><br>Chúc mừng bạn đã được thêm vào hệ thống nhân viên của chúng tôi.");
+                } catch (Exception e) {
+                    System.err.println("Lỗi khi gửi email: " + e.getMessage());
+                }
+            }
+            return "Import thành công " + nhanViens.size() + " nhân viên!";
+        } catch (IOException e) {
+            return "Lỗi khi đọc file: " + e.getMessage();
+        }
+    }
+
+    private String getCellValue(Cell cell) {
+        if (cell == null) return "";
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue();
+            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
+            default -> "";
+        };
+    }
+
+    private LocalDate parseDate(Cell cell) {
+        if (cell == null || cell.getCellType() != CellType.NUMERIC) return null;
+        return cell.getLocalDateTimeCellValue().toLocalDate();
     }
 
 
