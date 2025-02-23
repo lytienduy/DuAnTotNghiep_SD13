@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
-  Container,
   Typography,
   TextField,
   Button,
@@ -10,12 +9,16 @@ import {
   MenuItem,
   Grid,
   Box,
-  Avatar,
   Radio,
   RadioGroup,
   FormControlLabel,
   FormControl,
   IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -27,6 +30,10 @@ const NhanVienEdit = () => {
   const [errorNgaySinh, setErrorNgaySinh] = useState("");
   const [errorSdt, setErrorSdt] = useState("");
   const [originalSdt, setOriginalSdt] = useState(""); // Lưu số điện thoại ban đầu
+  const [openConfirm, setOpenConfirm] = useState(false);
+
+  const handleOpenConfirm = () => setOpenConfirm(true);
+  const handleCloseConfirm = () => setOpenConfirm(false);
 
   const [nhanVien, setNhanVien] = useState({
     tenNhanVien: "",
@@ -618,9 +625,84 @@ const NhanVienEdit = () => {
                 >
                   Hủy
                 </Button>
-                <Button type="submit" variant="contained" color="primary">
+                <Button
+                  type="button"
+                  variant="contained"
+                  color="primary"
+                  onClick={handleOpenConfirm}
+                >
                   Lưu Thay Đổi
                 </Button>
+
+                {/* Hộp thoại xác nhận */}
+                <Dialog open={openConfirm} onClose={handleCloseConfirm}>
+                  <DialogTitle>
+                    <Box display="flex" justifyContent="center">
+                      <Box
+                        sx={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: "50%",
+                          border: "3px solid #FFA500",
+                          backgroundColor: "#fff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            color: "#FFA500",
+                            fontSize: "32px",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          !
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </DialogTitle>
+                  <DialogContent>
+                    <DialogContentText
+                      sx={{
+                        fontSize: "18px",
+                        fontWeight: "500",
+                        textAlign: "center",
+                      }}
+                    >
+                      Bạn chắc chắn muốn cập nhật nhân viên không?
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+                    <Button
+                      onClick={handleSubmit}
+                      sx={{
+                        backgroundColor: "#FFA500",
+                        color: "#fff",
+                        fontWeight: "bold",
+                        borderRadius: "8px",
+                        px: 3,
+                        "&:hover": { backgroundColor: "#e69500" },
+                      }}
+                      autoFocus
+                    >
+                      Vâng!
+                    </Button>
+                    <Button
+                      onClick={handleCloseConfirm}
+                      sx={{
+                        backgroundColor: "#d32f2f",
+                        color: "#fff",
+                        fontWeight: "bold",
+                        borderRadius: "8px",
+                        px: 3,
+                        "&:hover": { backgroundColor: "#b71c1c" },
+                      }}
+                    >
+                      Hủy
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               </Box>
             </form>
           </Paper>

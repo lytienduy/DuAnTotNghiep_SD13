@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
-  Container,
   Typography,
   Button,
   Table,
@@ -20,7 +19,7 @@ import {
   MenuItem,
   Select,
   TextField,
-  InputAdornment,
+  InputAdornment
 } from "@mui/material";
 import {
   Add,
@@ -46,14 +45,15 @@ const NhanVien = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8080/api/nhanvien")
+    axios.get("http://localhost:8080/api/nhanvien")
       .then((response) => {
-        setNhanViens(response.data);
+        const sortedData = response.data.sort((a, b) => new Date(b.ngayTao) - new Date(a.ngayTao));
+        setNhanViens(sortedData);
       })
       .catch((error) => console.error("Lỗi khi lấy dữ liệu nhân viên:", error))
       .finally(() => setLoading(false));
   }, []);
+  
 
   const handleOpenConfirm = (id) => {
     Swal.fire({
@@ -231,43 +231,43 @@ const NhanVien = () => {
       console.error("Lỗi:", error);
     }
   };
-  // Lấy danh sách nhân viên
-  useEffect(() => {
-    fetchNhanViens();
-  }, []);
+  // // Lấy danh sách nhân viên
+  // useEffect(() => {
+  //   fetchNhanViens();
+  // }, []);
 
-  // Xử lý chọn file
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-  };
+  // // Xử lý chọn file
+  // const handleFileChange = (event) => {
+  //   setFile(event.target.files[0]);
+  // };
 
-  // Import Excel
-  const importExcel = async () => {
-    if (!file) {
-      Swal.fire("Lỗi!", "Vui lòng chọn file Excel!", "error");
-      return;
-    }
+  // // Import Excel
+  // const importExcel = async () => {
+  //   if (!file) {
+  //     Swal.fire("Lỗi!", "Vui lòng chọn file Excel!", "error");
+  //     return;
+  //   }
 
-    const formData = new FormData();
-    formData.append("file", file);
+  //   const formData = new FormData();
+  //   formData.append("file", file);
 
-    try {
-      const response = await axios.post(
-        "http://localhost:8080/api/nhanvien/import",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+  //   try {
+  //     const response = await axios.post(
+  //       "http://localhost:8080/api/nhanvien/import",
+  //       formData,
+  //       { headers: { "Content-Type": "multipart/form-data" } }
+  //     );
 
-      Swal.fire("Thành công!", response.data.message, "success");
-      fetchNhanViens(); // Load lại danh sách nhân viên
-    } catch (error) {
-      Swal.fire(
-        "Lỗi!",
-        error.response?.data?.message || "Có lỗi xảy ra!",
-        "error"
-      );
-    }
-  };
+  //     Swal.fire("Thành công!", response.data.message, "success");
+  //     fetchNhanViens(); // Load lại danh sách nhân viên
+  //   } catch (error) {
+  //     Swal.fire(
+  //       "Lỗi!",
+  //       error.response?.data?.message || "Có lỗi xảy ra!",
+  //       "error"
+  //     );
+  //   }
+  // };
 
   const exportToExcel = () => {
     const data = nhanViens.map((nv, index) => [
@@ -478,8 +478,7 @@ const NhanVien = () => {
 
       <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
         {/* Import Excel */}
-        <input type="file" accept=".xlsx, .xls" onChange={handleFileChange} />
-        <Button variant="contained" color="primary" onClick={importExcel}>
+        <Button variant="contained" color="primary" >
           Import Excel
         </Button>
         <Button variant="contained" color="primary" onClick={exportToExcel}>

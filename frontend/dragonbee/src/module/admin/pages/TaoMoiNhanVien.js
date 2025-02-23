@@ -27,7 +27,6 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import QrCodeIcon from "@mui/icons-material/QrCode"; // Import icon
 import { Html5QrcodeScanner } from "html5-qrcode";
 
-
 const TaoMoiNhanVien = () => {
   const scannerRef = useRef(null);
   const [nhanVien, setNhanVien] = useState({
@@ -80,40 +79,76 @@ const TaoMoiNhanVien = () => {
       scannerRef.current.render(
         async (decodedText) => {
           try {
-            const data = JSON.parse(decodedText);
-            console.log("Dữ liệu từ QR:", data); // Kiểm tra dữ liệu nhận được
+            console.log("📌 Raw QR Data:", decodedText);
+
+            // Xử lý JSON & loại bỏ BOM nếu có
+            const cleanedData = decodedText.replace(/\uFEFF/g, "").trim();
+            const data = JSON.parse(cleanedData);
+            console.log("✅ Dữ liệu JSON từ QR:", data);
+
+            // Kiểm tra dữ liệu địa chỉ hợp lệ
+            if (
+              !data.diaChi?.tinh ||
+              !data.diaChi?.quan ||
+              !data.diaChi?.xa ||
+              !data.diaChi?.soNha
+            ) {
+              console.warn("⚠️ Thiếu thông tin địa chỉ từ QR Code");
+              return;
+            }
 
             // Tìm `code` của tỉnh/thành phố
-            const foundTinh = tinhList.find(
-              (t) => t.name === data.diaChi?.tinh
-            );
-            const tinhCode = foundTinh?.code || "";
+            const foundTinh = tinhList.find((t) => t.name === data.diaChi.tinh);
+            if (!foundTinh) {
+              console.warn("⚠️ Không tìm thấy tỉnh:", data.diaChi.tinh);
+              return;
+            }
 
-            let quanCode = "";
-            let xaCode = "";
+            const tinhCode = foundTinh.code;
 
-            if (tinhCode) {
-              // Lấy danh sách quận/huyện của tỉnh đó
+            // Gọi API lấy danh sách quận/huyện
+            let quanList = [];
+            try {
               const quanResponse = await axios.get(
                 `https://provinces.open-api.vn/api/p/${tinhCode}?depth=2`
               );
-              const foundQuan = quanResponse.data.districts.find(
-                (q) => q.name === data.diaChi?.quan
-              );
-              quanCode = foundQuan?.code || "";
-
-              if (quanCode) {
-                // Lấy danh sách xã/phường của quận đó
-                const xaResponse = await axios.get(
-                  `https://provinces.open-api.vn/api/d/${quanCode}?depth=2`
-                );
-                const foundXa = xaResponse.data.wards.find(
-                  (x) => x.name === data.diaChi?.xa
-                );
-                xaCode = foundXa?.code || "";
-              }
+              quanList = quanResponse.data.districts || [];
+            } catch (error) {
+              console.error("❌ Lỗi khi lấy danh sách quận/huyện:", error);
+              return;
             }
 
+            // Tìm `code` của quận/huyện
+            const foundQuan = quanList.find((q) => q.name === data.diaChi.quan);
+            if (!foundQuan) {
+              console.warn("⚠️ Không tìm thấy quận/huyện:", data.diaChi.quan);
+              return;
+            }
+
+            const quanCode = foundQuan.code;
+
+            // Gọi API lấy danh sách xã/phường
+            let xaList = [];
+            try {
+              const xaResponse = await axios.get(
+                `https://provinces.open-api.vn/api/d/${quanCode}?depth=2`
+              );
+              xaList = xaResponse.data.wards || [];
+            } catch (error) {
+              console.error("❌ Lỗi khi lấy danh sách xã/phường:", error);
+              return;
+            }
+
+            // Tìm `code` của xã/phường
+            const foundXa = xaList.find((x) => x.name === data.diaChi.xa);
+            if (!foundXa) {
+              console.warn("⚠️ Không tìm thấy xã/phường:", data.diaChi.xa);
+              return;
+            }
+
+            const xaCode = foundXa.code;
+
+            // Cập nhật state nhân viên
             setNhanVien((prev) => ({
               ...prev,
               tenNhanVien: data.tenNhanVien || prev.tenNhanVien,
@@ -121,28 +156,32 @@ const TaoMoiNhanVien = () => {
               ngaySinh: data.ngaySinh || prev.ngaySinh,
               gioiTinh: data.gioiTinh || prev.gioiTinh,
               diaChi: {
-                tinh: data.diaChi?.tinh || prev.diaChi.tinh,
-                quan: data.diaChi?.quan || prev.diaChi.quan,
-                xa: data.diaChi?.xa || prev.diaChi.xa,
-                soNha: data.diaChi?.soNha || prev.diaChi.soNha,
+                tinh: data.diaChi.tinh || prev.diaChi.tinh,
+                quan: data.diaChi.quan || prev.diaChi.quan,
+                xa: data.diaChi.xa || prev.diaChi.xa,
+                soNha: data.diaChi.soNha || prev.diaChi.soNha,
               },
             }));
 
-            // Cập nhật `diaChiParts` với `code`
+            // Cập nhật danh sách dropdown trước khi thiết lập xã
+            setQuanList(quanList);
+            setXaList(xaList);
+
+            // Cập nhật `diaChiParts`
             setDiaChiParts({
               tinh: tinhCode,
               quan: quanCode,
               xa: xaCode,
-              soNha: data.diaChi?.soNha || "",
+              soNha: data.diaChi.soNha || "",
             });
 
             setOpenQR(false);
           } catch (error) {
-            console.error("Lỗi đọc QR:", error);
+            console.error("❌ Lỗi khi phân tích dữ liệu từ QR:", error);
           }
         },
         (errorMessage) => {
-          console.log(errorMessage);
+          console.log("⚠️ Không thể quét QR:", errorMessage);
         }
       );
     }
