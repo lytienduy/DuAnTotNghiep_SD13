@@ -1,33 +1,34 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Sidebar from './module/admin/components/SideBar';
-import Header from './module/admin/components/Header';
-import ThongKe from './module/admin/pages/ThongKe';
-import BanTaiQuay from './module/admin/pages/BanTaiQuay';
-import HoaDon from './module/admin/pages/HoaDon';
-import SanPham from './module/admin/pages/SanPham';
-import ChatLieu from './module/admin/pages/ChatLieu';
-import MauSac from './module/admin/pages/MauSac';
-import { Box } from '@mui/material';
-import PhongCach from './module/admin/pages/PhongCach';
-import Size from './module/admin/pages/Size';
-import KieuDang from './module/admin/pages/KieuDang';
-import KieuDaiQuan from './module/admin/pages/KieuDaiQuan';
-import XuatSu from './module/admin/pages/XuatSu';
-import DanhMuc from './module/admin/pages/DanhMuc';
-import ThuongHieu from './module/admin/pages/ThuongHieu';
-import SanPhamChiTiet from './module/admin/pages/SanPhamChiTiet';
-import AddProduct from './module/admin/pages/AddProduct';
-import AddChatLieu from './module/admin/pages/AddChatLieu';
-
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Sidebar from "./module/admin/components/SideBar";
+import Header from "./module/admin/components/Header";
+import ThongKe from "./module/admin/pages/ThongKe";
+import BanTaiQuay from "./module/admin/pages/BanTaiQuay";
+import HoaDon from "./module/admin/pages/HoaDon";
+import SanPham from "./module/admin/pages/SanPham";
+import ChatLieu from "./module/admin/pages/ChatLieu";
+import MauSac from "./module/admin/pages/MauSac";
+import { Box } from "@mui/material";
+import PhongCach from "./module/admin/pages/PhongCach";
+import Size from "./module/admin/pages/Size";
+import KieuDang from "./module/admin/pages/KieuDang";
+import KieuDaiQuan from "./module/admin/pages/KieuDaiQuan";
+import XuatSu from "./module/admin/pages/XuatSu";
+import DanhMuc from "./module/admin/pages/DanhMuc";
+import ThuongHieu from "./module/admin/pages/ThuongHieu";
+import SanPhamChiTiet from "./module/admin/pages/SanPhamChiTiet";
+import AddProduct from "./module/admin/pages/AddProduct";
+import AddChatLieu from "./module/admin/pages/AddChatLieu";
 const App = () => {
   return (
     <Router>
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: "flex" }}>
         {/* Sidebar */}
         <Sidebar />
 
-        <Box sx={{ flexGrow: 1, backgroundColor: '#f9f9f9', minHeight: '100vh' }}>
+        <Box
+          sx={{ flexGrow: 1, backgroundColor: "#f9f9f9", minHeight: "100vh" }}
+        >
           {/* Header */}
           <Header />
 
@@ -63,6 +64,7 @@ const App = () => {
               <Route path="/sanpham/addProduct" element={<AddProduct />} />
               {/* Add Chất liệu */}
               <Route path="/chatlieu/addChatLieu" element={<AddChatLieu />} />
+         
             </Routes>
           </Box>
         </Box>

@@ -1,7 +1,12 @@
 package com.example.shopdragonbee.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+
+
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,6 +18,7 @@ import java.util.List;
 @Builder
 public class GioHang {
 
+    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -32,4 +38,6 @@ public class GioHang {
 
     @OneToMany(mappedBy = "gioHang", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GioHangChiTiet> gioHangChiTietList;
+
+
 }

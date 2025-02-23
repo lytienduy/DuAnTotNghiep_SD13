@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface XuatSuRepository extends JpaRepository<XuatXu, Integer> {
+public interface XuatXuRepository extends JpaRepository<XuatXu, Integer> {
 
     @Query("""
         select new com.example.shopdragonbee.dto.XuatXuDTO(

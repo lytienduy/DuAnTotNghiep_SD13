@@ -2,7 +2,7 @@ package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.XuatXuDTO;
 import com.example.shopdragonbee.entity.XuatXu;
-import com.example.shopdragonbee.repository.XuatSuRepository;
+import com.example.shopdragonbee.repository.XuatXuRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,10 +13,10 @@ import java.util.Optional;
 @Service
 public class XuatXuService {
 
-    private final XuatSuRepository xuatSuRepository;
+    private final XuatXuRepository xuatSuRepository;
 
     @Autowired
-    public XuatXuService(XuatSuRepository xuatSuRepository) {
+    public XuatXuService(XuatXuRepository xuatSuRepository) {
         this.xuatSuRepository = xuatSuRepository;
     }
 

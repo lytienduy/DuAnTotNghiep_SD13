@@ -1,21 +1,16 @@
 package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.SanPhamDTO;
-import com.example.shopdragonbee.dto.SanPhamChiTietDTO;
 import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.*;
 import com.example.shopdragonbee.respone.SanPhamChiTietRespone;
-import com.example.shopdragonbee.respone.SanPhamRespone;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +23,7 @@ public class SanPhamService {
     private final DanhMucRepository danhMucRepository;
     private final ThuongHieuRepository thuongHieuRepository;
     private final PhongCachRepository phongCachRepository;
-    private final XuatSuRepository xuatXuRepository;
+    private final XuatXuRepository xuatXuRepository;
     private final ChatLieuRepository chatLieuRepository;
     private final KieuDangRepository kieuDangRepository;
     private final KieuDaiQuanRepository kieuDaiQuanRepository;
