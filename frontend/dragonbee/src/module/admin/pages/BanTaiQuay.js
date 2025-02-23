@@ -25,6 +25,8 @@ const BanTaiQuay = () => {
   const [moneyGiven, setMoneyGiven] = useState(''); // State cho "Tiền khách đưa"
   const [openVoucherModal, setOpenVoucherModal] = useState(false);
   const [voucherCode, setVoucherCode] = useState('');
+  const [vouchers, setVouchers] = useState([]);
+  const [selectedVoucherCode, setSelectedVoucherCode] = useState('');
   const [open, setOpen] = useState(false);
   const [isShippingIconClicked, setIsShippingIconClicked] = useState(false);
   const [feeType, setFeeType] = useState('Miễn phí giao hàng');
@@ -37,12 +39,15 @@ const BanTaiQuay = () => {
   const inputRef = useRef(null); // Tham chiếu đến TextField
   const popperRef = useRef(null);
 
-  // Hàm gọi API tìm kiếm khách hàng
   const searchCustomers = async (e) => {
     const value = e.target.value;
     setKeyword(value);
-
-    if (value.length > 0) { // Tìm khi có từ khóa
+  
+    // Nếu keyword bị xóa (rỗng), đóng Popper
+    if (value === '') {
+      setSelectedCustomerId(null); // Reset selected customer
+      setOpenKH(false); // Đóng Popper khi không có khách hàng nào
+    } else if (value.length > 0) { // Chỉ tìm kiếm khi từ khóa có hơn 1 ký tự
       try {
         const response = await axios.get(`http://localhost:8080/dragonbee/tim-kiem-khach-hang?keyword=${value}`);
         setCustomers(response.data);
@@ -51,10 +56,10 @@ const BanTaiQuay = () => {
         console.error('Lỗi khi gọi API:', error);
       }
     } else {
-      setOpenKH(true);
-      fetchDefaultCustomers();
+      setOpenKH(false); // Không hiển thị Popper khi chỉ có 1 ký tự
     }
   };
+  
 
   // Lấy 5 khách hàng đầu tiên nếu không có từ khóa
   const fetchDefaultCustomers = async () => {
@@ -69,6 +74,7 @@ const BanTaiQuay = () => {
   // Hàm xử lý khi người dùng chọn khách hàng
   const handleSelectCustomer = (customer) => {
     setKeyword(`${customer.tenKhachHang} - ${customer.sdt}`); // Cập nhật TextField
+    setSelectedCustomerId(customer.id); // Lưu ID khách hàng được chọn
     setOpenKH(false); // Đóng Popper
   };
 
@@ -78,14 +84,26 @@ const BanTaiQuay = () => {
   }, []);
 
   // Để khi focus vào TextField, show danh sách
-  const handleFocus = () => setOpenKH(true);
-
-  const handleBlur = (e) => {
-    // Kiểm tra nếu người dùng click vào danh sách thì không đóng popper
-    if (!popperRef.current || popperRef.current.contains(e.relatedTarget)) {
-      return; // Nếu click vào Popper, không đóng nó
+  const handleFocus = () => {
+    // Nếu không có keyword, mở Popper
+    if (keyword === '') {
+      setOpenKH(true);
     }
-    setOpenKH(false);
+  };
+
+  // Hàm xử lý khi click ra ngoài Popper (để đóng nó)
+  const handleClickAway = (e) => {
+    // Nếu không có khách hàng được chọn và keyword trống, thì đóng Popper
+    if (!selectedCustomerId && keyword !== '') {
+      setOpenKH(false); // Đóng Popper khi không có khách hàng được chọn và từ khóa trống
+    }
+  };
+
+  // Sử dụng onMouseDown để tránh blur và luôn mở Popper
+  const handleMouseDown = (e) => {
+    if (e.target === inputRef.current) {
+      setOpenKH(true); // Khi bạn bấm chuột vào TextField, luôn mở Popper
+    }
   };
 
   const handleHomeClick = () => {
@@ -118,16 +136,6 @@ const BanTaiQuay = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  // Dữ liệu voucher (ví dụ)
-  const voucherInfo = {
-    code: '128722347',
-    discount: '30.000 VNĐ',
-    description: 'Giảm giá áp dụng cho toàn bộ sản phẩm',
-    condition: 'Cho đơn hàng từ 500.000 VNĐ',
-    quantity: 50,
-    expiry: '2022-06-23 02:33:00',
-  };
-
   // Hàm mở và đóng modal voucher
   const handleOpenVoucherModal = () => {
     setOpenVoucherModal(true);
@@ -137,9 +145,56 @@ const BanTaiQuay = () => {
     setOpenVoucherModal(false);
   };
 
-  // Hàm xử lý thay đổi mã voucher
-  const handleVoucherCodeChange = (e) => {
-    setVoucherCode(e.target.value);
+  // Gọi API tìm kiếm voucher
+  const handleVoucherCodeChange = async (event) => {
+    const keyword = event.target.value;
+    setVoucherCode(keyword);
+
+    if (keyword.trim() === '') {
+      // Nếu không có mã, lấy tất cả các voucher
+      fetchVouchers();
+    } else {
+      // Nếu có mã, tìm kiếm voucher theo mã
+      try {
+        const response = await axios.get(`http://localhost:8080/dragonbee/tim-kiem-phieu-giam-gia?keyword=${keyword}`);
+        setVouchers(response.data);
+      } catch (error) {
+        console.error("Error fetching vouchers:", error);
+      }
+    }
+  };
+
+  // Fetch tất cả voucher khi không có mã tìm kiếm
+  const fetchVouchers = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/dragonbee/tim-kiem-phieu-giam-gia', {
+        params: {
+          keyword: ''        // Truyền từ khóa tìm kiếm rỗng để lấy tất cả các voucher
+        }
+      });
+
+      // Sắp xếp dữ liệu theo ngày tạo (ngayTao)
+      const sortedVouchers = response.data.sort((a, b) => {
+        return new Date(b.ngayTao) - new Date(a.ngayTao);  // Sắp xếp theo ngày tạo giảm dần (mới nhất lên đầu)
+      });
+
+      // Cập nhật dữ liệu voucher sau khi đã sắp xếp
+      setVouchers(sortedVouchers);
+    } catch (error) {
+      console.error("Error fetching all vouchers:", error);
+    }
+  };
+
+  // Gọi fetchVouchers khi modal mở lần đầu hoặc chưa có dữ liệu voucher
+  useEffect(() => {
+    if (openVoucherModal) {
+      fetchVouchers();
+    }
+  }, [openVoucherModal]);
+
+  const handleUseVoucher = (voucherCode) => {
+    setSelectedVoucherCode(voucherCode); // Cập nhật mã voucher đã chọn
+    handleCloseVoucherModal(); // Đóng modal sau khi chọn voucher
   };
 
   // Hàm để thêm hóa đơn mới
@@ -428,13 +483,13 @@ const BanTaiQuay = () => {
             {/* bên phải */}
             <Grid item xs={12} sm={6} md={isShippingIconClicked ? 3 : 4}>
               <Paper sx={{ padding: 2, borderRadius: 0, minHeight: 598 }}>
-                <Box sx={{ width: '100%' }}>
+                <Box sx={{ width: '100%' }} ref={popperRef}>
                   {/* TextField với biểu tượng tìm kiếm */}
                   <TextField
                     value={keyword}
                     onChange={searchCustomers}
                     onFocus={handleFocus}
-                    onBlur={handleBlur}
+                    onMouseDown={handleMouseDown}  // Thêm sự kiện mouseDown để giữ Popper mở khi bạn nhấn vào TextField
                     inputRef={inputRef}
                     placeholder="Thêm khách hàng vào đơn"
                     variant="standard"
@@ -446,6 +501,7 @@ const BanTaiQuay = () => {
                         </InputAdornment>
                       ),
                     }}
+                    autoComplete="off"
                   />
 
                   {/* Đặt AddIcon bên ngoài TextField, sát bên phải */}
@@ -463,8 +519,8 @@ const BanTaiQuay = () => {
                   </IconButton>
 
                   {/* Sử dụng Popper để hiển thị danh sách khách hàng như dropdown */}
-                  <Popper open={openKH && customers.length > 0} anchorEl={inputRef.current} placement="bottom-start" sx={{ zIndex: 1300 ,width: isShippingIconClicked ? 342 : 475}}>
-                    <ClickAwayListener onClickAway={handleBlur}>
+                  <Popper open={openKH && customers.length > 0} anchorEl={inputRef.current} placement="bottom-start" sx={{ zIndex: 1300, width: 475 }}>
+                    <ClickAwayListener onClickAway={handleClickAway}>
                       <Box sx={{ border: '1px solid #ddd', width: '100%', maxHeight: 200, overflowY: 'auto', backgroundColor: 'white', boxShadow: 3 }}>
                         <List>
                           {customers.map((customer) => (
@@ -473,7 +529,7 @@ const BanTaiQuay = () => {
                               key={customer.id}
                               onClick={(e) => {
                                 e.stopPropagation(); // Ngừng lan truyền sự kiện click
-                                handleSelectCustomer(customer);
+                                handleSelectCustomer(customer); // Gọi hàm chọn khách hàng
                               }}
                             >
                               <ListItemText primary={`${customer.tenKhachHang} - ${customer.sdt}`} />
@@ -485,7 +541,6 @@ const BanTaiQuay = () => {
                   </Popper>
                 </Box>
 
-
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
                   <Typography variant="body1">Tổng tiền: (0 sản phẩm)</Typography>
                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>648.000 VNĐ</Typography>
@@ -494,7 +549,7 @@ const BanTaiQuay = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
                   <Typography variant="body1">Voucher:</Typography>
                   <Input
-                    value={'PGG001'}
+                    value={selectedVoucherCode} // Hiển thị mã voucher đã chọn
                     sx={{ color: '#5e5e5ede', width: 140 }}
                     endAdornment={<InputAdornment position="end"><EditIcon onClick={handleOpenVoucherModal} /></InputAdornment>}
                     inputProps={{
@@ -780,11 +835,7 @@ const BanTaiQuay = () => {
             edge="end"
             color="inherit"
             onClick={handleCloseVoucherModal}
-            sx={{
-              position: 'absolute',
-              right: '25px',
-              top: '15px',
-            }}
+            sx={{ position: 'absolute', right: '25px', top: '15px' }}
           >
             <CloseIcon />
           </IconButton>
@@ -801,52 +852,58 @@ const BanTaiQuay = () => {
                 marginBottom: 2,
                 marginTop: 1,
                 flex: 1,
-                '& .MuiInputBase-root': {
-                  height: '40px',  // Điều chỉnh chiều cao của TextField
-                },
+                '& .MuiInputBase-root': { height: '40px' },
               }}
             />
           </Box>
 
+          {/* Danh sách voucher */}
+          <Box sx={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {vouchers.map((voucher) => (
+              <Box key={voucher.id} sx={{ border: '1px dashed #db5656', padding: 2, marginBottom: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {/* Box 1: Mã và giảm giá */}
+                <Box sx={{ flex: 2, padding: '20px 30px', marginRight: 2, backgroundColor: '#db5656', borderRadius: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'white' }}>
+                    Mã: {voucher.ma}
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'white' }}>
+                    Giảm: <span> </span>
+                    {voucher.giaTriGiam < 100
+                      ? `${voucher.giaTriGiam}${voucher.loaiPhieuGiamGia === 'Phần trăm' ? '%' : ' VNĐ'}` // Khoảng cách chỉ có khi là VNĐ
+                      : `${new Intl.NumberFormat().format(voucher.giaTriGiam)}${voucher.loaiPhieuGiamGia === 'Phần trăm' ? '%' : ' VNĐ'}`}
+                  </Typography>
 
-          <Box sx={{ border: '1px dashed #db5656', padding: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            {/* Box 1: Mã và giảm giá */}
-            <Box sx={{ flex: 2, padding: '20px 30px', marginRight: 2, backgroundColor: '#db5656', borderRadius: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'white' }}>
-                Mã: {voucherInfo.code}
-              </Typography>
-              <Typography variant="body1" sx={{ color: 'white' }}>
-                Giảm {voucherInfo.discount}
-              </Typography>
-            </Box>
+                </Box>
 
-            {/* Box 2: Các thông tin còn lại */}
-            <Box sx={{ flex: 3, paddingRight: 2 }}>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                Miễn phí vận chuyển
-              </Typography>
+                {/* Box 2: Các thông tin còn lại */}
+                <Box sx={{ flex: 3, paddingRight: 2 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                    {voucher.tenPhieuGiamGia}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                    {voucher.moTa}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                    {voucher.trangThai}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                    Số tiền tối thiểu: {voucher.soTienToiThieu}
+                  </Typography>
+                </Box>
 
-              <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                {voucherInfo.description}
-              </Typography>
-              <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                {voucherInfo.condition}
-              </Typography>
-              <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                Số lượng còn lại: {voucherInfo.quantity}
-              </Typography>
-              <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                HSD: {voucherInfo.expiry}
-              </Typography>
+                {/* Box 3: Nút sử dụng */}
+                <Box sx={{ flex: 1, textAlign: 'center' }}>
+                  <Button
+                    variant="contained"
+                    sx={{ backgroundColor: '#d32f2f' }}
+                    onClick={() => handleUseVoucher(voucher.ma)} // Truyền mã voucher vào khi nhấn nút Sử dụng
+                  >
+                    Sử dụng
+                  </Button>
 
-            </Box>
-
-            {/* Box 3: Nút sử dụng */}
-            <Box sx={{ flex: 1, textAlign: 'center' }}>
-              <Button variant="contained" sx={{ backgroundColor: '#d32f2f' }} onClick={handleCloseVoucherModal}>
-                Sử dụng
-              </Button>
-            </Box>
+                </Box>
+              </Box>
+            ))}
           </Box>
         </DialogContent>
       </Dialog>

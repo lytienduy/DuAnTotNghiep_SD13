@@ -145,4 +145,43 @@ public class PhieuGiamGiaService {
             phieuGiamGiaRepository.save(phieu);
         }
     }
+
+    public List<PhieuGiamGia> timKiemPhieuGiamGia(String keyword, Integer idKhachHang) {
+        List<PhieuGiamGia> phieuGiamGias = phieuGiamGiaRepository.findAll();
+
+        // Lọc theo trạng thái "Đang diễn ra"
+        phieuGiamGias = phieuGiamGias.stream()
+                .filter(phieu -> "Đang diễn ra".equals(phieu.getTrangThai()))
+                .collect(Collectors.toList());
+
+        // Nếu có khách hàng được chọn, chỉ lấy kiểu giảm giá "Cá nhân" và "Công khai"
+        if (idKhachHang != null) {
+            List<PhieuGiamGiaKhachHang> phieuGiamGiaKhachHangs = phieuGiamGiaKhachHangRepository.findByKhachHangId(idKhachHang);
+
+            // Nếu khách hàng có phiếu giảm giá Cá nhân
+            List<Integer> phieuIds = phieuGiamGiaKhachHangs.stream()
+                    .map(pgkh -> pgkh.getPhieuGiamGia().getId())
+                    .collect(Collectors.toList());
+
+            // Lọc phiếu giảm giá "Cá nhân" mà khách hàng có và "Công khai"
+            phieuGiamGias = phieuGiamGias.stream()
+                    .filter(phieu -> phieuIds.contains(phieu.getId()) || "Công khai".equals(phieu.getKieuGiamGia()))
+                    .collect(Collectors.toList());
+        } else {
+            // Nếu không có khách hàng, chỉ lấy "Công khai"
+            phieuGiamGias = phieuGiamGias.stream()
+                    .filter(phieu -> "Công khai".equals(phieu.getKieuGiamGia()))
+                    .collect(Collectors.toList());
+        }
+
+        // Lọc theo mã hoặc tên phiếu giảm giá
+        if (keyword != null && !keyword.isEmpty()) {
+            phieuGiamGias = phieuGiamGias.stream()
+                    .filter(phieu -> phieu.getMa().contains(keyword) || phieu.getTenPhieuGiamGia().contains(keyword))
+                    .collect(Collectors.toList());
+        }
+
+        return phieuGiamGias;
+    }
+
 }
