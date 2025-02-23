@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './module/admin/components/SideBar';
 import Header from './module/admin/components/Header';
@@ -21,15 +21,20 @@ import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
 const Layout = ({ children }) => {
   const location = useLocation();
   const isBanTaiQuay = location.pathname === '/banTaiQuay';
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prevState) => !prevState); // Đảo trạng thái của sidebar
+  };
 
   return (
     <Box sx={{ display: 'flex' }}>
       {/* Sidebar */}
-      {!isBanTaiQuay && <Sidebar />}
+      {!isBanTaiQuay && <Sidebar isSidebarOpen={isSidebarOpen} />}
 
       <Box sx={{ flexGrow: 1, backgroundColor: '#f9f9f9', minHeight: '100vh' }}>
         {/* Header */}
-        {!isBanTaiQuay && <Header />}
+        {!isBanTaiQuay && <Header toggleSidebar={toggleSidebar} />}
 
         {/* Content */}
         <Box sx={{ padding: 0, backgroundColor: '#f5f5f5' }}>

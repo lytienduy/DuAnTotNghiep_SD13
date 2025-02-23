@@ -1,4 +1,5 @@
 package com.example.shopdragonbee.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -55,5 +56,6 @@ public class KhachHang {
     private TaiKhoan taiKhoan;
 
     @OneToMany(mappedBy = "khachHang", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // Tránh tuần hoàn khi chuyển đổi thành JSON
     private List<DiaChi> diaChis;
 }

@@ -38,16 +38,14 @@ import logo from '../../../img/dragonbee_logo_v1.png';
 
 
 
-const Sidebar = ({ sx }) => {
-  const [openProducts, setOpenProducts] = useState(false); // State for product submenu
-  const [isSidebarOpen] = useState(true); // State for sidebar open/close
-  const location = useLocation(); // Hook to get the current path
+const Sidebar = ({ isSidebarOpen }) => {
+  const [openProducts, setOpenProducts] = useState(false); // State cho submenu
+  const location = useLocation();
 
   const handleToggleProducts = () => setOpenProducts((prev) => !prev);
-  const isActive = (path) => location.pathname === path; // Check if current path matches
-
+  const isActive = (path) => location.pathname === path; // Kiểm tra nếu path hiện tại là active
   return (
-    <Box sx={{ ...sx }}>
+    <Box sx={{ width: isSidebarOpen ? 240 : 72, transition: 'width 0.3s' }}>
       <Typography variant="h6" sx={{ p: 2 }}>
         SideBar
       </Typography>
@@ -69,21 +67,16 @@ const Sidebar = ({ sx }) => {
             src={logo}
             alt="DragonBee Logo"
             style={{
-              height: isSidebarOpen ? 120 : 110, // Thay đổi chiều cao logo
+              height: isSidebarOpen ? 120 : 70, // Giảm thêm kích thước khi sidebar đóng
               width: 'auto', // Đảm bảo giữ tỉ lệ logo
-              marginRight: isSidebarOpen ? 10 : 0,
+              marginRight: isSidebarOpen ? 10 : 0, // Điều chỉnh khoảng cách khi sidebar mở/đóng
             }}
           />
         </Box>
 
-
-
-
         {/* Main Menu */}
         <List>
-          <Typography variant="subtitle2" sx={{ px: 2, mt: 1, mb: 1, color: 'gray' }}>
-            MAIN
-          </Typography>
+          
 
           {/* Thống kê */}
           <ListItemButton
@@ -334,9 +327,6 @@ const Sidebar = ({ sx }) => {
 
         {/* Account */}
         <List>
-          <Typography variant="subtitle2" sx={{ px: 2, mt: 1, mb: 1, color: 'gray' }}>
-            ACCOUNT
-          </Typography>
           <ListItemButton>
             <ListItemIcon>
               <LogoutIcon />

@@ -5,7 +5,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PersonIcon from "@mui/icons-material/Person";
 
-const Header = () => {
+const Header = ({ toggleSidebar }) => {
 
   return (
     <AppBar
@@ -19,15 +19,8 @@ const Header = () => {
       }}
     >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        {/* Icon Menu */}
-        <IconButton
-          edge="start"
-          color="inherit"
-          sx={{
-            marginRight: 2,
-            color: "black",
-          }}
-        >
+         {/* Icon Menu */}
+         <IconButton edge="start" color="inherit" sx={{ marginRight: 2, color: "black" }} onClick={toggleSidebar}>
           <MenuIcon />
         </IconButton>
 

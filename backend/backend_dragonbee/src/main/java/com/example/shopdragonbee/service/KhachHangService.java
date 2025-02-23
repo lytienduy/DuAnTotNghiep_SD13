@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class KhachHangService {
@@ -125,4 +127,24 @@ public class KhachHangService {
 
         return mapToDto(kh);
     }
+
+    // Tìm kiếm khách hàng theo tên hoặc số điện thoại (có thể nhập một phần)
+    public List<KhachHang> timKiemKhachHang(String keyword) {
+        List<KhachHang> khachHangs = khachHangRepository.findByTenKhachHangContainingIgnoreCaseOrSdtContainingIgnoreCase(keyword, keyword);
+
+        // Loại bỏ trùng lặp trong danh sách DiaChi
+        khachHangs.forEach(khachHang -> {
+            List<DiaChi> diaChis = khachHang.getDiaChis().stream()
+                    .distinct()  // Loại bỏ các địa chỉ trùng lặp
+                    .collect(Collectors.toList());
+
+            // Sắp xếp để địa chỉ mặc định lên trước
+            diaChis.sort((diaChi1, diaChi2) -> diaChi2.getMacDinh().compareTo(diaChi1.getMacDinh()));
+
+            khachHang.setDiaChis(diaChis);
+        });
+
+        return khachHangs;
+    }
+
 }

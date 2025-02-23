@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Thêm useEffect ở đây
+import axios from 'axios';
 import {
   AppBar, Toolbar, Typography, TextField, InputAdornment, Button, IconButton, Box, Grid, Paper, Input, Snackbar, Alert,
   Dialog, DialogContent, DialogTitle, Modal, FormControl, InputLabel, Select, MenuItem, RadioGroup, Radio,
-  FormControlLabel
+  FormControlLabel, List, ListItem, ListItemText, Popper, ClickAwayListener
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
@@ -29,6 +30,63 @@ const BanTaiQuay = () => {
   const [feeType, setFeeType] = useState('Miễn phí giao hàng');
   const [weight, setWeight] = useState('');
   const [dimensions, setDimensions] = useState({ length: '', width: '', height: '' });
+  const [keyword, setKeyword] = useState('');
+  const [customers, setCustomers] = useState([]);
+  const [openKH, setOpenKH] = useState(false); // Trạng thái hiển thị danh sách khách hàng
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const inputRef = useRef(null); // Tham chiếu đến TextField
+  const popperRef = useRef(null);
+
+  // Hàm gọi API tìm kiếm khách hàng
+  const searchCustomers = async (e) => {
+    const value = e.target.value;
+    setKeyword(value);
+
+    if (value.length > 0) { // Tìm khi có từ khóa
+      try {
+        const response = await axios.get(`http://localhost:8080/dragonbee/tim-kiem-khach-hang?keyword=${value}`);
+        setCustomers(response.data);
+        setOpenKH(true); // Hiển thị danh sách khách hàng khi có kết quả tìm kiếm
+      } catch (error) {
+        console.error('Lỗi khi gọi API:', error);
+      }
+    } else {
+      setOpenKH(true);
+      fetchDefaultCustomers();
+    }
+  };
+
+  // Lấy 5 khách hàng đầu tiên nếu không có từ khóa
+  const fetchDefaultCustomers = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/dragonbee/tim-kiem-khach-hang?keyword=`);
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Lỗi khi gọi API:', error);
+    }
+  };
+
+  // Hàm xử lý khi người dùng chọn khách hàng
+  const handleSelectCustomer = (customer) => {
+    setKeyword(`${customer.tenKhachHang} - ${customer.sdt}`); // Cập nhật TextField
+    setOpenKH(false); // Đóng Popper
+  };
+
+  // Hiển thị 5 khách hàng đầu tiên khi vừa mở trang (ngay khi chưa nhập gì)
+  useEffect(() => {
+    fetchDefaultCustomers();
+  }, []);
+
+  // Để khi focus vào TextField, show danh sách
+  const handleFocus = () => setOpenKH(true);
+
+  const handleBlur = (e) => {
+    // Kiểm tra nếu người dùng click vào danh sách thì không đóng popper
+    if (!popperRef.current || popperRef.current.contains(e.relatedTarget)) {
+      return; // Nếu click vào Popper, không đóng nó
+    }
+    setOpenKH(false);
+  };
 
   const handleHomeClick = () => {
     // Mở trang Thống Kê (hoặc trang bất kỳ) trong một tab mới
@@ -143,7 +201,7 @@ const BanTaiQuay = () => {
                   borderRadius: 1,
                   padding: '0 8px',
                   backgroundColor: 'white',
-                  marginRight: 2 
+                  marginRight: 2
                 }}
                 onClick={handleHomeClick}
               >
@@ -151,7 +209,7 @@ const BanTaiQuay = () => {
                   component="img"
                   src="https://raw.githubusercontent.com/lytienduy/DuAnTotNghiep_SD13/refs/heads/main/frontend/dragonbee/src/img/dragonbee_logo_v1.png"
                   alt="logo"
-                  sx={{ width: 50, height: 50}}
+                  sx={{ width: 50, height: 50 }}
                 />
               </Box>
               <TextField
@@ -373,6 +431,11 @@ const BanTaiQuay = () => {
                 <Box sx={{ width: '100%' }}>
                   {/* TextField với biểu tượng tìm kiếm */}
                   <TextField
+                    value={keyword}
+                    onChange={searchCustomers}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    inputRef={inputRef}
                     placeholder="Thêm khách hàng vào đơn"
                     variant="standard"
                     sx={{ width: '100%' }}
@@ -382,14 +445,46 @@ const BanTaiQuay = () => {
                           <SearchIcon sx={{ color: 'gray' }} />
                         </InputAdornment>
                       ),
-                      endAdornment: (
-                        <InputAdornment position="end" onClick={handleOpen}>
-                          <AddIcon sx={{ color: 'gray' }} />
-                        </InputAdornment>
-                      ),
                     }}
                   />
+
+                  {/* Đặt AddIcon bên ngoài TextField, sát bên phải */}
+                  <IconButton
+                    onClick={handleOpen}
+                    sx={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '14%',
+                      transform: 'translateY(-50%)',
+                      zIndex: 10
+                    }}
+                  >
+                    <AddIcon sx={{ color: 'gray' }} />
+                  </IconButton>
+
+                  {/* Sử dụng Popper để hiển thị danh sách khách hàng như dropdown */}
+                  <Popper open={openKH && customers.length > 0} anchorEl={inputRef.current} placement="bottom-start" sx={{ zIndex: 1300 ,width: isShippingIconClicked ? 342 : 475}}>
+                    <ClickAwayListener onClickAway={handleBlur}>
+                      <Box sx={{ border: '1px solid #ddd', width: '100%', maxHeight: 200, overflowY: 'auto', backgroundColor: 'white', boxShadow: 3 }}>
+                        <List>
+                          {customers.map((customer) => (
+                            <ListItem
+                              button
+                              key={customer.id}
+                              onClick={(e) => {
+                                e.stopPropagation(); // Ngừng lan truyền sự kiện click
+                                handleSelectCustomer(customer);
+                              }}
+                            >
+                              <ListItemText primary={`${customer.tenKhachHang} - ${customer.sdt}`} />
+                            </ListItem>
+                          ))}
+                        </List>
+                      </Box>
+                    </ClickAwayListener>
+                  </Popper>
                 </Box>
+
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
                   <Typography variant="body1">Tổng tiền: (0 sản phẩm)</Typography>
@@ -698,7 +793,7 @@ const BanTaiQuay = () => {
           {/* Input voucher mã */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <TextField
-              placeholder='Nhập mã voucher'
+              placeholder='Nhập mã hoặc tên voucher'
               variant="outlined"
               value={voucherCode}
               onChange={handleVoucherCodeChange}
