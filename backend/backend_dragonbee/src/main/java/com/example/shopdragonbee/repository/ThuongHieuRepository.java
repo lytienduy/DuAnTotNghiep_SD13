@@ -28,4 +28,9 @@ public interface ThuongHieuRepository extends JpaRepository<ThuongHieu, Integer>
     // Lấy mã lớn nhất hiện tại trong DB
     @Query("SELECT MAX(CAST(SUBSTRING(th.ma, 3) AS int)) FROM ThuongHieu th")
     Integer findMaxMa();
+
+    /// theo trạng thái
+    @Query("SELECT new com.example.shopdragonbee.dto.ThuongHieuDTO(t.id, t.ma, t.tenThuongHieu, t.moTa, t.trangThai) " +
+            "FROM ThuongHieu t WHERE t.trangThai = :trangThai")
+    List<ThuongHieuDTO> findByTrangThai(String trangThai);
 }

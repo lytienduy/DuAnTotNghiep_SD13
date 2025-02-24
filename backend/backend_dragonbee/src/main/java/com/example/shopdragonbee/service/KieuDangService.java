@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.KieuDangDTO;
 import com.example.shopdragonbee.entity.KieuDang;
 import com.example.shopdragonbee.repository.KieuDangRepository;
@@ -42,5 +43,9 @@ public class KieuDangService {
         kieuDangRepository.save(newKieuDang);
 
         return "Thêm kiểu dáng thành công";
+    }
+    // show ds theo trạng thái
+    public List<KieuDangDTO> getKieuDangByTrangThai(String trangThai) {
+        return kieuDangRepository.findByTrangThai(trangThai);
     }
 }

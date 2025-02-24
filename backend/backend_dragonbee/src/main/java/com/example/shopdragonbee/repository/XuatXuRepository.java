@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.repository;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.entity.XuatXu;
 import com.example.shopdragonbee.dto.XuatXuDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,4 +31,8 @@ public interface XuatXuRepository extends JpaRepository<XuatXu, Integer> {
 
     // Kiểm tra tên xuất xứ có tồn tại không
     Optional<XuatXu> findByTenXuatXu(String tenXuatXu);
+    // theo trạng thái
+    @Query("SELECT new com.example.shopdragonbee.dto.XuatXuDTO(xx.id, xx.ma, xx.tenXuatXu, xx.moTa, xx.trangThai) " +
+            "FROM XuatXu xx WHERE xx.trangThai = :trangThai")
+    List<XuatXuDTO> findByTrangThai(String trangThai);
 }

@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.controller;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.entity.PhongCach;
 import com.example.shopdragonbee.service.PhongCachService;
@@ -27,5 +28,9 @@ public class PhongCachController {
     public ResponseEntity<?> addPhongCach(@RequestBody PhongCachDTO phongCachDTO) {
         return phongCachService.addPhongCach(phongCachDTO);
     }
-
+    // api ds theo trạng thái
+    @GetMapping("/phong-cach/hoat-dong")
+    public List<PhongCachDTO> getPhongCachByTrangThaiHoatDong() {
+        return phongCachService.getPhongCachByTrangThai("Hoạt động");
+    }
 }

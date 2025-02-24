@@ -1,6 +1,7 @@
 package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.ChatLieuDTO;
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.entity.ChatLieu;
 import com.example.shopdragonbee.repository.ChatLieuRepository;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +58,9 @@ public class ChatLieuService {
         ChatLieu savedChatLieu = chatLieuRepository.save(newChatLieu);
         log.info("Thêm chất liệu thành công: {}", savedChatLieu);
         return savedChatLieu;
+    }
+    // show ds theo trạng thái
+    public List<ChatLieuDTO> getChatLieuByTrangThai(String trangThai) {
+        return chatLieuRepository.findByTrangThai(trangThai);
     }
 }

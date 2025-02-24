@@ -28,8 +28,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
-import DeleteIcon from '@mui/icons-material/Delete';
-
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const AddSanPham = () => {
   const { control, handleSubmit, getValues } = useForm();
@@ -55,7 +54,7 @@ const AddSanPham = () => {
   const [sanPhamList, setSanPhamList] = useState([]);
   const [colors, setColors] = useState([]);
   const [sizes, setSizes] = useState([]);
-  const [description, setDescription] = useState(""); 
+  const [description, setDescription] = useState("");
   const [selectedMauSacs, setSelectedMauSacs] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -104,7 +103,7 @@ const AddSanPham = () => {
   // đổ danh mục
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/danhmuc")
+      .get("http://localhost:8080/api/danhmuc/danh-muc/hoat-dong")
       .then((res) => {
         console.log("Danh Mục API Response:", res.data); // Kiểm tra dữ liệu API
         if (Array.isArray(res.data)) {
@@ -124,7 +123,7 @@ const AddSanPham = () => {
   // đổ thương hiệu
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/thuonghieu")
+      .get("http://localhost:8080/api/thuonghieu/thuong-hieu/hoat-dong")
       .then((res) => {
         console.log("Thương Hiệu API Response:", res.data); // Kiểm tra dữ liệu API
         setThuongHieus(res.data);
@@ -139,7 +138,7 @@ const AddSanPham = () => {
   // đổ phong cách
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/phongcach")
+      .get("http://localhost:8080/api/phongcach/phong-cach/hoat-dong")
       .then((res) => {
         console.log("Phong Cách API Response:", res.data); // Kiểm tra dữ liệu API
         setPhongCachs(res.data);
@@ -154,7 +153,7 @@ const AddSanPham = () => {
   // đổ chất liệu
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/chatlieu")
+      .get("http://localhost:8080/api/chatlieu/chat-lieu/hoat-dong")
       .then((res) => {
         console.log("Chất Liệu API Response:", res.data); // Kiểm tra dữ liệu API
         setChatLieus(res.data);
@@ -169,7 +168,7 @@ const AddSanPham = () => {
   // đổ kiểu dáng
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/kieudang")
+      .get("http://localhost:8080/api/kieudang/kieu-dang/hoat-dong")
       .then((res) => {
         console.log("Kiểu Dáng APi Response:", res.data);
         setKieuDangs(res.data);
@@ -185,7 +184,7 @@ const AddSanPham = () => {
   // đổ kiểu đai quần
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/kieudaiquan")
+      .get("http://localhost:8080/api/kieudaiquan/kieu-dai-quan/hoat-dong")
       .then((response) => {
         setKieuDaiQuans(response.data);
         console.log(response.data); // Kiểm tra xem dữ liệu có được tải chính xác không
@@ -198,7 +197,7 @@ const AddSanPham = () => {
   // đổ xuất xứ
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/xuatxu")
+      .get("http://localhost:8080/api/xuatxu/xuat-xu/hoat-dong")
       .then((res) => {
         console.log("Xuất Xứ API Response:", res.data); // Kiểm tra dữ liệu API
         setXuatXus(res.data);
@@ -213,7 +212,7 @@ const AddSanPham = () => {
   // màu sắc
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/mausac")
+      .get("http://localhost:8080/api/mausac/mau-sac/hoat-dong")
       .then((res) => {
         console.log("Dữ liệu màu sắc từ API:", res.data);
         setColors(res.data);
@@ -223,7 +222,7 @@ const AddSanPham = () => {
   // size
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/size")
+      .get("http://localhost:8080/api/size/hoat-dong")
       .then((res) => {
         console.log("Dữ liệu kích cỡ từ API:", res.data);
         setSizes(res.data);
@@ -266,126 +265,195 @@ const AddSanPham = () => {
   };
   const handleInputChange = (index, field, value) => {
     setProductDetails((prevDetails) =>
-        prevDetails.map((detail, i) =>
-            i === index ? { ...detail, [field]: value } : detail
-        )
+      prevDetails.map((detail, i) =>
+        i === index ? { ...detail, [field]: value } : detail
+      )
     );
-};
-const handleDescriptionChange = (e) => {
-  setDescription(e.target.value);  // Cập nhật mô tả khi nhập
-};
-  
-const handleAddToTable = () => {
-  if (!selectedProduct || selectedMauSacs.length === 0 || selectedSizes.length === 0) {
+  };
+  const handleDescriptionChange = (e) => {
+    setDescription(e.target.value); // Cập nhật mô tả khi nhập
+  };
+
+  const handleAddToTable = () => {
+    if (
+      !selectedProduct ||
+      selectedMauSacs.length === 0 ||
+      selectedSizes.length === 0
+    ) {
       alert("Vui lòng chọn đầy đủ sản phẩm, màu sắc và kích thước.");
       return;
-  }
+    }
 
-  const selectedProductName = sanPhamList.find(sp => sp.id === selectedProduct)?.tenSanPham;
-  if (!selectedProductName) {
+    const selectedProductName = sanPhamList.find(
+      (sp) => sp.id === selectedProduct
+    )?.tenSanPham;
+    if (!selectedProductName) {
       alert("Sản phẩm không hợp lệ.");
       return;
-  }
+    }
 
-  const newDetails = [];
+    const newDetails = [];
 
-  selectedMauSacs.forEach(colorId => {
-      selectedSizes.forEach(sizeId => {
-          const color = colors.find(c => c.id === colorId);
-          const size = sizes.find(s => s.id === sizeId);
-          if (!color || !size) {
-              alert("Màu sắc hoặc kích thước không hợp lệ.");
-              return;
-          }
+    selectedMauSacs.forEach((colorId) => {
+      selectedSizes.forEach((sizeId) => {
+        const color = colors.find((c) => c.id === colorId);
+        const size = sizes.find((s) => s.id === sizeId);
+        if (!color || !size) {
+          alert("Màu sắc hoặc kích thước không hợp lệ.");
+          return;
+        }
 
-          newDetails.push({
-              productCode: `SPCT-${Math.random().toString(36).substr(2, 9)}`,
-              productName: `${selectedProductName} - ${color.tenMauSac} - ${size.tenSize}`,
-              tenMauSac: color.tenMauSac,
-              tenSize: size.tenSize,
-              moTa: description,
-              quantity: 0,
-              price: 0,
-          });
+        newDetails.push({
+          productCode: `SPCT-${Math.random().toString(36).substr(2, 9)}`,
+          productName: `${selectedProductName} - ${color.tenMauSac} - ${size.tenSize}`,
+          tenMauSac: color.tenMauSac,
+          tenSize: size.tenSize,
+          moTa: description,
+          quantity: 0,
+          price: 0,
+        });
       });
-  });
+    });
 
-  setProductDetails(prevDetails => [...prevDetails, ...newDetails]);
-};
+    setProductDetails((prevDetails) => [...prevDetails, ...newDetails]);
+  };
 
-
-  
-
-const handleSave = async () => {
-  if (!selectedProduct) {
-      alert('Vui lòng chọn sản phẩm.');
+  const handleSave = async () => {
+    if (!selectedProduct) {
+      alert("Vui lòng chọn sản phẩm.");
       return;
-  }
+    }
 
-  // 🛠 Tạo danh sách sản phẩm chi tiết từ bảng
-  const requestDataList = productDetails.map((detail) => ({
+    // 🛠 Tạo danh sách sản phẩm chi tiết từ bảng
+    const requestDataList = productDetails.map((detail) => ({
       sanPhamId: selectedProduct,
       soLuong: detail.quantity || 0,
       gia: detail.price || 0,
-      moTa: detail.moTa !== undefined ? detail.moTa : description || "Không có mô tả",
+      moTa:
+        detail.moTa !== undefined
+          ? detail.moTa
+          : description || "Không có mô tả",
       trangThai: "Còn hàng",
       danhMucId: selectedCategory,
       thuongHieuId: selectedThuongHieu,
       phongCachId: selectedPhongCach,
       chatLieuId: selectedChatLieu,
-      mauSacId: colors.find(c => c.tenMauSac === detail.tenMauSac)?.id || null,
-      sizeId: sizes.find(s => s.tenSize === detail.tenSize)?.id || null,
+      mauSacId:
+        colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
+      sizeId: sizes.find((s) => s.tenSize === detail.tenSize)?.id || null,
       kieuDangId: selectedKieuDang,
       kieuDaiQuanId: selectedKieuDaiQuan,
       xuatXuId: selectedXuatXus,
-  }));
+    }));
 
-  console.log("🚀 Dữ liệu gửi lên Backend:", JSON.stringify(requestDataList, null, 2));
+    console.log(
+      "🚀 Dữ liệu gửi lên Backend:",
+      JSON.stringify(requestDataList, null, 2)
+    );
 
-  try {
+    try {
       const response = await axios.post(
-          'http://localhost:8080/api/sanpham/add/chi-tiet',
-          requestDataList,
-          {
-              headers: { "Content-Type": "application/json" },
-          }
+        "http://localhost:8080/api/sanpham/add/chi-tiet",
+        requestDataList,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
       );
 
       if (response.status === 201 || response.status === 200) {
-          console.log("✅ Phản hồi từ Backend:", response.data);
-          setSnackMessage('Thêm sản phẩm chi tiết thành công!');
-          setSnackOpen(true);
-          navigate('/sanpham', { replace: true });
+        console.log("✅ Phản hồi từ Backend:", response.data);
+        setSnackMessage("Thêm sản phẩm chi tiết thành công!");
+        setSnackOpen(true);
+        navigate("/sanpham", { replace: true });
       }
-  } catch (error) {
-      console.error("❌ Lỗi khi gửi request:", error.response?.data || error.message);
-      setSnackMessage('Có lỗi xảy ra, vui lòng thử lại.');
+    } catch (error) {
+      console.error(
+        "❌ Lỗi khi gửi request:",
+        error.response?.data || error.message
+      );
+      setSnackMessage("Có lỗi xảy ra, vui lòng thử lại.");
       setSnackOpen(true);
-  }
-};
-// chọn ảnh
-const handleImageChange = (index, event) => {
-  const file = event.target.files[0];
-  if (file) {
-    const imageUrl = URL.createObjectURL(file); // Tạo URL tạm thời cho ảnh
-    setSelectedImages((prevImages) => ({
-      ...prevImages,
-      [index]: imageUrl, // Lưu ảnh theo index sản phẩm
-    }));
-  }
-};
-// lưu ảnh
-const handleSaveImage = (index) => {
-  // Thực hiện lưu ảnh vào backend hoặc trạng thái của sản phẩm tại đây
-  // Ví dụ: gọi API upload ảnh
-  alert("Đã lưu ảnh cho sản phẩm " + productDetails[index].productCode);
-};
+    }
+  };
+  // chọn ảnh
+  const handleImageChange = (index, event) => {
+    const file = event.target.files[0];
+    console.log(`File selected at index ${index}:`, file); // Log file được chọn
+    if (file) {
+      const imageUrl = URL.createObjectURL(file); // Tạo URL tạm thời cho ảnh
+      console.log(`Image URL for index ${index}:`, imageUrl); // Log URL ảnh
+      setSelectedImages((prevImages) => {
+        const updatedImages = { ...prevImages };
+        updatedImages[index] = updatedImages[index] || [];
+        updatedImages[index].push(imageUrl); // Đảm bảo là mảng chứa ảnh
+        console.log('Updated selected images:', updatedImages); // Log dữ liệu đã cập nhật
+        return updatedImages;
+      });
+    }
+  };
+  
+
+  // lưu ảnh
+  const handleSaveImage = async (index) => {
+    console.log("Attempting to save images at index:", index);
+    const imagesToUpload = selectedImages[index]; // Lấy ảnh từ trạng thái
+    console.log("Images to upload at index", index, imagesToUpload); // Log mảng ảnh
+  
+    // Kiểm tra nếu imagesToUpload hợp lệ và có ảnh để upload
+    if (imagesToUpload && Array.isArray(imagesToUpload) && imagesToUpload.length > 0) {
+      const formData = new FormData();
+      // Duyệt qua từng ảnh trong mảng imagesToUpload
+      imagesToUpload.forEach((image, idx) => {
+        console.log(`Uploading image ${idx} at index ${index}:`, image); // Log từng ảnh
+        if (image) { 
+          const file = dataURLtoFile(image, `image-${index}-${idx}.jpg`);
+          formData.append('images', file);
+        }
+      });
+  
+      try {
+        const response = await fetch(`/api/anh-san-pham/${productDetails[index].id}`, {
+          method: 'POST',
+          body: formData,
+        });
+  
+        if (response.ok) {
+          alert("Đã lưu ảnh cho sản phẩm " + productDetails[index].productCode);
+        } else {
+          alert("Lỗi khi lưu ảnh cho sản phẩm");
+        }
+      } catch (error) {
+        console.error("Error uploading images:", error);
+        alert("Lỗi kết nối khi lưu ảnh");
+      }
+    } else {
+      alert("Vui lòng chọn ít nhất một ảnh!");
+    }
+  };
+  
+  
+  
+  // Chuyển từ DataURL thành File
+  const dataURLtoFile = (dataUrl, filename) => {
+    console.log("Converting dataURL to file:", dataUrl);  // Log giá trị dataUrl
+    if (!dataUrl) {
+      console.error("Data URL is null or undefined");
+      return null; // Trả về null nếu dataUrl không hợp lệ
+    }
+    const arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+          bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--) u8arr[n] = bstr.charCodeAt(n);
+    return new File([u8arr], filename, {type: mime});
+  };
+  
+  
+  
 
   // xóa spct
-const removeSanPhamChiTiet = (index) => {
-  const newList = sanPhamChiTietList.filter((_, i) => i !== index); // Loại bỏ sản phẩm tại index
-  setSanPhamChiTietList(newList); // Cập nhật lại state
-};
+  const removeSanPhamChiTiet = (index) => {
+    const newList = sanPhamChiTietList.filter((_, i) => i !== index); // Loại bỏ sản phẩm tại index
+    setSanPhamChiTietList(newList); // Cập nhật lại state
+  };
   // Gửi dữ liệu lên backend để thêm sản phẩm mới
   const handleAddProduct = () => {
     if (!tenSanPham.trim()) {
@@ -695,31 +763,33 @@ const removeSanPhamChiTiet = (index) => {
         <Typography variant="h5">Thuộc Tính</Typography>
         {/* Sản phẩm */}
         <Grid item xs={12} md={3}>
-        <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
-  <InputLabel>Tên sản phẩm</InputLabel>
-  <Controller
-    name="tenSanPham"
-    control={control}
-    defaultValue={selectedProduct}  // Đảm bảo defaultValue là selectedProduct
-    render={({ field }) => (
-      <Select
-        {...field}
-        label="Tên Sản Phẩm"
-        value={selectedProduct}  // Đảm bảo value được cập nhật đúng
-        onChange={(e) => {
-          console.log('Product selected:', e.target.value);  // Log giá trị khi chọn
-          setSelectedProduct(e.target.value)}  // Cập nhật giá trị sản phẩm
-      }>
-        {sanPhamList.map((sp) => (
-          <MenuItem key={sp.id} value={sp.id}>
-            {sp.tenSanPham}
-          </MenuItem>
-        ))}
-      </Select>
-    )}
-  />
-</FormControl>
-
+          <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
+            <InputLabel>Tên sản phẩm</InputLabel>
+            <Controller
+              name="tenSanPham"
+              control={control}
+              defaultValue={selectedProduct} // Đảm bảo defaultValue là selectedProduct
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  label="Tên Sản Phẩm"
+                  value={selectedProduct} // Đảm bảo value được cập nhật đúng
+                  onChange={
+                    (e) => {
+                      console.log("Product selected:", e.target.value); // Log giá trị khi chọn
+                      setSelectedProduct(e.target.value);
+                    } // Cập nhật giá trị sản phẩm
+                  }
+                >
+                  {sanPhamList.map((sp) => (
+                    <MenuItem key={sp.id} value={sp.id}>
+                      {sp.tenSanPham}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
+            />
+          </FormControl>
 
           <IconButton onClick={handleOpenModal} color="primary">
             <AddIcon />
@@ -1323,16 +1393,15 @@ const removeSanPhamChiTiet = (index) => {
               // Thiết lập giá trị mặc định là chuỗi trống
               render={({ field }) => (
                 <TextField
-                label="Mô Tả"
-                fullWidth
-                margin="dense"
-                multiline
-                rows={4}
-                sx={{ width: "60%" }}
-                value={description}  // ✅ Đảm bảo giá trị đồng bộ với state
-                onChange={handleDescriptionChange}  // ✅ Cập nhật khi nhập
-              />
-              
+                  label="Mô Tả"
+                  fullWidth
+                  margin="dense"
+                  multiline
+                  rows={4}
+                  sx={{ width: "60%" }}
+                  value={description} // ✅ Đảm bảo giá trị đồng bộ với state
+                  onChange={handleDescriptionChange} // ✅ Cập nhật khi nhập
+                />
               )}
             />
           </Grid>
@@ -1413,10 +1482,6 @@ const removeSanPhamChiTiet = (index) => {
     setPrice(Number(value) || 0);  // Chuyển giá trị thành số, nếu không thì gán 0
   }}
 /> */}
-
-
-
-
       </Paper>
       <Button onClick={handleAddToTable}>Thêm vào bảng</Button>
 
@@ -1424,106 +1489,110 @@ const removeSanPhamChiTiet = (index) => {
 
       {/* Existing Fields for Tên Sản Phẩm, Danh Mục, Thương Hiệu, ... */}
       <Paper sx={{ padding: 2, mb: 2 }}>
-      <TableContainer>
-  <Table>
-    <TableHead>
-      <TableRow>
-        <TableCell>Mã Sản Phẩm Chi Tiết</TableCell>
-        <TableCell>Sản phẩm</TableCell>
-        <TableCell>Màu sắc</TableCell>
-        <TableCell>Kích thước</TableCell>
-        <TableCell>Số lượng</TableCell>
-        <TableCell>Giá</TableCell>
-        <TableCell>Hành Động</TableCell>
-        <TableCell>Ảnh</TableCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {productDetails.map((detail, index) => (
-        <TableRow>
-          <TableCell>{detail.productCode}</TableCell>
-          <TableCell>{detail.productName}</TableCell>
-          <TableCell>{detail.tenMauSac}</TableCell>
-          <TableCell>{detail.tenSize}</TableCell>
-          <TableCell>
-            <TextField
-              type="number"
-              value={detail.quantity}
-              onChange={(e) => {
-                let value = e.target.value;
-                if (value === "" || isNaN(value)) {
-                  value = 0;
-                } else {
-                  value = parseFloat(value);
-                }
-                handleInputChange(index, 'quantity', value);
-              }}
-              size="small"
-              fullWidth
-            />
-          </TableCell>
-          <TableCell>
-            <TextField
-              type="number"
-              value={detail.price}
-              onChange={(e) => {
-                let value = e.target.value;
-                if (value === "" || isNaN(value)) {
-                  value = 0;
-                } else {
-                  value = parseFloat(value);
-                }
-                handleInputChange(index, 'price', value);
-              }}
-              size="small"
-              fullWidth
-            />
-          </TableCell>
-          <TableCell>
-          <IconButton onClick={() => removeSanPhamChiTiet(index)} color="black">
-                  <DeleteIcon />
-                </IconButton>
-                </TableCell>
-          <TableCell>
-            {/* Input để chọn ảnh */}
-            <input
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  id={`image-upload-${index}`}
-                  onChange={(e) => handleImageChange(index, e)}
-                />
-                <label htmlFor={`image-upload-${index}`}>
-                  <IconButton component="span" color="primary">
-                    {/* Thay bằng biểu tượng upload */}
-                    📸
-                  </IconButton>
-                </label>
-                {/* Hiển thị ảnh đã chọn */}
-                {selectedImages[index] && (
-                  <div>
-                    <img
-                      src={selectedImages[index]}
-                      alt="product"
-                      style={{ width: "50px", height: "50px", objectFit: "cover" }}
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Mã Sản Phẩm Chi Tiết</TableCell>
+                <TableCell>Sản phẩm</TableCell>
+                <TableCell>Màu sắc</TableCell>
+                <TableCell>Kích thước</TableCell>
+                <TableCell>Số lượng</TableCell>
+                <TableCell>Giá</TableCell>
+                <TableCell>Hành Động</TableCell>
+                <TableCell>Ảnh</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {productDetails.map((detail, index) => (
+                <TableRow>
+                  <TableCell>{detail.productCode}</TableCell>
+                  <TableCell>{detail.productName}</TableCell>
+                  <TableCell>{detail.tenMauSac}</TableCell>
+                  <TableCell>{detail.tenSize}</TableCell>
+                  <TableCell>
+                    <TextField
+                      type="number"
+                      value={detail.quantity}
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        if (value === "" || isNaN(value)) {
+                          value = 0;
+                        } else {
+                          value = parseFloat(value);
+                        }
+                        handleInputChange(index, "quantity", value);
+                      }}
+                      size="small"
+                      fullWidth
                     />
-                    <button onClick={() => handleSaveImage(index)}>Lưu ảnh</button>
-                  </div>
-                )}
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-</TableContainer>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      type="number"
+                      value={detail.price}
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        if (value === "" || isNaN(value)) {
+                          value = 0;
+                        } else {
+                          value = parseFloat(value);
+                        }
+                        handleInputChange(index, "price", value);
+                      }}
+                      size="small"
+                      fullWidth
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={() => removeSanPhamChiTiet(index)}
+                      color="black"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                  <TableCell>
+                    {/* Input để chọn ảnh */}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(event) => handleImageChange(index, event)}
+                    />
 
+                    <label htmlFor={`image-upload-${index}`}>
+                      <IconButton component="span" color="primary">
+                        {/* Thay bằng biểu tượng upload */}
+                        📸
+                      </IconButton>
+                    </label>
+                    {/* Hiển thị ảnh đã chọn */}
+                    {selectedImages[index] && (
+                      <div>
+                        <img
+                          src={selectedImages[index]}
+                          alt="product"
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <button onClick={() => handleSaveImage(index)}>
+                          Lưu ảnh
+                        </button>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-      <Button onClick={handleSave}>Lưu</Button>
+        <Button onClick={handleSave}>Lưu</Button>
       </Paper>
-      
-      
-
-      
     </div>
   );
 };

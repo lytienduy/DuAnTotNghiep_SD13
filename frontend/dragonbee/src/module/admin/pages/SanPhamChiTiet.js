@@ -43,7 +43,8 @@ const SanPhamChiTiet = () => {
   const [chiTietList, setChiTietList] = useState([]); // Khởi tạo mặc định là mảng trống
   const [loading, setLoading] = useState(true);
   const [openSnackbar, setOpenSnackbar] = useState(false); // Mở đóng Snackbar
-  const [snackbarMessage, setSnackbarMessage] = useState(""); // Nội dung thông báo
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarMessage1, setSnackbarMessage1] = useState(""); // Nội dung thông báo
   const [filters, setFilters] = useState({
     search: "",
     trangThai: "",
@@ -180,7 +181,9 @@ const SanPhamChiTiet = () => {
   };
   const handleFilterChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
+    setPage(1);
   };
+  
   // Kiểm tra chiTietList có phải là mảng và lọc dữ liệu hợp lý
   const filteredData = chiTietList.filter(
     (item) =>
@@ -343,6 +346,7 @@ const SanPhamChiTiet = () => {
   // update
   const handlePriceChange = (event, newValue) => {
     setFilters({ ...filters, priceRange: newValue });
+    setPage(1);
   };
   // Hàm xử lý thay đổi số lượng và giá
 
@@ -416,29 +420,19 @@ const SanPhamChiTiet = () => {
       );
 
       console.log("Cập nhật thành công! Reload lại trang...");
-      setSnackbarMessage("Cập nhật sản phẩm chi tiết thành công!");
+      setSnackbarMessage1("Cập nhật sản phẩm chi tiết thành công!");
       setOpenSnackbar(true);
 
       // Reload lại trang sau khi cập nhật thành công
       window.location.reload();
     } catch (error) {
       console.error("Lỗi khi cập nhật sản phẩm chi tiết:", error);
-      setSnackbarMessage("Lỗi khi cập nhật sản phẩm chi tiết!");
+      setSnackbarMessage1("Lỗi khi cập nhật sản phẩm chi tiết!");
       setOpenSnackbar(true);
     }
   };
 
-  const fetchSanPhamChiTiet = async () => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8080/api/san-pham/by-san-pham/${selectedItem.id}`
-      );
-      console.log("Bảng sau khi cập nhật:", response.data.content); // Kiểm tra dữ liệu trả về
-      setChiTietList(response.data.content);
-    } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
-    }
-  };
+  
 
   const handleClose = () => {
     setOpen(false); // Chỉ đóng khi người dùng nhấn "Hủy"
@@ -950,8 +944,12 @@ const SanPhamChiTiet = () => {
 
             <Snackbar
               open={openSnackbar}
+              autoHideDuration={3000}
               onClose={() => setOpenSnackbar(false)}
-            />
+              anchorOrigin={{ vertical: "top", horizontal: "right" }} 
+            >
+               <Alert severity="success">{snackbarMessage1}</Alert>
+              </Snackbar>
           </div>
           <Box
             display="flex"

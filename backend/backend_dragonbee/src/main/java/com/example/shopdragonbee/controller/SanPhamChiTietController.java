@@ -6,6 +6,9 @@ import com.example.shopdragonbee.service.SanPhamChiTietService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/san-pham-chi-tiet")
@@ -27,5 +30,22 @@ public class SanPhamChiTietController {
         return ResponseEntity.ok(sanPhamChiTietService.updateSanPhamChiTiet(id, request));
     }
 // search
+@GetMapping("/search")
+public ResponseEntity<List<SanPhamChiTietDTO>> searchSanPham(
+        @RequestParam(required = false) String tenSanPham,
+        @RequestParam(required = false) Integer danhMucId,
+        @RequestParam(required = false) Integer thuongHieuId,
+        @RequestParam(required = false) Integer phongCachId,
+        @RequestParam(required = false) Integer chatLieuId,
+        @RequestParam(required = false) Integer kieuDangId,
+        @RequestParam(required = false) Integer kieuDaiQuanId,
+        @RequestParam(required = false) Integer xuatXuId,
+        @RequestParam(required = false) Integer mauSacId,
+        @RequestParam(required = false) Integer sizeId,
+        @RequestParam(required = false) Double giaMin,
+        @RequestParam(required = false) Double giaMax) {
 
+    List<SanPhamChiTietDTO> result = sanPhamChiTietService.searchSanPham(tenSanPham, danhMucId, thuongHieuId, phongCachId, chatLieuId, kieuDangId, kieuDaiQuanId, xuatXuId, mauSacId, sizeId, giaMin, giaMax);
+    return ResponseEntity.ok(result);
+}
 }

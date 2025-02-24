@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.KieuDaiQuanDTO;
 import com.example.shopdragonbee.entity.KieuDaiQuan;
 import com.example.shopdragonbee.repository.KieuDaiQuanRepository;
@@ -63,5 +64,8 @@ public class KieuDaiQuanService {
         return new KieuDaiQuanDTO(newKieuDaiQuan.getId(), newKieuDaiQuan.getMa(),
                 newKieuDaiQuan.getTenKieuDaiQuan(), newKieuDaiQuan.getMoTa(), newKieuDaiQuan.getTrangThai());
     }
-
+    // show ds theo trạng thái
+    public List<KieuDaiQuanDTO> getKieuDaiQuanByTrangThai(String trangThai) {
+        return kieuDaiQuanRepository.findByTrangThai(trangThai);
+    }
 }

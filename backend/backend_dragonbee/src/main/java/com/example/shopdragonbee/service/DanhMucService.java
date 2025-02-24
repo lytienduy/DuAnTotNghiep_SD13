@@ -1,6 +1,7 @@
 package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.DanhMucDTO;
+import com.example.shopdragonbee.dto.ThuongHieuDTO;
 import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.repository.DanhMucRepository;
 import com.example.shopdragonbee.respone.DanhMucRespone;
@@ -57,5 +58,9 @@ public class DanhMucService {
                 .build();
 
         return danhMucRepository.save(danhMuc);
+    }
+    // show ds theo trạng thái
+    public List<DanhMucDTO> getDanhMucByTrangThai(String trangThai) {
+        return danhMucRepository.findByTrangThai(trangThai);
     }
 }

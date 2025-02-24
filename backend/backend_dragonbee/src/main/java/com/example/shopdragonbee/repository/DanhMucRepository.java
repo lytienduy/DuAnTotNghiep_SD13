@@ -1,5 +1,7 @@
 package com.example.shopdragonbee.repository;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
+import com.example.shopdragonbee.dto.ThuongHieuDTO;
 import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.respone.DanhMucRespone;
 import com.example.shopdragonbee.respone.DanhMucRespone2;
@@ -30,4 +32,8 @@ public interface DanhMucRepository extends JpaRepository<DanhMuc, Integer> {
     String findMaxMaDanhMuc();
 
     Optional<DanhMuc> findByTenDanhMuc(String tenDanhMuc);
+    // theo trạng thái
+    @Query("SELECT new com.example.shopdragonbee.dto.DanhMucDTO(dm.id, dm.ma, dm.tenDanhMuc, dm.moTa, dm.trangThai) " +
+            "FROM DanhMuc dm WHERE dm.trangThai = :trangThai")
+    List<DanhMucDTO> findByTrangThai(String trangThai);
 }

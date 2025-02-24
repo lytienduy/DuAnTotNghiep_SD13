@@ -1,10 +1,14 @@
 package com.example.shopdragonbee.controller;
 
+import com.example.shopdragonbee.dto.MauSacDTO;
+import com.example.shopdragonbee.dto.SizeDTO;
 import com.example.shopdragonbee.repository.ChatLieuRepository;
 import com.example.shopdragonbee.repository.SizeRepository;
 import com.example.shopdragonbee.respone.ChatLieuRespone;
 import com.example.shopdragonbee.respone.SizeRespone;
+import com.example.shopdragonbee.service.SizeService;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,17 +20,22 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/size")
 @CrossOrigin(origins = "http://localhost:3000")
+@RequiredArgsConstructor
 public class SizeController {
 
     private final SizeRepository sizeRepository;
+    private final SizeService sizeService;
 
-    public SizeController(SizeRepository sizeRepository) {
-        this.sizeRepository = sizeRepository;
-    }
+
 
     // API lấy danh sách sản phẩm
     @GetMapping
     public List<SizeRespone> getAllSize() {
         return sizeRepository.getAll();
+    }
+
+    @GetMapping("/hoat-dong")
+    public List<SizeDTO> getSizeTrangThaiHoatDong() {
+        return sizeService.getSizeByTrangThai("Hoạt động");
     }
 }

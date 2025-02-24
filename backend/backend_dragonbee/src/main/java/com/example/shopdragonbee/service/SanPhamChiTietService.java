@@ -17,6 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class SanPhamChiTietService {
 
@@ -116,6 +119,31 @@ public class SanPhamChiTietService {
     }
 
 // tìm kiếm và bộ lọc
-
+public List<SanPhamChiTietDTO> searchSanPham(String tenSanPham, Integer danhMucId, Integer thuongHieuId, Integer
+        phongCachId, Integer chatLieuId, Integer kieuDangId, Integer kieuDaiQuanId,
+                                             Integer xuatXuId, Integer mauSacId, Integer sizeId, Double giaMin,
+                                             Double giaMax) {
+    List<SanPhamChiTiet> sanPhams = sanPhamChiTietRepository.searchSanPham(tenSanPham, danhMucId,
+            thuongHieuId, phongCachId, chatLieuId, kieuDangId, kieuDaiQuanId, xuatXuId, mauSacId,
+            sizeId, giaMin, giaMax);
+    return sanPhams.stream().map(sp -> new SanPhamChiTietDTO(
+            sp.getId(),
+            sp.getMa(),
+            sp.getSanPham().getId(),
+            sp.getDanhMuc().getId(),
+            sp.getThuongHieu().getId(),
+            sp.getPhongCach().getId(),
+            sp.getChatLieu().getId(),
+            sp.getMauSac().getId(),
+            sp.getSize().getId(),
+            sp.getKieuDang().getId(),
+            sp.getKieuDaiQuan().getId(),
+            sp.getXuatXu().getId(),
+            sp.getSoLuong(),
+            sp.getGia(),
+            sp.getTrangThai(),
+            sp.getMoTa()
+    )).collect(Collectors.toList());
+}
 
 }

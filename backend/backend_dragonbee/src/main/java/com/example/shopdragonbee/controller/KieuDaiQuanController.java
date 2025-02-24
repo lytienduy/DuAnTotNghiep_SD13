@@ -1,6 +1,7 @@
 package com.example.shopdragonbee.controller;
 
 import com.example.shopdragonbee.dto.KieuDaiQuanDTO;
+import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.service.KieuDaiQuanService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,5 +41,9 @@ public class KieuDaiQuanController {
         KieuDaiQuanDTO newKieuDaiQuan = kieuDaiQuanService.addKieuDaiQuan(kieuDaiQuanDTO);
         return ResponseEntity.ok(newKieuDaiQuan);
     }
-
+    // api ds theo trạng thái
+    @GetMapping("/kieu-dai-quan/hoat-dong")
+    public List<KieuDaiQuanDTO> getKieuDaiQuanByTrangThaiHoatDong() {
+        return kieuDaiQuanService.getKieuDaiQuanByTrangThai("Hoạt động");
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.shopdragonbee.controller;
 
 import com.example.shopdragonbee.dto.KieuDangDTO;
+import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.service.KieuDangService;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,5 +28,11 @@ public class KieuDangController {
     @PostMapping("/add")
     public String addKieuDang(@RequestBody KieuDangDTO kieuDangDTO) {
         return kieuDangService.addKieuDang(kieuDangDTO);
+    }
+
+    // api ds theo trạng thái
+    @GetMapping("/kieu-dang/hoat-dong")
+    public List<KieuDangDTO> getKieuDangByTrangThaiHoatDong() {
+        return kieuDangService.getKieuDangByTrangThai("Hoạt động");
     }
 }

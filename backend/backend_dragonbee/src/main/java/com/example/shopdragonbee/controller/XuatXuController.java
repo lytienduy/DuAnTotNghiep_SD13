@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.controller;
 
+import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.dto.XuatXuDTO;
 import com.example.shopdragonbee.service.XuatXuService;
 import org.springframework.http.ResponseEntity;
@@ -33,5 +34,10 @@ public class XuatXuController {  // Đảm bảo từ khóa "public class" đún
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+    // api ds theo trạng thái
+    @GetMapping("/xuat-xu/hoat-dong")
+    public List<XuatXuDTO> getXuatXuByTrangThaiHoatDong() {
+        return xuatXuService.getXuatXuByTrangThai("Hoạt động");
     }
 }

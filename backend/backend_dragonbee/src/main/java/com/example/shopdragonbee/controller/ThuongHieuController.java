@@ -29,4 +29,9 @@ public class ThuongHieuController {
     public ResponseEntity<?> addThuongHieu(@RequestBody ThuongHieuDTO thuongHieuDTO) {
         return thuongHieuService.addThuongHieu(thuongHieuDTO.getTenThuongHieu(), thuongHieuDTO.getMoTa());
     }
+    // api show ds theo trạng thái
+    @GetMapping("/thuong-hieu/hoat-dong")
+    public List<ThuongHieuDTO> getThuongHieuByTrangThaiHoatDong() {
+        return thuongHieuService.getThuongHieuByTrangThai("Hoạt động");
+    }
 }

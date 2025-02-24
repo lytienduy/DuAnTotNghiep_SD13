@@ -53,4 +53,8 @@ public class ThuongHieuService {
         int newMa = (maxMa != null ? maxMa : 0) + 1;
         return "TH" + String.format("%03d", newMa);
     }
+    // show theo trạng thái
+    public List<ThuongHieuDTO> getThuongHieuByTrangThai(String trangThai) {
+        return thuongHieuRepository.findByTrangThai(trangThai);
+    }
 }

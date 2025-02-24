@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.XuatXuDTO;
 import com.example.shopdragonbee.entity.XuatXu;
 import com.example.shopdragonbee.repository.XuatXuRepository;
@@ -58,5 +59,9 @@ public class XuatXuService {
 
         newXuatXu = xuatSuRepository.save(newXuatXu);
         return new XuatXuDTO(newXuatXu.getId(), newXuatXu.getMa(), newXuatXu.getTenXuatXu(), newXuatXu.getMoTa(), newXuatXu.getTrangThai());
+    }
+    // show ds theo trạng thái
+    public List<XuatXuDTO> getXuatXuByTrangThai(String trangThai) {
+        return xuatSuRepository.findByTrangThai(trangThai);
     }
 }

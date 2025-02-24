@@ -42,4 +42,9 @@ public class DanhMucController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    // api ds theo trạng thái
+    @GetMapping("/danh-muc/hoat-dong")
+    public List<DanhMucDTO> getDanhMucByTrangThaiHoatDong() {
+        return danhMucService.getDanhMucByTrangThai("Hoạt động");
+    }
 }

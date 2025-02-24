@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.entity.PhongCach;
 import com.example.shopdragonbee.repository.PhongCachRepository;
@@ -54,5 +55,9 @@ public class PhongCachService {
         } else {
             return "PC001";
         }
+    }
+    // show ds theo trạng thái
+    public List<PhongCachDTO> getPhongCachByTrangThai(String trangThai) {
+        return phongCachRepository.findByTrangThai(trangThai);
     }
 }

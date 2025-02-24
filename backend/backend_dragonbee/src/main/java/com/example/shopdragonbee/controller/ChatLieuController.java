@@ -1,6 +1,7 @@
 package com.example.shopdragonbee.controller;
 
 import com.example.shopdragonbee.dto.ChatLieuDTO;
+import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.entity.ChatLieu;
 import com.example.shopdragonbee.service.ChatLieuService;
 import lombok.RequiredArgsConstructor;
@@ -35,5 +36,10 @@ public class ChatLieuController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+    // api ds theo trạng thái
+    @GetMapping("/chat-lieu/hoat-dong")
+    public List<ChatLieuDTO> getChatLieuByTrangThaiHoatDong() {
+        return chatLieuService.getChatLieuByTrangThai("Hoạt động");
     }
 }
