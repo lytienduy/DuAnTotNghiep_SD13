@@ -76,7 +76,7 @@ const Sidebar = ({ isSidebarOpen }) => {
 
         {/* Main Menu */}
         <List>
-          
+
 
           {/* Thống kê */}
           <ListItemButton
@@ -150,7 +150,7 @@ const Sidebar = ({ isSidebarOpen }) => {
 
           {/* Quản Lý Sản Phẩm */}
           <ListItemButton onClick={handleToggleProducts} sx={{ borderRadius: 2 }}>
-            <ListItemIcon >
+            <ListItemIcon sx={{ minWidth: '40px' }}>
               <CategoryIcon />
             </ListItemIcon>
             {isSidebarOpen && (
@@ -162,66 +162,25 @@ const Sidebar = ({ isSidebarOpen }) => {
           </ListItemButton>
           <Collapse in={openProducts} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <CheckroomIcon />
-                </ListItemIcon>
-                <ListItemText primary="Sản Phẩm" primaryTypographyProps={{ fontSize: '13.6px' }} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <WaterDropIcon />
-                </ListItemIcon>
-                <ListItemText primary="Chất Liệu" primaryTypographyProps={{ fontSize: '13.6px' }} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <PaletteIcon />
-                </ListItemIcon>
-                <ListItemText primary="Màu Sắc" primaryTypographyProps={{ fontSize: '13.6px' }} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <ViewListIcon />
-                </ListItemIcon>
-                <ListItemText primary="Danh Mục" primaryTypographyProps={{ fontSize: '13.6px' }} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <StraightenIcon />
-                </ListItemIcon>
-                <ListItemText primary="Kích Thước" primaryTypographyProps={{ fontSize: '13.6px' }} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <StarIcon />
-                </ListItemIcon>
-                <ListItemText primary="Thương Hiệu" primaryTypographyProps={{ fontSize: '13.6px' }} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <StyleIcon />
-                </ListItemIcon>
-                <ListItemText primary="Kiểu Dáng" primaryTypographyProps={{ fontSize: '13.6px' }} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <BrushIcon />
-                </ListItemIcon>
-                <ListItemText primary="Phong Cách" primaryTypographyProps={{ fontSize: '13.6px' }} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <PublicIcon />
-                </ListItemIcon>
-                <ListItemText primary="Xuất Xứ" primaryTypographyProps={{ fontSize: '13.6px' }} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                  <PanoramaHorizontalIcon />
-                </ListItemIcon>
-                <ListItemText primary="Kiểu Đai Quần" primaryTypographyProps={{ fontSize: '13.6px' }} />
-              </ListItemButton>
+              {[
+                { icon: <CheckroomIcon />, text: 'Sản Phẩm' },
+                { icon: <WaterDropIcon />, text: 'Chất Liệu' },
+                { icon: <PaletteIcon />, text: 'Màu Sắc' },
+                { icon: <ViewListIcon />, text: 'Danh Mục' },
+                { icon: <StraightenIcon />, text: 'Kích Thước' },
+                { icon: <StarIcon />, text: 'Thương Hiệu' },
+                { icon: <StyleIcon />, text: 'Kiểu Dáng' },
+                { icon: <BrushIcon />, text: 'Phong Cách' },
+                { icon: <PublicIcon />, text: 'Xuất Xứ' },
+                { icon: <PanoramaHorizontalIcon />, text: 'Kiểu Đai Quần' }
+              ].map((item, index) => (
+                <ListItemButton sx={{ pl: isSidebarOpen ? 4 : 2 }} key={index}>
+                  <ListItemIcon sx={{ minWidth: '40px' }}>{item.icon}</ListItemIcon>
+                  {isSidebarOpen && (
+                    <ListItemText primary={item.text} primaryTypographyProps={{ fontSize: isSidebarOpen ? '13.6px' : '0px' }} />
+                  )}
+                </ListItemButton>
+              ))}
             </List>
           </Collapse>
 
@@ -238,7 +197,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                 color: '#fff', // Chữ màu trắng khi hover
               },
             }}>
-            <ListItemIcon>
+            <ListItemIcon sx={{color: isActive('/khachHang') ? '#fff' : 'inherit', minWidth: '40px', }}>
               <PeopleIcon />
             </ListItemIcon>
             {isSidebarOpen && <ListItemText primary="Khách Hàng" primaryTypographyProps={{ fontSize: '13.6px' }} />}
@@ -321,15 +280,11 @@ const Sidebar = ({ isSidebarOpen }) => {
               />
             )}
           </ListItemButton>
-        </List>
-
-        {/* Account */}
-        <List>
           <ListItemButton>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: '40px', }}>
               <LogoutIcon />
             </ListItemIcon>
-            {isSidebarOpen && <ListItemText primary="Logout" primaryTypographyProps={{ fontSize: '13.6px' }} />}
+            {isSidebarOpen && <ListItemText primary="Đăng xuất" primaryTypographyProps={{ fontSize: '13.6px' }} />}
           </ListItemButton>
         </List>
       </Drawer>
