@@ -85,7 +85,7 @@ const KhachHang = () => {
         exportToExcel(data, 'customers');
     }
     return (
-        <Box margin={3}>
+        <Box>
             <h1>Khách hàng </h1>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'column', gap: 1 }}>
                 <Box sx={styles.headerContainer}>

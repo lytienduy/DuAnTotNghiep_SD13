@@ -561,7 +561,7 @@ const TaoMoiNhanVien = () => {
   };
 
   return (
-    <Box margin={3}>
+    <Box >
       <Box display="flex" alignItems="center" mb={3}>
         <IconButton onClick={handleBack} sx={{ marginRight: 2 }}>
           <ArrowBackIcon />

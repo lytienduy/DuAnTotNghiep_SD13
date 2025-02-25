@@ -110,10 +110,8 @@ const Sidebar = ({ isSidebarOpen }) => {
 
           {/* POS */}
           <ListItemButton
-            component="a"
-            href="/banTaiQuay"
-            target="_blank" // Mở trong tab mới
-
+            component={Link}
+            to="/banTaiQuay"
             sx={{
               borderRadius: 3,
               backgroundColor: isActive('/banTaiQuay') ? 'rgb(52, 152, 234)' : 'transparent',

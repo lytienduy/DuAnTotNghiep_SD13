@@ -134,7 +134,7 @@ const DiscountCoupons = () => {
 
 
   return (
-    <Box sx={{ padding: 3 }}>
+    <Box >
       {/* Dialog xác nhận */}
       <Dialog open={openDialog} onClose={handleCancelChange}>
         <DialogTitle sx={{ textAlign: "center" }}>

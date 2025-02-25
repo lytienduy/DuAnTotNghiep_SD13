@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Sidebar from './module/admin/components/SideBar';
 import Header from './module/admin/components/Header';
 import ThongKe from './module/admin/pages/ThongKe';
@@ -18,6 +18,7 @@ import KhachHang from './module/admin/pages/KhachHang';
 import ThongTinKhachHang from './module/admin/pages/ThongTinKhachHang';
 
 import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
+
 const theme = createTheme({
   components: {
     MuiSnackbarContent: {
@@ -33,58 +34,47 @@ const theme = createTheme({
 });
 
 
-
-const Layout = ({ children }) => {
-  const location = useLocation();
-  const isBanTaiQuay = location.pathname === '/banTaiQuay';
+const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
   const toggleSidebar = () => {
     setIsSidebarOpen((prevState) => !prevState); // Đảo trạng thái của sidebar
   };
-
   return (
     <ThemeProvider theme={theme}>
       <SnackbarProvider maxSnack={3}>
-    <Box sx={{ display: 'flex' }}>
-      {/* Sidebar */}
-      {!isBanTaiQuay && <Sidebar isSidebarOpen={isSidebarOpen} />}
+        <Router>
+          <Box sx={{ display: 'flex' }}>
+            {/* Sidebar */}
+            <Sidebar isSidebarOpen={isSidebarOpen} />
 
-      <Box sx={{ flexGrow: 1, backgroundColor: '#f9f9f9', minHeight: '100vh' }}>
-        {/* Header */}
-        {!isBanTaiQuay && <Header toggleSidebar={toggleSidebar} />}
+            <Box sx={{ flexGrow: 1, backgroundColor: '#f9f9f9', minHeight: '100vh' }}>
+              {/* Header */}
+              <Header toggleSidebar={toggleSidebar} />
 
-        {/* Content */}
-        <Box sx={{ padding: 0, backgroundColor: '#f5f5f5' }}>
-          {children}
-        </Box>
-      </Box>
-    </Box>
-    </SnackbarProvider>
+              {/* Routing */}
+              <Box sx={{ padding: 3, backgroundColor:'#f3f3f3' , height:'100%'}}>
+                <Routes>
+                  <Route path="/" element={<NavigateToThongKe />} />
+                  <Route path="/thongKe" element={<ThongKe />} />
+                  <Route path="/banTaiQuay" element={<BanTaiQuay />} />
+                  <Route path="/hoaDon" element={<HoaDon />} />
+                  <Route path="/hoaDon/:id" element={<HoaDonChiTiet />} />
+                  <Route path='/phieu-giam-gia' element={<PhieuGiamGia />} />
+                  <Route path="/them-phieu-giam-gia" element={<ThemPhieuGiamGia />} />
+                  <Route path="/detail-phieu-giam-gia/:ma" element={<DetailPhieuGiamGia />} />
+                  <Route path="/nhanvien" element={<NhanVien />} />
+                  <Route path="/nhanvien/tao-moi" element={<TaoMoiNhanVien />} />
+                  <Route path="/nhanvien/chinh-sua/:id" element={<NhanVienEdit />} />
+                  <Route path="/khachHang" element={<KhachHang />} />
+                  <Route path="/khachHang/detail/:id" element={<ThongTinKhachHang />} />
+                  <Route path="/khachHang/add/" element={<ThongTinKhachHang />} />
+                </Routes>
+              </Box>
+            </Box>
+          </Box>
+        </Router>
+      </SnackbarProvider>
     </ThemeProvider>
-  );
-};
-
-const App = () => {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<NavigateToThongKe />} />
-        <Route path="/thongKe" element={<Layout><ThongKe /></Layout>} />
-        <Route path="/banTaiQuay" element={<Layout><BanTaiQuay /></Layout>} />
-        <Route path="/hoaDon" element={<Layout><HoaDon /></Layout>} />
-        <Route path="/hoaDon/:id" element={<Layout><HoaDonChiTiet /></Layout>} />
-        <Route path='/phieu-giam-gia' element={<Layout><PhieuGiamGia /></Layout>} />
-        <Route path="/them-phieu-giam-gia" element={<Layout><ThemPhieuGiamGia /></Layout>} />
-        <Route path="/detail-phieu-giam-gia/:ma" element={<Layout><DetailPhieuGiamGia /></Layout>} />
-        <Route path="/nhanvien" element={<Layout><NhanVien /></Layout>} />
-        <Route path="/nhanvien/tao-moi" element={<Layout><TaoMoiNhanVien /></Layout>} />
-        <Route path="/nhanvien/chinh-sua/:id" element={<Layout><NhanVienEdit /></Layout>} />
-        <Route path="/khachHang" element={<Layout><KhachHang /></Layout>} />
-        <Route path="/khachHang/detail/:id" element={<Layout><ThongTinKhachHang /></Layout>} />
-        <Route path="/khachHang/add/" element={<Layout><ThongTinKhachHang /></Layout>} />
-      </Routes>
-    </Router>
   );
 };
 

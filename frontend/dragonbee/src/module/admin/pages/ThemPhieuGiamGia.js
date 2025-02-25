@@ -290,7 +290,7 @@ const ThemPhieuGiamGia = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", padding: 3, margin: "auto",  // Căn giữa nội dung
+    <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", padding: 3, margin: -3,  // Căn giữa nội dung
       borderRadius: 2 }}>
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle sx={{ textAlign: "center" }}>

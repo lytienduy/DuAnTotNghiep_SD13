@@ -396,7 +396,7 @@ const NhanVien = () => {
   };
 
   return (
-    <Box margin={3}>
+    <Box >
       <Typography variant="h4" fontWeight="bold" mb={3}>
         Quản Lý Nhân Viên
       </Typography>

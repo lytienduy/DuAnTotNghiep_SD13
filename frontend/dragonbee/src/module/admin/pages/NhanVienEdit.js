@@ -274,7 +274,7 @@ const NhanVienEdit = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh" , margin:3}}>
+    <Box sx={{ minHeight: "100vh" }}>
       <Box display="flex" alignItems="center" mb={3}>
         <IconButton onClick={handleBack} sx={{ marginRight: 2 }}>
           <ArrowBackIcon />

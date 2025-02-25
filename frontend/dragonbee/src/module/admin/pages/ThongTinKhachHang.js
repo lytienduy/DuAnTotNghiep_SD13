@@ -291,7 +291,7 @@ const ThongTinKhachHang = () => {
     }
 
     return (
-        <Box margin={3}>
+        <Box >
             <h2 style={{ display: 'flex', alignItems: 'center' }}>
                 <ArrowBack onClick={() => {
                     navigate('/khachhang');
