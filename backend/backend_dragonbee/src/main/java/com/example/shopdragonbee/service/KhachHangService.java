@@ -130,7 +130,9 @@ public class KhachHangService {
 
     // Tìm kiếm khách hàng theo tên hoặc số điện thoại (có thể nhập một phần)
     public List<KhachHang> timKiemKhachHang(String keyword) {
-        List<KhachHang> khachHangs = khachHangRepository.findByTenKhachHangContainingIgnoreCaseOrSdtContainingIgnoreCase(keyword, keyword);
+        List<KhachHang> khachHangs = khachHangRepository.findByTenKhachHangContainingIgnoreCaseOrSdtContainingIgnoreCase(keyword, keyword).stream()
+                .filter(kh -> "Hoạt động".equalsIgnoreCase(kh.getTrangThai())) // Chặn "Tạm ngưng"
+                .collect(Collectors.toList());
 
         // Loại bỏ trùng lặp trong danh sách DiaChi
         khachHangs.forEach(khachHang -> {

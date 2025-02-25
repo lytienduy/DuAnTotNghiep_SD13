@@ -8,6 +8,7 @@ import {
   Collapse,
   Typography,
   Box,
+  Tooltip
 } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import StoreIcon from '@mui/icons-material/Store';
@@ -18,7 +19,6 @@ import CategoryIcon from '@mui/icons-material/Category';
 import PeopleIcon from '@mui/icons-material/People';
 import PersonIcon from '@mui/icons-material/Person';
 import DiscountIcon from '@mui/icons-material/LocalOffer';
-import EventIcon from '@mui/icons-material/Event';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
@@ -92,6 +92,7 @@ const Sidebar = ({ isSidebarOpen }) => {
               },
             }}
           >
+            <Tooltip title="Thống kê" placement="right" disableHoverListener={isSidebarOpen}>
             <ListItemIcon
               sx={{
                 color: isActive('/thongKe') ? '#fff' : 'inherit',
@@ -99,7 +100,7 @@ const Sidebar = ({ isSidebarOpen }) => {
               }}
             >
               <DashboardIcon />
-            </ListItemIcon>
+            </ListItemIcon></Tooltip>
             {isSidebarOpen && (
               <ListItemText
                 primary="Thống Kê"
@@ -122,9 +123,10 @@ const Sidebar = ({ isSidebarOpen }) => {
               },
             }}
           >
+            <Tooltip title="Bán tại quầy" placement="right" disableHoverListener={isSidebarOpen}>
             <ListItemIcon sx={{ color: isActive('/banTaiQuay') ? '#fff' : 'inherit', minWidth: '40px', }}>
               <StoreIcon />
-            </ListItemIcon>
+            </ListItemIcon></Tooltip>
             {isSidebarOpen && <ListItemText primary="Tại Quầy" primaryTypographyProps={{ fontSize: '13.6px' }} />}
           </ListItemButton>
 
@@ -142,9 +144,10 @@ const Sidebar = ({ isSidebarOpen }) => {
               },
             }}
           >
+            <Tooltip title="Hóa đơn" placement="right" disableHoverListener={isSidebarOpen}>
             <ListItemIcon sx={{ color: isActive('/hoaDon') ? '#fff' : 'inherit', minWidth: '40px', }}>
               <ReceiptIcon />
-            </ListItemIcon>
+            </ListItemIcon></Tooltip>
             {isSidebarOpen && <ListItemText primary="Hóa Đơn" primaryTypographyProps={{ fontSize: '13.6px' }} />}
           </ListItemButton>
 
@@ -197,9 +200,11 @@ const Sidebar = ({ isSidebarOpen }) => {
                 color: '#fff', // Chữ màu trắng khi hover
               },
             }}>
-            <ListItemIcon sx={{color: isActive('/khachHang') ? '#fff' : 'inherit', minWidth: '40px', }}>
-              <PeopleIcon />
-            </ListItemIcon>
+            <Tooltip title="Khách Hàng" placement="right" disableHoverListener={isSidebarOpen}>
+              <ListItemIcon sx={{ color: isActive('/khachHang') ? '#fff' : 'inherit', minWidth: '40px', }}>
+                <PeopleIcon />
+              </ListItemIcon>
+            </Tooltip>
             {isSidebarOpen && <ListItemText primary="Khách Hàng" primaryTypographyProps={{ fontSize: '13.6px' }} />}
           </ListItemButton>
           <ListItemButton component={Link} to="/nhanvien"
@@ -213,12 +218,14 @@ const Sidebar = ({ isSidebarOpen }) => {
               },
             }}
           >
-            <ListItemIcon sx={{
-              color: isActive('/nhanvien') ? '#fff' : 'inherit',
-              minWidth: '40px',
-            }}>
-              <PersonIcon />
-            </ListItemIcon>
+            <Tooltip title="Nhân viên" placement="right" disableHoverListener={isSidebarOpen}>
+              <ListItemIcon sx={{
+                color: isActive('/nhanvien') ? '#fff' : 'inherit',
+                minWidth: '40px',
+              }}>
+                <PersonIcon />
+              </ListItemIcon>
+            </Tooltip>
             {isSidebarOpen && <ListItemText primary="Nhân Viên" primaryTypographyProps={{ fontSize: '13.6px' }} />}
           </ListItemButton>
 
@@ -236,6 +243,7 @@ const Sidebar = ({ isSidebarOpen }) => {
               },
             }}
           >
+            <Tooltip title="Phiếu giảm giá" placement="right" disableHoverListener={isSidebarOpen}>
             <ListItemIcon
               sx={{
                 color: isActive('/phieu-giam-gia') ? '#fff' : 'inherit',
@@ -243,7 +251,7 @@ const Sidebar = ({ isSidebarOpen }) => {
               }}
             >
               <DiscountIcon />
-            </ListItemIcon>
+            </ListItemIcon></Tooltip>
             {isSidebarOpen && (
               <ListItemText
                 primary="Phiếu Giảm Giá"
@@ -251,39 +259,12 @@ const Sidebar = ({ isSidebarOpen }) => {
               />
             )}
           </ListItemButton>
-          {/* Đợt giảm giá */}
-          <ListItemButton
-            component={Link}
-            to="/discount-events"
-            sx={{
-              borderRadius: 3,
-              backgroundColor: isActive('/discount-events') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
-              color: isActive('/discount-events') ? '#fff' : 'inherit',
-              '&:hover': {
-                backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
-                color: '#fff', // Chữ màu trắng khi hover
-              },
-            }}
-          >
-            <ListItemIcon
-              sx={{
-                color: isActive('/discount-events') ? '#fff' : 'inherit',
-                minWidth: '40px',
-              }}
-            >
-              <EventIcon />
-            </ListItemIcon>
-            {isSidebarOpen && (
-              <ListItemText
-                primary="Đợt Giảm Giá"
-                primaryTypographyProps={{ fontSize: '13.6px' }} // Chỉnh kích thước chữ
-              />
-            )}
-          </ListItemButton>
+          
           <ListItemButton>
-            <ListItemIcon sx={{ minWidth: '40px', }}>
+          <Tooltip title="Đăng xuất" placement="right" disableHoverListener={isSidebarOpen}>
+            <ListItemIcon sx={{ minWidth: '40px',color:'inherit' }}>
               <LogoutIcon />
-            </ListItemIcon>
+            </ListItemIcon></Tooltip>
             {isSidebarOpen && <ListItemText primary="Đăng xuất" primaryTypographyProps={{ fontSize: '13.6px' }} />}
           </ListItemButton>
         </List>
