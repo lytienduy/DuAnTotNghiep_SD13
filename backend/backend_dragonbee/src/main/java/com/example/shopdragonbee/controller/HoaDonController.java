@@ -40,7 +40,7 @@ public class HoaDonController {
     }
 
     @GetMapping("/{id}")
-    public HoaDonChiTietResponseDTO.HoaDonDTO getHoaDonById(@PathVariable Integer id) {
+    public HoaDonChiTietResponseDTO.HoaDonChiTietDTO getHoaDonById(@PathVariable Integer id) {
         return hoaDonService.getHoaDonById(id);
     }
 

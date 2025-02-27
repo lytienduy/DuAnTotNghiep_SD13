@@ -151,39 +151,6 @@ const HoaDon = () => {
       console.error("Lỗi khi lấy dữ liệu hóa đơn:", error);
     }
   };
-  // const componentRef = useRef(null);
-  // const layHoaDonIn = async (id) => {
-  //   console.log("Đây nè Mai Thế Phong" + id)
-  //   try {
-  //     const response = await axios.get(`http://localhost:8080/hoa-don/${id}`);
-  //     if (response.data) {
-
-  //       setHoaDon(response.data); console.log(hoaDon);
-  //       setTimeout(() => {
-  //         if (componentRef.current) {
-  //           handlePrint(); // Gọi in sau khi cập nhật xong
-  //           console.log("Gọi xong rồi nè Mai THế Phonggggggg")
-  //         } else {
-  //           showErrorToast("Không tìm thấy nội dung hóa đơn để in!");
-  //         }
-  //       }, 500); // Chờ 500ms để state cập nhật
-  //     }
-  //   }
-  //   catch (error) {
-  //     console.error("Lỗi khi lấy hóa đơn:", error);
-  //     showErrorToast("Lỗi khi tải hóa đơn, vui lòng thử lại!");
-  //   }
-
-  // }
-  // const handlePrint = useReactToPrint({
-  //   content: () => {if (!componentRef.current) {
-  //     showErrorToast("Không tìm thấy nội dung để in!");
-  //     return null;
-  //   }
-  //   return componentRef.current;},
-  //   documentTitle: `HoaDon_${hoaDon?.id}`,
-  //   onAfterPrint: () => showSuccessToast("In hóa đơn thành công!"),
-  // });
 
   // Lấy CSS hóa đơn cho từng trạng thái
   const getStatusStyles = (status) => {
@@ -356,7 +323,7 @@ const HoaDon = () => {
   };
 
   return (
-    <Container>
+    <div>
       <h2>Quản lý đơn hàng</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "10px" }}>
         {/* Thanh tìm kiếm */}
@@ -626,7 +593,7 @@ const HoaDon = () => {
       </Stack>
       <ToastContainer /> {/* Quan trọng để hiển thị toast */}
 
-    </Container>
+    </div>
   );
 };
 

@@ -5,7 +5,7 @@ import {
   , FormControlLabel, Switch, InputLabel, Select, MenuItem, FormControl, TextField,
   InputAdornment, Input, Dialog, DialogTitle, DialogContent, DialogActions, Grid,
   Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, ListItemText,
-  ClickAwayListener, ListItem, List, Popper, Modal, Slider
+  ClickAwayListener, ListItem, List, Popper, Modal, Slider, span
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
@@ -13,12 +13,17 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
+import { Remove as RemoveIcon } from "@mui/icons-material";
+
 
 const BanTaiQuay = () => {
 
   // State để lưu danh sách các đơn hàng
   const [orders, setOrders] = useState([]);
-  const [isShowOrders, setIsShowOrders] = useState(false); // Trạng thái để kiểm soát hiển thị đơn hàng
+  // const [isShowOrders, setIsShowOrders] = useState(false); // Trạng thái để kiểm soát hiển thị đơn hàng
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   // State để điều khiển việc hiển thị/ẩn màn bên trái
@@ -43,78 +48,37 @@ const BanTaiQuay = () => {
   const [voucherCode, setVoucherCode] = useState('');
   const [vouchers, setVouchers] = useState([]);
   const [selectedVoucherCode, setSelectedVoucherCode] = useState('');
+
+  const [imageIndexes, setImageIndexes] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại tại giỏ hàng
+  const [imageIndexesThemSanPham, setImageIndexesThemSanPham] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại tại thêm sản phẩm vào giỏ hàng 
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);//Mở confirm có muốn xóa sản phẩm khỏi giỏ hàng không
+  const [selectedProductId, setSelectedProductId] = useState(null);//Lưu ID sản phẩm được chọn trong giỏ hàng
+  const [tempValues, setTempValues] = useState({}); // State tạm để lưu giá trị nhập vào của từng sản phẩm trong giỏ hàng
+  const [products, setProducts] = useState([]);//Các sản phẩm của cửa hàng để bán
+  const [danhMuc, setDanhMuc] = useState(0); // Giá trị của bộ lọc danh mục
+  const [mauSac, setMauSac] = useState(0); // Giá trị của bộ lọc màu sắc
+  const [chatLieu, setChatLieu] = useState(0); // Giá trị của bộ lọc chất liệu
+  const [kichCo, setKichCo] = useState(0); // Giá trị của bộ lọc sizw
+  const [kieuDang, setKieuDang] = useState(0); // Giá trị của bộ lọc kiểu dáng
+  const [thuongHieu, setThuongHieu] = useState(0); // Giá trị của bộ lọc thương hiệu
+  const [phongCach, setPhongCach] = useState(0); // Giá trị của bộ lọc phong cách
+  const [timKiem, setTimKiem] = useState(""); // Giá trị của bộ lọc tìm kiếm sản phẩm
+  const [listDanhMuc, setListDanhMuc] = useState([]);
+  const [listChatLieu, setListChatLieu] = useState([]);
+  const [listKichCo, setListKichCo] = useState([]);
+  const [listKieuDang, setListKieuDang] = useState([]);
+  const [listMauSac, setListMauSac] = useState([]);
+  const [listPhongCach, setListPhongCach] = useState([]);
+  const [listThuongHieu, setListThuongHieu] = useState([]);
+
   //khai báo sản phẩm
   // State để mở modal
-  const [openSPModal, setOpenSPModal] = useState(false);
-  const [value, setValue] = useState([100000, 3200000]);
-  const [filters, setFilters] = useState({
-    category: 'Tất cả',
-    color: 'Tất cả',
-    material: 'Tất cả',
-    size: 'Tất cả',
-    sole: 'Tất cả',
-    brand: 'Tất cả',
-  });
+  const [openSPModal, setOpenSPModal] = useState(false); //giá trị mở đống modal add sản paharm
+  const [value, setValue] = useState([100000, 3200000]);//giá trị slider khoảng giá
 
-  const products = [
-    {
-      id: 'PD41',
-      name: 'Kkkk',
-      sole: 'Đế sắt',
-      category: 'Giày cao cổ',
-      brand: 'Converse',
-      color: 'Xanh dương',
-      material: 'Sắt',
-      size: 40,
-      price: 100000,
-      discount: '20%',
-      image: 'https://360.com.vn/wp-content/uploads/2024/04/QASTK501-2.jpg', // Thay bằng link ảnh thật nếu có
-    },
-    {
-      id: 'PD44',
-      name: 'Kkkk',
-      sole: 'Đế sắt',
-      category: 'Giày cao cổ',
-      brand: 'Converse',
-      color: 'Tím',
-      material: 'Sắt',
-      size: 41,
-      price: 700000,
-      discount: '20%',
-      image: 'https://360.com.vn/wp-content/uploads/2024/04/QASTK501-6.jpg', // Thay bằng link ảnh thật nếu có
-    }
-  ];
-
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [quantity, setQuantity] = useState(1);
-
-  const handleOpenConfirmModal = (product) => {
-    setSelectedProduct(product);
-    setQuantity(1);
-  };
-
-  const handleCloseConfirmModal = () => {
-    setSelectedProduct(null);
-    handleCloseSPModal(); // Đóng luôn modal cha
-  };
-
-  const handleQuantityChange = (type) => {
-    setQuantity((prev) => (type === 'increase' ? prev + 1 : prev > 1 ? prev - 1 : 1));
-  };
-  
-  // Hàm mở modal sản phẩm
-  const handleOpenSPModal = () => setOpenSPModal(true);
-
-  // Hàm đóng modal sản phẩm
-  const handleCloseSPModal = () => setOpenSPModal(false);
-
-  const handleFilterChange = (event, name) => {
-    setFilters((prev) => ({ ...prev, [name]: event.target.value }));
-  };
-
-  const handleSliderChange = (event, newValue) => {
-    setValue(newValue);
-  };
+  const [selectedProduct, setSelectedProduct] = useState(null);//sản phẩm add được chọn
+  const [quantity, setQuantity] = useState(1);//số lượng sản phẩm được thêm vào giỏ hàng
+  const [debouncedValue, setDebouncedValue] = useState(value);//giá trị khoảng giá
 
   // Hàm mở và đóng modal voucher
   const handleOpenVoucherModal = () => {
@@ -129,7 +93,6 @@ const BanTaiQuay = () => {
   const handleVoucherCodeChange = async (event) => {
     const keyword = event.target.value;
     setVoucherCode(keyword);
-
     if (keyword.trim() === '') {
       // Nếu không có mã, lấy tất cả các voucher
       fetchVouchers();
@@ -201,7 +164,6 @@ const BanTaiQuay = () => {
       }
     }
   };
-
 
   // Lấy 5 khách hàng đầu tiên nếu không có từ khóa
   const fetchDefaultCustomers = async () => {
@@ -291,26 +253,357 @@ const BanTaiQuay = () => {
   const handleDistrictChange = (event) => setDistrict(event.target.value);
   const handleWardChange = (event) => setWard(event.target.value);
 
+  //Hàm mở giao hàng
   const handleSwitchChange = (event) => {
     setShowLeftPanel(event.target.checked);
   };
 
-  const handleSelectOrder = (index) => {
-    setSelectedOrder(index === selectedOrder ? null : index); // Toggle selection
+
+
+
+
+
+
+  ///
+
+
+
+  //Thông báo Toast
+  const showSuccessToast = (message) => {
+    toast.success(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: {
+        backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+        color: "white", // Chữ trắng nổi bật
+        fontSize: "14px", // Nhỏ hơn một chút
+        fontWeight: "500",
+        borderRadius: "8px",
+      }
+    });
+  };
+  const showErrorToast = (message) => {
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: {
+        backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+        color: "white", // Chữ trắng nổi bật
+        fontSize: "14px", // Nhỏ hơn một chút
+        fontWeight: "500",
+        borderRadius: "8px",
+      }
+    });
   };
 
-  // Hàm tạo đơn hàng mới
-  const createOrder = () => {
-    if (orders.length < 5) {
-      const newOrder = `Đơn hàng ${orders.length + 1} - HD${Math.floor(Math.random() * 1000)}`;
-      const newOrders = [...orders, newOrder];
-      setOrders(newOrders);
-      setIsShowOrders(true); // Hiển thị đơn hàng sau khi có ít nhất một hóa đơn
-      setSelectedOrder(newOrders.length - 1); // Tự động chọn đơn hàng mới
-    } else {
-      setOpenSnackbar(true); // Mở Snackbar khi đạt tối đa số lượng đơn hàng
+
+
+  //Hàm cập nhật id hóa đơn được chọn
+  const handleSelectOrder = (order) => {
+    setSelectedOrder(order); // Cập nhật id của hóa đơn đã chọn
+  };
+
+  // Hàm để thêm hóa đơn mới
+  const addOrder = async () => {
+    if (orders.length === 5) {
+      // setErrorMessage('Chỉ được thêm tối đa 5 hóa đơn');
+      // setOpenSnackbar(true); // Mở Snackbar khi vượt quá số lượng
+      showErrorToast("Chỉ được thêm tối đa 5 hóa đơn");
+      return;
     }
-  };  
+    let apiUrl = "http://localhost:8080/ban-hang-tai-quay/addHoaDonTaiQuay";
+
+    try {
+      const response = await axios.get(apiUrl);//Gọi api bằng axiosGet
+      if (response.data) {
+        showSuccessToast("Thêm hóa đơn thành công");
+        fetchOrders();
+      } else {
+        showErrorToast("Thêm hóa đơn thất bại thử lại sau");
+      }
+
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi chạy API add hóa đơn rồi lấy List về");
+    }
+  };
+
+  //Hàm lấy dữu liệu hóa đơn tại quầy
+  const fetchOrders = async () => {
+    let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layHoaDonTaiQuay";
+    try {
+      const response = await axios.get(apiUrl);//Gọi api bằng axiosGet
+      setTempValues({});
+      setOrders(response.data);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Không lấy được list hóa đơn tại quầy");
+    }
+  }
+
+
+  //Hàm tăng số lượng sản phẩm trong giỏ hàng
+  const tangSoLuong = async (id) => {
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/tangSoLuong/${id}`;
+    try {
+      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+      if (response.data === true) {
+        fetchOrders();
+      } else {
+        showErrorToast("Rất tiếc đã hết sản phẩm");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi tăng số lượng sản phẩm");
+    }
+  }
+  //Hàm giảm số lượng sản phẩm trong giỏ hàng 
+  const giamSoLuong = async (id) => {
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/giamSoLuong/${id}`;
+    try {
+      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+      if (response.data === true) {
+        fetchOrders();
+      } else {
+        setSelectedProductId(id);// Lấy id được chọn để confirm thao tác với sản phẩm
+        setOpenConfirmModal(true);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi giảm số lượng sản phẩm");
+    }
+  }
+
+  //Hàm confirm xóa sản phẩm khỏi giỏ hàng
+  const handleConfirmDelete = async () => {
+    xoaSanPham(selectedProductId);
+    setOpenConfirmModal(false);
+  };
+
+  const xoaSanPham = async (id) => {
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/xoaSanPham/${id}`;
+    try {
+      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+      if (response.data === true) {
+        fetchOrders();
+        showSuccessToast("Xóa sản phẩm thành công");
+      } else {
+        showErrorToast("Xóa thất bại vui lòng thử lại");
+
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Xóa thất bại vui lòng thử lại");
+    }
+  }
+
+
+
+  //Cập nhật giá trị khi thay đổi số lượng sản phẩm trong giỏ hàng nhập bàn phím
+  const handleInputChange = (id, value) => {
+    setTempValues((prev) => ({
+      ...prev,
+      [id]: value, // Cập nhật giá trị nhập vào
+    }));
+  };
+
+  //Xử lý khi MỞ modal confirm thêm sản phẩm vào giỏ hàng
+  const handleOpenConfirmModal = (product) => {
+    setSelectedProduct(product);
+    setOpenConfirmModal(true);
+  };
+
+  //Xử lý khi confirm thêm vào giỏ hàng
+  const handleCloseConfirmModal = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/ban-hang-tai-quay/addSanPhamVaoGioHang`, { idHoaDon: selectedOrder.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
+      );
+      if (response.data) {
+        setSelectedProduct(null);
+        setQuantity(1);
+        setOpenConfirmModal(false);
+        getSanPhamThem();
+        showSuccessToast("Thêm sản phẩm thành công");
+      } else {
+        showErrorToast("Thêm sản phẩm thất bại");
+      }
+    } catch (error) {
+      showErrorToast("Thêm sản phẩm thất bại. Vui lòng thử lại!");
+      console.error(error.response || error.message);
+    }
+  };
+
+  //Cập nhật giá trị khi thay đổi số lượng nhập từ bàn phím
+  const handleInputChangeThemSanPhamVaoGioHang = (value) => {
+    if (value === 0) {
+      setQuantity(1);
+      return;
+    }
+
+    setQuantity(value);
+
+    //Độ trể xóa nếu không hợp lệ
+    setTimeout(() => {
+      if (value > selectedProduct.soLuong) {
+      value = value.toString().slice(0, -1) || selectedProduct.soLuong;
+    }
+      setQuantity(value);
+    }, 200); // Độ trễ 1 giây
+  };
+
+
+
+  //Hàm xử lý nhập số lượng
+  const nhapSoLuong = async (id, soLuong) => {
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/nhapSoLuong/${id}/${soLuong}`;
+    try {
+      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+      if (response.data === true) {
+        fetchOrders();
+      } else {
+        fetchOrders();
+        showErrorToast("Số lượng trong kho không đủ cung cấp hoàn toàn số lượng bạn muốn");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi nhập số lượng sản phẩm catch");
+    }
+  }
+
+  //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
+  const handleInputBlur = (id) => {
+    setSelectedProductId(id);
+    const newValue = Number(tempValues[id]);
+    if (newValue >= 1) {
+      nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
+    } else {
+      setSelectedProductId(id);
+      setOpenConfirmModal(true);
+    }
+  };
+
+
+
+  //Hàm lọcThemSanPhamHoaDonTaiQuay
+  const getSanPhamThem = async () => {
+    let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layListCacSanPhamHienThiThem";
+    // Xây dựng query string
+    const params = new URLSearchParams();
+    params.append("timKiem", timKiem);//Truyền vào loại đơn
+    params.append("fromGia", value[0]);//Truyền vào loại đơn
+    params.append("toGia", value[1]);//Truyền vào loại đơn
+    params.append("danhMuc", danhMuc);//Truyền vào loại đơn
+    params.append("mauSac", mauSac);//Truyền vào loại đơn
+    params.append("chatLieu", chatLieu);//Truyền vào loại đơn
+    params.append("kichCo", kichCo);//Truyền vào loại đơn
+    params.append("kieuDang", kieuDang);//Truyền vào loại đơn
+    params.append("thuongHieu", thuongHieu);//Truyền vào loại đơn
+    params.append("phongCach", phongCach);//Truyền vào loại đơn
+    try {
+      const response = await axios.get(`${apiUrl}?${params.toString()}`);//Gọi api bằng axiosGet
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi lấy dữ liệu sản phẩm để thêm vào giỏ hàng")
+    }
+  };
+
+
+
+  //get set toàn bộ bộ lọc
+  const getAndSetToanBoBoLoc = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/ban-hang-tai-quay/layListDanhMuc`);
+      var doiTuongCoCacThuocTinhListCacBoLoc = response.data;
+      setListDanhMuc(doiTuongCoCacThuocTinhListCacBoLoc.listDanhMuc);
+      setListMauSac(doiTuongCoCacThuocTinhListCacBoLoc.listMauSac);
+      setListChatLieu(doiTuongCoCacThuocTinhListCacBoLoc.listChatLieu);
+      setListKichCo(doiTuongCoCacThuocTinhListCacBoLoc.listSize);
+      setListKieuDang(doiTuongCoCacThuocTinhListCacBoLoc.listKieuDang);
+      setListThuongHieu(doiTuongCoCacThuocTinhListCacBoLoc.listThuongHieu);
+      setListPhongCach(doiTuongCoCacThuocTinhListCacBoLoc.listPhongCach);
+    } catch (err) {
+      console.log(err)
+      showErrorToast("Lỗi lấy dữ liệu bộ lọc");
+    }
+  };
+
+  //Hàm load ảnh sản phẩm để thêm vào giỏ hàng
+  useEffect(() => {
+    if (!products) return;
+    const interval = setInterval(() => {
+      setImageIndexesThemSanPham((prevIndexes) => {
+        const newIndexes = { ...prevIndexes };
+        products.forEach((product) => {
+          if (product.hinhAnh.length > 1) {
+            newIndexes[product.id] = (prevIndexes[product.id] + 1) % product.hinhAnh.length || 0;
+          }
+        });
+        return newIndexes;
+      });
+    }, 3000); // Chuyển ảnh sau mỗi 3 giây
+    return () => clearInterval(interval);
+  }, [products]);
+
+  //Hàm xử lý khi đóng mở modal
+  useEffect(() => {
+    if (openSPModal) { // Khi mở modal add sản phẩm vào giỏ hàng thì load bộ lọc và sản phẩm thêm
+      getAndSetToanBoBoLoc();
+      getSanPhamThem();
+    }
+    else { // Khi modal add sản phẩm vào giỏ hàng đóng thì load lại hóa đơn
+      fetchOrders();
+    }
+  }, [openSPModal]);
+
+  //Tạo độ trễ cho ô tìm kiếm
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      getSanPhamThem();
+    }, 800); // Chờ 800ms sau khi user dừng nhập
+    return () => clearTimeout(handler); // Hủy timeout nếu user nhập tiếp
+  }, [timKiem]);
+
+  //Tạo độ trễ khi kéo slider khoảng giá
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value); // Chỉ cập nhật giá trị sau 1.5s
+    }, 1500);
+    return () => clearTimeout(handler); // Xóa timeout nếu người dùng tiếp tục kéo
+  }, [value]);
+
+  //Khi bộ lọc khoảng giá thay đổi
+  useEffect(() => {
+    getSanPhamThem();
+  }, [debouncedValue]);
+
+  //Khi thay đổi bộ lọc
+  useEffect(() => {
+    getSanPhamThem();
+  }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
+
+  useEffect(() => {
+    if (selectedOrder) {
+      // Tìm order mới trong danh sách orders
+      const updatedOrder = orders.find(order => order.id === selectedOrder.id);
+      if (updatedOrder) {
+        setSelectedOrder(updatedOrder);
+      } else {
+        setSelectedOrder(null); // Nếu không tìm thấy, đặt lại null
+      }
+    }
+  }, [orders]);
 
   return (
     <Box
@@ -323,6 +616,25 @@ const BanTaiQuay = () => {
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow effect
       }}
     >
+      <Dialog open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
+        <DialogTitle>Xác nhận xóa sản phẩm</DialogTitle>
+        <DialogContent>Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setTempValues((prev) => ({
+              ...prev,
+              [selectedProductId]: selectedOrder.listDanhSachSanPham.find((p) => p.id === selectedProductId)?.soLuong || 1, // Reset nếu nhập sai
+            }));
+            setOpenConfirmModal(false)
+          }} color="primary">
+            Hủy
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error">
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <ToastContainer /> {/* Quan trọng để hiển thị toast */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Bán hàng</Typography>
         <Button
@@ -336,18 +648,19 @@ const BanTaiQuay = () => {
               color: "#1565c0",
             },
           }}
-          onClick={createOrder}
+          onClick={addOrder}
         >
           + Tạo đơn hàng
         </Button>
       </Box>
 
       {/* Hiển thị các đơn hàng */}
-      {isShowOrders && orders.length > 0 && (
+      {orders.length > 0 && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #E0E0E0' }}>
-          {orders.map((order, index) => (
+          {orders.map((order) => (
+
             <Box
-              key={index}
+              key={order.id}
               sx={{
                 padding: '10px',
                 textAlign: 'left',
@@ -355,21 +668,21 @@ const BanTaiQuay = () => {
                 alignItems: 'start',
                 gap: '8px',
                 cursor: 'pointer',
-                borderBottom: selectedOrder === index ? '2px solid #1E88E5' : 'none', // Đường kẻ dưới khi chọn
+                borderBottom: selectedOrder?.id === order.id ? '2px solid #1E88E5' : 'none', // Đường kẻ dưới khi chọn
                 '&:hover': {
                   borderColor: '#FF8C00',
                 },
               }}
-              onClick={() => handleSelectOrder(index)} // Chọn đơn hàng khi click
+              onClick={() => handleSelectOrder(order)} // Chọn đơn hàng khi click
             >
               <Typography
                 variant="body2"
                 sx={{
-                  color: selectedOrder === index ? '#1E88E5' : 'inherit', // Màu chữ xanh dương khi chọn
-                  fontWeight: selectedOrder === index ? 'bold' : 'normal', // Đậm chữ khi chọn
+                  color: selectedOrder?.id === order.id ? '#1E88E5' : 'inherit', // Màu chữ xanh dương khi chọn
+                  fontWeight: selectedOrder?.id === order.id ? 'bold' : 'normal', // Đậm chữ khi chọn
                 }}
               >
-                {order}
+                {order.ma}
               </Typography>
 
               {/* Nút Xóa */}
@@ -386,13 +699,7 @@ const BanTaiQuay = () => {
                   height: '15px',
                 }}
                 onClick={(e) => {
-                  e.stopPropagation(); // Ngừng sự kiện click trên Box khi bấm nút xóa
-                  const newOrders = orders.filter((_, i) => i !== index);
-                  setOrders(newOrders);
-                  if (newOrders.length === 0) {
-                    setSelectedOrder(null); // Nếu không còn đơn hàng nào, bỏ chọn
-                    setIsShowOrders(false)
-                  }
+
                 }}
               >
                 <CloseIcon sx={{ fontSize: '16px' }} />
@@ -403,7 +710,7 @@ const BanTaiQuay = () => {
       )}
 
       {/* Khi không có đơn nào */}
-      {!isShowOrders && (
+      {orders.length <= 0 && (
         <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5 }}>
           <img
             src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
@@ -415,7 +722,7 @@ const BanTaiQuay = () => {
       )}
 
       {/* Phần sản phẩm */}
-      {isShowOrders && orders.length > 0 && (
+      {orders.length > 0 && (
         <Box>
           <Box sx={{ borderBottom: '1px solid #E0E0E0' }}>
             <Box sx={{ borderBottom: '1px solid #9b9b9b' }}>
@@ -450,35 +757,158 @@ const BanTaiQuay = () => {
                         color: "#1565c0",
                       },
                     }}
-                    onClick={handleOpenSPModal}  // Khi nhấn vào button, mở modal
+                    onClick={() => setOpenSPModal(true)}  // Khi nhấn vào button, mở modal
                   >
                     Thêm Sản Phẩm
                   </Button>
                 </Box>
               </Box>
             </Box>
-            <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5 }}>
-              <img
-                src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
-                alt="No data"
-                style={{ width: '150px', height: 'auto' }}
-              />
-              <Typography variant="h6" sx={{ marginTop: '-40px' }}>Không có sản phẩm nào</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-              <Typography color='white'>m</Typography>
-              <Typography color='white'>m</Typography>
-              <Typography color='white'>m</Typography>
-              <Typography color='white'>m</Typography>
-              <Typography color='white'>m</Typography>
-              <Typography color='white'>m</Typography>
-              <Typography color='white'>m</Typography>
-              <Typography variant="body1">Tổng tiền:</Typography>
-              <Typography fontSize={20} sx={{ fontWeight: 'bold', color: 'red',marginRight:3 }}>
-                0 VNĐ
-              </Typography>
-            </Box>
+            {selectedOrder === null ? (
+              <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5 }}>
+                <img
+                  src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
+                  alt="No data"
+                  style={{ width: '150px', height: 'auto' }}
+                />
+                <Typography variant="h6" sx={{ marginTop: '-40px' }}>Chưa chọn hóa đơn nào</Typography>
+              </Box>
+            ) : (
+
+              <Box>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>#</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Hình ảnh</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Sản phẩm</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Đơn giá</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số tiền</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {selectedOrder.listDanhSachSanPham?.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center">
+                            <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5 }}>
+                              <img
+                                src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
+                                alt="No data"
+                                style={{ width: '150px', height: 'auto' }}
+                              />
+                              <Typography variant="h6" sx={{ marginTop: '-40px' }}>Giỏ hàng hóa đơn {selectedOrder?.ma} của bạn chưa có sản phẩm nào!
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        selectedOrder.listDanhSachSanPham.map((product, index) => {
+                          const images = product.hinhAnh || [];
+                          const currentIndex = imageIndexes[product.id] ?? 0;
+                          return (
+                            <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                              <TableCell align="center">{index + 1}</TableCell>
+                              <TableCell align="center">
+                                {images.length > 0 && (
+                                  <img
+                                    src={images[currentIndex]}
+                                    alt={`Ảnh ${currentIndex + 1}`}
+                                    style={{
+                                      width: "60px",
+                                      height: "60px",
+                                      objectFit: "cover",
+                                      borderRadius: "10px",
+                                      transition: "transform 0.3s ease-in-out",
+                                      boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
+                                    }}
+                                    onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
+                                    onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
+                                  />
+                                )}
+                              </TableCell>
+                              <TableCell align="center">
+                                <Typography>{product.tenMauSize}</Typography>
+                                <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.maSanPhamChiTiet}</Typography>
+                              </TableCell>
+                              <TableCell align="center">
+                                <Box display="flex" justifyContent="center" alignItems="center">
+                                  <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => giamSoLuong(product.id)}
+                                      disabled={product.quantity <= 1}
+                                      sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                                    >
+                                      <RemoveIcon fontSize="small" />
+                                    </IconButton>
+                                    <TextField
+                                      value={tempValues[product.id] ?? product.soLuong}
+                                      onChange={(e) => handleInputChange(product.id, e.target.value)}
+                                      onBlur={() => handleInputBlur(product.id)}
+                                      type="number"
+                                      inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
+                                      size="small"
+                                      sx={{
+                                        width: "60px",
+                                        "& .MuiInputBase-input": {
+                                          textAlign: "center",
+                                          padding: "5px 0",
+                                          backgroundColor: "transparent"
+                                        },
+                                        "& .MuiOutlinedInput-root": {
+                                          border: "none",
+                                          "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                          "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
+                                        },
+                                        "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                                          WebkitAppearance: "none",
+                                          margin: 0
+                                        }
+                                      }}
+                                    />
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => tangSoLuong(product.id)}
+                                      sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                                    >
+                                      <AddIcon fontSize="small" />
+                                    </IconButton>
+                                  </Box>
+                                </Box>
+                              </TableCell>
+                              <TableCell align="center">{product.donGia?.toLocaleString()}₫</TableCell>
+                              <TableCell align="center">{product.soTien?.toLocaleString()}₫</TableCell>
+                              <TableCell align="center" onClick={() => { setSelectedProductId(product.id); setOpenConfirmModal(true) }} >
+                                <IconButton color="error">
+                                  <DeleteIcon />
+                                </IconButton>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                {/* Box hiển thị tổng tiền */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                  <Box></Box>
+                  <Box>
+                    <Typography component="span" variant="body1" sx={{ mr: 2 }}>Tổng tiền:</Typography>
+                    <Typography component="span" fontSize={20} sx={{ fontWeight: 'bold', color: 'red', marginRight: 3 }}>
+                      0 VNĐ
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            )}
           </Box>
+
           <Box sx={{ borderBottom: '1px solid #9b9b9b' }}>
             <Box sx={{ width: '100%', }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3, marginBottom: 3 }}>
@@ -1109,14 +1539,14 @@ const BanTaiQuay = () => {
       {/* Modal sản phẩm*/}
       <Modal
         open={openSPModal} // Khi open=true, modal sẽ hiển thị
-        onClose={handleCloseSPModal} // Khi nhấn ngoài modal hoặc nhấn nút đóng sẽ đóng modal
+        onClose={() => setOpenSPModal(false)} // Khi nhấn ngoài modal hoặc nhấn nút đóng sẽ đóng modal
       >
         <Box sx={style}>
           {/* Nút đóng modal */}
           <IconButton
             edge="end"
             color="inherit"
-            onClick={handleCloseSPModal}
+            onClick={() => { setOpenSPModal(false) }}
             aria-label="close"
             sx={{
               position: 'absolute',
@@ -1136,19 +1566,21 @@ const BanTaiQuay = () => {
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={6}>
               <TextField
-                label="Tìm kiếm sản phẩm"
+                value={timKiem}
+                label="Tìm kiếm sản phẩm theo tên, mã sản phẩm"
                 variant="outlined"
                 fullWidth
                 size='small'
                 sx={{ marginBottom: 2 }}
+                onChange={(e) => setTimKiem(e.target.value)}
               />
             </Grid>
             <Grid item xs={4} marginLeft={10} marginTop={3}>
               <Slider
                 value={value}
-                onChange={handleSliderChange}
+                onChange={(e, newValue) => setValue(newValue)} // Sửa lại đúng cú pháp
                 valueLabelDisplay="on"
-                valueLabelFormat={(value) => `${value} VNĐ`}
+                valueLabelFormat={(value) => `${value.toLocaleString()} VNĐ`}
                 min={100000}
                 max={3200000}
                 sx={{
@@ -1164,40 +1596,113 @@ const BanTaiQuay = () => {
 
           {/* Bộ lọc danh mục */}
           <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 2 }}>
-            {[
-              { label: 'Danh mục', key: 'category' },
-              { label: 'Màu sắc', key: 'color' },
-              { label: 'Chất liệu', key: 'material' },
-              { label: 'Kích cỡ', key: 'size' },
-              { label: 'Đế giày', key: 'sole' },
-              { label: 'Thương hiệu', key: 'brand' }
-            ].map((filter) => (
-              <Grid item key={filter.key}>
-                {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
-                <Typography sx={{ display: 'inline', fontWeight: 'bold' }}>
-                  {filter.label}:{' '}
-                </Typography>
+
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Danh mục</Typography>
                 <Select
-                  value={filters[filter.key]}
-                  onChange={(e) => handleFilterChange(e, filter.key)}
-                  size="small"
-                  variant="standard" // Loại bỏ viền xanh khi focus
-                  sx={{
-                    minWidth: 100,
-                    borderBottom: 'none', // Loại bỏ viền dưới của Select
-                    '&::before': { borderBottom: 'none' }, // Loại bỏ viền trước khi focus
-                    '&::after': { borderBottom: 'none' }, // Loại bỏ viền sau khi focus
-                    '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' }, // Loại bỏ viền khi hover
-                    color: filters[filter.key] === 'Tất cả' ? '#1976D2' : 'black', // Màu xanh dương khi là 'Tất cả'
-                    fontWeight: filters[filter.key] === 'Tất cả' ? 'bold' : 'normal', // Chữ đậm khi là 'Tất cả'
-                  }}
+                  value={danhMuc}//Sửa lại chỗ này
+                  onChange={(e) => setDanhMuc(e.target.value)}
                 >
-                  <MenuItem value="Tất cả" sx={{ fontWeight: 'bold', color: 'blue' }}>Tất cả</MenuItem>
-                  <MenuItem value="Lựa chọn 1">Lựa chọn 1</MenuItem>
-                  <MenuItem value="Lựa chọn 2">Lựa chọn 2</MenuItem>
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listDanhMuc?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenDanhMuc}</MenuItem>
+                  ))}
                 </Select>
-              </Grid>
-            ))}
+              </FormControl>
+            </Grid>
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Màu sắc</Typography>
+                <Select
+                  value={mauSac}//Sửa lại chỗ này
+                  onChange={(e) => setMauSac(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listMauSac?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenMauSac}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item >
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Chất liệu</Typography>
+                <Select
+                  value={chatLieu}//Sửa lại chỗ này
+                  onChange={(e) => setChatLieu(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listChatLieu?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenChatLieu}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Kích cỡ</Typography>
+                <Select
+                  value={kichCo}//Sửa lại chỗ này
+                  onChange={(e) => setKichCo(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listKichCo?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenSize}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item >
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Kiểu dáng</Typography>
+                <Select
+                  value={kieuDang}//Sửa lại chỗ này
+                  onChange={(e) => setKieuDang(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listKieuDang?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenKieuDang}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Thương hiệu</Typography>
+                <Select
+                  value={thuongHieu}//Sửa lại chỗ này
+                  onChange={(e) => setThuongHieu(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listThuongHieu?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenThuongHieu}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item >
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Phong cách</Typography>
+                <Select
+                  value={phongCach}//Sửa lại chỗ này
+                  onChange={(e) => setPhongCach(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listPhongCach?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenPhongCach}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
           </Grid>
 
           {/* Bảng sản phẩm */}
@@ -1208,50 +1713,79 @@ const BanTaiQuay = () => {
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Ảnh</TableCell>
-                      <TableCell>Tên</TableCell>
-                      <TableCell>Đế Giày</TableCell>
-                      <TableCell>Danh mục</TableCell>
-                      <TableCell>Thương hiệu</TableCell>
-                      <TableCell>Màu sắc</TableCell>
-                      <TableCell>Chất liệu</TableCell>
-                      <TableCell>Size</TableCell>
-                      <TableCell>Giá</TableCell>
-                      <TableCell>Thao tác</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>#</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ảnh</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>TênMauSize Mã sản phẩm</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Chất liệu</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Danh mục</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thương hiệu-Xuất xứ</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Kiểu dáng</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Phong cách</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Giá</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Trạng thái</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thao tác</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {products.map((product) => {
-                      return (
-                        <TableRow key={product.id}>
-                          <TableCell>
-                            <img src={product.image} alt={product.name} width="100" height="100" />
-                          </TableCell>
-                          <TableCell>{product.name}</TableCell>
-                          <TableCell>{product.sole}</TableCell>
-                          <TableCell>{product.category}</TableCell>
-                          <TableCell>{product.brand}</TableCell>
-                          <TableCell>{product.color}</TableCell>
-                          <TableCell>{product.material}</TableCell>
-                          <TableCell>{product.size}</TableCell>
-                          <TableCell>
-                            <span>
-                              {product.price.toLocaleString()} VND
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="outlined" onClick={() => handleOpenConfirmModal(product)}>Chọn</Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    {products?.length > 0 ? (
+                      products?.map((product, index) => {
+                        const images = product.hinhAnh || [];
+                        const currentIndex = imageIndexesThemSanPham[product.id] ?? 0;
+                        return (
+                          <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                            <TableCell align="center">{index + 1}</TableCell>
+                            <TableCell align="center">
+                              {images.length > 0 && (
+                                <img
+                                  src={images[currentIndex]}
+                                  alt={`Ảnh ${currentIndex + 1}`}
+                                  style={{
+                                    width: "60px",
+                                    height: "60px",
+                                    objectFit: "cover",
+                                    borderRadius: "10px",
+                                    transition: "transform 0.3s ease-in-out",
+                                    boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
+                                  }}
+                                  onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
+                                  onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Typography >{product.tenMauSize}</Typography>
+                              <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.ma}</Typography>
+                            </TableCell>
+                            <TableCell align="center">{product.chatLieu}</TableCell>
+                            <TableCell align="center">{product.danhMuc}</TableCell>
+                            <TableCell align="center">{product.thuongHieuXuatXu}</TableCell>
+                            <TableCell align="center">{product.kieuDang}</TableCell>
+                            <TableCell align="center">{product.phongCach}</TableCell>
+                            <TableCell align="center">{product.gia.toLocaleString()} đ</TableCell>
+                            <TableCell align="center">{product.soLuong}</TableCell>
+                            <TableCell align="center">{product.trangThai}</TableCell>
+                            <TableCell align="center">{product.trangThai}</TableCell>
+                            <TableCell>
+                              <Button variant="outlined" onClick={() => handleOpenConfirmModal(product)}>Chọn</Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    ) : (
+                      <TableRow align="center" dis>
+                        <TableCell colSpan={13} align="center" sx={{ py: 2, fontStyle: "italic", color: "gray" }}>
+                          Không có dữ liệu
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
 
               {/* Modal xác nhận khi bấm "Chọn" */}
               {selectedProduct && (
-                <Modal open={!!selectedProduct} onClose={handleCloseConfirmModal}>
+                <Modal open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
                   <Box
                     sx={{
                       position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -1261,53 +1795,72 @@ const BanTaiQuay = () => {
                     {/* Nút đóng Modal */}
                     <IconButton
                       sx={{ position: 'absolute', top: 8, right: 8 }}
-                      onClick={handleCloseConfirmModal}
+                      onClick={() => { setQuantity(1);fetchOrders(); setOpenConfirmModal(false) }}
                     >
                       <CloseIcon />
                     </IconButton>
 
                     {/* Tiêu đề sản phẩm */}
                     <Typography variant="h6" fontWeight="bold">
-                      {selectedProduct.name}<span> </span>{selectedProduct.color}
-                    </Typography>
-
-                    {/* Thông tin sản phẩm */}
-                    <Typography variant="body1">
-                      <b>Loại giày:</b> {selectedProduct.category} {' '}
-                      <b>Thương hiệu:</b> {selectedProduct.brand}
+                      {selectedProduct?.tenMauSize}-{selectedProduct?.ma}
                     </Typography>
 
                     {/* Giá sản phẩm */}
                     <Typography sx={{ mt: 1 }}>
                       <span>
-                        {selectedProduct.price.toLocaleString()} VNĐ
+                        {selectedProduct.gia.toLocaleString()} VNĐ
                       </span>
-                    </Typography>
-
-                    {/* Size sản phẩm */}
-                    <Typography sx={{ mt: 1 }}>
-                      <b>Size:</b> {selectedProduct.size}
                     </Typography>
 
                     {/* Chọn số lượng */}
                     <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        sx={{ fontWeight: 'bold' }}
-                        onClick={() => handleQuantityChange('decrease')}
-                      >
-                        -
-                      </Button>
-                      <Typography sx={{ mx: 2 }}>{quantity}</Typography>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        sx={{ fontWeight: 'bold' }}
-                        onClick={() => handleQuantityChange('increase')}
-                      >
-                        +
-                      </Button>
+                      <Box display="flex" justifyContent="center" alignItems="center">
+                        <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => setQuantity(prev => prev - 1)}
+
+                            disabled={quantity <= 1}
+                            sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                          >
+                            <RemoveIcon fontSize="small" />
+                          </IconButton>
+                          <TextField
+                            value={quantity}
+                            onChange={(e) => handleInputChangeThemSanPhamVaoGioHang(e.target.value)}
+                            // onBlur={() => handleInputBlur(product.id)}
+                            type="number"
+                            inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
+                            size="small"
+                            sx={{
+                              width: "60px",
+                              "& .MuiInputBase-input": {
+                                textAlign: "center",
+                                padding: "5px 0",
+                                backgroundColor: "transparent"
+                              },
+                              "& .MuiOutlinedInput-root": {
+                                border: "none",
+                                "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
+                              },
+                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                                WebkitAppearance: "none",
+                                margin: 0
+                              }
+                            }}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() => setQuantity(prev => prev + 1)}
+                            disabled={quantity >= selectedProduct.soLuong}
+                            sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                          >
+                            <AddIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </Box>
                     </Box>
 
                     {/* Nút xác nhận */}

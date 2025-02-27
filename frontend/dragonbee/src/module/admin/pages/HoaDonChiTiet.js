@@ -266,7 +266,7 @@ const HoaDonChiTiet = () => {
 
 
   return (
-    <Container>
+    <div>
       <Box display="flex" alignItems="center" mb={3}>
         <IconButton onClick={() => navigate(`/hoaDon`)} sx={{ marginRight: 2 }}>
           <ArrowBackIcon />
@@ -279,7 +279,7 @@ const HoaDonChiTiet = () => {
         </Typography>
       </Box>
       {/* Trạng thái hóa đơn */}
-      <Box sx={{ textAlign: "center", width: "100%", mb: 3, display: "flex", justifyContent: "center" }}>
+      <Box sx={{ textAlign: "center", maxWidth: "100%", mb: 3, display: "flex", justifyContent: "center" }}>
         {isCanceled ? (
           <Typography
             variant="h5"
@@ -309,11 +309,13 @@ const HoaDonChiTiet = () => {
                   "&::-webkit-scrollbar": { height: 4 },
                   "&::-webkit-scrollbar-thumb": { bgcolor: "grey.400", borderRadius: 2 },
                   width: "100%",
+                  maxWidth: "1200px", // Giới hạn chiều rộng tối đa để không kéo cả trang
                   p: 1,
                   whiteSpace: "nowrap",
                   alignItems: "center",
                 }}
               >
+
                 {steps.map((step, index) => {
                   const isPast = index < currentStep;
                   const isCurrent = index === currentStep;
@@ -809,7 +811,7 @@ const HoaDonChiTiet = () => {
         </Box>
       </Box>
       <ToastContainer /> {/* Quan trọng để hiển thị toast */}
-    </Container>
+    </div>
 
 
   );

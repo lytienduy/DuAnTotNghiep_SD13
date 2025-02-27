@@ -19,7 +19,7 @@ public class HoaDonChiTietResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class HoaDonDTO {
+    public static class HoaDonChiTietDTO {
         private Integer id;
         private String ma;
         private String loaiHoaDon; // Kết hợp tên và số điện thoại
@@ -43,10 +43,8 @@ public class HoaDonChiTietResponseDTO {
 
         private List<LichSuHoaDonDTO> listLichSuHoaDon;
 
-//        private Float tongTienKhachHangDaThanhToan;
     }
 
-    //    private List<ThanhToanHoaDon> listThanhToanHoaDon;
     @Getter
     @Setter
     @NoArgsConstructor
@@ -70,6 +68,7 @@ public class HoaDonChiTietResponseDTO {
         private Integer id;
         private List<String> hinhAnh;
         private String tenMauSize;
+        private Integer idSanPhamChiTiet;
         private String maSanPhamChiTiet;
         private Float donGia;
         private Integer soLuong;
@@ -89,5 +88,7 @@ public class HoaDonChiTietResponseDTO {
         private LocalDateTime ngay;
         private String nguoiTao;
     }
+
+
 
 }
