@@ -13,8 +13,18 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 
 const BanTaiQuay = () => {
+
+  //Khai báo Thành phố huyện xã
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedWard, setSelectedWard] = useState("");
 
   // State để lưu danh sách các đơn hàng
   const [orders, setOrders] = useState([]);
@@ -38,6 +48,12 @@ const BanTaiQuay = () => {
   const inputRef = useRef(null); // Tham chiếu đến TextField
   const popperRef = useRef(null);
   const [open, setOpen] = useState(false);
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
+  const [specificAddress, setSpecificAddress] = useState('');
+  const [description, setDescription] = useState('');
+  const [addresses, setAddresses] = useState([]);
+
   //khai báo voucher
   const [openVoucherModal, setOpenVoucherModal] = useState(false);
   const [voucherCode, setVoucherCode] = useState('');
@@ -101,7 +117,7 @@ const BanTaiQuay = () => {
   const handleQuantityChange = (type) => {
     setQuantity((prev) => (type === 'increase' ? prev + 1 : prev > 1 ? prev - 1 : 1));
   };
-  
+
   // Hàm mở modal sản phẩm
   const handleOpenSPModal = () => setOpenSPModal(true);
 
@@ -213,11 +229,48 @@ const BanTaiQuay = () => {
     }
   };
 
-  // Hàm xử lý khi người dùng chọn khách hàng
   const handleSelectCustomer = (customer) => {
-    setKeyword(`${customer.tenKhachHang} - ${customer.sdt}`); // Cập nhật TextField
-    setSelectedCustomerId(customer.id); // Lưu ID khách hàng được chọn
-    setOpenKH(false); // Đóng Popper
+    // Reset tất cả các trường trước khi cập nhật dữ liệu mới
+    setRecipientName('');
+    setRecipientPhone('');
+    setSelectedCity('');
+    setSelectedDistrict('');
+    setSelectedWard('');
+    setSpecificAddress('');
+    setDescription(''); // Reset mô tả
+    setDistricts([]);
+    setWards([]);
+
+    setKeyword(`${customer.tenKhachHang} - ${customer.sdt}`);
+    setSelectedCustomerId(customer.id);
+    setOpenKH(false);
+
+    setRecipientName(customer.tenKhachHang);
+    setRecipientPhone(customer.sdt);
+    setAddresses(customer.diaChis || []);
+
+    if (customer.diaChis && customer.diaChis.length > 0) {
+      const address = customer.diaChis[0];
+
+      setSelectedCity(address.thanhPho);
+
+      const city = cities.find(c => c.Name === address.thanhPho);
+      if (city) {
+        setDistricts(city.Districts);
+
+        setSelectedDistrict(address.huyen);
+        const district = city.Districts.find(d => d.Name === address.huyen);
+        if (district) {
+          setWards(district.Wards);
+          setSelectedWard(address.xa);
+        }
+      }
+
+      setSpecificAddress(`${address.soNha}, ${address.duong}`);
+      setDescription(address.moTa || ""); // Cập nhật mô tả, nếu không có thì đặt là chuỗi rỗng
+    } else {
+      setDescription(""); // Nếu không có địa chỉ nào, đặt lại mô tả thành chuỗi rỗng
+    }
   };
 
   // Hiển thị 5 khách hàng đầu tiên khi vừa mở trang (ngay khi chưa nhập gì)
@@ -282,14 +335,43 @@ const BanTaiQuay = () => {
     setTienKhachChuyen(newValue);
   };
 
-  // State cho các dropdown
-  const [city, setCity] = useState('');
-  const [district, setDistrict] = useState('');
-  const [ward, setWard] = useState('');
+  // hàm sử dụng để gọi tỉnh thành quận huyện xã việt nam
+  useEffect(() => {
+    axios.get("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json")
+      .then(response => {
+        const normalizedCities = response.data.map(city => ({
+          ...city,
+          Name: city.Name.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
+        }));
+        setCities(normalizedCities);
+      })
+      .catch(error => console.error("Error fetching data:", error));
+  }, []);
 
-  const handleCityChange = (event) => setCity(event.target.value);
-  const handleDistrictChange = (event) => setDistrict(event.target.value);
-  const handleWardChange = (event) => setWard(event.target.value);
+
+  const handleCityChange = (event) => {
+    const cityName = event.target.value;
+    setSelectedCity(cityName);
+    setSelectedDistrict(""); // Reset huyện
+    setSelectedWard(""); // Reset xã
+
+    const city = cities.find(city => city.Name === cityName);
+    setDistricts(city ? city.Districts : []);
+    setWards([]);
+  };
+
+  const handleDistrictChange = (event) => {
+    const districtName = event.target.value;
+    setSelectedDistrict(districtName);
+    setSelectedWard(""); // Reset xã
+
+    const district = districts.find(d => d.Name === districtName);
+    setWards(district ? district.Wards : []);
+  };
+
+  const handleWardChange = (event) => {
+    setSelectedWard(event.target.value);
+  };
 
   const handleSwitchChange = (event) => {
     setShowLeftPanel(event.target.checked);
@@ -310,7 +392,43 @@ const BanTaiQuay = () => {
     } else {
       setOpenSnackbar(true); // Mở Snackbar khi đạt tối đa số lượng đơn hàng
     }
-  };  
+  };
+
+  // Lấy ngày hiện tại và cộng thêm 3 ngày
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() + 3);
+
+  // Format ngày thành dd/MM/yyyy
+  const formattedDate = currentDate.toLocaleDateString("vi-VN");
+
+  const [openDC, setOpenDC] = useState(false);
+  // Mở hoặc đóng modal khach hàng
+  const handleOpenDC = () => setOpenDC(true);
+  const handleCloseDC = () => setOpenDC(false);
+
+  const handleSelectAddress = (address) => {
+    // Tìm khách hàng dựa vào ID đã chọn
+    const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
+    if (!selectedCustomer) return; // Nếu không tìm thấy khách hàng thì thoát
+  
+    setRecipientName(selectedCustomer.tenKhachHang);
+    setRecipientPhone(selectedCustomer.sdt);
+    setSelectedCity(address.thanhPho);
+    setSelectedDistrict(address.huyen);
+    
+    // Cập nhật danh sách xã theo huyện mới
+    const city = cities.find(city => city.Name === address.thanhPho);
+    if (city) {
+      const district = city.Districts.find(d => d.Name === address.huyen);
+      setWards(district ? district.Wards : []);
+    }
+  
+    setSelectedWard(address.xa);
+    setSpecificAddress(`${address.soNha}, ${address.duong}`);
+    setDescription(address.moTa || ""); // Nếu không có mô tả, đặt rỗng
+    setOpenDC(false); // Đóng modal
+  };
+  
 
   return (
     <Box
@@ -474,7 +592,7 @@ const BanTaiQuay = () => {
               <Typography color='white'>m</Typography>
               <Typography color='white'>m</Typography>
               <Typography variant="body1">Tổng tiền:</Typography>
-              <Typography fontSize={20} sx={{ fontWeight: 'bold', color: 'red',marginRight:3 }}>
+              <Typography fontSize={20} sx={{ fontWeight: 'bold', color: 'red', marginRight: 3 }}>
                 0 VNĐ
               </Typography>
             </Box>
@@ -489,67 +607,7 @@ const BanTaiQuay = () => {
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', textAlign: 'center', position: 'relative', width: '40%', marginRight: 3 }}>
-                  {/* TextField với biểu tượng tìm kiếm */}
-                  <TextField
-                    value={keyword}
-                    onChange={searchCustomers}
-                    onFocus={handleFocus}
-                    onMouseDown={handleMouseDown} // Giữ Popper mở khi nhấn vào
-                    inputRef={inputRef}
-                    placeholder="Thêm khách hàng vào đơn"
-                    variant="standard"
-                    sx={{ width: '100%' }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: 'gray' }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                    autoComplete="off"
-                  />
 
-                  {/* Đặt AddIcon bên ngoài TextField, nhưng vẫn trong Box */}
-                  <IconButton
-                    onClick={handleOpen}
-                    sx={{
-                      position: 'absolute',
-                      right: 0,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      zIndex: 10
-                    }}
-                  >
-                    <AddIcon sx={{ color: 'gray' }} />
-                  </IconButton>
-
-                  {/* Popper hiển thị danh sách khách hàng */}
-                  <Popper
-                    open={openKH && customers.length > 0}
-                    anchorEl={inputRef.current}
-                    placement="bottom-start"
-                    sx={{ zIndex: 1300, width: 422 }}
-                    ref={popperRef} // Gán ref vào Popper để kiểm tra click
-                  >
-                    <ClickAwayListener onClickAway={handleClickAway}>
-                      <Box sx={{ border: '1px solid #ddd', maxHeight: 200, overflowY: 'auto', backgroundColor: 'white', boxShadow: 3 }}>
-                        <List>
-                          {customers.map((customer) => (
-                            <ListItem
-                              button
-                              key={customer.id}
-                              onClick={(e) => {
-                                e.stopPropagation(); // Ngừng lan truyền sự kiện click
-                                handleSelectCustomer(customer); // Chọn khách hàng
-                              }}
-                            >
-                              <ListItemText primary={`${customer.tenKhachHang} - ${customer.sdt}`} />
-                            </ListItem>
-                          ))}
-                        </List>
-                      </Box>
-                    </ClickAwayListener>
-                  </Popper>
                 </Box>
               </Box>
             </Box>
@@ -562,38 +620,130 @@ const BanTaiQuay = () => {
                 {/* Box bên trái */}
                 {showLeftPanel && (
                   <Box sx={{ width: '100%', backgroundColor: '#fff' }}>
-                    <Typography variant="h6" marginBottom={2} marginTop={2}>Thông tin khách hàng</Typography>
-                    <TextField fullWidth label="Tên người nhận" variant="outlined" size='small' sx={{ marginBottom: '16px' }} />
-                    <TextField fullWidth label="Số điện thoại" variant="outlined" size='small' sx={{ marginBottom: '16px' }} />
-                    <TextField fullWidth label="Địa chỉ" variant="outlined" size='small' sx={{ marginBottom: '16px' }} />
+                    <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom={2} marginTop={2}>
+                      <Typography variant="h6">Thông tin khách hàng</Typography>
+                      <Button
+                        variant="outlined"
+                        onClick={handleOpenDC}
+                        sx={{
+                          color: "#1976D2",
+                          borderColor: "#1976D2",
+                          backgroundColor: "#fff",
+                          "&:hover": {
+                            backgroundColor: "#e3f2fd",
+                            borderColor: "#1565c0",
+                            color: "#1565c0",
+                          },
 
-                    {/* Các dropdowns chỉ hiển thị khi showLeftPanel là true */}
-                    <FormControl fullWidth sx={{ marginBottom: '16px' }} size='small'>
-                      <InputLabel>Tỉnh/Thành phố</InputLabel>
-                      <Select value={city} onChange={handleCityChange} label="Tỉnh/Thành phố">
-                        <MenuItem value="Son La">Son La</MenuItem>
-                        <MenuItem value="Hà Nội">Hà Nội</MenuItem>
-                        <MenuItem value="Hồ Chí Minh">Hồ Chí Minh</MenuItem>
-                      </Select>
-                    </FormControl>
+                        }}
+                      >
+                        Chọn địa chỉ
+                      </Button>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: '16px', marginTop: 5 }}>
+                      <TextField
+                        fullWidth
+                        label="Tên người nhận"
+                        variant="outlined"
+                        size="small"
+                        value={recipientName}
+                        onChange={(e) => setRecipientName(e.target.value)}
+                      />
+                      <TextField
+                        fullWidth
+                        label="Số điện thoại"
+                        variant="outlined"
+                        size="small"
+                        value={recipientPhone}
+                        onChange={(e) => setRecipientPhone(e.target.value)}
+                      />
+                    </Box>
 
-                    <FormControl fullWidth sx={{ marginBottom: '16px' }} size='small'>
-                      <InputLabel>Quận/Huyện</InputLabel>
-                      <Select value={district} onChange={handleDistrictChange} label="Quận/Huyện">
-                        <MenuItem value="Quyen">Huyện Quỳnh</MenuItem>
-                        <MenuItem value="Cau Giay">Cầu Giấy</MenuItem>
-                        <MenuItem value="Go Vap">Gò Vấp</MenuItem>
-                      </Select>
-                    </FormControl>
+                    <Box sx={{ display: 'flex', gap: '16px', marginTop: 5 }}>
+                      {/* Các dropdowns chỉ hiển thị khi showLeftPanel là true */}
+                      <FormControl fullWidth size='small'>
+                        <InputLabel>Tỉnh/Thành phố</InputLabel>
+                        <Select value={selectedCity} onChange={handleCityChange} label="Tỉnh/Thành phố">
+                          {cities.map((city) => (
+                            <MenuItem key={city.Id} value={city.Name}>{city.Name}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
 
-                    <FormControl fullWidth sx={{ marginBottom: '16px' }} size='small'>
-                      <InputLabel>Xã/Phường</InputLabel>
-                      <Select value={ward} onChange={handleWardChange} label="Xã/Phường">
-                        <MenuItem value="Xa Muong Gi">Xã Mường Già</MenuItem>
-                        <MenuItem value="Tan Mai">Tân Mai</MenuItem>
-                        <MenuItem value="Quang Trung">Quang Trung</MenuItem>
-                      </Select>
-                    </FormControl>
+                      {/* Chọn Quận/Huyện */}
+                      <FormControl fullWidth size='small' disabled={!selectedCity}>
+                        <InputLabel>Quận/Huyện</InputLabel>
+                        <Select value={selectedDistrict} onChange={handleDistrictChange} label="Quận/Huyện">
+                          {districts.map((district) => (
+                            <MenuItem key={district.Id} value={district.Name}>{district.Name}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      {/* Chọn Xã/Phường */}
+                      <FormControl fullWidth size='small' disabled={!selectedDistrict}>
+                        <InputLabel>Xã/Phường</InputLabel>
+                        <Select value={selectedWard} onChange={handleWardChange} label="Xã/Phường">
+                          {wards.map((ward) => (
+                            <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: '16px', marginTop: 5 }}>
+                      <TextField
+                        fullWidth
+                        label="Địa chỉ cụ thể"
+                        variant="outlined"
+                        size="small"
+                        sx={{ marginBottom: '16px' }}
+                        value={specificAddress}
+                        onChange={(e) => setSpecificAddress(e.target.value)}
+                      />
+                      <TextField
+                        fullWidth
+                        label="Mô tả"
+                        variant="outlined"
+                        size='small'
+                        sx={{ marginBottom: '16px' }}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                      />
+                    </Box>
+
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      {/* Box chứa thông tin bên trái */}
+                      <Box>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <LocalShippingIcon fontSize="small" />
+                          <Typography variant="body1" fontWeight="bold">
+                            Đơn vị vận chuyển:
+                            <span style={{ color: '#1976d2' }}>
+                              <span> </span>Giao hàng nhanh
+                            </span>
+                          </Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" gap={1} mt={1}>
+                          <LocalShippingIcon fontSize="small" />
+                          <Typography variant="body1" fontWeight="bold">
+                            Thời gian dự kiến:
+                            <span style={{ color: '#1976d2' }}>
+                              <span> </span>{formattedDate}
+                            </span>
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Box chứa logo bên phải */}
+                      <Box>
+                        <img
+                          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4kQyiXGjJmXcP6UKya0gkj19iOmgyvjrOng&s"
+                          alt="GHN Logo"
+                          style={{ height: '100px' }}
+                        />
+                      </Box>
+                    </Box>
                   </Box>
                 )}
 
@@ -606,14 +756,80 @@ const BanTaiQuay = () => {
                     backgroundColor: '#fff',
                   }}
                 >
-                  <Typography variant="h6" marginTop={2}>Thông tin thanh toán</Typography>
-                  {/* Nút Switch điều khiển việc hiển thị/ẩn bên trái */}
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" marginTop={2}>
+                    <Typography variant="h6" >Thông tin thanh toán</Typography>
+                    {/* Nút Switch điều khiển việc hiển thị/ẩn bên trái */}
                     <FormControlLabel
                       control={<Switch checked={showLeftPanel} onChange={handleSwitchChange} />}
                       label="Giao hàng"
                     />
                   </Box>
+
+                  <Box sx={{ display: 'flex', position: 'relative' }}>
+
+                    {/* TextField với biểu tượng tìm kiếm */}
+                    <TextField
+                      value={keyword}
+                      onChange={searchCustomers}
+                      onFocus={handleFocus}
+                      onMouseDown={handleMouseDown} // Giữ Popper mở khi nhấn vào
+                      inputRef={inputRef}
+                      placeholder="Thêm khách hàng vào đơn"
+                      variant="standard"
+                      sx={{ width: '100%' }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ color: 'gray' }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                      autoComplete="off"
+                    />
+
+                    {/* Đặt AddIcon bên ngoài TextField, nhưng vẫn trong Box */}
+                    <IconButton
+                      onClick={handleOpen}
+                      sx={{
+                        position: 'absolute',
+                        right: 0,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        zIndex: 10
+                      }}
+                    >
+                      <AddIcon sx={{ color: 'gray' }} />
+                    </IconButton>
+
+                    {/* Popper hiển thị danh sách khách hàng */}
+                    <Popper
+                      open={openKH && customers.length > 0}
+                      anchorEl={inputRef.current}
+                      placement="bottom-start"
+                      sx={{ zIndex: 1300, width: 422 }}
+                      ref={popperRef} // Gán ref vào Popper để kiểm tra click
+                    >
+                      <ClickAwayListener onClickAway={handleClickAway}>
+                        <Box sx={{ border: '1px solid #ddd', maxHeight: 200, overflowY: 'auto', backgroundColor: 'white', boxShadow: 3 }}>
+                          <List>
+                            {customers.map((customer) => (
+                              <ListItem
+                                button
+                                key={customer.id}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Ngừng lan truyền sự kiện click
+                                  handleSelectCustomer(customer); // Chọn khách hàng
+                                }}
+                              >
+                                <ListItemText primary={`${customer.tenKhachHang} - ${customer.sdt}`} />
+                              </ListItem>
+                            ))}
+                          </List>
+                        </Box>
+                      </ClickAwayListener>
+                    </Popper>
+                  </Box>
+
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
                     <Typography variant="body1">Phiếu giảm giá:</Typography>
                     <Input
@@ -854,7 +1070,7 @@ const BanTaiQuay = () => {
           )}
 
           {/* Bảng Thanh Toán */}
-          <TableContainer component={Paper} sx={{ borderRadius: '10px', overflow: 'hidden' }}>
+          <TableContainer component={Paper} sx={{ borderRadius: '10px', overflow: 'hidden', marginBottom: 2 }}>
             <Table sx={{ width: '100%' }}>
               <TableHead sx={{ backgroundColor: '#1976D2' }}>
                 <TableRow>
@@ -882,6 +1098,9 @@ const BanTaiQuay = () => {
               </TableBody>
             </Table>
           </TableContainer>
+          <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
+            Tiền thừa trả khách: <span style={{ color: 'red' }}>250.000 <span style={{ color: 'red' }}>VNĐ</span></span>
+          </Typography>
         </DialogContent>
 
         {/* Nút Xác nhận */}
@@ -1323,6 +1542,68 @@ const BanTaiQuay = () => {
               )}
             </>
           </Box>
+        </Box>
+      </Modal>
+      {/* Gọi Modal */}
+      <Modal open={openDC} onClose={handleCloseDC}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 800,
+            bgcolor: "white",
+            boxShadow: 24,
+            p: 3,
+            borderRadius: 2,
+          }}
+        >
+          {/* Header */}
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6">Danh sách Địa chỉ</Typography>
+            <IconButton onClick={handleCloseDC}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Table hiển thị danh sách địa chỉ */}
+          <TableContainer component={Paper} sx={{ mt: 2, maxHeight: 400 }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: "bold" }}>STT</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Tên người nhận</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Số điện thoại</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Địa chỉ</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Thao tác</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {addresses.map((address, index) => (
+                  <TableRow key={address.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{recipientName}</TableCell>
+                    <TableCell>{recipientPhone}</TableCell>
+                    <TableCell>
+                      {`${address.soNha}, ${address.duong}, ${address.xa}, ${address.huyen}, ${address.thanhPho}`}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="outlined" color="primary" onClick={() => handleSelectAddress(address)}>
+                        CHỌN
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+
+            </Table>
+          </TableContainer>
+
+          {/* Nút thêm địa chỉ */}
+          <Button variant="contained" color="warning" sx={{ mt: 2 }} fullWidth>
+            THÊM ĐỊA CHỈ
+          </Button>
         </Box>
       </Modal>
     </Box>
