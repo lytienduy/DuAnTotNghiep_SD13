@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="20fa4398-a540-4bcc-8ac6-98e36f4ff058" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/PhuongThucThanhToanRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/BanHangTaiQuayController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/BanHangTaiQuayController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/BanHangTaiQuayService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/BanHangTaiQuayService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/BanTaiQuay.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/BanTaiQuay.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,17 +52,6 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
-      <option name="arquillianRunConfiguration">
-        <value>
-          <option name="containerStateName" value="" />
-        </value>
-      </option>
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="ShopdragonbeeApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
       <module name="shopdragonbee" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.shopdragonbee.ShopdragonbeeApplication" />
@@ -87,7 +72,7 @@
       <workItem from="1740535911232" duration="2640000" />
       <workItem from="1740542346284" duration="11674000" />
       <workItem from="1740622236024" duration="16681000" />
-      <workItem from="1740707757283" duration="16057000" />
+      <workItem from="1740707757283" duration="16406000" />
     </task>
     <servers />
   </component>
