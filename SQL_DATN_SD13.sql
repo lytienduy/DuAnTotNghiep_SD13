@@ -625,3 +625,6 @@ ADD cccd NVARCHAR(20),    -- Thêm cột CCCD
 
 ALTER TABLE nhan_vien
 ADD CONSTRAINT UC_cccd UNIQUE (cccd);
+
+ALTER TABLE hoa_don
+ALTER COLUMN id_khach_hang INT NULL;

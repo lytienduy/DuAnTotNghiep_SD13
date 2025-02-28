@@ -801,897 +801,871 @@ const BanTaiQuay = () => {
 
 
 
-// Lấy ngày hiện tại và cộng thêm 3 ngày
-const currentDate = new Date();
-currentDate.setDate(currentDate.getDate() + 3);
+  // Lấy ngày hiện tại và cộng thêm 3 ngày
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() + 3);
 
-// Format ngày thành dd/MM/yyyy
-const formattedDate = currentDate.toLocaleDateString("vi-VN");
+  // Format ngày thành dd/MM/yyyy
+  const formattedDate = currentDate.toLocaleDateString("vi-VN");
 
-const [openDC, setOpenDC] = useState(false);
-// Mở hoặc đóng modal khach hàng
-const handleOpenDC = () => setOpenDC(true);
-const handleCloseDC = () => setOpenDC(false);
+  const [openDC, setOpenDC] = useState(false);
+  // Mở hoặc đóng modal khach hàng
+  const handleOpenDC = () => setOpenDC(true);
+  const handleCloseDC = () => setOpenDC(false);
 
-const handleSelectAddress = (address) => {
-  // Tìm khách hàng dựa vào ID đã chọn
-  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
-  if (!selectedCustomer) return; // Nếu không tìm thấy khách hàng thì thoát
+  const handleSelectAddress = (address) => {
+    // Tìm khách hàng dựa vào ID đã chọn
+    const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
+    if (!selectedCustomer) return; // Nếu không tìm thấy khách hàng thì thoát
 
-  setRecipientName(selectedCustomer.tenKhachHang);
-  setRecipientPhone(selectedCustomer.sdt);
-  setSelectedCity(address.thanhPho);
-  setSelectedDistrict(address.huyen);
+    setRecipientName(selectedCustomer.tenKhachHang);
+    setRecipientPhone(selectedCustomer.sdt);
+    setSelectedCity(address.thanhPho);
+    setSelectedDistrict(address.huyen);
 
-  // Cập nhật danh sách xã theo huyện mới
-  const city = cities.find(city => city.Name === address.thanhPho);
-  if (city) {
-    const district = city.Districts.find(d => d.Name === address.huyen);
-    setWards(district ? district.Wards : []);
-  }
+    // Cập nhật danh sách xã theo huyện mới
+    const city = cities.find(city => city.Name === address.thanhPho);
+    if (city) {
+      const district = city.Districts.find(d => d.Name === address.huyen);
+      setWards(district ? district.Wards : []);
+    }
 
-  setSelectedWard(address.xa);
-  setSpecificAddress(`${address.soNha}, ${address.duong}`);
-  setDescription(address.moTa || ""); // Nếu không có mô tả, đặt rỗng
-  setOpenDC(false); // Đóng modal
-};
+    setSelectedWard(address.xa);
+    setSpecificAddress(`${address.soNha}, ${address.duong}`);
+    setDescription(address.moTa || ""); // Nếu không có mô tả, đặt rỗng
+    setOpenDC(false); // Đóng modal
+  };
 
 
-return (
-  <Box
-    sx={{
-      border: '1px solid #E0E0E0', // Light border
-      borderRadius: '8px', // Rounded corners
-      padding: '24px', // Padding around the content
-      minHeight: '400px', // Ensure the container has a minimum height
-      backgroundColor: '#FAFAFA', // Light background color
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow effect
-    }}
-  >
-    {/* Xác nhận hủy hóa đơn */}
-    <Dialog open={openLyDo} onClose={() => setOpenLyDo(false)}>
-      <DialogTitle>Nhập lý do hủy hóa đơn</DialogTitle>
-      <DialogContent>
-        <TextField
-          fullWidth
-          multiline
-          rows={3}
-          label="Lý do hủy"
-          variant="outlined"
-          value={ghiChuTrangThai}
-          onChange={(e) => { setGhiChuTrangThai(e.target.value); setError(false) }}
-          error={error} // Hiển thị lỗi nếu có
-          helperText={error ? "Bạn chưa nhập lý do!" : ""} // Nội dung lỗi
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setOpenLyDo(false)} color="primary">
-          Hủy bỏ
+  return (
+    <Box
+      sx={{
+        border: '1px solid #E0E0E0', // Light border
+        borderRadius: '8px', // Rounded corners
+        padding: '24px', // Padding around the content
+        minHeight: '400px', // Ensure the container has a minimum height
+        backgroundColor: '#FAFAFA', // Light background color
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow effect
+      }}
+    >
+      {/* Xác nhận hủy hóa đơn */}
+      <Dialog open={openLyDo} onClose={() => setOpenLyDo(false)}>
+        <DialogTitle>Nhập lý do hủy hóa đơn</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Lý do hủy"
+            variant="outlined"
+            value={ghiChuTrangThai}
+            onChange={(e) => { setGhiChuTrangThai(e.target.value); setError(false) }}
+            error={error} // Hiển thị lỗi nếu có
+            helperText={error ? "Bạn chưa nhập lý do!" : ""} // Nội dung lỗi
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenLyDo(false)} color="primary">
+            Hủy bỏ
+          </Button>
+          <Button onClick={handleNextConfirm} color="error" variant="contained">
+            Tiếp tục
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+        <DialogTitle>Xác nhận hủy hóa đơn</DialogTitle>
+        <DialogContent>
+          <p><b>Lý do hủy:</b> {ghiChuTrangThai}</p>
+          <p>Bạn có chắc chắn muốn hủy hóa đơn này không?</p>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirm(false)} color="primary">
+            Quay lại
+          </Button>
+          <Button onClick={handleHuyOrder} color="error" variant="contained">
+            Xác nhận hủy
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Xác nhận xóa sản phẩm */}
+      <Dialog open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
+        <DialogTitle>Xác nhận xóa sản phẩm</DialogTitle>
+        <DialogContent>Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setTempValues((prev) => ({
+              ...prev,
+              [selectedProductId]: selectedOrder.listDanhSachSanPham.find((p) => p.id === selectedProductId)?.soLuong || 1, // Reset nếu nhập sai
+            }));
+            setOpenConfirmModal(false)
+          }} color="primary">
+            Hủy
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error">
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <ToastContainer /> {/* Quan trọng để hiển thị toast */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Bán hàng</Typography>
+        <Button
+          sx={{
+            color: "#fff",
+            borderColor: "rgb(52, 152, 234)",
+            backgroundColor: "rgb(52, 152, 234)",
+            "&:hover": {
+              backgroundColor: "#e3f2fd",
+              borderColor: "#1565c0",
+              color: "#1565c0",
+            },
+          }}
+          onClick={addOrder}
+        >
+          + Tạo đơn hàng
         </Button>
-        <Button onClick={handleNextConfirm} color="error" variant="contained">
-          Tiếp tục
-        </Button>
-      </DialogActions>
-    </Dialog>
-    <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
-      <DialogTitle>Xác nhận hủy hóa đơn</DialogTitle>
-      <DialogContent>
-        <p><b>Lý do hủy:</b> {ghiChuTrangThai}</p>
-        <p>Bạn có chắc chắn muốn hủy hóa đơn này không?</p>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setOpenConfirm(false)} color="primary">
-          Quay lại
-        </Button>
-        <Button onClick={handleHuyOrder} color="error" variant="contained">
-          Xác nhận hủy
-        </Button>
-      </DialogActions>
-    </Dialog>
-    {/* Xác nhận xóa sản phẩm */}
-    <Dialog open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
-      <DialogTitle>Xác nhận xóa sản phẩm</DialogTitle>
-      <DialogContent>Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?</DialogContent>
-      <DialogActions>
-        <Button onClick={() => {
-          setTempValues((prev) => ({
-            ...prev,
-            [selectedProductId]: selectedOrder.listDanhSachSanPham.find((p) => p.id === selectedProductId)?.soLuong || 1, // Reset nếu nhập sai
-          }));
-          setOpenConfirmModal(false)
-        }} color="primary">
-          Hủy
-        </Button>
-        <Button onClick={handleConfirmDelete} color="error">
-          Xóa
-        </Button>
-      </DialogActions>
-    </Dialog>
-    <ToastContainer /> {/* Quan trọng để hiển thị toast */}
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Bán hàng</Typography>
-      <Button
-        sx={{
-          color: "#fff",
-          borderColor: "rgb(52, 152, 234)",
-          backgroundColor: "rgb(52, 152, 234)",
-          "&:hover": {
-            backgroundColor: "#e3f2fd",
-            borderColor: "#1565c0",
-            color: "#1565c0",
-          },
-        }}
-        onClick={addOrder}
-      >
-        + Tạo đơn hàng
-      </Button>
-    </Box>
+      </Box>
 
-    {/* Hiển thị các đơn hàng */}
-    {orders.length > 0 && (
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #E0E0E0' }}>
-        {orders.map((order) => (
-          <Box
-            key={order.id}
-            sx={{
-              padding: '10px',
-              textAlign: 'left',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              cursor: 'pointer',
-              borderBottom: selectedOrder?.id === order.id ? '2px solid #1E88E5' : 'none',
-              '&:hover': {
-                borderColor: '#FF8C00',
-              },
-              position: 'relative', // Để định vị nút xóa khi hover
-            }}
-            onClick={() => handleSelectOrder(order)}
-            onMouseEnter={(e) => e.currentTarget.querySelector('.delete-icon')?.classList.add('show')}
-            onMouseLeave={(e) => e.currentTarget.querySelector('.delete-icon')?.classList.remove('show')}
-          >
-            {/* Mã đơn hàng và số lượng */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: selectedOrder?.id === order.id ? '#1E88E5' : 'inherit',
-                  fontWeight: selectedOrder?.id === order.id ? 'bold' : 'normal',
-                }}
-              >
-                {order.ma}
-              </Typography>
-              <Typography
-                component="span"
-                sx={{
-                  fontSize: "12px",
-                  fontWeight: "bold",
-                  color: "#ff4d4f",
-
-                }}
-              >
-                ({order.listDanhSachSanPham?.length || 0})
-              </Typography>
-            </Box>
-
-            {/* Nút Xóa - chỉ hiển thị khi hover */}
-            <IconButton
-              className="delete-icon"
+      {/* Hiển thị các đơn hàng */}
+      {orders.length > 0 && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #E0E0E0' }}>
+          {orders.map((order) => (
+            <Box
+              key={order.id}
               sx={{
-                backgroundColor: 'transparent',
-                color: '#ff4d4f',
-                borderRadius: '50%',
-                padding: 0.5,
-                width: '18px',
-                height: '18px',
-                position: 'absolute',
-                top: '4px',  // Đưa lên sát mép trên
-                right: '0px', // Đưa vào sát góc phải
-                opacity: 0,
-                transition: 'opacity 0.2s ease-in-out',
-                '&.show': {
-                  opacity: 1, // Chỉ hiện khi hover vào đơn hàng
-                },
+                padding: '10px',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                borderBottom: selectedOrder?.id === order.id ? '2px solid #1E88E5' : 'none',
                 '&:hover': {
-                  color: '#D50000',
+                  borderColor: '#FF8C00',
                 },
+                position: 'relative', // Để định vị nút xóa khi hover
               }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIdOrderCanXoa(order.id);
-                setOpenLyDo(true);
-              }}
+              onClick={() => handleSelectOrder(order)}
+              onMouseEnter={(e) => e.currentTarget.querySelector('.delete-icon')?.classList.add('show')}
+              onMouseLeave={(e) => e.currentTarget.querySelector('.delete-icon')?.classList.remove('show')}
             >
-              <CloseIcon sx={{ fontSize: '12px' }} />
-            </IconButton>
-          </Box>
-        ))}
-      </Box>
-
-
-    )}
-
-
-    {/* Khi không có đơn nào */}
-    {orders.length <= 0 && (
-      <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5 }}>
-        <img
-          src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
-          alt="No data"
-          style={{ width: '150px', height: 'auto' }}
-        />
-        <Typography variant="h6" sx={{ marginTop: '-40px' }}>Không có đơn nào</Typography>
-      </Box>
-    )}
-
-    {/* Phần sản phẩm */}
-
-    {selectedOrder === null ? (
-      <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5 }}>
-        <img
-          src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
-          alt="No data"
-          style={{ width: '150px', height: 'auto' }}
-        />
-        <Typography variant="h6" sx={{ marginTop: '-40px' }}>Chưa chọn hóa đơn nào</Typography>
-      </Box>
-    ) : (
-      <Box>
-        <Box sx={{ borderBottom: '1px solid #E0E0E0' }}>
-          <Box sx={{ borderBottom: '1px solid #9b9b9b' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                Sản phẩm
-              </Typography>
-              <Box sx={{ textAlign: 'center' }}>
-                <Button
+              {/* Mã đơn hàng và số lượng */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Typography
+                  variant="body2"
                   sx={{
-                    marginRight: '10px',
-                    backgroundColor: 'rgb(52, 152, 234)',
-                    color: 'white',
-                    "&:hover": {
-                      backgroundColor: "#e3f2fd",
-                      borderColor: "#1565c0",
-                      color: "#1565c0",
-                    },
+                    color: selectedOrder?.id === order.id ? '#1E88E5' : 'inherit',
+                    fontWeight: selectedOrder?.id === order.id ? 'bold' : 'normal',
                   }}
                 >
-                  Quét QR Sản Phẩm
-                </Button>
-                <Button
-                  variant="outlined"
-                  sx={{
-                    color: "#1976D2",
-                    borderColor: "#1976D2",
-                    backgroundColor: "#fff",
-                    "&:hover": {
-                      backgroundColor: "#e3f2fd",
-                      borderColor: "#1565c0",
-                      color: "#1565c0",
-                    },
-                  }}
-                  onClick={() => setOpenSPModal(true)}  // Khi nhấn vào button, mở modal
-                >
-                  Thêm Sản Phẩm
-                </Button>
-              </Box>
-            </Box>
-          </Box>
-
-          <Box>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>STT</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Hình ảnh</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Sản phẩm</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Đơn giá</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số tiền</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {selectedOrder.listDanhSachSanPham?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center">
-                        <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5 }}>
-                          <img
-                            src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
-                            alt="No data"
-                            style={{ width: '150px', height: 'auto' }}
-                          />
-                          <Typography variant="h6" sx={{ marginTop: '-40px' }}>Giỏ hàng hóa đơn {selectedOrder?.ma} của bạn chưa có sản phẩm nào!
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    selectedOrder.listDanhSachSanPham.map((product, index) => {
-                      const images = product.hinhAnh || [];
-                      const currentIndex = imageIndexes[product.id] ?? 0;
-                      return (
-                        <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
-                          <TableCell align="center">{index + 1}</TableCell>
-                          <TableCell align="center">
-                            {images.length > 0 && (
-                              <img
-                                src={images[currentIndex]}
-                                alt={`Ảnh ${currentIndex + 1}`}
-                                style={{
-                                  width: "60px",
-                                  height: "60px",
-                                  objectFit: "cover",
-                                  borderRadius: "10px",
-                                  transition: "transform 0.3s ease-in-out",
-                                  boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
-                                }}
-                                onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
-                                onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
-                              />
-                            )}
-                          </TableCell>
-                          <TableCell align="center">
-                            <Typography>{product.tenMauSize}</Typography>
-                            <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.maSanPhamChiTiet}</Typography>
-                          </TableCell>
-                          <TableCell align="center">
-                            <Box display="flex" justifyContent="center" alignItems="center">
-                              <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => giamSoLuong(product.id)}
-                                  disabled={product.quantity <= 1}
-                                  sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
-                                >
-                                  <RemoveIcon fontSize="small" />
-                                </IconButton>
-                                <TextField
-                                  value={tempValues[product.id] ?? product.soLuong}
-                                  onChange={(e) => handleInputChange(product.id, e.target.value)}
-                                  onBlur={() => handleInputBlur(product.id)}
-                                  type="number"
-                                  inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
-                                  size="small"
-                                  sx={{
-                                    width: "60px",
-                                    "& .MuiInputBase-input": {
-                                      textAlign: "center",
-                                      padding: "5px 0",
-                                      backgroundColor: "transparent"
-                                    },
-                                    "& .MuiOutlinedInput-root": {
-                                      border: "none",
-                                      "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                                      "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
-                                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
-                                    },
-                                    "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
-                                      WebkitAppearance: "none",
-                                      margin: 0
-                                    }
-                                  }}
-                                />
-                                <IconButton
-                                  size="small"
-                                  onClick={() => tangSoLuong(product.id)}
-                                  sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
-                                >
-                                  <AddIcon fontSize="small" />
-                                </IconButton>
-                              </Box>
-                            </Box>
-                          </TableCell>
-                          <TableCell align="center">{product.donGia?.toLocaleString()}₫</TableCell>
-                          <TableCell align="center">{product.soTien?.toLocaleString()}₫</TableCell>
-                          <TableCell align="center" onClick={() => { setSelectedProductId(product.id); setOpenConfirmModal(true) }} >
-                            <IconButton color="error">
-                              <DeleteIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            {/* Box hiển thị tổng tiền */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-              <Box></Box>
-              <Box>
-                <Typography component="span" variant="body1" sx={{ mr: 2 }}>Tổng tiền:</Typography>
-                <Typography component="span" fontSize={20} sx={{ fontWeight: 'bold', color: 'red', marginRight: 3 }}>
-                  {selectedOrder?.tongTienSanPham.toLocaleString()} VNĐ
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-
-        </Box>
-
-        <Box sx={{ borderBottom: '1px solid #9b9b9b' }}>
-          <Box sx={{ width: '100%', }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3, marginBottom: 3 }}>
-
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', width: '60%', marginLeft: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                  Khách hàng
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', textAlign: 'center', position: 'relative', width: '40%', marginRight: 3 }}>
-
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* ở đây */}
-        <Box sx={{ width: '100%' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start', width: '55%', marginLeft: 3, paddingRight: '40px' }}>
-              {/* Box bên trái */}
-              {showLeftPanel && (
-                <Box sx={{ width: '100%', backgroundColor: '#fff' }}>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom={2} marginTop={2}>
-                    <Typography variant="h6">Thông tin khách hàng</Typography>
-                    <Button
-                      variant="outlined"
-                      onClick={handleOpenDC}
-                      sx={{
-                        color: "#1976D2",
-                        borderColor: "#1976D2",
-                        backgroundColor: "#fff",
-                        "&:hover": {
-                          backgroundColor: "#e3f2fd",
-                          borderColor: "#1565c0",
-                          color: "#1565c0",
-                        },
-
-                      }}
-                    >
-                      Chọn địa chỉ
-                    </Button>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: '16px', marginTop: 5 }}>
-                    <TextField
-                      fullWidth
-                      label="Tên người nhận"
-                      variant="outlined"
-                      size="small"
-                      value={recipientName}
-                      onChange={(e) => setRecipientName(e.target.value)}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Số điện thoại"
-                      variant="outlined"
-                      size="small"
-                      value={recipientPhone}
-                      onChange={(e) => setRecipientPhone(e.target.value)}
-                    />
-                  </Box>
-
-                  <Box sx={{ display: 'flex', gap: '16px', marginTop: 5 }}>
-                    {/* Các dropdowns chỉ hiển thị khi showLeftPanel là true */}
-                    <FormControl fullWidth size='small'>
-                      <InputLabel>Tỉnh/Thành phố</InputLabel>
-                      <Select value={selectedCity} onChange={handleCityChange} label="Tỉnh/Thành phố">
-                        {cities.map((city) => (
-                          <MenuItem key={city.Id} value={city.Name}>{city.Name}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-
-                    {/* Chọn Quận/Huyện */}
-                    <FormControl fullWidth size='small' disabled={!selectedCity}>
-                      <InputLabel>Quận/Huyện</InputLabel>
-                      <Select value={selectedDistrict} onChange={handleDistrictChange} label="Quận/Huyện">
-                        {districts.map((district) => (
-                          <MenuItem key={district.Id} value={district.Name}>{district.Name}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-
-                    {/* Chọn Xã/Phường */}
-                    <FormControl fullWidth size='small' disabled={!selectedDistrict}>
-                      <InputLabel>Xã/Phường</InputLabel>
-                      <Select value={selectedWard} onChange={handleWardChange} label="Xã/Phường">
-                        {wards.map((ward) => (
-                          <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', gap: '16px', marginTop: 5 }}>
-                    <TextField
-                      fullWidth
-                      label="Địa chỉ cụ thể"
-                      variant="outlined"
-                      size="small"
-                      sx={{ marginBottom: '16px' }}
-                      value={specificAddress}
-                      onChange={(e) => setSpecificAddress(e.target.value)}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Mô tả"
-                      variant="outlined"
-                      size='small'
-                      sx={{ marginBottom: '16px' }}
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                    />
-                  </Box>
-
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    {/* Box chứa thông tin bên trái */}
-                    <Box>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <LocalShippingIcon fontSize="small" />
-                        <Typography variant="body1" fontWeight="bold">
-                          Đơn vị vận chuyển:
-                          <span style={{ color: '#1976d2' }}>
-                            <span> </span>Giao hàng nhanh
-                          </span>
-                        </Typography>
-                      </Box>
-                      <Box display="flex" alignItems="center" gap={1} mt={1}>
-                        <LocalShippingIcon fontSize="small" />
-                        <Typography variant="body1" fontWeight="bold">
-                          Thời gian dự kiến:
-                          <span style={{ color: '#1976d2' }}>
-                            <span> </span>{formattedDate}
-                          </span>
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    {/* Box chứa logo bên phải */}
-                    <Box>
-                      <img
-                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4kQyiXGjJmXcP6UKya0gkj19iOmgyvjrOng&s"
-                        alt="GHN Logo"
-                        style={{ height: '100px' }}
-                      />
-                    </Box>
-                  </Box>
-                </Box>
-              )}
-
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '40%', marginRight: 3 }}>
-              {/* Box bên phải (Thông tin thanh toán) */}
-              <Box
-                sx={{
-                  width: '100%',
-                  backgroundColor: '#fff',
-                }}
-              >
-                <Box display="flex" justifyContent="space-between" alignItems="center" marginTop={2}>
-                  <Typography variant="h6" >Thông tin thanh toán</Typography>
-                  {/* Nút Switch điều khiển việc hiển thị/ẩn bên trái */}
-                  <FormControlLabel
-                    control={<Switch checked={showLeftPanel} onChange={handleSwitchChange} />}
-                    label="Giao hàng"
-                  />
-                </Box>
-
-                <Box sx={{ display: 'flex', position: 'relative' }}>
-
-                  {/* TextField với biểu tượng tìm kiếm */}
-                  <TextField
-                    value={keyword}
-                    onChange={searchCustomers}
-                    onFocus={handleFocus}
-                    onMouseDown={handleMouseDown} // Giữ Popper mở khi nhấn vào
-                    inputRef={inputRef}
-                    placeholder="Thêm khách hàng vào đơn"
-                    variant="standard"
-                    sx={{ width: '100%' }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: 'gray' }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                    autoComplete="off"
-                  />
-
-                  {/* Đặt AddIcon bên ngoài TextField, nhưng vẫn trong Box */}
-                  <IconButton
-                    onClick={handleOpen}
-                    sx={{
-                      position: 'absolute',
-                      right: 0,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      zIndex: 10
-                    }}
-                  >
-                    <AddIcon sx={{ color: 'gray' }} />
-                  </IconButton>
-
-                  {/* Popper hiển thị danh sách khách hàng */}
-                  <Popper
-                    open={openKH && customers.length > 0}
-                    anchorEl={inputRef.current}
-                    placement="bottom-start"
-                    sx={{ zIndex: 1300, width: 422 }}
-                    ref={popperRef} // Gán ref vào Popper để kiểm tra click
-                  >
-                    <ClickAwayListener onClickAway={handleClickAway}>
-                      <Box sx={{ border: '1px solid #ddd', maxHeight: 200, overflowY: 'auto', backgroundColor: 'white', boxShadow: 3 }}>
-                        <List>
-                          {customers.map((customer) => (
-                            <ListItem
-                              button
-                              key={customer.id}
-                              onClick={(e) => {
-                                e.stopPropagation(); // Ngừng lan truyền sự kiện click
-                                handleSelectCustomer(customer); // Chọn khách hàng
-                              }}
-                            >
-                              <ListItemText primary={`${customer.tenKhachHang} - ${customer.sdt}`} />
-                            </ListItem>
-                          ))}
-                        </List>
-                      </Box>
-                    </ClickAwayListener>
-                  </Popper>
-                </Box>
-
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
-                  <Typography variant="body1">Phiếu giảm giá:</Typography>
-                  <Input
-                    value={selectedVoucherCode} // Hiển thị mã voucher đã chọn
-                    sx={{ color: '#5e5e5ede', width: 140 }}
-                    endAdornment={<InputAdornment position="end"><EditIcon onClick={handleOpenVoucherModal} /></InputAdornment>}
-                    inputProps={{
-                      style: {
-                        textAlign: 'right',
-                        fontWeight: 'bold',
-                      },
-                    }}
-                  />
-                </Box>
-                <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                  Tiền hàng({selectedOrder?.listDanhSachSanPham?.reduce(
-                    (total, item) => total + (item.soLuong || 0),
-                    0
-                  ) || 0} sản phẩm):
-                  <span>
-                    {selectedOrder?.tongTienSanPham.toLocaleString()} VNĐ
-                  </span>
-                </Typography>
-                {showLeftPanel &&
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 1 }}>
-                    <Typography variant="body1">Phí vận chuyển:</Typography>
-                    <TextField
-                      fullWidth
-                      variant="standard"
-                      value={discount ? parseInt(discount, 10).toLocaleString() : discount}
-                      onChange={handleDiscountInput}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Typography sx={{ color: 'black' }}>VNĐ</Typography>
-                          </InputAdornment>
-                        )
-                      }}
-                      sx={{
-                        width: '140px', // Giới hạn chiều rộng
-                        '& .MuiInputBase-input': { fontSize: 18, textAlign: 'right' }
-                      }}
-                    />
-                  </Box>
-                }
-                <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                  Giảm giá: <span>Chưa có gì<span>VNĐ</span></span>
-                </Typography>
-                <Typography variant="body1" sx={{ marginTop: '16px' }} style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
-                  Số tiền thanh toán:
-                  <span style={{ color: 'red' }}>
-                    {((selectedOrder?.tongTienSanPham ?? 0) + Number(discount || 0)).toLocaleString()} VNĐ
-                  </span>
-
-
+                  {order.ma}
                 </Typography>
                 <Typography
-                  variant="body1"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center', // Căn giữa icon với text
-                    justifyContent: 'space-between',
-                    marginTop: 5,
-                    fontWeight: 'bold'
+                  component="span"
+                  sx={{
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    color: "#ff4d4f",
+
                   }}
                 >
-                  Khách thanh toán:
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <Button
-                      variant="outlined" // Đặt kiểu viền
-                      onClick={() => setOpenTT(true)} // Khi nhấn mở modal
+                  ({order.listDanhSachSanPham?.length || 0})
+                </Typography>
+              </Box>
+
+              {/* Nút Xóa - chỉ hiển thị khi hover */}
+              <IconButton
+                className="delete-icon"
+                sx={{
+                  backgroundColor: 'transparent',
+                  color: '#ff4d4f',
+                  borderRadius: '50%',
+                  padding: 0.5,
+                  width: '18px',
+                  height: '18px',
+                  position: 'absolute',
+                  top: '4px',  // Đưa lên sát mép trên
+                  right: '0px', // Đưa vào sát góc phải
+                  opacity: 0,
+                  transition: 'opacity 0.2s ease-in-out',
+                  '&.show': {
+                    opacity: 1, // Chỉ hiện khi hover vào đơn hàng
+                  },
+                  '&:hover': {
+                    color: '#D50000',
+                  },
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIdOrderCanXoa(order.id);
+                  setOpenLyDo(true);
+                }}
+              >
+                <CloseIcon sx={{ fontSize: '12px' }} />
+              </IconButton>
+            </Box>
+          ))}
+        </Box>
+
+
+      )}
+
+
+      {/* Khi không có đơn nào */}
+      {orders.length <= 0 && (
+        <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5 }}>
+          <img
+            src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
+            alt="No data"
+            style={{ width: '150px', height: 'auto' }}
+          />
+          <Typography variant="h6" sx={{ marginTop: '-40px' }}>Không có đơn nào</Typography>
+        </Box>
+      )}
+
+      {/* Phần sản phẩm */}
+
+      {selectedOrder === null ? (
+        <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5 }}>
+          <img
+            src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
+            alt="No data"
+            style={{ width: '150px', height: 'auto' }}
+          />
+          <Typography variant="h6" sx={{ marginTop: '-40px' }}>Chưa chọn hóa đơn nào</Typography>
+        </Box>
+      ) : (
+        <Box>
+          <Box sx={{ borderBottom: '1px solid #E0E0E0' }}>
+            <Box sx={{ borderBottom: '1px solid #9b9b9b' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  Sản phẩm
+                </Typography>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Button
+                    sx={{
+                      marginRight: '10px',
+                      backgroundColor: 'rgb(52, 152, 234)',
+                      color: 'white',
+                      "&:hover": {
+                        backgroundColor: "#e3f2fd",
+                        borderColor: "#1565c0",
+                        color: "#1565c0",
+                      },
+                    }}
+                  >
+                    Quét QR Sản Phẩm
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      color: "#1976D2",
+                      borderColor: "#1976D2",
+                      backgroundColor: "#fff",
+                      "&:hover": {
+                        backgroundColor: "#e3f2fd",
+                        borderColor: "#1565c0",
+                        color: "#1565c0",
+                      },
+                    }}
+                    onClick={() => setOpenSPModal(true)}  // Khi nhấn vào button, mở modal
+                  >
+                    Thêm Sản Phẩm
+                  </Button>
+                </Box>
+              </Box>
+            </Box>
+
+            <Box>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>STT</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Hình ảnh</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Sản phẩm</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Đơn giá</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số tiền</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {selectedOrder.listDanhSachSanPham?.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} align="center">
+                          <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5 }}>
+                            <img
+                              src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
+                              alt="No data"
+                              style={{ width: '150px', height: 'auto' }}
+                            />
+                            <Typography variant="h6" sx={{ marginTop: '-40px' }}>Giỏ hàng hóa đơn {selectedOrder?.ma} của bạn chưa có sản phẩm nào!
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      selectedOrder.listDanhSachSanPham.map((product, index) => {
+                        const images = product.hinhAnh || [];
+                        const currentIndex = imageIndexes[product.id] ?? 0;
+                        return (
+                          <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                            <TableCell align="center">{index + 1}</TableCell>
+                            <TableCell align="center">
+                              {images.length > 0 && (
+                                <img
+                                  src={images[currentIndex]}
+                                  alt={`Ảnh ${currentIndex + 1}`}
+                                  style={{
+                                    width: "60px",
+                                    height: "60px",
+                                    objectFit: "cover",
+                                    borderRadius: "10px",
+                                    transition: "transform 0.3s ease-in-out",
+                                    boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
+                                  }}
+                                  onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
+                                  onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Typography>{product.tenMauSize}</Typography>
+                              <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.maSanPhamChiTiet}</Typography>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Box display="flex" justifyContent="center" alignItems="center">
+                                <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => giamSoLuong(product.id)}
+                                    disabled={product.quantity <= 1}
+                                    sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                                  >
+                                    <RemoveIcon fontSize="small" />
+                                  </IconButton>
+                                  <TextField
+                                    value={tempValues[product.id] ?? product.soLuong}
+                                    onChange={(e) => handleInputChange(product.id, e.target.value)}
+                                    onBlur={() => handleInputBlur(product.id)}
+                                    type="number"
+                                    inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
+                                    size="small"
+                                    sx={{
+                                      width: "60px",
+                                      "& .MuiInputBase-input": {
+                                        textAlign: "center",
+                                        padding: "5px 0",
+                                        backgroundColor: "transparent"
+                                      },
+                                      "& .MuiOutlinedInput-root": {
+                                        border: "none",
+                                        "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                        "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
+                                      },
+                                      "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                                        WebkitAppearance: "none",
+                                        margin: 0
+                                      }
+                                    }}
+                                  />
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => tangSoLuong(product.id)}
+                                    sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                                  >
+                                    <AddIcon fontSize="small" />
+                                  </IconButton>
+                                </Box>
+                              </Box>
+                            </TableCell>
+                            <TableCell align="center">{product.donGia?.toLocaleString()}₫</TableCell>
+                            <TableCell align="center">{product.soTien?.toLocaleString()}₫</TableCell>
+                            <TableCell align="center" onClick={() => { setSelectedProductId(product.id); setOpenConfirmModal(true) }} >
+                              <IconButton color="error">
+                                <DeleteIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+
+              {/* Box hiển thị tổng tiền */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                <Box></Box>
+                <Box>
+                  <Typography component="span" variant="body1" sx={{ mr: 2 }}>Tổng tiền:</Typography>
+                  <Typography component="span" fontSize={20} sx={{ fontWeight: 'bold', color: 'red', marginRight: 3 }}>
+                    {selectedOrder?.tongTienSanPham.toLocaleString()} VNĐ
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+          </Box>
+
+          <Box sx={{ borderBottom: '1px solid #9b9b9b' }}>
+            <Box sx={{ width: '100%', }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3, marginBottom: 3 }}>
+
+                <Box sx={{ display: 'flex', justifyContent: 'flex-start', width: '60%', marginLeft: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Khách hàng
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', textAlign: 'center', position: 'relative', width: '40%', marginRight: 3 }}>
+
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* ở đây */}
+          <Box sx={{ width: '100%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', width: '55%', marginLeft: 3, paddingRight: '40px' }}>
+                {/* Box bên trái */}
+                {showLeftPanel && (
+                  <Box sx={{ width: '100%', backgroundColor: '#fff' }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom={2} marginTop={2}>
+                      <Typography variant="h6">Thông tin khách hàng</Typography>
+                      <Button
+                        variant="outlined"
+                        onClick={handleOpenDC}
+                        sx={{
+                          color: "#1976D2",
+                          borderColor: "#1976D2",
+                          backgroundColor: "#fff",
+                          "&:hover": {
+                            backgroundColor: "#e3f2fd",
+                            borderColor: "#1565c0",
+                            color: "#1565c0",
+                          },
+
+                        }}
+                      >
+                        Chọn địa chỉ
+                      </Button>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: '16px', marginTop: 5 }}>
+                      <TextField
+                        fullWidth
+                        label="Tên người nhận"
+                        variant="outlined"
+                        size="small"
+                        value={recipientName}
+                        onChange={(e) => setRecipientName(e.target.value)}
+                      />
+                      <TextField
+                        fullWidth
+                        label="Số điện thoại"
+                        variant="outlined"
+                        size="small"
+                        value={recipientPhone}
+                        onChange={(e) => setRecipientPhone(e.target.value)}
+                      />
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: '16px', marginTop: 5 }}>
+                      {/* Các dropdowns chỉ hiển thị khi showLeftPanel là true */}
+                      <FormControl fullWidth size='small'>
+                        <InputLabel>Tỉnh/Thành phố</InputLabel>
+                        <Select value={selectedCity} onChange={handleCityChange} label="Tỉnh/Thành phố">
+                          {cities.map((city) => (
+                            <MenuItem key={city.Id} value={city.Name}>{city.Name}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      {/* Chọn Quận/Huyện */}
+                      <FormControl fullWidth size='small' disabled={!selectedCity}>
+                        <InputLabel>Quận/Huyện</InputLabel>
+                        <Select value={selectedDistrict} onChange={handleDistrictChange} label="Quận/Huyện">
+                          {districts.map((district) => (
+                            <MenuItem key={district.Id} value={district.Name}>{district.Name}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      {/* Chọn Xã/Phường */}
+                      <FormControl fullWidth size='small' disabled={!selectedDistrict}>
+                        <InputLabel>Xã/Phường</InputLabel>
+                        <Select value={selectedWard} onChange={handleWardChange} label="Xã/Phường">
+                          {wards.map((ward) => (
+                            <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: '16px', marginTop: 5 }}>
+                      <TextField
+                        fullWidth
+                        label="Địa chỉ cụ thể"
+                        variant="outlined"
+                        size="small"
+                        sx={{ marginBottom: '16px' }}
+                        value={specificAddress}
+                        onChange={(e) => setSpecificAddress(e.target.value)}
+                      />
+                      <TextField
+                        fullWidth
+                        label="Mô tả"
+                        variant="outlined"
+                        size='small'
+                        sx={{ marginBottom: '16px' }}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                      />
+                    </Box>
+
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      {/* Box chứa thông tin bên trái */}
+                      <Box>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <LocalShippingIcon fontSize="small" />
+                          <Typography variant="body1" fontWeight="bold">
+                            Đơn vị vận chuyển:
+                            <span style={{ color: '#1976d2' }}>
+                              <span> </span>Giao hàng nhanh
+                            </span>
+                          </Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" gap={1} mt={1}>
+                          <LocalShippingIcon fontSize="small" />
+                          <Typography variant="body1" fontWeight="bold">
+                            Thời gian dự kiến:
+                            <span style={{ color: '#1976d2' }}>
+                              <span> </span>{formattedDate}
+                            </span>
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Box chứa logo bên phải */}
+                      <Box>
+                        <img
+                          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4kQyiXGjJmXcP6UKya0gkj19iOmgyvjrOng&s"
+                          alt="GHN Logo"
+                          style={{ height: '100px' }}
+                        />
+                      </Box>
+                    </Box>
+                  </Box>
+                )}
+
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '40%', marginRight: 3 }}>
+                {/* Box bên phải (Thông tin thanh toán) */}
+                <Box
+                  sx={{
+                    width: '100%',
+                    backgroundColor: '#fff',
+                  }}
+                >
+                  <Box display="flex" justifyContent="space-between" alignItems="center" marginTop={2}>
+                    <Typography variant="h6" >Thông tin thanh toán</Typography>
+                    {/* Nút Switch điều khiển việc hiển thị/ẩn bên trái */}
+                    <FormControlLabel
+                      control={<Switch checked={showLeftPanel} onChange={handleSwitchChange} />}
+                      label="Giao hàng"
+                    />
+                  </Box>
+
+                  <Box sx={{ display: 'flex', position: 'relative' }}>
+
+                    {/* TextField với biểu tượng tìm kiếm */}
+                    <TextField
+                      value={keyword}
+                      onChange={searchCustomers}
+                      onFocus={handleFocus}
+                      onMouseDown={handleMouseDown} // Giữ Popper mở khi nhấn vào
+                      inputRef={inputRef}
+                      placeholder="Thêm khách hàng vào đơn"
+                      variant="standard"
+                      sx={{ width: '100%' }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ color: 'gray' }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                      autoComplete="off"
+                    />
+
+                    {/* Đặt AddIcon bên ngoài TextField, nhưng vẫn trong Box */}
+                    <IconButton
+                      onClick={handleOpen}
                       sx={{
-                        borderColor: 'black', // Viền màu đen
-                        color: 'black', // Màu chữ đen
-                        backgroundColor: 'white', // Nền trắng
-                        borderRadius: '8px', // Bo góc
-                        padding: '3px 13px', // Khoảng cách trong button
-                        minWidth: '40px', // Kích thước tối thiểu cho button không bị co lại
-                        marginRight: 20,
-                        '&:hover': {
-                          backgroundColor: '#f5f5f5', // Màu nền nhạt hơn khi hover
-                          borderColor: 'black' // Giữ viền màu đen khi hover
-                        }
+                        position: 'absolute',
+                        right: 0,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        zIndex: 10
                       }}
                     >
-                      <CreditCardIcon style={{ color: 'black' }} /> {/* Icon ví */}
-                    </Button>
-                    <span style={{ color: 'red' }}>{tongTienKhachDaThanhToan?.toLocaleString()} VNĐ</span>
-                  </span>
-                </Typography>
-                <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
-                  Tiền thiếu: <span style={{ color: 'red' }}>
-                    {tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount)) < 0
-                      ? (tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount))).toLocaleString()
-                      : "0"}
-                    <span style={{ color: 'red' }}> VNĐ</span>
-                  </span>
-                </Typography>
-                <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
-                  Tiền thừa trả khách: <span style={{ color: 'red' }}>
-                    {tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount)) > 0
-                      ? (tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount))).toLocaleString()
-                      : "0"}
-                    <span style={{ color: 'red' }}> VNĐ</span>
-                  </span>
-                </Typography>
+                      <AddIcon sx={{ color: 'gray' }} />
+                    </IconButton>
 
-                <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }} >
-                  Xác nhận đặt hàng
-                </Button>
+                    {/* Popper hiển thị danh sách khách hàng */}
+                    <Popper
+                      open={openKH && customers.length > 0}
+                      anchorEl={inputRef.current}
+                      placement="bottom-start"
+                      sx={{ zIndex: 1300, width: 422 }}
+                      ref={popperRef} // Gán ref vào Popper để kiểm tra click
+                    >
+                      <ClickAwayListener onClickAway={handleClickAway}>
+                        <Box sx={{ border: '1px solid #ddd', maxHeight: 200, overflowY: 'auto', backgroundColor: 'white', boxShadow: 3 }}>
+                          <List>
+                            {customers.map((customer) => (
+                              <ListItem
+                                button
+                                key={customer.id}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Ngừng lan truyền sự kiện click
+                                  handleSelectCustomer(customer); // Chọn khách hàng
+                                }}
+                              >
+                                <ListItemText primary={`${customer.tenKhachHang} - ${customer.sdt}`} />
+                              </ListItem>
+                            ))}
+                          </List>
+                        </Box>
+                      </ClickAwayListener>
+                    </Popper>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                    <Typography variant="body1">Phiếu giảm giá:</Typography>
+                    <Input
+                      value={selectedVoucherCode} // Hiển thị mã voucher đã chọn
+                      sx={{ color: '#5e5e5ede', width: 140 }}
+                      endAdornment={<InputAdornment position="end"><EditIcon onClick={handleOpenVoucherModal} /></InputAdornment>}
+                      inputProps={{
+                        style: {
+                          textAlign: 'right',
+                          fontWeight: 'bold',
+                        },
+                      }}
+                    />
+                  </Box>
+                  <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
+                    Tiền hàng({selectedOrder?.listDanhSachSanPham?.reduce(
+                      (total, item) => total + (item.soLuong || 0),
+                      0
+                    ) || 0} sản phẩm):
+                    <span>
+                      {selectedOrder?.tongTienSanPham.toLocaleString()} VNĐ
+                    </span>
+                  </Typography>
+                  {showLeftPanel &&
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 1 }}>
+                      <Typography variant="body1">Phí vận chuyển:</Typography>
+                      <TextField
+                        fullWidth
+                        variant="standard"
+                        value={discount ? parseInt(discount, 10).toLocaleString() : discount}
+                        onChange={handleDiscountInput}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Typography sx={{ color: 'black' }}>VNĐ</Typography>
+                            </InputAdornment>
+                          )
+                        }}
+                        sx={{
+                          width: '140px', // Giới hạn chiều rộng
+                          '& .MuiInputBase-input': { fontSize: 18, textAlign: 'right' }
+                        }}
+                      />
+                    </Box>
+                  }
+                  <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
+                    Giảm giá: <span>Chưa có gì<span>VNĐ</span></span>
+                  </Typography>
+                  <Typography variant="body1" sx={{ marginTop: '16px' }} style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
+                    Số tiền thanh toán:
+                    <span style={{ color: 'red' }}>
+                      {((selectedOrder?.tongTienSanPham ?? 0) + Number(discount || 0)).toLocaleString()} VNĐ
+                    </span>
+
+
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center', // Căn giữa icon với text
+                      justifyContent: 'space-between',
+                      marginTop: 5,
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Khách thanh toán:
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <Button
+                        variant="outlined" // Đặt kiểu viền
+                        onClick={() => setOpenTT(true)} // Khi nhấn mở modal
+                        sx={{
+                          borderColor: 'black', // Viền màu đen
+                          color: 'black', // Màu chữ đen
+                          backgroundColor: 'white', // Nền trắng
+                          borderRadius: '8px', // Bo góc
+                          padding: '3px 13px', // Khoảng cách trong button
+                          minWidth: '40px', // Kích thước tối thiểu cho button không bị co lại
+                          marginRight: 20,
+                          '&:hover': {
+                            backgroundColor: '#f5f5f5', // Màu nền nhạt hơn khi hover
+                            borderColor: 'black' // Giữ viền màu đen khi hover
+                          }
+                        }}
+                      >
+                        <CreditCardIcon style={{ color: 'black' }} /> {/* Icon ví */}
+                      </Button>
+                      <span style={{ color: 'red' }}>{tongTienKhachDaThanhToan?.toLocaleString()} VNĐ</span>
+                    </span>
+                  </Typography>
+                  <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
+                    Tiền thiếu: <span style={{ color: 'red' }}>
+                      {tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount)) < 0
+                        ? (tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount))).toLocaleString()
+                        : "0"}
+                      <span style={{ color: 'red' }}> VNĐ</span>
+                    </span>
+                  </Typography>
+                  <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
+                    Tiền thừa trả khách: <span style={{ color: 'red' }}>
+                      {tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount)) > 0
+                        ? (tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount))).toLocaleString()
+                        : "0"}
+                      <span style={{ color: 'red' }}> VNĐ</span>
+                    </span>
+                  </Typography>
+
+                  <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }} >
+                    Xác nhận đặt hàng
+                  </Button>
+                </Box>
               </Box>
             </Box>
           </Box>
         </Box>
-      </Box>
-    )}
+      )}
 
-    {/* Snackbar thông báo khi đạt tối đa số lượng đơn hàng */}
-    <Snackbar
-      open={openSnackbar}
-      autoHideDuration={3000} // Thời gian tự ẩn sau 3 giây
-      onClose={() => setOpenSnackbar(false)}
-      anchorOrigin={{ vertical: 'top', horizontal: 'center' }} // Vị trí của Snackbar
-    >
-      <Alert onClose={() => setOpenSnackbar(false)} severity="warning" sx={{ width: '100%' }}>
-        Đã đạt tối đa số lượng hóa đơn chờ (5 đơn)
-      </Alert>
-    </Snackbar>
+      {/* Snackbar thông báo khi đạt tối đa số lượng đơn hàng */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000} // Thời gian tự ẩn sau 3 giây
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }} // Vị trí của Snackbar
+      >
+        <Alert onClose={() => setOpenSnackbar(false)} severity="warning" sx={{ width: '100%' }}>
+          Đã đạt tối đa số lượng hóa đơn chờ (5 đơn)
+        </Alert>
+      </Snackbar>
 
-    <Dialog open={openTT} onClose={() => setOpenTT(false)} maxWidth="sm" fullWidth>
-      {/* Tiêu đề có nút đóng */}
-      <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center', fontSize: '25px', color: '#1976D2', position: 'relative' }}>
-        THANH TOÁN
-        <IconButton
-          onClick={() => {
-            setTienKhachDua(0);
-            setTienKhachChuyen(0);
-            setPaymentMethod('cash');
-            setOpenTT(false)
-          }}
-          sx={{ position: 'absolute', top: 8, right: 8, color: '#1976D2' }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+      <Dialog open={openTT} onClose={() => setOpenTT(false)} maxWidth="sm" fullWidth>
+        {/* Tiêu đề có nút đóng */}
+        <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center', fontSize: '25px', color: '#1976D2', position: 'relative' }}>
+          THANH TOÁN
+          <IconButton
+            onClick={() => {
+              setTienKhachDua(0);
+              setTienKhachChuyen(0);
+              setPaymentMethod('cash');
+              setOpenTT(false)
+            }}
+            sx={{ position: 'absolute', top: 8, right: 8, color: '#1976D2' }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
 
-      <DialogContent>
-        {/* Tổng tiền hàng */}
-        <Grid container justifyContent="space-between" sx={{ mb: 2 }}>
-          <Typography variant="h6">Tổng tiền hàng</Typography>
-          <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{(selectedOrder?.tongTienSanPham + + Number(discount || 0)).toLocaleString()} VNĐ</Typography>
-        </Grid>
-
-
-        {/* Nút Chuyển Khoản - Tiền Mặt - Cả Hai */}
-        <Grid container justifyContent="center" spacing={1} sx={{ mb: 2 }}>
-          <Grid item xs={4}>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={() => {
-                setPaymentMethod('transfer');
-                setTienKhachDua(0);
-                setTienKhachChuyen(0);
-              }}
-              sx={{
-                backgroundColor: paymentMethod === 'transfer' ? 'red' : '#FFB6C1',
-                color: 'white',
-                opacity: paymentMethod === 'transfer' ? 1 : 0.5,
-              }}
-            >
-              CHUYỂN KHOẢN
-            </Button>
+        <DialogContent>
+          {/* Tổng tiền hàng */}
+          <Grid container justifyContent="space-between" sx={{ mb: 2 }}>
+            <Typography variant="h6">Tổng tiền hàng</Typography>
+            <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{(selectedOrder?.tongTienSanPham + + Number(discount || 0)).toLocaleString()} VNĐ</Typography>
           </Grid>
-          <Grid item xs={4}>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={() => {
-                setPaymentMethod('cash');
-                setTienKhachDua(0);
-                setTienKhachChuyen(0);
-              }}
-              sx={{
-                backgroundColor: paymentMethod === 'cash' ? 'green' : '#a3c88e',
-                color: 'white',
-                opacity: paymentMethod === 'cash' ? 1 : 0.5,
-              }}
-            >
-              TIỀN MẶT
-            </Button>
+
+
+          {/* Nút Chuyển Khoản - Tiền Mặt - Cả Hai */}
+          <Grid container justifyContent="center" spacing={1} sx={{ mb: 2 }}>
+            <Grid item xs={4}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => {
+                  setPaymentMethod('transfer');
+                  setTienKhachDua(0);
+                  setTienKhachChuyen(0);
+                }}
+                sx={{
+                  backgroundColor: paymentMethod === 'transfer' ? 'red' : '#FFB6C1',
+                  color: 'white',
+                  opacity: paymentMethod === 'transfer' ? 1 : 0.5,
+                }}
+              >
+                CHUYỂN KHOẢN
+              </Button>
+            </Grid>
+            <Grid item xs={4}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => {
+                  setPaymentMethod('cash');
+                  setTienKhachDua(0);
+                  setTienKhachChuyen(0);
+                }}
+                sx={{
+                  backgroundColor: paymentMethod === 'cash' ? 'green' : '#a3c88e',
+                  color: 'white',
+                  opacity: paymentMethod === 'cash' ? 1 : 0.5,
+                }}
+              >
+                TIỀN MẶT
+              </Button>
+            </Grid>
+            <Grid item xs={4}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => {
+                  setPaymentMethod('both');
+                  setTienKhachDua(0);
+                  setTienKhachChuyen(0);
+                }}
+                sx={{
+                  backgroundColor: paymentMethod === 'both' ? '#1976D2' : '#B6D0FF',
+                  color: 'white',
+                  opacity: paymentMethod === 'both' ? 1 : 0.5,
+                }}
+              >
+                CẢ HAI
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item xs={4}>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={() => {
-                setPaymentMethod('both');
-                setTienKhachDua(0);
-                setTienKhachChuyen(0);
-              }}
-              sx={{
-                backgroundColor: paymentMethod === 'both' ? '#1976D2' : '#B6D0FF',
-                color: 'white',
-                opacity: paymentMethod === 'both' ? 1 : 0.5,
-              }}
-            >
-              CẢ HAI
-            </Button>
-          </Grid>
-        </Grid>
 
-        {/* Nếu chọn TIỀN MẶT hoặc CẢ HAI thì hiển thị input nhập tiền khách đưa */}
-        {(paymentMethod === 'cash' || paymentMethod === 'both') && (
-          <>
-            <Typography sx={{ color: '#1976D2', fontSize: 14 }}>Tiền khách đưa</Typography>
-            <TextField
-              fullWidth
-              variant="standard"
-              value={tienKhachDua ? parseInt(tienKhachDua, 10).toLocaleString() : tienKhachDua}
-              onInput={handleTienKhachDua}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Typography sx={{ color: 'black' }}>VNĐ</Typography>
-                  </InputAdornment>
-                )
-              }}
-              sx={{
-                mb: 2,
-                '& .MuiInputBase-input': { fontSize: 18, fontWeight: 'bold', textAlign: 'right' }
-              }}
-            />
-          </>
-        )}
-
-        {/* Nếu chọn CHUYỂN KHOẢN hoặc CẢ HAI thì hiển thị input Mã giao dịch & Tiền khách chuyển */}
-        {(paymentMethod === 'transfer' || paymentMethod === 'both') && (
-          <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
-
-            <Grid item xs={12}>
-              <Typography sx={{ color: '#1976D2', fontSize: 14 }}>Tiền khách chuyển</Typography>
+          {/* Nếu chọn TIỀN MẶT hoặc CẢ HAI thì hiển thị input nhập tiền khách đưa */}
+          {(paymentMethod === 'cash' || paymentMethod === 'both') && (
+            <>
+              <Typography sx={{ color: '#1976D2', fontSize: 14 }}>Tiền khách đưa</Typography>
               <TextField
                 fullWidth
                 variant="standard"
-                value={tienKhachChuyen ? parseInt(tienKhachChuyen, 10).toLocaleString() : tienKhachChuyen}
-                onInput={handleTienKhachChuyen}
+                value={tienKhachDua ? parseInt(tienKhachDua, 10).toLocaleString() : tienKhachDua}
+                onInput={handleTienKhachDua}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -1700,715 +1674,741 @@ return (
                   )
                 }}
                 sx={{
+                  mb: 2,
                   '& .MuiInputBase-input': { fontSize: 18, fontWeight: 'bold', textAlign: 'right' }
+                }}
+              />
+            </>
+          )}
+
+          {/* Nếu chọn CHUYỂN KHOẢN hoặc CẢ HAI thì hiển thị input Mã giao dịch & Tiền khách chuyển */}
+          {(paymentMethod === 'transfer' || paymentMethod === 'both') && (
+            <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
+
+              <Grid item xs={12}>
+                <Typography sx={{ color: '#1976D2', fontSize: 14 }}>Tiền khách chuyển</Typography>
+                <TextField
+                  fullWidth
+                  variant="standard"
+                  value={tienKhachChuyen ? parseInt(tienKhachChuyen, 10).toLocaleString() : tienKhachChuyen}
+                  onInput={handleTienKhachChuyen}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Typography sx={{ color: 'black' }}>VNĐ</Typography>
+                      </InputAdornment>
+                    )
+                  }}
+                  sx={{
+                    '& .MuiInputBase-input': { fontSize: 18, fontWeight: 'bold', textAlign: 'right' }
+                  }}
+                />
+              </Grid>
+            </Grid>
+          )}
+
+          {/* Bảng Thanh Toán */}
+          <TableContainer component={Paper} sx={{ borderRadius: '10px', overflow: 'hidden', marginBottom: 2 }}>
+            <Table sx={{ width: '100%' }}>
+              <TableHead sx={{ backgroundColor: '#1976D2' }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>STT</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Mã giao dịch</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Phương thức</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Số tiền</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Ghi chú</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {selectedOrder?.listThanhToanHoaDon?.length > 0 ? (
+                  selectedOrder.listThanhToanHoaDon.map((payment, index) => (
+                    <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                      <TableCell align="center">{index + 1}</TableCell>
+                      <TableCell align="center">{payment.phuongThuc}</TableCell>
+                      <TableCell align="center">{payment.soTien.toLocaleString()} VND</TableCell>
+                      <TableCell align="center">{new Date(payment.ngayTao).toLocaleString("vi-VN")}</TableCell>
+                      <TableCell align="center">{payment.ghiChu}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 2, fontStyle: "italic", color: "gray" }}>
+                      Không có lịch sử thanh toán nào.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
+            Tiền thừa trả khách: <span style={{ color: 'red' }}>250.000 <span style={{ color: 'red' }}>VNĐ</span></span>
+          </Typography>
+        </DialogContent>
+
+        {/* Nút Xác nhận */}
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button onClick={xacNhanThanhToan} variant="contained" sx={{ backgroundColor: 'green', color: 'white', fontWeight: 'bold' }}
+          // disabled={(Number(tienKhachChuyen) < 1000 || Number(tienKhachDua) < 1000)} 
+          >
+            Xác nhận thanh toán
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal thêm khách hàng */}
+      <Modal open={open} onClose={handleClose}>
+        <Box sx={{
+          width: 700,
+          margin: '50px auto',
+          backgroundColor: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          position: 'relative'  // Để đặt Close Icon ở góc trên bên phải
+        }}>
+          {/* Close button */}
+          <IconButton
+            onClick={handleClose}
+            sx={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              color: 'gray'  // Bạn có thể chỉnh màu theo ý thích
+            }}>
+            <CloseIcon />
+          </IconButton>
+
+          <h2>Thêm mới khách hàng</h2>
+
+          <Grid container spacing={2}>
+            {/* Cột bên trái */}
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Tên khách hàng"
+                variant="outlined"
+                margin="normal"
+                name="name"
+                size='small'
+              />
+              <TextField
+                fullWidth
+                label="Số điện thoại"
+                variant="outlined"
+                margin="normal"
+                name="phone"
+                size='small'
+              />
+              <TextField
+                fullWidth
+                label="Ngày sinh"
+                variant="outlined"
+                margin="normal"
+                type="date"
+                size='small'
+                name="dob"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Thành phố"
+                variant="outlined"
+                margin="normal"
+                name="area"
+                size='small'
+              />
+              <TextField
+                fullWidth
+                label="Xã / Thị trấn"
+                variant="outlined"
+                margin="normal"
+                name="address"
+                size='small'
+              />
+            </Grid>
+
+            {/* Cột bên phải */}
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Mã khách hàng (Có thể nhập hoặc không)"
+                variant="outlined"
+                margin="normal"
+                name="customerId"
+                size='small'
+              />
+              <FormControl fullWidth margin="normal" size='small'>
+                <InputLabel>Giới tính</InputLabel>
+                <Select
+                  name="gender"
+                  label="Giới tính"
+                >
+                  <MenuItem value="male">Nam</MenuItem>
+                  <MenuItem value="female">Nữ</MenuItem>
+                  <MenuItem value="other">Khác</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                fullWidth
+                label="Email"
+                variant="outlined"
+                margin="normal"
+                name="email"
+                size='small'
+              />
+
+              <TextField
+                fullWidth
+                label="Quận / Huyện"
+                variant="outlined"
+                margin="normal"
+                name="district"
+                size='small'
+              />
+              <TextField
+                fullWidth
+                label="Số nhà, Đường, Thôn/Xóm"
+                variant="outlined"
+                margin="normal"
+                name="district"
+                size='small'
+              />
+            </Grid>
+          </Grid>
+
+          <Button
+
+            variant="contained"
+            color="primary"
+            sx={{ marginTop: '20px', left: 270 }}
+          >
+            Thêm khách hàng
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* Show Voucher */}
+      <Dialog open={openVoucherModal} onClose={handleCloseVoucherModal} sx={{ '& .MuiDialog-paper': { width: '80%', maxWidth: '800px' } }}>
+        <DialogTitle>
+          Chọn Voucher
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={handleCloseVoucherModal}
+            sx={{ position: 'absolute', right: '25px', top: '15px' }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {/* Input voucher mã */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <TextField
+              placeholder='Nhập mã hoặc tên voucher'
+              variant="outlined"
+              value={voucherCode}
+              onChange={handleVoucherCodeChange}
+              sx={{
+                marginBottom: 2,
+                marginTop: 1,
+                flex: 1,
+                '& .MuiInputBase-root': { height: '40px' },
+              }}
+            />
+          </Box>
+
+          {/* Danh sách voucher */}
+          <Box sx={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {vouchers.map((voucher) => (
+              <Box key={voucher.id} sx={{ border: '1px dashed #db5656', padding: 2, marginBottom: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {/* Box 1: Mã và giảm giá */}
+                <Box sx={{ flex: 2, padding: '20px 30px', marginRight: 2, backgroundColor: '#db5656', borderRadius: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'white' }}>
+                    Mã: {voucher.ma}
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'white' }}>
+                    Giảm: <span> </span>
+                    {voucher.giaTriGiam < 100
+                      ? `${voucher.giaTriGiam}${voucher.loaiPhieuGiamGia === 'Phần trăm' ? '%' : ' VNĐ'}` // Khoảng cách chỉ có khi là VNĐ
+                      : `${new Intl.NumberFormat().format(voucher.giaTriGiam)}${voucher.loaiPhieuGiamGia === 'Phần trăm' ? '%' : ' VNĐ'}`}
+                  </Typography>
+
+                </Box>
+
+                {/* Box 2: Các thông tin còn lại */}
+                <Box sx={{ flex: 3, paddingRight: 2 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                    {voucher.tenPhieuGiamGia}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                    {voucher.moTa}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                    {voucher.trangThai}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                    Số tiền tối thiểu: {voucher.soTienToiThieu}
+                  </Typography>
+                </Box>
+
+                {/* Box 3: Nút sử dụng */}
+                <Box sx={{ flex: 1, textAlign: 'center' }}>
+                  <Button
+                    variant="contained"
+                    sx={{ backgroundColor: '#d32f2f' }}
+                    onClick={() => handleUseVoucher(voucher.ma)} // Truyền mã voucher vào khi nhấn nút Sử dụng
+                  >
+                    Sử dụng
+                  </Button>
+
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal sản phẩm*/}
+      <Modal
+        open={openSPModal} // Khi open=true, modal sẽ hiển thị
+        onClose={() => setOpenSPModal(false)} // Khi nhấn ngoài modal hoặc nhấn nút đóng sẽ đóng modal
+      >
+        <Box sx={style}>
+          {/* Nút đóng modal */}
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={() => { setOpenSPModal(false) }}
+            aria-label="close"
+            sx={{
+              position: 'absolute',
+              top: 10,
+              right: 20,
+              color: 'gray'
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
+            Tìm kiếm sản phẩm
+          </Typography>
+
+          {/* Bố trí tìm kiếm và slider cùng 1 dòng */}
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={6}>
+              <TextField
+                value={timKiem}
+                label="Tìm kiếm sản phẩm theo tên, mã sản phẩm"
+                variant="outlined"
+                fullWidth
+                size='small'
+                sx={{ marginBottom: 2 }}
+                onChange={(e) => setTimKiem(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={4} marginLeft={10} marginTop={3}>
+              <Slider
+                value={value}
+                onChange={(e, newValue) => setValue(newValue)} // Sửa lại đúng cú pháp
+                valueLabelDisplay="on"
+                valueLabelFormat={(value) => `${value.toLocaleString()} VNĐ`}
+                min={100000}
+                max={3200000}
+                sx={{
+                  marginBottom: 2,
+                  '& .MuiSlider-valueLabel': {
+                    backgroundColor: '#fff',  // Màu nền của giá trị
+                    color: 'black',  // Màu chữ của giá trị
+                  }
                 }}
               />
             </Grid>
           </Grid>
-        )}
 
-        {/* Bảng Thanh Toán */}
-        <TableContainer component={Paper} sx={{ borderRadius: '10px', overflow: 'hidden', marginBottom: 2 }}>
-          <Table sx={{ width: '100%' }}>
-            <TableHead sx={{ backgroundColor: '#1976D2' }}>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>STT</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Mã giao dịch</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Phương thức</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Số tiền</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Ghi chú</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {selectedOrder?.listThanhToanHoaDon?.length > 0 ? (
-                selectedOrder.listThanhToanHoaDon.map((payment, index) => (
-                  <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
-                    <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="center">{payment.phuongThuc}</TableCell>
-                    <TableCell align="center">{payment.soTien.toLocaleString()} VND</TableCell>
-                    <TableCell align="center">{new Date(payment.ngayTao).toLocaleString("vi-VN")}</TableCell>
-                    <TableCell align="center">{payment.ghiChu}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 2, fontStyle: "italic", color: "gray" }}>
-                    Không có lịch sử thanh toán nào.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
-          Tiền thừa trả khách: <span style={{ color: 'red' }}>250.000 <span style={{ color: 'red' }}>VNĐ</span></span>
-        </Typography>
-      </DialogContent>
+          {/* Bộ lọc danh mục */}
+          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 2 }}>
 
-      {/* Nút Xác nhận */}
-      <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
-        <Button onClick={xacNhanThanhToan} variant="contained" sx={{ backgroundColor: 'green', color: 'white', fontWeight: 'bold' }}
-        // disabled={(Number(tienKhachChuyen) < 1000 || Number(tienKhachDua) < 1000)} 
-        >
-          Xác nhận thanh toán
-        </Button>
-      </DialogActions>
-    </Dialog>
-
-    {/* Modal thêm khách hàng */}
-    <Modal open={open} onClose={handleClose}>
-      <Box sx={{
-        width: 700,
-        margin: '50px auto',
-        backgroundColor: 'white',
-        padding: '20px',
-        borderRadius: '8px',
-        position: 'relative'  // Để đặt Close Icon ở góc trên bên phải
-      }}>
-        {/* Close button */}
-        <IconButton
-          onClick={handleClose}
-          sx={{
-            position: 'absolute',
-            top: 10,
-            right: 10,
-            color: 'gray'  // Bạn có thể chỉnh màu theo ý thích
-          }}>
-          <CloseIcon />
-        </IconButton>
-
-        <h2>Thêm mới khách hàng</h2>
-
-        <Grid container spacing={2}>
-          {/* Cột bên trái */}
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="Tên khách hàng"
-              variant="outlined"
-              margin="normal"
-              name="name"
-              size='small'
-            />
-            <TextField
-              fullWidth
-              label="Số điện thoại"
-              variant="outlined"
-              margin="normal"
-              name="phone"
-              size='small'
-            />
-            <TextField
-              fullWidth
-              label="Ngày sinh"
-              variant="outlined"
-              margin="normal"
-              type="date"
-              size='small'
-              name="dob"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Thành phố"
-              variant="outlined"
-              margin="normal"
-              name="area"
-              size='small'
-            />
-            <TextField
-              fullWidth
-              label="Xã / Thị trấn"
-              variant="outlined"
-              margin="normal"
-              name="address"
-              size='small'
-            />
-          </Grid>
-
-          {/* Cột bên phải */}
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="Mã khách hàng (Có thể nhập hoặc không)"
-              variant="outlined"
-              margin="normal"
-              name="customerId"
-              size='small'
-            />
-            <FormControl fullWidth margin="normal" size='small'>
-              <InputLabel>Giới tính</InputLabel>
-              <Select
-                name="gender"
-                label="Giới tính"
-              >
-                <MenuItem value="male">Nam</MenuItem>
-                <MenuItem value="female">Nữ</MenuItem>
-                <MenuItem value="other">Khác</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Email"
-              variant="outlined"
-              margin="normal"
-              name="email"
-              size='small'
-            />
-
-            <TextField
-              fullWidth
-              label="Quận / Huyện"
-              variant="outlined"
-              margin="normal"
-              name="district"
-              size='small'
-            />
-            <TextField
-              fullWidth
-              label="Số nhà, Đường, Thôn/Xóm"
-              variant="outlined"
-              margin="normal"
-              name="district"
-              size='small'
-            />
-          </Grid>
-        </Grid>
-
-        <Button
-
-          variant="contained"
-          color="primary"
-          sx={{ marginTop: '20px', left: 270 }}
-        >
-          Thêm khách hàng
-        </Button>
-      </Box>
-    </Modal>
-
-    {/* Show Voucher */}
-    <Dialog open={openVoucherModal} onClose={handleCloseVoucherModal} sx={{ '& .MuiDialog-paper': { width: '80%', maxWidth: '800px' } }}>
-      <DialogTitle>
-        Chọn Voucher
-        <IconButton
-          edge="end"
-          color="inherit"
-          onClick={handleCloseVoucherModal}
-          sx={{ position: 'absolute', right: '25px', top: '15px' }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent>
-        {/* Input voucher mã */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <TextField
-            placeholder='Nhập mã hoặc tên voucher'
-            variant="outlined"
-            value={voucherCode}
-            onChange={handleVoucherCodeChange}
-            sx={{
-              marginBottom: 2,
-              marginTop: 1,
-              flex: 1,
-              '& .MuiInputBase-root': { height: '40px' },
-            }}
-          />
-        </Box>
-
-        {/* Danh sách voucher */}
-        <Box sx={{ maxHeight: '400px', overflowY: 'auto' }}>
-          {vouchers.map((voucher) => (
-            <Box key={voucher.id} sx={{ border: '1px dashed #db5656', padding: 2, marginBottom: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              {/* Box 1: Mã và giảm giá */}
-              <Box sx={{ flex: 2, padding: '20px 30px', marginRight: 2, backgroundColor: '#db5656', borderRadius: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'white' }}>
-                  Mã: {voucher.ma}
-                </Typography>
-                <Typography variant="body1" sx={{ color: 'white' }}>
-                  Giảm: <span> </span>
-                  {voucher.giaTriGiam < 100
-                    ? `${voucher.giaTriGiam}${voucher.loaiPhieuGiamGia === 'Phần trăm' ? '%' : ' VNĐ'}` // Khoảng cách chỉ có khi là VNĐ
-                    : `${new Intl.NumberFormat().format(voucher.giaTriGiam)}${voucher.loaiPhieuGiamGia === 'Phần trăm' ? '%' : ' VNĐ'}`}
-                </Typography>
-
-              </Box>
-
-              {/* Box 2: Các thông tin còn lại */}
-              <Box sx={{ flex: 3, paddingRight: 2 }}>
-                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                  {voucher.tenPhieuGiamGia}
-                </Typography>
-                <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                  {voucher.moTa}
-                </Typography>
-                <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                  {voucher.trangThai}
-                </Typography>
-                <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                  Số tiền tối thiểu: {voucher.soTienToiThieu}
-                </Typography>
-              </Box>
-
-              {/* Box 3: Nút sử dụng */}
-              <Box sx={{ flex: 1, textAlign: 'center' }}>
-                <Button
-                  variant="contained"
-                  sx={{ backgroundColor: '#d32f2f' }}
-                  onClick={() => handleUseVoucher(voucher.ma)} // Truyền mã voucher vào khi nhấn nút Sử dụng
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Danh mục</Typography>
+                <Select
+                  value={danhMuc}//Sửa lại chỗ này
+                  onChange={(e) => setDanhMuc(e.target.value)}
                 >
-                  Sử dụng
-                </Button>
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listDanhMuc?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenDanhMuc}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Màu sắc</Typography>
+                <Select
+                  value={mauSac}//Sửa lại chỗ này
+                  onChange={(e) => setMauSac(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listMauSac?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenMauSac}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item >
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Chất liệu</Typography>
+                <Select
+                  value={chatLieu}//Sửa lại chỗ này
+                  onChange={(e) => setChatLieu(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listChatLieu?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenChatLieu}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Kích cỡ</Typography>
+                <Select
+                  value={kichCo}//Sửa lại chỗ này
+                  onChange={(e) => setKichCo(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listKichCo?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenSize}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item >
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Kiểu dáng</Typography>
+                <Select
+                  value={kieuDang}//Sửa lại chỗ này
+                  onChange={(e) => setKieuDang(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listKieuDang?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenKieuDang}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Thương hiệu</Typography>
+                <Select
+                  value={thuongHieu}//Sửa lại chỗ này
+                  onChange={(e) => setThuongHieu(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listThuongHieu?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenThuongHieu}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item >
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Phong cách</Typography>
+                <Select
+                  value={phongCach}//Sửa lại chỗ này
+                  onChange={(e) => setPhongCach(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listPhongCach?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenPhongCach}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
 
-              </Box>
-            </Box>
-          ))}
-        </Box>
-      </DialogContent>
-    </Dialog>
-
-    {/* Modal sản phẩm*/}
-    <Modal
-      open={openSPModal} // Khi open=true, modal sẽ hiển thị
-      onClose={() => setOpenSPModal(false)} // Khi nhấn ngoài modal hoặc nhấn nút đóng sẽ đóng modal
-    >
-      <Box sx={style}>
-        {/* Nút đóng modal */}
-        <IconButton
-          edge="end"
-          color="inherit"
-          onClick={() => { setOpenSPModal(false) }}
-          aria-label="close"
-          sx={{
-            position: 'absolute',
-            top: 10,
-            right: 20,
-            color: 'gray'
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-
-        <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Tìm kiếm sản phẩm
-        </Typography>
-
-        {/* Bố trí tìm kiếm và slider cùng 1 dòng */}
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={6}>
-            <TextField
-              value={timKiem}
-              label="Tìm kiếm sản phẩm theo tên, mã sản phẩm"
-              variant="outlined"
-              fullWidth
-              size='small'
-              sx={{ marginBottom: 2 }}
-              onChange={(e) => setTimKiem(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={4} marginLeft={10} marginTop={3}>
-            <Slider
-              value={value}
-              onChange={(e, newValue) => setValue(newValue)} // Sửa lại đúng cú pháp
-              valueLabelDisplay="on"
-              valueLabelFormat={(value) => `${value.toLocaleString()} VNĐ`}
-              min={100000}
-              max={3200000}
-              sx={{
-                marginBottom: 2,
-                '& .MuiSlider-valueLabel': {
-                  backgroundColor: '#fff',  // Màu nền của giá trị
-                  color: 'black',  // Màu chữ của giá trị
-                }
-              }}
-            />
-          </Grid>
-        </Grid>
-
-        {/* Bộ lọc danh mục */}
-        <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 2 }}>
-
-          <Grid item>
-            {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Danh mục</Typography>
-              <Select
-                value={danhMuc}//Sửa lại chỗ này
-                onChange={(e) => setDanhMuc(e.target.value)}
-              >
-                <MenuItem value="0" selected>Tất cả</MenuItem>
-                {listDanhMuc?.map((item, index) => (
-                  <MenuItem value={item.id} key={item.id}>{item.tenDanhMuc}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Màu sắc</Typography>
-              <Select
-                value={mauSac}//Sửa lại chỗ này
-                onChange={(e) => setMauSac(e.target.value)}
-              >
-                <MenuItem value="0" selected>Tất cả</MenuItem>
-                {listMauSac?.map((item, index) => (
-                  <MenuItem value={item.id} key={item.id}>{item.tenMauSac}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item >
-            {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Chất liệu</Typography>
-              <Select
-                value={chatLieu}//Sửa lại chỗ này
-                onChange={(e) => setChatLieu(e.target.value)}
-              >
-                <MenuItem value="0" selected>Tất cả</MenuItem>
-                {listChatLieu?.map((item, index) => (
-                  <MenuItem value={item.id} key={item.id}>{item.tenChatLieu}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Kích cỡ</Typography>
-              <Select
-                value={kichCo}//Sửa lại chỗ này
-                onChange={(e) => setKichCo(e.target.value)}
-              >
-                <MenuItem value="0" selected>Tất cả</MenuItem>
-                {listKichCo?.map((item, index) => (
-                  <MenuItem value={item.id} key={item.id}>{item.tenSize}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item >
-            {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Kiểu dáng</Typography>
-              <Select
-                value={kieuDang}//Sửa lại chỗ này
-                onChange={(e) => setKieuDang(e.target.value)}
-              >
-                <MenuItem value="0" selected>Tất cả</MenuItem>
-                {listKieuDang?.map((item, index) => (
-                  <MenuItem value={item.id} key={item.id}>{item.tenKieuDang}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Thương hiệu</Typography>
-              <Select
-                value={thuongHieu}//Sửa lại chỗ này
-                onChange={(e) => setThuongHieu(e.target.value)}
-              >
-                <MenuItem value="0" selected>Tất cả</MenuItem>
-                {listThuongHieu?.map((item, index) => (
-                  <MenuItem value={item.id} key={item.id}>{item.tenThuongHieu}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item >
-            {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Phong cách</Typography>
-              <Select
-                value={phongCach}//Sửa lại chỗ này
-                onChange={(e) => setPhongCach(e.target.value)}
-              >
-                <MenuItem value="0" selected>Tất cả</MenuItem>
-                {listPhongCach?.map((item, index) => (
-                  <MenuItem value={item.id} key={item.id}>{item.tenPhongCach}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
           </Grid>
 
-        </Grid>
-
-        {/* Bảng sản phẩm */}
-        <Box sx={{ overflowX: 'auto' }}>
-          <>
-            {/* Table hiển thị danh sách sản phẩm */}
-            <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>STT</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ảnh</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>TênMauSize Mã sản phẩm</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Chất liệu</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Danh mục</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thương hiệu-Xuất xứ</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Kiểu dáng</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Phong cách</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Giá</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Trạng thái</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thao tác</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {products?.length > 0 ? (
-                    products?.map((product, index) => {
-                      const images = product.hinhAnh || [];
-                      const currentIndex = imageIndexesThemSanPham[product.id] ?? 0;
-                      return (
-                        <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
-                          <TableCell align="center">{index + 1}</TableCell>
-                          <TableCell align="center">
-                            {images.length > 0 && (
-                              <img
-                                src={images[currentIndex]}
-                                alt={`Ảnh ${currentIndex + 1}`}
-                                style={{
-                                  width: "60px",
-                                  height: "60px",
-                                  objectFit: "cover",
-                                  borderRadius: "10px",
-                                  transition: "transform 0.3s ease-in-out",
-                                  boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
-                                }}
-                                onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
-                                onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
-                              />
-                            )}
-                          </TableCell>
-                          <TableCell align="center">
-                            <Typography >{product.tenMauSize}</Typography>
-                            <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.ma}</Typography>
-                          </TableCell>
-                          <TableCell align="center">{product.chatLieu}</TableCell>
-                          <TableCell align="center">{product.danhMuc}</TableCell>
-                          <TableCell align="center">{product.thuongHieuXuatXu}</TableCell>
-                          <TableCell align="center">{product.kieuDang}</TableCell>
-                          <TableCell align="center">{product.phongCach}</TableCell>
-                          <TableCell align="center">{product.gia.toLocaleString()} đ</TableCell>
-                          <TableCell align="center">{product.soLuong}</TableCell>
-                          <TableCell align="center">{product.trangThai}</TableCell>
-                          <TableCell align="center">
-                            {product.soLuong === 0 ? (
-                              // Nếu hết hàng, hiển thị ảnh Sold Out
-                              <img
-                                src={soldOutImg}  // Đổi link ảnh nếu cần
-                                alt="Sold Out"
-                                style={{ width: "100px", height: "50px", objectFit: "contain" }}
-                              />
-                            ) : product.trangThai !== "Hoạt động" ? (
-                              // Nếu không hoạt động, hiển thị ảnh Ngừng Hoạt Động
-                              <img
-                                src={inactiveImg}  // Đổi link ảnh nếu cần
-                                alt="Ngừng Hoạt Động"
-                                style={{ width: "100px", height: "40px", objectFit: "contain" }}
-                              />
-                            ) : (
-                              // Nếu còn hàng và đang hoạt động, hiển thị nút Chọn
-                              <Button variant="outlined" onClick={() => handleOpenConfirmModal(product)}>Chọn</Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  ) : (
-                    <TableRow align="center" dis>
-                      <TableCell colSpan={13} align="center" sx={{ py: 2, fontStyle: "italic", color: "gray" }}>
-                        Không có dữ liệu
-                      </TableCell>
+          {/* Bảng sản phẩm */}
+          <Box sx={{ overflowX: 'auto' }}>
+            <>
+              {/* Table hiển thị danh sách sản phẩm */}
+              <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>STT</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ảnh</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>TênMauSize Mã sản phẩm</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Chất liệu</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Danh mục</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thương hiệu-Xuất xứ</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Kiểu dáng</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Phong cách</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Giá</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Trạng thái</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thao tác</TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {products?.length > 0 ? (
+                      products?.map((product, index) => {
+                        const images = product.hinhAnh || [];
+                        const currentIndex = imageIndexesThemSanPham[product.id] ?? 0;
+                        return (
+                          <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                            <TableCell align="center">{index + 1}</TableCell>
+                            <TableCell align="center">
+                              {images.length > 0 && (
+                                <img
+                                  src={images[currentIndex]}
+                                  alt={`Ảnh ${currentIndex + 1}`}
+                                  style={{
+                                    width: "60px",
+                                    height: "60px",
+                                    objectFit: "cover",
+                                    borderRadius: "10px",
+                                    transition: "transform 0.3s ease-in-out",
+                                    boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
+                                  }}
+                                  onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
+                                  onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Typography >{product.tenMauSize}</Typography>
+                              <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.ma}</Typography>
+                            </TableCell>
+                            <TableCell align="center">{product.chatLieu}</TableCell>
+                            <TableCell align="center">{product.danhMuc}</TableCell>
+                            <TableCell align="center">{product.thuongHieuXuatXu}</TableCell>
+                            <TableCell align="center">{product.kieuDang}</TableCell>
+                            <TableCell align="center">{product.phongCach}</TableCell>
+                            <TableCell align="center">{product.gia.toLocaleString()} đ</TableCell>
+                            <TableCell align="center">{product.soLuong}</TableCell>
+                            <TableCell align="center">{product.trangThai}</TableCell>
+                            <TableCell align="center">
+                              {product.soLuong === 0 ? (
+                                // Nếu hết hàng, hiển thị ảnh Sold Out
+                                <img
+                                  src={soldOutImg}  // Đổi link ảnh nếu cần
+                                  alt="Sold Out"
+                                  style={{ width: "100px", height: "50px", objectFit: "contain" }}
+                                />
+                              ) : product.trangThai !== "Hoạt động" ? (
+                                // Nếu không hoạt động, hiển thị ảnh Ngừng Hoạt Động
+                                <img
+                                  src={inactiveImg}  // Đổi link ảnh nếu cần
+                                  alt="Ngừng Hoạt Động"
+                                  style={{ width: "100px", height: "40px", objectFit: "contain" }}
+                                />
+                              ) : (
+                                // Nếu còn hàng và đang hoạt động, hiển thị nút Chọn
+                                <Button variant="outlined" onClick={() => handleOpenConfirmModal(product)}>Chọn</Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    ) : (
+                      <TableRow align="center" dis>
+                        <TableCell colSpan={13} align="center" sx={{ py: 2, fontStyle: "italic", color: "gray" }}>
+                          Không có dữ liệu
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
-            {/* Modal xác nhận khi bấm "Chọn" */}
-            {selectedProduct && (
-              <Modal open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
-                <Box
-                  sx={{
-                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                    width: 400, bgcolor: 'white', p: 3, boxShadow: 24, borderRadius: 2
-                  }}
-                >
-                  {/* Nút đóng Modal */}
-                  <IconButton
-                    sx={{ position: 'absolute', top: 8, right: 8 }}
-                    onClick={() => { setQuantity(1); fetchOrders(); setOpenConfirmModal(false) }}
+              {/* Modal xác nhận khi bấm "Chọn" */}
+              {selectedProduct && (
+                <Modal open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
+                  <Box
+                    sx={{
+                      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                      width: 400, bgcolor: 'white', p: 3, boxShadow: 24, borderRadius: 2
+                    }}
                   >
-                    <CloseIcon />
-                  </IconButton>
+                    {/* Nút đóng Modal */}
+                    <IconButton
+                      sx={{ position: 'absolute', top: 8, right: 8 }}
+                      onClick={() => { setQuantity(1); fetchOrders(); setOpenConfirmModal(false) }}
+                    >
+                      <CloseIcon />
+                    </IconButton>
 
-                  {/* Tiêu đề sản phẩm (căn lề trái) */}
-                  <Typography variant="h6" fontWeight="bold" sx={{ textAlign: "left" }}>
-                    {selectedProduct?.tenMauSize} - {selectedProduct?.ma}
-                  </Typography>
+                    {/* Tiêu đề sản phẩm (căn lề trái) */}
+                    <Typography variant="h6" fontWeight="bold" sx={{ textAlign: "left" }}>
+                      {selectedProduct?.tenMauSize} - {selectedProduct?.ma}
+                    </Typography>
 
-                  {/* Khu vực chứa ẢNH - GIÁ - Ô NHẬP SỐ LƯỢNG */}
-                  <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-                    {/* Ảnh sản phẩm (bên trái) */}
-                    <Box sx={{ flex: 1 }}>
-                      <img
-                        src={selectedProduct.hinhAnh[0]}
-                        alt={`Ảnh load`}
-                        style={{
-                          width: "60px",
-                          height: "60px",
-                          objectFit: "cover",
-                          borderRadius: "10px",
-                          transition: "transform 0.3s ease-in-out",
-                          boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
-                        }}
-                        onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
-                        onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
-                      />
-
-                    </Box>
-
-                    {/* Giá sản phẩm & Ô nhập số lượng (bên phải) */}
-                    <Box sx={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                      {/* Giá sản phẩm */}
-                      <Typography sx={{ fontSize: "16px", fontWeight: "bold", mb: 1 }}>
-                        {selectedProduct?.gia.toLocaleString()} VNĐ
-                      </Typography>
-
-                      {/* Chọn số lượng */}
-                      <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => setQuantity(prev => prev - 1)}
-                          disabled={quantity <= 1}
-                          sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
-                        >
-                          <RemoveIcon fontSize="small" />
-                        </IconButton>
-                        <TextField
-                          value={quantity}
-                          onChange={(e) => handleInputChangeThemSanPhamVaoGioHang(e.target.value)}
-                          type="number"
-                          inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
-                          size="small"
-                          sx={{
+                    {/* Khu vực chứa ẢNH - GIÁ - Ô NHẬP SỐ LƯỢNG */}
+                    <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+                      {/* Ảnh sản phẩm (bên trái) */}
+                      <Box sx={{ flex: 1 }}>
+                        <img
+                          src={selectedProduct.hinhAnh[0]}
+                          alt={`Ảnh load`}
+                          style={{
                             width: "60px",
-                            "& .MuiInputBase-input": {
-                              textAlign: "center",
-                              padding: "5px 0",
-                              backgroundColor: "transparent"
-                            },
-                            "& .MuiOutlinedInput-root": {
-                              border: "none",
-                              "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                              "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
-                              "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
-                            },
-                            "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
-                              WebkitAppearance: "none",
-                              margin: 0
-                            }
+                            height: "60px",
+                            objectFit: "cover",
+                            borderRadius: "10px",
+                            transition: "transform 0.3s ease-in-out",
+                            boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
                           }}
+                          onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
+                          onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
                         />
-                        <IconButton
-                          size="small"
-                          onClick={() => setQuantity(prev => prev + 1)}
-                          disabled={quantity >= selectedProduct.soLuong}
-                          sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
-                        >
-                          <AddIcon fontSize="small" />
-                        </IconButton>
+
+                      </Box>
+
+                      {/* Giá sản phẩm & Ô nhập số lượng (bên phải) */}
+                      <Box sx={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                        {/* Giá sản phẩm */}
+                        <Typography sx={{ fontSize: "16px", fontWeight: "bold", mb: 1 }}>
+                          {selectedProduct?.gia.toLocaleString()} VNĐ
+                        </Typography>
+
+                        {/* Chọn số lượng */}
+                        <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => setQuantity(prev => prev - 1)}
+                            disabled={quantity <= 1}
+                            sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                          >
+                            <RemoveIcon fontSize="small" />
+                          </IconButton>
+                          <TextField
+                            value={quantity}
+                            onChange={(e) => handleInputChangeThemSanPhamVaoGioHang(e.target.value)}
+                            type="number"
+                            inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
+                            size="small"
+                            sx={{
+                              width: "60px",
+                              "& .MuiInputBase-input": {
+                                textAlign: "center",
+                                padding: "5px 0",
+                                backgroundColor: "transparent"
+                              },
+                              "& .MuiOutlinedInput-root": {
+                                border: "none",
+                                "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
+                              },
+                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                                WebkitAppearance: "none",
+                                margin: 0
+                              }
+                            }}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() => setQuantity(prev => prev + 1)}
+                            disabled={quantity >= selectedProduct.soLuong}
+                            sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                          >
+                            <AddIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
 
-                  {/* Nút xác nhận */}
-                  <Button
-                    variant="contained"
-                    sx={{ width: '100%', mt: 2, color: '#fff', backgroundColor: '#1976D2' }}
-                    onClick={handleCloseConfirmModal}
-                  >
-                    XÁC NHẬN
-                  </Button>
-                </Box>
-              </Modal>
-
-            )}
-          </>
-        </Box>
-      </Box>
-    </Modal>
-    {/* Gọi Modal */}
-    <Modal open={openDC} onClose={handleCloseDC}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 800,
-          bgcolor: "white",
-          boxShadow: 24,
-          p: 3,
-          borderRadius: 2,
-        }}
-      >
-        {/* Header */}
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Danh sách Địa chỉ</Typography>
-          <IconButton onClick={handleCloseDC}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
-
-        {/* Table hiển thị danh sách địa chỉ */}
-        <TableContainer component={Paper} sx={{ mt: 2, maxHeight: 400 }}>
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: "bold" }}>STT</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Tên người nhận</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Số điện thoại</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Địa chỉ</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Thao tác</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {addresses.map((address, index) => (
-                <TableRow key={address.id}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>{recipientName}</TableCell>
-                  <TableCell>{recipientPhone}</TableCell>
-                  <TableCell>
-                    {`${address.soNha}, ${address.duong}, ${address.xa}, ${address.huyen}, ${address.thanhPho}`}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="outlined" color="primary" onClick={() => handleSelectAddress(address)}>
-                      CHỌN
+                    {/* Nút xác nhận */}
+                    <Button
+                      variant="contained"
+                      sx={{ width: '100%', mt: 2, color: '#fff', backgroundColor: '#1976D2' }}
+                      onClick={handleCloseConfirmModal}
+                    >
+                      XÁC NHẬN
                     </Button>
-                  </TableCell>
+                  </Box>
+                </Modal>
+
+              )}
+            </>
+          </Box>
+        </Box>
+      </Modal>
+      {/* Gọi Modal */}
+      <Modal open={openDC} onClose={handleCloseDC}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 800,
+            bgcolor: "white",
+            boxShadow: 24,
+            p: 3,
+            borderRadius: 2,
+          }}
+        >
+          {/* Header */}
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6">Danh sách Địa chỉ</Typography>
+            <IconButton onClick={handleCloseDC}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Table hiển thị danh sách địa chỉ */}
+          <TableContainer component={Paper} sx={{ mt: 2, maxHeight: 400 }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: "bold" }}>STT</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Tên người nhận</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Số điện thoại</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Địa chỉ</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Thao tác</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
+              </TableHead>
+              <TableBody>
+                {addresses.map((address, index) => (
+                  <TableRow key={address.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{recipientName}</TableCell>
+                    <TableCell>{recipientPhone}</TableCell>
+                    <TableCell>
+                      {`${address.soNha}, ${address.duong}, ${address.xa}, ${address.huyen}, ${address.thanhPho}`}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="outlined" color="primary" onClick={() => handleSelectAddress(address)}>
+                        CHỌN
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
 
-          </Table>
-        </TableContainer>
+            </Table>
+          </TableContainer>
 
-        {/* Nút thêm địa chỉ */}
-        <Button variant="contained" color="warning" sx={{ mt: 2 }} fullWidth>
-          THÊM ĐỊA CHỈ
-        </Button>
-      </Box>
-    </Modal>
-  </Box>
-);
+          {/* Nút thêm địa chỉ */}
+          <Button variant="contained" color="warning" sx={{ mt: 2 }} fullWidth>
+            THÊM ĐỊA CHỈ
+          </Button>
+        </Box>
+      </Modal>
+    </Box>
+  );
 };
 
 // Style cho modal
