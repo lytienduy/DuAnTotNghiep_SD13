@@ -1,11 +1,9 @@
 package com.example.shopdragonbee.service;
 
+import ch.qos.logback.core.util.ExecutorServiceUtil;
 import com.example.shopdragonbee.dto.BanHangTaiQuayResponseDTO;
 import com.example.shopdragonbee.dto.HoaDonChiTietResponseDTO;
-import com.example.shopdragonbee.entity.AnhSanPham;
-import com.example.shopdragonbee.entity.HoaDon;
-import com.example.shopdragonbee.entity.HoaDonChiTiet;
-import com.example.shopdragonbee.entity.SanPhamChiTiet;
+import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.*;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
@@ -45,6 +43,10 @@ public class BanHangTaiQuayService {
     private ThuongHieuRepositoryP thuongHieuRepositoryP;
     @Autowired
     private PhongCachRepositoryP phongCachRepositoryP;
+    @Autowired
+    private PhuongThucThanhToanRepository phuongThucThanhToanRepository;
+    @Autowired
+    private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
 
     //Tạo hóa đơn tại quầy
     public Boolean taoHoaDon() {
@@ -292,7 +294,38 @@ public class BanHangTaiQuayService {
                 sanPhamChiTietRepository.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
             }
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public Boolean thanhToanHoaDon(Integer idHoaDon, String pttt, Float tienMat, Float chuyenKhoan) {
+        try {
+
+            ThanhToanHoaDon thanhToanHoaDonTienMat = new ThanhToanHoaDon();
+            thanhToanHoaDonTienMat.setMa("TTHD" + (System.currentTimeMillis() % 100000));
+            thanhToanHoaDonTienMat.setHoaDon(hoaDonRepository.findById(idHoaDon).get());
+            thanhToanHoaDonTienMat.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(1).get());
+            thanhToanHoaDonTienMat.setSoTienThanhToan(tienMat);
+            thanhToanHoaDonRepository.save(thanhToanHoaDonTienMat);
+
+            ThanhToanHoaDon thanhToanHoaDonChuyenKhoan = new ThanhToanHoaDon();
+            thanhToanHoaDonChuyenKhoan.setMa("TTHD" + (System.currentTimeMillis() % 100000));
+            thanhToanHoaDonChuyenKhoan.setHoaDon(hoaDonRepository.findById(idHoaDon).get());
+            thanhToanHoaDonChuyenKhoan.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(2).get());//Chuyển khoản
+            thanhToanHoaDonChuyenKhoan.setSoTienThanhToan(chuyenKhoan);
+            thanhToanHoaDonRepository.save(thanhToanHoaDonChuyenKhoan);
+
+            if (pttt.equalsIgnoreCase("cash")) {
+                thanhToanHoaDonRepository.save(thanhToanHoaDonTienMat);
+            } else if (pttt.equalsIgnoreCase("transfer")) {
+                thanhToanHoaDonRepository.save(thanhToanHoaDonChuyenKhoan);
+            } else if (pttt.equalsIgnoreCase("both")) {
+                thanhToanHoaDonRepository.save(thanhToanHoaDonTienMat);
+                thanhToanHoaDonRepository.save(thanhToanHoaDonChuyenKhoan);
+            }
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }

@@ -31,12 +31,10 @@ const BanTaiQuay = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   // State để điều khiển việc hiển thị/ẩn màn bên trái
   const [showLeftPanel, setShowLeftPanel] = useState(false);
-  const [discount, setDiscount] = useState('');
+  const [discount, setDiscount] = useState(0);
   const [openTT, setOpenTT] = useState(false);
-  const [tienKhachDua, setTienKhachDua] = useState('');
-  const [tienKhachChuyen, setTienKhachChuyen] = useState('');
-  const handleOpenTT = () => setOpenTT(true);
-  const handleCloseTT = () => setOpenTT(false);
+  const [tienKhachDua, setTienKhachDua] = useState(0);
+  const [tienKhachChuyen, setTienKhachChuyen] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('cash'); // Mặc định là 'cash' (tiền mặt)
   // khai báo tìm khách hàng
   const [keyword, setKeyword] = useState('');
@@ -89,7 +87,8 @@ const BanTaiQuay = () => {
   const [ghiChuTrangThai, setGhiChuTrangThai] = useState("");
   const [error, setError] = useState(false);//Biến báo lỗi
   const [idOrderCanXoa, setIdOrderCanXoa] = useState(null);//Biến báo lỗi
-
+  const tongTienKhachDaThanhToan = selectedOrder?.listThanhToanHoaDon
+    ?.reduce((total, item) => total + item.soTien, 0) || 0;
 
 
   // Hàm mở và đóng modal voucher
@@ -238,23 +237,37 @@ const BanTaiQuay = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
-  // Hàm để xử lý nhập liệu cho "phí ship"
+  // Hàm để xử lý nhập liệu cho "phí ship"handleDiscountInput
   const handleDiscountInput = (e) => {
-    const newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
+    var newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
+
+    // Xóa số 0 đứng đầu
+    newValue = newValue.replace(/^0+/, '');
+
     setDiscount(newValue);
   };
 
   // Hàm để xử lý nhập liệu cho "tiền khách đưa"
   const handleTienKhachDua = (e) => {
-    const newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
+    var newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
+
+    // Xóa số 0 đứng đầu
+    newValue = newValue.replace(/^0+/, '');
+
+    // Format số với dấu phẩy (10,000)
     setTienKhachDua(newValue);
   };
 
   // Hàm để xử lý nhập liệu cho "tiền khách đưa"
   const handleTienKhachChuyen = (e) => {
-    const newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
+    var newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
+
+    // Xóa số 0 đứng đầu
+    newValue = newValue.replace(/^0+/, '');
+
     setTienKhachChuyen(newValue);
   };
+
 
   // State cho các dropdown
   const [city, setCity] = useState('');
@@ -579,7 +592,6 @@ const BanTaiQuay = () => {
 
   //Cập nhật giá trị khi thay đổi số lượng nhập từ bàn phím
   const handleInputChangeThemSanPhamVaoGioHang = (value) => {
-
     if (Number(value) === 0) {
       setQuantity(value);
       // Đặt độ trễ 1 giây rồi chuyển về 1
@@ -675,6 +687,27 @@ const BanTaiQuay = () => {
       showErrorToast("Lỗi lấy dữ liệu bộ lọc");
     }
   };
+
+  const xacNhanThanhToan = async () => {
+    try {
+      const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/thanhToanHoaDon`, {
+        idHoaDon: selectedOrder.id, pttt: paymentMethod, tienMat: tienKhachDua, chuyenKhoan: tienKhachChuyen
+      })
+      if (response.data) {
+        setTienKhachDua(0);
+        setTienKhachChuyen(0);
+        setPaymentMethod('cash');
+        setOpenTT(false);
+        showSuccessToast("Xác nhận thanh toán thành công");
+        fetchOrders();
+      } else {
+        showErrorToast("Lỗi thanh toán");
+      }
+    } catch (err) {
+      console.log(err)
+      showErrorToast("Lỗi thanh toán");
+    }
+  }
 
 
 
@@ -924,7 +957,7 @@ const BanTaiQuay = () => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>#</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>STT</TableCell>
                       <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Hình ảnh</TableCell>
                       <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Sản phẩm</TableCell>
                       <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
@@ -1045,7 +1078,7 @@ const BanTaiQuay = () => {
                 <Box>
                   <Typography component="span" variant="body1" sx={{ mr: 2 }}>Tổng tiền:</Typography>
                   <Typography component="span" fontSize={20} sx={{ fontWeight: 'bold', color: 'red', marginRight: 3 }}>
-                    0 VNĐ
+                    {selectedOrder?.tongTienSanPham.toLocaleString()} VNĐ
                   </Typography>
                 </Box>
               </Box>
@@ -1203,30 +1236,46 @@ const BanTaiQuay = () => {
                     />
                   </Box>
                   <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                    Tiền hàng: <span>2.377.500 <span>VNĐ</span></span>
+                    Tiền hàng({selectedOrder?.listDanhSachSanPham?.reduce(
+                      (total, item) => total + (item.soLuong || 0),
+                      0
+                    ) || 0} sản phẩm):
+                    <span>
+                      {selectedOrder?.tongTienSanPham.toLocaleString()} VNĐ
+                    </span>
                   </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 1 }}>
-                    <Typography variant="body1">Phí vận chuyển:</Typography>
-                    <Input
-                      value={discount} // Sử dụng giá trị state
-                      onInput={handleDiscountInput} // Xử lý sự kiện nhập liệu
-                      sx={{ color: 'black' }}
-                      endAdornment={<InputAdornment position="end"><Typography sx={{ color: 'black' }}>VNĐ</Typography></InputAdornment>}
-                      inputProps={{
-                        style: {
-                          textAlign: 'right',
-                          width: 100
-                        },
-                        type: 'text',             // Thay vì "number", dùng "text" để loại bỏ spinner
-                        inputMode: 'numeric'      // Hạn chế nhập chỉ số (dành cho các thiết bị di động)
-                      }}
-                    />
-                  </Box>
+                  {showLeftPanel &&
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 1 }}>
+                      <Typography variant="body1">Phí vận chuyển:</Typography>
+                      <TextField
+                        fullWidth
+                        variant="standard"
+                        value={discount ? parseInt(discount, 10).toLocaleString() : discount}
+                        onChange={handleDiscountInput}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Typography sx={{ color: 'black' }}>VNĐ</Typography>
+                            </InputAdornment>
+                          )
+                        }}
+                        sx={{
+                          width: '140px', // Giới hạn chiều rộng
+                          '& .MuiInputBase-input': { fontSize: 18, textAlign: 'right' }
+                        }}
+                      />
+                    </Box>
+                  }
                   <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                    Giảm giá: <span>250.000 <span>VNĐ</span></span>
+                    Giảm giá: <span>Chưa có gì<span>VNĐ</span></span>
                   </Typography>
                   <Typography variant="body1" sx={{ marginTop: '16px' }} style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
-                    Tổng số tiền: <span style={{ color: 'red' }}>2.377.500 <span style={{ color: 'red' }}>VNĐ</span></span>
+                    Số tiền thanh toán:
+                    <span style={{ color: 'red' }}>
+                      {((selectedOrder?.tongTienSanPham ?? 0) + Number(discount || 0)).toLocaleString()} VNĐ
+                    </span>
+
+
                   </Typography>
                   <Typography
                     variant="body1"
@@ -1242,7 +1291,7 @@ const BanTaiQuay = () => {
                     <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <Button
                         variant="outlined" // Đặt kiểu viền
-                        onClick={handleOpenTT} // Khi nhấn mở modal
+                        onClick={() => setOpenTT(true)} // Khi nhấn mở modal
                         sx={{
                           borderColor: 'black', // Viền màu đen
                           color: 'black', // Màu chữ đen
@@ -1259,17 +1308,27 @@ const BanTaiQuay = () => {
                       >
                         <CreditCardIcon style={{ color: 'black' }} /> {/* Icon ví */}
                       </Button>
-                      <span style={{ color: 'red' }}>0 VNĐ</span>
+                      <span style={{ color: 'red' }}>{tongTienKhachDaThanhToan?.toLocaleString()} VNĐ</span>
                     </span>
                   </Typography>
                   <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
-                    Tiền thiếu: <span style={{ color: 'red' }}>0 <span style={{ color: 'red' }}>VNĐ</span></span>
+                    Tiền thiếu: <span style={{ color: 'red' }}>
+                      {tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount)) < 0
+                        ? (tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount))).toLocaleString()
+                        : "0"}
+                      <span style={{ color: 'red' }}> VNĐ</span>
+                    </span>
                   </Typography>
                   <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
-                    Tiền thừa trả khách: <span style={{ color: 'red' }}>250.000 <span style={{ color: 'red' }}>VNĐ</span></span>
+                    Tiền thừa trả khách: <span style={{ color: 'red' }}>
+                      {tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount)) > 0
+                        ? (tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount))).toLocaleString()
+                        : "0"}
+                      <span style={{ color: 'red' }}> VNĐ</span>
+                    </span>
                   </Typography>
 
-                  <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }}>
+                  <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }} >
                     Xác nhận đặt hàng
                   </Button>
                 </Box>
@@ -1291,12 +1350,17 @@ const BanTaiQuay = () => {
         </Alert>
       </Snackbar>
 
-      <Dialog open={openTT} onClose={handleCloseTT} maxWidth="sm" fullWidth>
+      <Dialog open={openTT} onClose={() => setOpenTT(false)} maxWidth="sm" fullWidth>
         {/* Tiêu đề có nút đóng */}
         <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center', fontSize: '25px', color: '#1976D2', position: 'relative' }}>
           THANH TOÁN
           <IconButton
-            onClick={handleCloseTT}
+            onClick={() => {
+              setTienKhachDua(0);
+              setTienKhachChuyen(0);
+              setPaymentMethod('cash');
+              setOpenTT(false)
+            }}
             sx={{ position: 'absolute', top: 8, right: 8, color: '#1976D2' }}
           >
             <CloseIcon />
@@ -1307,8 +1371,9 @@ const BanTaiQuay = () => {
           {/* Tổng tiền hàng */}
           <Grid container justifyContent="space-between" sx={{ mb: 2 }}>
             <Typography variant="h6">Tổng tiền hàng</Typography>
-            <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>2.127.500 VND</Typography>
+            <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{(selectedOrder?.tongTienSanPham + + Number(discount || 0)).toLocaleString()} VNĐ</Typography>
           </Grid>
+
 
           {/* Nút Chuyển Khoản - Tiền Mặt - Cả Hai */}
           <Grid container justifyContent="center" spacing={1} sx={{ mb: 2 }}>
@@ -1318,8 +1383,8 @@ const BanTaiQuay = () => {
                 fullWidth
                 onClick={() => {
                   setPaymentMethod('transfer');
-                  setTienKhachDua('');
-                  setTienKhachChuyen('');
+                  setTienKhachDua(0);
+                  setTienKhachChuyen(0);
                 }}
                 sx={{
                   backgroundColor: paymentMethod === 'transfer' ? 'red' : '#FFB6C1',
@@ -1336,8 +1401,8 @@ const BanTaiQuay = () => {
                 fullWidth
                 onClick={() => {
                   setPaymentMethod('cash');
-                  setTienKhachDua('');
-                  setTienKhachChuyen('');
+                  setTienKhachDua(0);
+                  setTienKhachChuyen(0);
                 }}
                 sx={{
                   backgroundColor: paymentMethod === 'cash' ? 'green' : '#a3c88e',
@@ -1354,8 +1419,8 @@ const BanTaiQuay = () => {
                 fullWidth
                 onClick={() => {
                   setPaymentMethod('both');
-                  setTienKhachDua('');
-                  setTienKhachChuyen('');
+                  setTienKhachDua(0);
+                  setTienKhachChuyen(0);
                 }}
                 sx={{
                   backgroundColor: paymentMethod === 'both' ? '#1976D2' : '#B6D0FF',
@@ -1375,7 +1440,7 @@ const BanTaiQuay = () => {
               <TextField
                 fullWidth
                 variant="standard"
-                value={tienKhachDua}
+                value={tienKhachDua ? parseInt(tienKhachDua, 10).toLocaleString() : tienKhachDua}
                 onInput={handleTienKhachDua}
                 InputProps={{
                   endAdornment: (
@@ -1395,22 +1460,13 @@ const BanTaiQuay = () => {
           {/* Nếu chọn CHUYỂN KHOẢN hoặc CẢ HAI thì hiển thị input Mã giao dịch & Tiền khách chuyển */}
           {(paymentMethod === 'transfer' || paymentMethod === 'both') && (
             <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
-              <Grid item xs={6}>
-                <Typography sx={{ color: '#1976D2', fontSize: 14 }}>Mã giao dịch</Typography>
-                <TextField
-                  fullWidth
-                  variant="standard"
-                  sx={{
-                    '& .MuiInputBase-input': { fontSize: 18, fontWeight: 'bold' }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6}>
+
+              <Grid item xs={12}>
                 <Typography sx={{ color: '#1976D2', fontSize: 14 }}>Tiền khách chuyển</Typography>
                 <TextField
                   fullWidth
                   variant="standard"
-                  value={tienKhachChuyen}
+                  value={tienKhachChuyen ? parseInt(tienKhachChuyen, 10).toLocaleString() : tienKhachChuyen}
                   onInput={handleTienKhachChuyen}
                   InputProps={{
                     endAdornment: (
@@ -1436,23 +1492,27 @@ const BanTaiQuay = () => {
                   <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Mã giao dịch</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Phương thức</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Số tiền</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Hành động</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Ghi chú</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {data.map((row, index) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.maGiaoDich}</TableCell>
-                    <TableCell>{row.phuongThuc}</TableCell>
-                    <TableCell>{formatCurrency(row.soTien)}</TableCell>
-                    <TableCell>
-                      <IconButton color="error">
-                        <DeleteIcon />
-                      </IconButton>
+                {selectedOrder?.listThanhToanHoaDon?.length > 0 ? (
+                  selectedOrder.listThanhToanHoaDon.map((payment, index) => (
+                    <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                      <TableCell align="center">{index + 1}</TableCell>
+                      <TableCell align="center">{payment.phuongThuc}</TableCell>
+                      <TableCell align="center">{payment.soTien.toLocaleString()} VND</TableCell>
+                      <TableCell align="center">{new Date(payment.ngayTao).toLocaleString("vi-VN")}</TableCell>
+                      <TableCell align="center">{payment.ghiChu}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 2, fontStyle: "italic", color: "gray" }}>
+                      Không có lịch sử thanh toán nào.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -1460,8 +1520,10 @@ const BanTaiQuay = () => {
 
         {/* Nút Xác nhận */}
         <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
-          <Button variant="contained" sx={{ backgroundColor: 'green', color: 'white', fontWeight: 'bold' }} onClick={handleCloseTT}>
-            XÁC NHẬN
+          <Button onClick={xacNhanThanhToan} variant="contained" sx={{ backgroundColor: 'green', color: 'white', fontWeight: 'bold' }} 
+          // disabled={(Number(tienKhachChuyen) < 1000 || Number(tienKhachDua) < 1000)} 
+          >
+            Xác nhận thanh toán
           </Button>
         </DialogActions>
       </Dialog>
@@ -1857,7 +1919,7 @@ const BanTaiQuay = () => {
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
-                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>#</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>STT</TableCell>
                       <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ảnh</TableCell>
                       <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>TênMauSize Mã sản phẩm</TableCell>
                       <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Chất liệu</TableCell>

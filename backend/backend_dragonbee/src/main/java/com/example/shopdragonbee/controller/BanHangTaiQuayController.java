@@ -106,5 +106,18 @@ public class BanHangTaiQuayController {
                 java.lang.Float.parseFloat(donGia));
     }
 
+    @PostMapping("/thanhToanHoaDon")
+    public Boolean thanhToanHoaDon(@RequestBody Map<String, String> body) {
+        String idHoaDon = body.get("idHoaDon");
+        String pttt = body.get("pttt");
+        String tienMat = body.get("tienMat");
+        String chuyenKhoan = body.get("chuyenKhoan");
+
+        return banHangTaiQuayService.thanhToanHoaDon(
+                java.lang.Integer.parseInt(idHoaDon), pttt,
+                Float.parseFloat(tienMat),
+                Float.parseFloat(chuyenKhoan));
+    }
+
 
 }
