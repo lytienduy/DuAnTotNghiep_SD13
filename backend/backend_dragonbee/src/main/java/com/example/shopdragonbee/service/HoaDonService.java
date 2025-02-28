@@ -2,11 +2,10 @@ package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.HoaDonChiTietResponseDTO;
 import com.example.shopdragonbee.dto.HoaDonResponseDTO;
-import com.example.shopdragonbee.entity.AnhSanPham;
-import com.example.shopdragonbee.entity.HoaDon;
-import com.example.shopdragonbee.entity.LichSuHoaDon;
+import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.HoaDonRepository;
 import com.example.shopdragonbee.repository.LichSuHoaDonRepository;
+import com.example.shopdragonbee.repository.SanPhamChiTietRepositoryP;
 import com.example.shopdragonbee.repository.ThanhToanHoaDonRepository;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +29,9 @@ public class HoaDonService {
 
     @Autowired
     private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
+
+    @Autowired
+    private SanPhamChiTietRepositoryP sanPhamChiTietRepositoryP;
 
     //Hầm lấy tất cả trả về List<HoaDonResponseDTO>
     public List<HoaDonResponseDTO> getAllHoaDons() {
@@ -116,6 +118,15 @@ public class HoaDonService {
     //Cập nhật trạng thái hóa đơn bên Hóa Đơn Chi Tiết
     public Boolean capNhatTrangThaiHoaDon(Integer idHoaDon, String trangThai, String hanhDong, String lyDo) {
         HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
+        if (trangThai.equalsIgnoreCase("Đã hủy")) {
+            for (HoaDonChiTiet hoaDonChiTiet : hoaDon.getListHoaDonChiTiet()
+            ) {
+                SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepositoryP.findById(hoaDonChiTiet.getSanPhamChiTiet().getId()).get();
+                sanPhamChiTiet.setSoLuong((sanPhamChiTiet.getSoLuong() + hoaDonChiTiet.getSoLuong()));
+                sanPhamChiTietRepositoryP.save(sanPhamChiTiet);
+            }
+        }
+
         hoaDon.setTrangThai(trangThai);
         try {
             HoaDon savedHoaDon = hoaDonRepository.save(hoaDon);
@@ -145,7 +156,7 @@ public class HoaDonService {
 
 
         List<HoaDonChiTietResponseDTO.DanhSachSanPhamDTO> listDanhSachSanPham = hoaDon.getListHoaDonChiTiet().stream()
-                .map(hdct -> new HoaDonChiTietResponseDTO.DanhSachSanPhamDTO(hdct.getId(), listURLAnhSanPhamChiTiet(hdct.getSanPhamChiTiet().getListAnh()), hdct.getSanPhamChiTiet().getSanPham().getTenSanPham() + hdct.getSanPhamChiTiet().getMauSac().getTenMauSac() + " size " + hdct.getSanPhamChiTiet().getSize().getTenSize(),hdct.getSanPhamChiTiet().getId(), hdct.getSanPhamChiTiet().getMa(), hdct.getDonGia(), hdct.getSoLuong(), hdct.getDonGia() * hdct.getSoLuong()))
+                .map(hdct -> new HoaDonChiTietResponseDTO.DanhSachSanPhamDTO(hdct.getId(), listURLAnhSanPhamChiTiet(hdct.getSanPhamChiTiet().getListAnh()), hdct.getSanPhamChiTiet().getSanPham().getTenSanPham() + hdct.getSanPhamChiTiet().getMauSac().getTenMauSac() + " size " + hdct.getSanPhamChiTiet().getSize().getTenSize(), hdct.getSanPhamChiTiet().getId(), hdct.getSanPhamChiTiet().getMa(), hdct.getDonGia(), hdct.getSoLuong(), hdct.getDonGia() * hdct.getSoLuong()))
                 .collect(Collectors.toList());
 
         List<HoaDonChiTietResponseDTO.LichSuHoaDonDTO> listLichSuHoaDon = hoaDon.getListLichSuHoaDon().stream()
@@ -203,8 +214,8 @@ public class HoaDonService {
     }
 
     //Lấy listHoaDonTaiQuay chuyển đổi object sang DTO
-    public List<HoaDonChiTietResponseDTO.HoaDonChiTietDTO> getHoaDonChiTietTaiQuay(){
-        List<HoaDon> hoaDons = hoaDonRepository.getHoaDonByTrangThaiAndLoaiDonOrderByNgayTaoAsc("Chờ thanh toán","Tại quầy");
+    public List<HoaDonChiTietResponseDTO.HoaDonChiTietDTO> getHoaDonChiTietTaiQuay() {
+        List<HoaDon> hoaDons = hoaDonRepository.getHoaDonByTrangThaiAndLoaiDonOrderByNgayTaoAsc("Chờ thanh toán", "Tại quầy");
         return hoaDons.stream().map(this::convertHoaDonChiTietToDTO).collect(Collectors.toList());
     }
 

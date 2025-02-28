@@ -5,49 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="20fa4398-a540-4bcc-8ac6-98e36f4ff058" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_github_virtuald_curvesapi_1_07.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_zaxxer_SparseBitSet_1_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_codec_commons_codec_1_17_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_io_commons_io_2_11_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_commons_commons_collections4_4_4.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_commons_commons_compress_1_21.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_commons_commons_lang3_3_12_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_commons_commons_math3_3_6_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_poi_poi_5_2_3.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_poi_poi_ooxml_5_2_3.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_poi_poi_ooxml_lite_5_2_3.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_xmlbeans_xmlbeans_5_1_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_attoparser_attoparser_2_0_7_RELEASE.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_eclipse_angus_jakarta_mail_2_0_3.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_springframework_boot_spring_boot_starter_mail_3_4_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_springframework_boot_spring_boot_starter_thymeleaf_3_4_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_springframework_spring_context_support_6_2_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_thymeleaf_thymeleaf_3_1_3_RELEASE.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_thymeleaf_thymeleaf_spring6_3_1_3_RELEASE.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_unbescape_unbescape_1_1_6_RELEASE.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/BanHangTaiQuayController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/BanHangTaiQuayResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/ChatLieuRepositoryP.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/DanhMucRepositoryP.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/HoaDonChiTietRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/KieuDangRepositoryP.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/MauSacRepositoryP.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/PhongCachRepositoryP.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/SanPhamChiTietRepositoryP.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/SizeRepositoryP.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/ThuongHieuRepositoryP.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/BanHangTaiQuayService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/HoaDonController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/HoaDonController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/HoaDonChiTietResponseDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/HoaDonChiTietResponseDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/entity/HoaDon.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/entity/HoaDon.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/HoaDonRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/HoaDonRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/BanHangTaiQuayService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/BanHangTaiQuayService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/HoaDonService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/HoaDonService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/BanTaiQuay.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/BanTaiQuay.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/HoaDon.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/HoaDon.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/HoaDonChiTiet.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/HoaDonChiTiet.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,19 +54,6 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="ArquillianTestNG" factoryName="" nameIsGenerated="true">
-      <option name="arquillianRunConfiguration">
-        <value>
-          <option name="containerStateName" value="" />
-        </value>
-      </option>
-      <option name="TEST_OBJECT" value="CLASS" />
-      <properties />
-      <listeners />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="ShopdragonbeeApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
       <module name="shopdragonbee" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.shopdragonbee.ShopdragonbeeApplication" />
@@ -126,7 +73,8 @@
       <workItem from="1740498991891" duration="595000" />
       <workItem from="1740535911232" duration="2640000" />
       <workItem from="1740542346284" duration="11674000" />
-      <workItem from="1740622236024" duration="16079000" />
+      <workItem from="1740622236024" duration="16681000" />
+      <workItem from="1740707757283" duration="9530000" />
     </task>
     <servers />
   </component>

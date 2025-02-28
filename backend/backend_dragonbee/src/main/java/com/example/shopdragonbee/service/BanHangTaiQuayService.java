@@ -248,7 +248,7 @@ public class BanHangTaiQuayService {
                 sanPhamChiTiet.getId(),
                 sanPhamChiTiet.getMa(),
                 listURLAnhSanPhamChiTiet(sanPhamChiTiet.getListAnh()),
-                sanPhamChiTiet.getSanPham().getTenSanPham() + " " + sanPhamChiTiet.getMauSac().getTenMauSac() + " size" + sanPhamChiTiet.getSize().getTenSize(),
+                sanPhamChiTiet.getSanPham().getTenSanPham() + " " + sanPhamChiTiet.getMauSac().getTenMauSac() + " size " + sanPhamChiTiet.getSize().getTenSize(),
                 sanPhamChiTiet.getChatLieu().getTenChatLieu(),
                 sanPhamChiTiet.getDanhMuc().getTenDanhMuc(),
                 sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getXuatXu().getTenXuatXu(),
