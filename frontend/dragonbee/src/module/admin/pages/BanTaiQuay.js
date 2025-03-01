@@ -708,27 +708,23 @@ const BanTaiQuay = () => {
 
   //Cập nhật giá trị khi thay đổi số lượng nhập từ bàn phím
   const handleInputChangeThemSanPhamVaoGioHang = (value) => {
+    setQuantity(value);
     let newValue = value.replace(/\D/g, ''); // Chỉ cho phép nhập số
 
     if (/^0+$/.test(newValue)) {
       newValue = "";
-
     }
 
-    
     if (newValue != "") {
-
       if (Number(newValue) > selectedProduct.soLuong) {
         newValue = Number(newValue).toString().slice(0, -1) || selectedProduct.soLuong;
       }
-      setQuantity(quantity);
     }
     setTimeout(() => {
       setQuantity(newValue);
     }, 100);
-console.log(newValue)
     if (newValue === "" || Number(newValue) <= 0) {
-      setErrorSoLuongThemVaoGioHang("Số lượng không hợp lệ");
+      setErrorSoLuongThemVaoGioHang("Không hợp lệ");
     } else {
       setErrorSoLuongThemVaoGioHang(""); // Xóa lỗi nếu nhập đúng
     }
@@ -1169,8 +1165,8 @@ console.log(newValue)
                                       src={images[currentIndex]}
                                       alt={`Ảnh ${currentIndex + 1}`}
                                       style={{
-                                        width: "60px",
-                                        height: "60px",
+                                        width: "70px",
+                                        height: "70px",
                                         objectFit: "cover",
                                         borderRadius: "10px",
                                         transition: "transform 0.3s ease-in-out",
@@ -1578,6 +1574,7 @@ console.log(newValue)
                                 borderColor: 'black' // Giữ viền màu đen khi hover
                               }
                             }}
+                            disabled={selectedOrder.tongTienSanPham === 0}
                           >
                             <CreditCardIcon style={{ color: 'black' }} /> {/* Icon ví */}
                           </Button>
@@ -2238,8 +2235,8 @@ console.log(newValue)
                                   src={images[currentIndex]}
                                   alt={`Ảnh ${currentIndex + 1}`}
                                   style={{
-                                    width: "60px",
-                                    height: "60px",
+                                    width: "65px",
+                                    height: "65px",
                                     objectFit: "cover",
                                     borderRadius: "10px",
                                     transition: "transform 0.3s ease-in-out",
