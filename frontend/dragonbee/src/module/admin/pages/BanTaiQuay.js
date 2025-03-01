@@ -67,6 +67,7 @@ const BanTaiQuay = () => {
   const [voucherCode, setVoucherCode] = useState('');
   const [vouchers, setVouchers] = useState([]);
   const [selectedVoucherCode, setSelectedVoucherCode] = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   const [imageIndexes, setImageIndexes] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại tại giỏ hàng
   const [imageIndexesThemSanPham, setImageIndexesThemSanPham] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại tại thêm sản phẩm vào giỏ hàng 
@@ -122,51 +123,80 @@ const BanTaiQuay = () => {
   const handleVoucherCodeChange = async (event) => {
     const keyword = event.target.value;
     setVoucherCode(keyword);
-    if (keyword.trim() === '') {
-      // Nếu không có mã, lấy tất cả các voucher
-      fetchVouchers();
-    } else {
-      // Nếu có mã, tìm kiếm voucher theo mã
-      try {
-        const response = await axios.get(`http://localhost:8080/dragonbee/tim-kiem-phieu-giam-gia?keyword=${keyword}`);
-        setVouchers(response.data);
-      } catch (error) {
-        console.error("Error fetching vouchers:", error);
+
+    const customerId = selectedCustomerId ? selectedCustomerId : null;
+
+    try {
+      const params = { keyword };
+      if (customerId) {
+        params.idKhachHang = customerId;
       }
+
+      const response = await axios.get('http://localhost:8080/dragonbee/tim-kiem-phieu-giam-gia', { params });
+      setVouchers(response.data);
+    } catch (error) {
+      console.error("Error fetching vouchers:", error);
     }
   };
+
 
   // Fetch tất cả voucher khi không có mã tìm kiếm
   const fetchVouchers = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/dragonbee/tim-kiem-phieu-giam-gia', {
-        params: {
-          keyword: ''        // Truyền từ khóa tìm kiếm rỗng để lấy tất cả các voucher
-        }
-      });
+      // Xác định id khách hàng nếu có
+      const customerId = selectedCustomerId ? selectedCustomerId : null;
+
+      // Tạo params cho API
+      const params = {
+        keyword: '',
+      };
+
+      // Nếu có khách hàng được chọn, thêm idKhachHang vào params
+      if (customerId) {
+        params.idKhachHang = customerId;
+      }
+
+      const response = await axios.get('http://localhost:8080/dragonbee/tim-kiem-phieu-giam-gia', { params });
 
       // Sắp xếp dữ liệu theo ngày tạo (ngayTao)
       const sortedVouchers = response.data.sort((a, b) => {
-        return new Date(b.ngayTao) - new Date(a.ngayTao);  // Sắp xếp theo ngày tạo giảm dần (mới nhất lên đầu)
+        return new Date(b.ngayTao) - new Date(a.ngayTao);  // Sắp xếp giảm dần theo ngày tạo
       });
 
       // Cập nhật dữ liệu voucher sau khi đã sắp xếp
       setVouchers(sortedVouchers);
     } catch (error) {
-      console.error("Error fetching all vouchers:", error);
+      console.error("Error fetching vouchers:", error);
     }
   };
+
 
   // Gọi fetchVouchers khi modal mở lần đầu hoặc chưa có dữ liệu voucher
   useEffect(() => {
     if (openVoucherModal) {
       fetchVouchers();
     }
-  }, [openVoucherModal]);
+  }, [openVoucherModal, selectedCustomerId]); // Thêm selectedCustomerId vào dependency
+
 
   const handleUseVoucher = (voucherCode) => {
-    setSelectedVoucherCode(voucherCode); // Cập nhật mã voucher đã chọn
-    handleCloseVoucherModal(); // Đóng modal sau khi chọn voucher
+    const selectedVoucher = vouchers.find(v => v.ma === voucherCode);
+    if (!selectedVoucher) return;
+
+    let discountAmount = 0;
+
+    if (selectedVoucher.loaiPhieuGiamGia === "Cố định") {
+      discountAmount = selectedVoucher.giaTriGiam;
+    } else if (selectedVoucher.loaiPhieuGiamGia === "Phần trăm") {
+      discountAmount = (selectedOrder?.tongTienSanPham || 0) * (selectedVoucher.giaTriGiam / 100);
+      if (selectedVoucher.soTienGiamToiDa) {
+        discountAmount = Math.min(discountAmount, selectedVoucher.soTienGiamToiDa);
+      }
+    }
+
+    setSelectedVoucherCode(voucherCode);
+    setDiscountAmount(discountAmount); // Cập nhật số tiền giảm giá
+    handleCloseVoucherModal();
   };
 
   //Hàm tìm khách hàng
@@ -1445,20 +1475,56 @@ const BanTaiQuay = () => {
                     </Popper>
                   </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2, alignItems: 'center' }}>
                     <Typography variant="body1">Phiếu giảm giá:</Typography>
-                    <Input
-                      value={selectedVoucherCode} // Hiển thị mã voucher đã chọn
-                      sx={{ color: '#5e5e5ede', width: 140 }}
-                      endAdornment={<InputAdornment position="end"><EditIcon onClick={handleOpenVoucherModal} /></InputAdornment>}
-                      inputProps={{
-                        style: {
-                          textAlign: 'right',
-                          fontWeight: 'bold',
-                        },
-                      }}
-                    />
+                    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <Input
+                        value={selectedVoucherCode} // Hiển thị mã voucher đã chọn
+                        sx={{ color: '#5e5e5ede', width: 140}} // Tăng padding phải để đủ chỗ cho icon
+                        endAdornment={
+                          <InputAdornment position="end" sx={{ position: 'relative' }}>
+                            {/* CloseIcon - Xóa voucher */}
+                            {selectedVoucherCode && (
+                              <CloseIcon
+                                sx={{
+                                  color: 'red',
+                                  fontSize: 14,
+                                  cursor: 'pointer',
+                                  position: 'absolute',
+                                  left: -13, // Dịch sang phải thêm 5px
+                                  top: '-3px', // Đưa lên cao hơn
+                                  transform: 'translateY(-50%)',
+                                  backgroundColor: 'white', // Đảm bảo không bị che khuất
+                                  borderRadius: '50%',
+                                  boxShadow: '0 0 4px rgba(0,0,0,0.2)' // Thêm hiệu ứng nổi
+                                }}
+                                onClick={() => {
+                                  setSelectedVoucherCode(''); // Xóa mã voucher
+                                  setDiscountAmount(0); // Đặt giảm giá về 0 để cập nhật lại tổng tiền
+                                }}
+                              />
+                            )}
+                            {/* EditIcon - Mở modal chọn voucher */}
+                            <EditIcon
+                              sx={{
+                                color: 'gray',
+                                fontSize: 18,
+                                cursor: 'pointer',
+                              }}
+                              onClick={handleOpenVoucherModal}
+                            />
+                          </InputAdornment>
+                        }
+                        inputProps={{
+                          style: {
+                            textAlign: 'right',
+                            fontWeight: 'bold',
+                          },
+                        }}
+                      />
+                    </Box>
                   </Box>
+
                   <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
                     Tiền hàng({selectedOrder?.listDanhSachSanPham?.reduce(
                       (total, item) => total + (item.soLuong || 0),
@@ -1491,16 +1557,17 @@ const BanTaiQuay = () => {
                     </Box>
                   }
                   <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                    Giảm giá: <span>Chưa có gì<span>VNĐ</span></span>
+                    Giảm giá:
+                    <span>{discountAmount.toLocaleString()} VNĐ</span>
                   </Typography>
+
                   <Typography variant="body1" sx={{ marginTop: '16px' }} style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
                     Số tiền thanh toán:
                     <span style={{ color: 'red' }}>
-                      {((selectedOrder?.tongTienSanPham ?? 0) + Number(discount || 0)).toLocaleString()} VNĐ
+                      {((selectedOrder?.tongTienSanPham ?? 0) - (discountAmount || 0)).toLocaleString()} VNĐ
                     </span>
-
-
                   </Typography>
+
                   <Typography
                     variant="body1"
                     style={{
@@ -1536,13 +1603,15 @@ const BanTaiQuay = () => {
                     </span>
                   </Typography>
                   <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
-                    Tiền thiếu: <span style={{ color: 'red' }}>
-                      {tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount)) < 0
-                        ? (tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount))).toLocaleString()
+                    Tiền thiếu:
+                    <span style={{ color: 'red' }}>
+                      {tongTienKhachDaThanhToan - ((selectedOrder?.tongTienSanPham ?? 0) - (discountAmount || 0)) < 0
+                        ? (tongTienKhachDaThanhToan - ((selectedOrder?.tongTienSanPham ?? 0) - (discountAmount || 0))).toLocaleString()
                         : "0"}
                       <span style={{ color: 'red' }}> VNĐ</span>
                     </span>
                   </Typography>
+
                   <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
                     Tiền thừa trả khách: <span style={{ color: 'red' }}>
                       {tongTienKhachDaThanhToan - (selectedOrder.tongTienSanPham + Number(discount)) > 0
@@ -1949,6 +2018,9 @@ const BanTaiQuay = () => {
                   </Typography>
                   <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
                     Số tiền tối thiểu: {voucher.soTienToiThieu}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                    Số lượng: {voucher.soLuong}
                   </Typography>
                 </Box>
 

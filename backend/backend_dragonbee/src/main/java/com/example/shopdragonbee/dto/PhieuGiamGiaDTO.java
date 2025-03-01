@@ -22,6 +22,7 @@ public class PhieuGiamGiaDTO {
     private Float giaTriGiam;
     private Float soTienToiThieu;
     private Float soTienGiamToiDa;
+    private Integer soLuong;
     private LocalDateTime ngayTao;
     private String moTa;
     private String trangThai;
@@ -36,6 +37,7 @@ public class PhieuGiamGiaDTO {
         this.giaTriGiam = phieuGiamGia.getGiaTriGiam();
         this.soTienToiThieu = phieuGiamGia.getSoTienToiThieu();
         this.soTienGiamToiDa = phieuGiamGia.getSoTienGiamToiDa();
+        this.soLuong = phieuGiamGia.getSoLuong();
         this.ngayTao = phieuGiamGia.getNgayTao();
         this.moTa = phieuGiamGia.getMoTa();
         this.trangThai = phieuGiamGia.getTrangThai();
