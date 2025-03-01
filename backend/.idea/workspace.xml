@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="20fa4398-a540-4bcc-8ac6-98e36f4ff058" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/BanTaiQuay.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/BanTaiQuay.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +73,7 @@
       <workItem from="1740542346284" duration="11674000" />
       <workItem from="1740622236024" duration="16681000" />
       <workItem from="1740707757283" duration="16406000" />
-      <workItem from="1740798113631" duration="5308000" />
+      <workItem from="1740798113631" duration="6060000" />
     </task>
     <servers />
   </component>

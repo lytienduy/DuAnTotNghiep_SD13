@@ -1228,8 +1228,8 @@ const BanTaiQuay = () => {
                                     </Box>
                                   </Box>
                                 </TableCell>
-                                <TableCell align="center">{product.donGia?.toLocaleString()}₫</TableCell>
-                                <TableCell align="center">{product.soTien?.toLocaleString()}₫</TableCell>
+                                <TableCell align="center">{product.donGia?.toLocaleString()} VNĐ</TableCell>
+                                <TableCell align="center">{product.soTien?.toLocaleString()} VNĐ</TableCell>
                                 <TableCell align="center" onClick={() => { setSelectedProductId(product.id); setOpenConfirmModal(true) }} >
                                   <IconButton color="error">
                                     <DeleteIcon />
@@ -2477,15 +2477,18 @@ const BanTaiQuay = () => {
 
 // Style cho modal
 const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 1200,
-  bgcolor: 'background.paper',
+  position: "fixed",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "80vw", // Giới hạn chiều rộng
+  maxWidth: "600px", // Định kích thước tối đa
+  maxHeight: "80vh", // Giới hạn chiều cao
+  bgcolor: "white",
   boxShadow: 24,
-  p: 4,
-  borderRadius: 2
+  p: 2,
+  overflow: "auto", // Cho phép cuộn nếu nội dung quá dài
+  borderRadius: "8px",
 };
 
 export default BanTaiQuay;
