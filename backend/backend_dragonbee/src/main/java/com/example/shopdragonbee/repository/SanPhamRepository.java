@@ -31,20 +31,23 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
     List<SanPhamDTO> getAll();
 
 
+
     @Query("""
-        SELECT new com.example.shopdragonbee.dto.SanPhamDTO(
-            sp.id,
-            sp.ma,
-            sp.tenSanPham,
-            COALESCE(SUM(spct.soLuong), 0), 
-            sp.ngayTao,
-            sp.trangThai
-        )
-        FROM SanPham sp
-        LEFT JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id
-        GROUP BY sp.id, sp.ma, sp.tenSanPham, sp.ngayTao, sp.trangThai
-    """)
+    SELECT new com.example.shopdragonbee.dto.SanPhamDTO(
+        sp.id,
+        sp.ma,
+        sp.tenSanPham,
+        COALESCE(SUM(spct.soLuong), 0), 
+        sp.ngayTao,
+        sp.trangThai
+    )
+    FROM SanPham sp
+    LEFT JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id
+    GROUP BY sp.id, sp.ma, sp.tenSanPham, sp.ngayTao, sp.trangThai
+    ORDER BY sp.ngayTao DESC
+""")
     Page<SanPhamDTO> getAllPaged(Pageable pageable);
+
 
     // tìm kiếm và bộ lọc
     @Query("""
@@ -61,6 +64,7 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
     WHERE (:tenSanPham IS NULL OR LOWER(sp.tenSanPham) LIKE LOWER(CONCAT('%', :tenSanPham, '%')))
     AND (:trangThai IS NULL OR LOWER(sp.trangThai) = LOWER(:trangThai))
     GROUP BY sp.id, sp.ma, sp.tenSanPham, sp.ngayTao, sp.trangThai
+    ORDER BY sp.ngayTao DESC
 """)
     Page<SanPhamDTO> searchSanPham(
             @Param("tenSanPham") String tenSanPham,
