@@ -3,6 +3,7 @@ package com.example.shopdragonbee.controller;
 import com.example.shopdragonbee.dto.BanHangTaiQuayResponseDTO;
 import com.example.shopdragonbee.dto.HoaDonChiTietResponseDTO;
 import com.example.shopdragonbee.entity.DanhMuc;
+import com.example.shopdragonbee.entity.HoaDon;
 import com.example.shopdragonbee.repository.DanhMucRepositoryP;
 import com.example.shopdragonbee.repository.HoaDonChiTietRepository;
 import com.example.shopdragonbee.repository.SanPhamChiTietRepositoryP;
@@ -36,7 +37,7 @@ public class BanHangTaiQuayController {
 
     //Thêm hóa đơn tại quầy
     @GetMapping("/addHoaDonTaiQuay")
-    public Boolean addHoaDonTaiQuayVaChoThanhToan() {
+    public HoaDon addHoaDonTaiQuayVaChoThanhToan() {
         return banHangTaiQuayService.taoHoaDon();
     }
 

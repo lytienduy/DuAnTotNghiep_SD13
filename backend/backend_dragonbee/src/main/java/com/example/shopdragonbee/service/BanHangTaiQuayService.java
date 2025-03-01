@@ -49,7 +49,7 @@ public class BanHangTaiQuayService {
     private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
 
     //Tạo hóa đơn tại quầy
-    public Boolean taoHoaDon() {
+    public HoaDon taoHoaDon() {
         try {
             HoaDon hoaDon = new HoaDon();
             hoaDon.setMa("HD" + (System.currentTimeMillis() % 100000));
@@ -59,10 +59,9 @@ public class BanHangTaiQuayService {
             //Chú lại đoạn này nên set 0 hay set null
             hoaDon.setTongTien((float) 0);
             hoaDon.setPhiShip((float) 0);
-            hoaDonRepository.save(hoaDon);
-            return true;
+            return hoaDonRepository.save(hoaDon);
         } catch (Exception e) {
-            return false;
+            return null;
         }
     }
 
@@ -301,12 +300,12 @@ public class BanHangTaiQuayService {
 
     public Boolean thanhToanHoaDon(Integer idHoaDon, String pttt, Float tienMat, Float chuyenKhoan) {
         try {
-
             ThanhToanHoaDon thanhToanHoaDonTienMat = new ThanhToanHoaDon();
             thanhToanHoaDonTienMat.setMa("TTHD" + (System.currentTimeMillis() % 100000));
             thanhToanHoaDonTienMat.setHoaDon(hoaDonRepository.findById(idHoaDon).get());
             thanhToanHoaDonTienMat.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(1).get());
             thanhToanHoaDonTienMat.setSoTienThanhToan(tienMat);
+            thanhToanHoaDonTienMat.setNgayTao(LocalDateTime.now());
             thanhToanHoaDonRepository.save(thanhToanHoaDonTienMat);
 
             ThanhToanHoaDon thanhToanHoaDonChuyenKhoan = new ThanhToanHoaDon();
@@ -314,6 +313,7 @@ public class BanHangTaiQuayService {
             thanhToanHoaDonChuyenKhoan.setHoaDon(hoaDonRepository.findById(idHoaDon).get());
             thanhToanHoaDonChuyenKhoan.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(2).get());//Chuyển khoản
             thanhToanHoaDonChuyenKhoan.setSoTienThanhToan(chuyenKhoan);
+            thanhToanHoaDonChuyenKhoan.setNgayTao(LocalDateTime.now());
             thanhToanHoaDonRepository.save(thanhToanHoaDonChuyenKhoan);
 
             if (pttt.equalsIgnoreCase("cash")) {
