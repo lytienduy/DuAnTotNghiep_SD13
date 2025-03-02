@@ -19,7 +19,7 @@ import {
   MenuItem,
   Select,
   TextField,
-  InputAdornment
+  InputAdornment,
 } from "@mui/material";
 import {
   Add,
@@ -45,15 +45,17 @@ const NhanVien = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://localhost:8080/api/nhanvien")
+    axios
+      .get("http://localhost:8080/api/nhanvien")
       .then((response) => {
-        const sortedData = response.data.sort((a, b) => new Date(b.ngayTao) - new Date(a.ngayTao));
+        const sortedData = response.data.sort(
+          (a, b) => new Date(b.ngayTao) - new Date(a.ngayTao)
+        );
         setNhanViens(sortedData);
       })
       .catch((error) => console.error("Lỗi khi lấy dữ liệu nhân viên:", error))
       .finally(() => setLoading(false));
   }, []);
-  
 
   const handleOpenConfirm = (id) => {
     Swal.fire({
@@ -404,7 +406,7 @@ const NhanVien = () => {
         component={Paper}
         elevation={2}
         sx={{ p: 2, mb: 2, backgroundColor: "white" }}
-      >
+       >
         <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
           Bộ lọc
         </Typography>
@@ -478,7 +480,7 @@ const NhanVien = () => {
 
       <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
         {/* Import Excel */}
-        <Button variant="contained" color="primary" >
+        <Button variant="contained" color="primary">
           Import Excel
         </Button>
         <Button variant="contained" color="primary" onClick={exportToExcel}>

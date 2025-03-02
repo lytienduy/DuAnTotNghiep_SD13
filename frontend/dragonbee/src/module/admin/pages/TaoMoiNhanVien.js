@@ -509,7 +509,7 @@ const TaoMoiNhanVien = () => {
     formData.append("soNha", diaChiParts.soNha);
     // formData.append("diaChi", fullDiaChi);
     formData.append("nguoiTao", "admin");
-    formData.append("idTaiKhoan", 1);
+    formData.append("idTaiKhoan", 3);
 
     if (nhanVien.anh) {
       formData.append("anh", nhanVien.anh);

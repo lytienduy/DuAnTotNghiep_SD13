@@ -2593,7 +2593,7 @@ const style = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: "80vw", // Giới hạn chiều rộng
-  maxWidth: "600px", // Định kích thước tối đa
+  maxWidth: "1200px", // Định kích thước tối đa
   maxHeight: "80vh", // Giới hạn chiều cao
   bgcolor: "white",
   boxShadow: 24,

@@ -20,6 +20,7 @@
     "react-scripts": "5.0.1",
     "react-to-print": "^3.0.5",
     "react-toastify": "^11.0.3",
+    "recharts": "^2.15.1",
     "sheetjs-style": "^0.15.8",
     "sweetalert2": "^11.17.2",
     "web-vitals": "^4.2.4",

@@ -31,6 +31,7 @@ const NhanVienEdit = () => {
   const [errorSdt, setErrorSdt] = useState("");
   const [originalSdt, setOriginalSdt] = useState(""); // Lưu số điện thoại ban đầu
   const [openConfirm, setOpenConfirm] = useState(false);
+  const [file, setFile] = useState(null); // Lưu file ảnh mới
 
   const handleOpenConfirm = () => setOpenConfirm(true);
   const handleCloseConfirm = () => setOpenConfirm(false);
@@ -59,6 +60,30 @@ const NhanVienEdit = () => {
     xa: "",
     soNha: "",
   });
+
+  useEffect(() => {
+    // Lấy thông tin nhân viên theo ID
+    const fetchNhanVien = async () => {
+      const response = await fetch(`http://localhost:8080/api/nhanvien/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setNhanVien(data);
+      } else {
+        enqueueSnackbar("Không tìm thấy nhân viên!", { variant: "error" });
+        navigate("/nhanvien");
+      }
+    };
+    fetchNhanVien();
+  }, [id, enqueueSnackbar, navigate]);
+
+  // Xử lý chọn ảnh mới
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setNhanVien({ ...nhanVien, anh: URL.createObjectURL(selectedFile) }); // Hiển thị ảnh tạm
+    }
+  };
 
   useEffect(() => {
     axios
@@ -225,7 +250,7 @@ const NhanVienEdit = () => {
       tinhList.find((t) => t.code === diaChiParts.tinh)?.name
     }`;
 
-    const updatedNhanVien = { ...nhanVien, diaChi: fullDiaChi };
+    // const updatedNhanVien = { ...nhanVien, diaChi: fullDiaChi };
 
     const phoneRegex = /^(0[1-9][0-9]{8})$/;
     if (!phoneRegex.test(nhanVien.sdt)) {
@@ -259,6 +284,28 @@ const NhanVienEdit = () => {
       });
       return;
     }
+    let newAnhUrl = nhanVien.anh; // Giữ nguyên ảnh cũ nếu không chọn ảnh mới
+
+    if (file) {
+      // Nếu có ảnh mới, upload lên server trước
+      const formData = new FormData();
+      formData.append("anh", file);
+
+      try {
+        const uploadResponse = await axios.post(
+          "http://localhost:8080/api/nhanvien/upload-anh",
+          formData
+        );
+        newAnhUrl = uploadResponse.data; // Nhận URL ảnh từ server
+      } catch (error) {
+        console.error("Lỗi khi upload ảnh:", error);
+        enqueueSnackbar("Lỗi khi tải ảnh lên!", { variant: "error" });
+        return;
+      }
+    }
+
+    // Cập nhật nhân viên với ảnh mới hoặc giữ ảnh cũ
+    const updatedNhanVien = { ...nhanVien, anh: newAnhUrl };
 
     axios
       .put(`http://localhost:8080/api/nhanvien/${id}`, updatedNhanVien)
@@ -270,7 +317,10 @@ const NhanVienEdit = () => {
 
         setTimeout(() => navigate("/nhanvien"), 1000);
       })
-      .catch((error) => console.error("Lỗi khi cập nhật nhân viên:", error));
+      .catch((error) => {
+        console.error("Lỗi khi cập nhật nhân viên:", error);
+        enqueueSnackbar("Lỗi khi cập nhật nhân viên!", { variant: "error" });
+      });
   };
 
   return (
@@ -345,12 +395,24 @@ const NhanVienEdit = () => {
                 variant="h6"
                 sx={{ fontWeight: "bold", marginTop: "50px" }}
               ></Typography>
-
-              <img
-                src={nhanVien.anh}
-                alt={nhanVien.tenNhanVien}
-                style={{ width: "160px", height: "160px", borderRadius: "50%" }}
+              <input
+                type="file"
+                accept="image/*"
+                id="fileInput"
+                style={{ display: "none" }}
+                onChange={handleFileChange}
               />
+              <img
+                src={nhanVien.anh || "https://via.placeholder.com/160"} // Hiển thị ảnh hiện tại hoặc ảnh mặc định
+                style={{
+                  width: "160px",
+                  height: "160px",
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                }}
+                onClick={() => document.getElementById("fileInput").click()} // Khi ấn vào ảnh, mở hộp thoại chọn ảnh
+              />
+              {/* {file && <button onClick={handleUpload}>Cập nhật ảnh</button>} */}
               <Typography
                 variant="body1"
                 sx={{
