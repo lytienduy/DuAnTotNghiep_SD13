@@ -187,11 +187,11 @@ const HoaDon = () => {
     "ĐANG VẬN CHUYỂN",
     "ĐÃ GIAO HÀNG", "CHỜ THANH TOÁN",
     "ĐÃ THANH TOÁN",
-
     "HOÀN THÀNH",
     "ĐÃ HỦY",
   ] : [
     "TẤT CẢ",
+    "CHỜ THÊM SẢN PHẨM",
     "CHỜ THANH TOÁN",
     "ĐÃ THANH TOÁN", 
     "HOÀN THÀNH",

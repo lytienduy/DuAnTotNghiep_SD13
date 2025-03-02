@@ -16,6 +16,6 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
     Float tinhTongTienByHoaDonId(@Param("idHoaDon") Integer idHoaDon);
 
 
-    List<HoaDon> getHoaDonByTrangThaiAndLoaiDonOrderByNgayTaoAsc(String trangThai, String loaiDon);
+    List<HoaDon> getHoaDonByTrangThaiInAndLoaiDonOrderByNgayTaoAsc(List<String> trangThaitrangThai, String loaiDon);
 
 }

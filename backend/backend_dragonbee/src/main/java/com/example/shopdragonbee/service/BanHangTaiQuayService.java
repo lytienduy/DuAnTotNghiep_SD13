@@ -54,7 +54,7 @@ public class BanHangTaiQuayService {
             HoaDon hoaDon = new HoaDon();
             hoaDon.setMa("HD" + (System.currentTimeMillis() % 100000));
             hoaDon.setLoaiDon("Tại quầy");
-            hoaDon.setTrangThai("Chờ thanh toán");
+            hoaDon.setTrangThai("Chờ thêm sản phẩm");
             hoaDon.setNgayTao(LocalDateTime.now());
             //Chú lại đoạn này nên set 0 hay set null
             hoaDon.setTongTien((float) 0);
@@ -132,13 +132,18 @@ public class BanHangTaiQuayService {
     }
 
     //Xóa sản phẩm khỏi giỏ hàng bán hàng tại quầy
-    public Boolean xoaSanPham(Integer id) {
+    public Boolean xoaSanPham(Integer id, Integer idHoaDon) {
         try {
             HoaDonChiTiet hoaDonChiTiet = hoaDonChiTietRepository.findById(id).get();
             SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(hoaDonChiTiet.getSanPhamChiTiet().getId()).get();
             sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() + hoaDonChiTiet.getSoLuong());
             sanPhamChiTietRepository.save(sanPhamChiTiet);
             hoaDonChiTietRepository.delete(hoaDonChiTiet);
+            HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
+            if (hoaDon.getListHoaDonChiTiet().isEmpty() || hoaDon.getListHoaDonChiTiet() == null) {
+                hoaDon.setTrangThai("Chờ thêm sản phẩm");
+                hoaDonRepository.save(hoaDon); // Lưu lại trạng thái mới
+            }
             return true;
         } catch (Exception e) {
             return false;
@@ -235,6 +240,7 @@ public class BanHangTaiQuayService {
             if (phongCach != 0) {
                 predicates.add(criteriaBuilder.equal(root.get("phongCach").get("id"), phongCach));
             }
+            predicates.add(criteriaBuilder.notEqual(root.get("trangThai"), "Ngừng hoạt động"));
             query.orderBy(criteriaBuilder.desc(root.get("ngayTao")));
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
@@ -292,6 +298,9 @@ public class BanHangTaiQuayService {
                 hoaDonChiTietRepository.save(kiemTraHDCTDaCoChua);//lưu hóa đơn chi tiết
                 sanPhamChiTietRepository.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
             }
+            HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
+            hoaDon.setTrangThai("Chờ thanh toán");
+            hoaDonRepository.save(hoaDon);
             return true;
         } catch (Exception e) {
             return false;

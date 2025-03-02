@@ -683,7 +683,7 @@ const BanTaiQuay = () => {
   };
 
   const xoaSanPham = async (id) => {
-    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/xoaSanPham/${id}`;
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/xoaSanPham/${id}/${selectedOrder.id}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
       if (response.data === true) {

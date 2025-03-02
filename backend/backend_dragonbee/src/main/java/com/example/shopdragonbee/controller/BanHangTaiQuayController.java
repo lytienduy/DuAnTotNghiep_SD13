@@ -60,9 +60,9 @@ public class BanHangTaiQuayController {
     }
 
     //Xóa sản phẩm khỏi giỏ hàng bán hàng tại quầy
-    @PostMapping("/xoaSanPham/{id}")
-    public Boolean xoaSanPham(@PathVariable Integer id) {
-        return banHangTaiQuayService.xoaSanPham(id);
+    @PostMapping("/xoaSanPham/{id}/{idHoaDon}")
+    public Boolean xoaSanPham(@PathVariable Integer id,@PathVariable Integer idHoaDon) {
+        return banHangTaiQuayService.xoaSanPham(id,idHoaDon);
     }
 
     //Nhập số lượng sản phẩm từ bán phím
