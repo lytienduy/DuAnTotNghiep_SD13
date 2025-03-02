@@ -150,11 +150,12 @@ const HoaDonChiTiet = () => {
 
   //List trạng thái hóa đơn
   const steps = hoaDon.loaiHoaDon === "Tại quầy"
-    ? ["Chờ thanh toán", "Đã thanh toán", "Hoàn thành"]
-    : [
-      "Chờ xác nhận", "Đã xác nhận", "Chờ giao hàng", "Đang vận chuyển",
-      "Đã giao hàng", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành"
-    ];
+    ? (hoaDon.sdtNguoiNhanHang === null
+      ? ["Chờ thêm sản phẩm", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành"]
+      : ["Chờ thêm sản phẩm", "Chờ giao hàng", "Đang vận chuyển", "Đã giao hàng", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành"]
+    )
+    : ["Chờ xác nhận", "Đã xác nhận", "Chờ giao hàng", "Đang vận chuyển", "Đã giao hàng", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành"];
+
 
 
   //Hàm gọi api lấy hóa đơn
@@ -640,7 +641,8 @@ const HoaDonChiTiet = () => {
                 <b>Địa chỉ người nhận:</b> {hoaDon.diaChiNguoiNhanHang}
               </Typography>
             </Grid>
-          )}
+          )
+          }
 
           {/* Dòng mới: Thông tin khách hàng */}
           <Grid item xs={12}>
@@ -775,11 +777,12 @@ const HoaDonChiTiet = () => {
         </Box>
 
         {/* Phí ship */}
-        {hoaDon.phiVanChuyen && (
+        {hoaDon.phiVanChuyen > 0 && (
           <Box display="flex" justifyContent="space-between" mb={1}>
             <Typography variant="body1" fontWeight={500}>Phí vận chuyển:</Typography>
             <Typography variant="body1" fontWeight={500}>{hoaDon.phiVanChuyen.toLocaleString()} đ</Typography>
-          </Box>)}
+          </Box>
+        )}
 
         {/* Mã voucher */}
         {hoaDon.maVoucher && (
@@ -806,7 +809,7 @@ const HoaDonChiTiet = () => {
               // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
             }}
           >
-            {(hoaDon.tongTienSanPham + hoaDon.phiVanChuyen).toLocaleString()} VNĐ
+            {hoaDon.tongTienThanhToan.toLocaleString()} VNĐ
           </Typography>
         </Box>
       </Box>

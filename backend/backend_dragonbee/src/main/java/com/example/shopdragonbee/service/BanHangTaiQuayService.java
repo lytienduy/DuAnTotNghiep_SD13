@@ -47,6 +47,10 @@ public class BanHangTaiQuayService {
     private PhuongThucThanhToanRepository phuongThucThanhToanRepository;
     @Autowired
     private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
+    @Autowired
+    private KhachHangRepository khachHangRepository;
+    @Autowired
+    private PhieuGiamGiaRepository phieuGiamGiaRepository;
 
     //Tạo hóa đơn tại quầy
     public HoaDon taoHoaDon() {
@@ -249,8 +253,7 @@ public class BanHangTaiQuayService {
 
 
     //Chuyển đổi sang object có những thông tin bên Hóa Đơn Chi Tiết
-    private BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay convertSanPhamHienThiTrongThemBanHangTaiQuayToDTO
-    (SanPhamChiTiet sanPhamChiTiet) {
+    private BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay convertSanPhamHienThiTrongThemBanHangTaiQuayToDTO(SanPhamChiTiet sanPhamChiTiet) {
         return new BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay(
                 sanPhamChiTiet.getId(),
                 sanPhamChiTiet.getMa(),
@@ -333,6 +336,34 @@ public class BanHangTaiQuayService {
                 thanhToanHoaDonRepository.save(thanhToanHoaDonTienMat);
                 thanhToanHoaDonRepository.save(thanhToanHoaDonChuyenKhoan);
             }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public Boolean xacNhanDatHang(Integer idHoaDon, Integer idKhachHang, String pgg, Boolean giaoHang, String tenNguoiNhan, String sdtNguoiNhan, String diaChiNhanHang,Float tongTienPhaiTra,Float phiShip) {
+        try {
+            HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
+            if (idKhachHang != null) {
+                hoaDon.setKhachHang(khachHangRepository.findById(idKhachHang).get());
+            }
+            if (pgg != null && pgg.trim().isBlank() == false) {
+                PhieuGiamGia phieuGiamGia = phieuGiamGiaRepository.findByMa(pgg.trim()).get();
+                phieuGiamGia.setSoLuong(phieuGiamGia.getSoLuong() - 1);
+                hoaDon.setPhieuGiamGia(phieuGiamGia);
+            }
+            if (giaoHang == true) {
+                hoaDon.setTenNguoiNhan(tenNguoiNhan);
+                hoaDon.setSdt(sdtNguoiNhan);
+                hoaDon.setDiaChiNhanHang(diaChiNhanHang);
+                hoaDon.setPhiShip(phiShip);
+                hoaDon.setTrangThai("Chờ giao hàng");
+            } else {
+                hoaDon.setTrangThai("Đã thanh toán");
+            }
+            hoaDon.setTongTien(tongTienPhaiTra);
+            hoaDonRepository.save(hoaDon);
             return true;
         } catch (Exception e) {
             return false;

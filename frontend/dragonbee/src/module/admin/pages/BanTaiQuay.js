@@ -5,7 +5,7 @@ import {
   , FormControlLabel, Switch, InputLabel, Select, MenuItem, FormControl, TextField,
   InputAdornment, Input, Dialog, DialogTitle, DialogContent, DialogActions, Grid,
   Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, ListItemText,
-  ClickAwayListener, ListItem, List, Popper, Modal, Slider, span
+  ClickAwayListener, ListItem, List, Popper, Modal, Slider, DialogContentText
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
@@ -112,7 +112,7 @@ const BanTaiQuay = () => {
   const [errorTienKhachChuyen, setErrorTienKhachChuyen] = useState("");
   const [errorTienKhachDua, setErrorTienKhachDua] = useState("");
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
-
+  const [openConfirmXacNhanDatHang, setOpenConfirmXacNhanDatHang] = useState(false);
 
 
 
@@ -643,7 +643,6 @@ const BanTaiQuay = () => {
     }
   }
 
-
   //Hàm tăng số lượng sản phẩm trong giỏ hàng
   const tangSoLuong = async (id) => {
     let apiUrl = `http://localhost:8080/ban-hang-tai-quay/tangSoLuong/${id}`;
@@ -876,6 +875,35 @@ const BanTaiQuay = () => {
     }
   }
 
+  //Xác nhận đặt hàng
+  const handleConfirmXacNhatThanhToan = () => {
+    xacNhanDatHang(); // Gọi hàm khi người dùng xác nhận
+    setOpenConfirmXacNhanDatHang(false);
+  };
+
+  const xacNhanDatHang = async () => {
+    try {
+      // if (!errorChuyen && !errorDua) {
+      const addressParts = [specificAddress, selectedWard, selectedDistrict, selectedCity]
+        .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
+        .join(" "); // Ghép chuỗi với dấu cách
+      const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/xacNhanDatHang`, {
+        idHoaDon: selectedOrder.id, idKhachHang: selectedCustomerId, pgg: selectedVoucherCode, giaoHang: showLeftPanel, tenNguoiNhan: recipientName, sdtNguoiNhan: recipientPhone, diaChiNhanHang: addressParts, tongTienPhaiTra: selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount), phiShip: discount
+      })
+      if (response.data) {
+        setShowLeftPanel(false);
+        showSuccessToast("Đặt hàng thành công");
+        fetchOrders();
+      } else {
+        showErrorToast("Lỗi thanh toán");
+      }
+      // }
+    } catch (err) {
+      console.log(err)
+      showErrorToast("Lỗi thanh toán2");
+    }
+  }
+
 
 
   // Lấy ngày hiện tại và cộng thêm 3 ngày
@@ -925,6 +953,21 @@ const BanTaiQuay = () => {
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow effect
       }}
     >
+      {/* Modal confirm xác nhận đặt hàng */}
+      <Dialog open={openConfirmXacNhanDatHang} onClose={() => setOpenConfirmXacNhanDatHang(false)}>
+        <DialogTitle>Xác nhận đơn hàng</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Bạn có chắc chắn muốn xác nhận đặt hàng đơn này không?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirmXacNhanDatHang(false)} color="secondary">
+            Hủy
+          </Button>
+          <Button onClick={handleConfirmXacNhatThanhToan} color="primary" variant="contained">
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
       {/* Xác nhận hủy hóa đơn */}
       <Dialog open={openLyDo} onClose={() => setOpenLyDo(false)}>
         <DialogTitle>Nhập lý do hủy hóa đơn</DialogTitle>
@@ -1272,7 +1315,7 @@ const BanTaiQuay = () => {
                   </TableContainer>
 
                   {/* Box hiển thị tổng tiền */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2,marginTop: 2 }}>
                     <Box></Box>
                     <Box>
                       <Typography component="span" variant="body1" sx={{ mr: 2 }}>Tổng tiền:</Typography>
@@ -1660,7 +1703,13 @@ const BanTaiQuay = () => {
                         </span>
                       </Typography>
 
-                      <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }} >
+                      <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }}
+                        disabled={
+                          selectedOrder.trangThai === "Chờ thêm sản phẩm" ||
+                          (!showLeftPanel && tongTienKhachDaThanhToan < (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)))
+                        }
+                        onClick={() => { setOpenConfirmXacNhanDatHang(true) }}
+                      >
                         Xác nhận đặt hàng
                       </Button>
                     </Box>
@@ -1859,9 +1908,6 @@ const BanTaiQuay = () => {
               </TableBody>
             </Table>
           </TableContainer>
-          <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
-            Tiền thừa trả khách: <span style={{ color: 'red' }}>250.000 <span style={{ color: 'red' }}>VNĐ</span></span>
-          </Typography>
         </DialogContent>
 
         {/* Nút Xác nhận */}

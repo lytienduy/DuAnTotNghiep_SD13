@@ -61,8 +61,8 @@ public class BanHangTaiQuayController {
 
     //Xóa sản phẩm khỏi giỏ hàng bán hàng tại quầy
     @PostMapping("/xoaSanPham/{id}/{idHoaDon}")
-    public Boolean xoaSanPham(@PathVariable Integer id,@PathVariable Integer idHoaDon) {
-        return banHangTaiQuayService.xoaSanPham(id,idHoaDon);
+    public Boolean xoaSanPham(@PathVariable Integer id, @PathVariable Integer idHoaDon) {
+        return banHangTaiQuayService.xoaSanPham(id, idHoaDon);
     }
 
     //Nhập số lượng sản phẩm từ bán phím
@@ -118,6 +118,44 @@ public class BanHangTaiQuayController {
                 java.lang.Integer.parseInt(idHoaDon), pttt,
                 Float.parseFloat(tienMat),
                 Float.parseFloat(chuyenKhoan));
+    }
+
+    @PostMapping("/xacNhanDatHang")
+    public Boolean xacNhanDatHang(@RequestBody Map<String, String> body) {
+        String idHoaDon = body.get("idHoaDon");
+        String idkhachHang = body.get("idKhachHang");
+        String maPGG = body.get("pgg");
+        String giaoHang = body.get("giaoHang");
+        String tenNguoiNhan = body.get("tenNguoiNhan");
+        String sdtNguoiNhan = body.get("sdtNguoiNhan");
+        String diaChiNhanHang = body.get("diaChiNhanHang");
+        String tongTienPhaiTra = body.get("tongTienPhaiTra");
+        String phiShip = body.get("phiShip");
+        if (idkhachHang == null) {
+            return banHangTaiQuayService.xacNhanDatHang(
+                    Integer.parseInt(idHoaDon),
+                    null,
+                    maPGG,
+                    Boolean.parseBoolean(giaoHang),
+                    tenNguoiNhan,
+                    sdtNguoiNhan,
+                    diaChiNhanHang,
+                    Float.parseFloat(tongTienPhaiTra),
+                    Float.parseFloat(phiShip)
+            );
+        } else {
+            return banHangTaiQuayService.xacNhanDatHang(
+                    Integer.parseInt(idHoaDon),
+                    Integer.parseInt(idkhachHang),
+                    maPGG,
+                    Boolean.parseBoolean(giaoHang),
+                    tenNguoiNhan,
+                    sdtNguoiNhan,
+                    diaChiNhanHang,
+                    Float.parseFloat(tongTienPhaiTra),
+                    Float.parseFloat(phiShip)
+            );
+        }
     }
 
 
