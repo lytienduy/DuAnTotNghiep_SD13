@@ -1,5 +1,5 @@
 import { Add, ArrowBack, Delete, Star } from "@mui/icons-material";
-import { Avatar, Box, Button, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField } from "@mui/material";
+import { Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField } from "@mui/material";
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
@@ -28,6 +28,9 @@ const ThongTinKhachHang = () => {
         }],
     });
     const [provinces, setProvinces] = useState([]);
+    const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
+    const [isDeleteAddress, setIsDeleteAddress] = useState(false);
+    const [isUpdateCustomer, setIsUpdateCustomer] = useState(false);
 
     useEffect(() => {
         axios.get(`https://online-gateway.ghn.vn/shiip/public-api/master-data/province`, {
@@ -120,12 +123,15 @@ const ThongTinKhachHang = () => {
             })
         }));
     }
-
+    const capNhatKhachHangHandler = () => {
+        setIsUpdateCustomer(true);
+    }
 
     const capNhatKhachHang = () => {
         axios.put(`http://localhost:8080/khach-hang/${id}`, khachHang)
             .then(response => { toast.success('Cập nhật khách hàng thành công'); setTimeout(() => navigate('/khachhang'), 2000); })
             .catch(error => toast.error('Cập nhật khách hàng thất bại'));
+        setIsUpdateCustomer(false);
     }
 
     const themKhachHang = () => {
@@ -151,22 +157,25 @@ const ThongTinKhachHang = () => {
         }));
     }
 
-    const deleteAddressHandler = (index) => {
-        if (khachHang.diaChiDtos[index]?.id) {
-            axios.delete(`http://localhost:8080/dia-chi/${khachHang.diaChiDtos[index]?.id}`)
+    const deleteAddressHandler = () => {
+        if (khachHang.diaChiDtos[selectedAddressIndex]?.id) {
+            axios.delete(`http://localhost:8080/dia-chi/${khachHang.diaChiDtos[selectedAddressIndex]?.id}`)
                 .then(response => toast.success('Xóa địa chỉ thành công'))
                 .catch(error => toast.error('Xóa địa chỉ thất bại'));
-            setKhachHang(prev => ({
-                ...prev,
-                diaChiDtos: prev.diaChiDtos.filter((_, i) => i !== index)
-            }));
         }
+        setIsDeleteAddress(false);
+        setKhachHang(prev => ({
+            ...prev,
+            diaChiDtos: prev.diaChiDtos.filter((_, i) => i !== selectedAddressIndex)
+        }));
     }
 
     const makeDefaultAddress = (index) => {
-        axios.put(`http://localhost:8080/dia-chi/${khachHang.diaChiDtos[index]?.id}/mac-dinh`)
-            .then(response => toast.success('Đặt làm địa chỉ mặc định thành công'))
-            .catch(error => toast.error('Đặt làm địa chỉ mặc định thất bại'));
+        if (khachHang.diaChiDtos[index]?.id) {
+            axios.put(`http://localhost:8080/dia-chi/${khachHang.diaChiDtos[index]?.id}/mac-dinh`)
+                .then(response => toast.success('Đặt làm địa chỉ mặc định thành công'))
+                .catch(error => toast.error('Đặt làm địa chỉ mặc định thất bại'));
+        }
         setKhachHang(prev => ({
             ...prev,
             diaChiDtos: prev.diaChiDtos.map((item, i) => {
@@ -212,19 +221,21 @@ const ThongTinKhachHang = () => {
     }
 
 
+    const onDeleteAddress = (index) => {
+        setIsDeleteAddress(true);
+        setSelectedAddressIndex(index);
+    }
     const DiaChi = (index) => {
         return (
             <Box key={index} sx={{ padding: 1 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                         <h5 style={{ margin: 0 }}>&#9899; Địa chỉ {index + 1}</h5>
-                        {id &&
-                            (khachHang.diaChiDtos[index]?.macDinh ? <IconButton><Star style={{ color: "red" }} /></IconButton> : <IconButton onClick={() => makeDefaultAddress(index)}><Star /></IconButton>)}
+                        {khachHang.diaChiDtos[index]?.macDinh ? <IconButton><Star style={{ color: "red" }} /></IconButton> : <IconButton onClick={() => makeDefaultAddress(index)}><Star /></IconButton>}
                     </Box>
-                    {khachHang.diaChiDtos[index].id &&
-                    <IconButton onClick={() => deleteAddressHandler(index)} size="small" aria-label="delete">
+                    <IconButton onClick={() => onDeleteAddress(index)} size="small" aria-label="delete">
                         <Delete />
-                    </IconButton>}
+                    </IconButton>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     <FormControl sx={{ flex: 1 }}>
@@ -296,7 +307,7 @@ const ThongTinKhachHang = () => {
                 <ArrowBack onClick={() => {
                     navigate('/khachhang');
                 }} sx={{ marginRight: 1 }} />
-                Khách hàng <span style={{ fontWeight: 'lighter' }}>/ {id ? id: 'Thêm khách hàng'}</span>
+                Khách hàng <span style={{ fontWeight: 'lighter' }}>/ {id}</span>
             </h2>
             <Box sx={classNames.container}>
                 <Box sx={classNames.infoContainer}>
@@ -322,7 +333,7 @@ const ThongTinKhachHang = () => {
                         </Box>
                         <Box>
                             <p>Số điện thoại </p>
-                            <TextField sx={classNames.textField} inputProps={{ maxLength: 12 }} type="text" value={khachHang.sdt}
+                            <TextField sx={classNames.textField} type="text" value={khachHang.sdt}
                                 onChange={(e) => infoChangeHandler(e, 'sdt')}
                             ></TextField>
                         </Box>
@@ -368,13 +379,53 @@ const ThongTinKhachHang = () => {
                     </Box>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                    <Button onClick={id ? capNhatKhachHang : themKhachHang} sx={{ marginTop: 3, width: '20%' }} variant="outlined">
+                    <Button onClick={id ? capNhatKhachHangHandler : themKhachHang} sx={{ marginTop: 3, width: '20%' }} variant="outlined">
                         {id ? 'Cập nhật khách hàng' : 'Thêm khách hàng'}
                     </Button>
                 </Box>
             </Box>
 
             <Toaster position="top-right" />
+            <Dialog
+                open={isDeleteAddress}
+                onClose={() => setIsDeleteAddress(false)}
+                aria-labelledby="draggable-dialog-title"
+            >
+                <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+                    Address
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Do you really want delete this address?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button autoFocus onClick={() => setIsDeleteAddress(false)}>
+                        Cancel
+                    </Button>
+                    <Button onClick={deleteAddressHandler}>Confirm</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={isUpdateCustomer}
+                onClose={() => setIsUpdateCustomer(false)}
+                aria-labelledby="draggable-dialog-title"
+            >
+                <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+                    Customer
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Do you really want update this customer?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button autoFocus onClick={() => setIsUpdateCustomer(false)}>
+                        Cancel
+                    </Button>
+                    <Button onClick={capNhatKhachHang}>Confirm</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }

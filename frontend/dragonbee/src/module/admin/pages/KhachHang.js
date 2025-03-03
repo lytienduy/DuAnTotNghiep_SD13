@@ -1,14 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { alpha, Box, Button, Chip, FormControl, InputBase, InputLabel, MenuItem, Pagination, Paper, Select, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, IconButton, Tooltip } from '@mui/material';
-import { Add, GetApp, Visibility } from '@mui/icons-material';
+import { Add, Edit, GetApp } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { exportToExcel } from '../../../utils';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
-    width: '60%',
+    width: '40%',
     borderRadius: theme.shape.borderRadius,
     backgroundColor: alpha(theme.palette.common.white, 0.15),
     '&:hover': {
@@ -87,8 +87,8 @@ const KhachHang = () => {
     return (
         <Box>
             <h1>Khách hàng </h1>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'column', gap: 1 }}>
-                <Box sx={styles.headerContainer}>
+            <Box style={styles.headerContainer}>
+                <Box sx={styles.header}>
                     <Search>
                         <SearchIconWrapper>
                             <SearchIcon />
@@ -100,12 +100,7 @@ const KhachHang = () => {
                             inputProps={{ 'aria-label': 'search' }}
                         />
                     </Search>
-                    <Button variant="outlined" startIcon={<Add />} onClick={() => navigate('/khachHang/add')}>
-                        Tạo khách hàng
-                    </Button>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <FormControl variant="standard" sx={{ minWidth: 120, mx: 2 }}>
+                    <FormControl sx={{ minWidth: 120, mx: 2 }}>
                         <InputLabel id="demo-simple-select-label">Giới tính</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
@@ -120,7 +115,7 @@ const KhachHang = () => {
                         </Select>
                     </FormControl>
 
-                    <FormControl variant="standard" sx={{ minWidth: 120, mx: 2 }}>
+                    <FormControl sx={{ minWidth: 120, mx: 2 }}>
                         <InputLabel id="demo-simple-select-label">Trạng thái</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
@@ -143,56 +138,56 @@ const KhachHang = () => {
                         Xuất Excel
                     </Button>
                     {/* </DownloadTableExcel> */}
+                    <Button variant="outlined" startIcon={<Add />} onClick={() => navigate('/khachHang/add')}>
+                        Tạo khách hàng
+                    </Button>
+
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+
 
                 </Box>
             </Box>
             <Box sx={{ marginTop: 5 }}>
-            <TableContainer component={Paper} ref={tableRef}>
-  <Table sx={{ minWidth: 650 }} aria-label="simple table">
-    <TableHead>
-      <TableRow>
-        <TableCell sx={{ fontWeight: 'bold', color: 'black' }}>STT</TableCell>
-        <TableCell sx={{ fontWeight: 'bold' }}>Mã Khách Hàng</TableCell>
-        <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
-        <TableCell sx={{ fontWeight: 'bold' }}>Họ tên</TableCell>
-        <TableCell sx={{ fontWeight: 'bold' }}>Ngày sinh</TableCell>
-        <TableCell sx={{ fontWeight: 'bold' }}>Số điện thoại</TableCell>
-        <TableCell sx={{ fontWeight: 'bold' }}>Giới tính</TableCell>
-        <TableCell sx={{ fontWeight: 'bold' }}>Trạng thái</TableCell>
-        <TableCell sx={{ fontWeight: 'bold' }}>Thao tác</TableCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {showKhachHang.map((kh, index) => (
-        <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-          <TableCell component="th" scope="row" sx={{ fontWeight: 'bold', color: 'black' }}>
-            {index + 1}
-          </TableCell>
-          <TableCell>{kh.ma}</TableCell>
-          <TableCell>{kh.email}</TableCell>
-          <TableCell>{kh.tenKhachHang}</TableCell>
-          <TableCell>{kh.ngaySinh}</TableCell>
-          <TableCell>{kh.sdt}</TableCell>
-          <TableCell>{kh.gioiTinh}</TableCell>
-          <TableCell>
-            {kh.trangThai === 'Hoạt động' ? (
-              <Chip label="Hoạt động" color="success" />
-            ) : (
-              <Chip label="Tạm ngưng" color="error" />
-            )}
-          </TableCell>
-          <TableCell onClick={viewDetailHandler.bind(this, kh.ma)}>
-            <Tooltip title="Xem chi tiết" placement="bottom-start">
-              <IconButton>
-                <Visibility style={{ color: 'orange' }} />
-              </IconButton>
-            </Tooltip>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-</TableContainer>
+                <TableContainer component={Paper} ref={tableRef}>
+                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell >STT</TableCell>
+                                <TableCell >Code</TableCell>
+                                <TableCell >Email</TableCell>
+                                <TableCell >Họ tên</TableCell>
+                                <TableCell >Ngày sinh</TableCell>
+                                <TableCell >Số điện thoại</TableCell>
+                                <TableCell >Giới tính</TableCell>
+                                <TableCell >Trạng thái</TableCell>
+                                <TableCell >Thao tác </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {showKhachHang.map((kh, index) => (
+                                <TableRow
+                                    key={index}
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell component="th" scope="row">
+                                        {rowsPerPage * page + index + 1}
+                                    </TableCell>
+                                    <TableCell >{kh.ma}</TableCell>
+                                    <TableCell >{kh.email}</TableCell>
+                                    <TableCell >{kh.tenKhachHang}</TableCell>
+                                    <TableCell >{kh.ngaySinh}</TableCell>
+                                    <TableCell >{kh.sdt}</TableCell>
+                                    <TableCell >{kh.gioiTinh}</TableCell>
+                                    <TableCell >{kh.trangThai === 'Hoạt động' ? <Chip label="Hoạt động" color="success" /> : <Chip label="Tạm ngưng" color="error" />}</TableCell>
+                                    <TableCell onClick={viewDetailHandler.bind(this, kh.ma)}>
+                                        <Tooltip title="Chỉnh sửa" placement="bottom-start"><IconButton><Edit style={{ color: 'orange' }} /></IconButton></Tooltip>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}> <Typography
                         variant="body2">Xem</Typography> <Select value={rowsPerPage} onChange={(e) =>
@@ -215,6 +210,16 @@ export default KhachHang;
 
 const styles = {
     headerContainer: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexDirection: 'column',
+        gap: 1,
+        backgroundColor: 'white',
+        padding: 10,
+        borderRadius: 5,
+        boxShadow: '0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12)'
+    },
+    header: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
