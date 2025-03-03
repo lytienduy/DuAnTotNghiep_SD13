@@ -83,7 +83,7 @@ const HoaDon = () => {
       "Loại hóa đơn": order.loaiDon,
       "Ngày tạo": new Date(order.ngayTao).toLocaleString("vi-VN"),
       "Trạng thái": order.trangThai,
-      "Số tiền thanh toán": order.tongTien.toLocaleString("vi-VN") + " đ",
+      "Số tiền thanh toán": (order?.tongTien ?? 0).toLocaleString("vi-VN") + " đ",
     }));
 
     // Tạo workbook và worksheet
@@ -193,7 +193,7 @@ const HoaDon = () => {
     "TẤT CẢ",
     "CHỜ THÊM SẢN PHẨM",
     "CHỜ THANH TOÁN",
-    "ĐÃ THANH TOÁN", 
+    "ĐÃ THANH TOÁN",
     "HOÀN THÀNH",
     "ĐÃ HỦY",
   ];
@@ -474,7 +474,7 @@ const HoaDon = () => {
             <TableRow>
               <TableCell align="center" sx={{ fontWeight: "bold" }}>#</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold" }}>Mã</TableCell>
-              <TableCell align="center" sx={{ fontWeight: "bold" }}>Người nhận hàng</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold" }}>Khách hàng</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold" }}>Loại hóa đơn</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold" }}>Ngày tạo</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold" }}>Trạng thái</TableCell>
@@ -492,7 +492,23 @@ const HoaDon = () => {
                 <TableRow key={index}>
                   <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
                   <TableCell align="center">{order.ma}</TableCell>
-                  <TableCell align="center">{order.nguoiNhanHang}</TableCell>
+                  <TableCell
+                    align="center" >
+                    <Box sx={{
+                      backgroundColor: order?.maKhachHang === null ? "#FFE0B2" : "#D1E8FF",
+                      color: order?.maKhachHang === null ? "#E65100" : "#0D47A1",
+                      borderRadius: "8px",
+                      padding: "4px 10px",
+                      fontWeight: "normal",
+                      display: "inline-block", // Giúp box ôm sát nội dung
+                      width: "fit-content",    // Chiều rộng chỉ bằng nội dung
+                      maxWidth: "100%"
+                    }}>
+                      {order?.maKhachHang === null
+                        ? "Khách vãng lai"
+                        : `${order.tenKhachHang} - ${order.sdtKhachHang}`}
+                    </Box>
+                  </TableCell>
                   <TableCell align="center">
                     <Box sx={{
                       backgroundColor: order.loaiDon === "Online" ? "#E3F2FD" : "#FFEBEE",
@@ -515,7 +531,7 @@ const HoaDon = () => {
                       {order.trangThai}
                     </Box>
                   </TableCell>
-                  <TableCell align="center">{order.tongTien.toLocaleString("vi-VN")} đ</TableCell>
+                  <TableCell align="center">{(order?.tongTien ?? 0).toLocaleString("vi-VN")} đ</TableCell>
                   <TableCell align="center">
                     <Stack direction="row" spacing={1}>
                       <IconButton color="primary" size="small"
@@ -539,7 +555,7 @@ const HoaDon = () => {
       {/* In hóa đơn */}
       {hoaDon && (
         <Box id="hoaDonPrint" style={{ display: "none" }}> {/* Thay display: none bằng block */}
-          <HoaDonPrint  hoaDon={hoaDon} />
+          <HoaDonPrint hoaDon={hoaDon} />
         </Box>
       )}
 
@@ -565,7 +581,7 @@ const HoaDon = () => {
             onClick={() => handleChangePage(page - 1)}
             disabled={page === 0}
             sx={{ borderRadius: "50%", minWidth: 40, width: 40, height: 40 }}
-          >          
+          >
             ‹
           </Button>
           {/* Các số trang */}

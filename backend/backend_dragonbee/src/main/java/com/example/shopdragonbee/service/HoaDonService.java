@@ -3,10 +3,7 @@ package com.example.shopdragonbee.service;
 import com.example.shopdragonbee.dto.HoaDonChiTietResponseDTO;
 import com.example.shopdragonbee.dto.HoaDonResponseDTO;
 import com.example.shopdragonbee.entity.*;
-import com.example.shopdragonbee.repository.HoaDonRepository;
-import com.example.shopdragonbee.repository.LichSuHoaDonRepository;
-import com.example.shopdragonbee.repository.SanPhamChiTietRepositoryP;
-import com.example.shopdragonbee.repository.ThanhToanHoaDonRepository;
+import com.example.shopdragonbee.repository.*;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +30,9 @@ public class HoaDonService {
 
     @Autowired
     private SanPhamChiTietRepositoryP sanPhamChiTietRepositoryP;
+
+    @Autowired
+    private KhachHangRepository khachHangRepository;
 
     //Hầm lấy tất cả trả về List<HoaDonResponseDTO>
     public List<HoaDonResponseDTO> getAllHoaDons() {
@@ -118,6 +118,8 @@ public class HoaDonService {
 
     //Cập nhật trạng thái hóa đơn bên Hóa Đơn Chi Tiết
     public Boolean capNhatTrangThaiHoaDon(Integer idHoaDon, String trangThai, String hanhDong, String lyDo) {
+//        List<String> cacTrangThaiCanCapNhat = new ArrayList<>();
+//        cacTrangThaiCanCapNhat.add(trangThai);
         HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
         if (trangThai.equalsIgnoreCase("Đã hủy")) {
             for (HoaDonChiTiet hoaDonChiTiet : hoaDon.getListHoaDonChiTiet()
@@ -125,6 +127,15 @@ public class HoaDonService {
                 SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepositoryP.findById(hoaDonChiTiet.getSanPhamChiTiet().getId()).get();
                 sanPhamChiTiet.setSoLuong((sanPhamChiTiet.getSoLuong() + hoaDonChiTiet.getSoLuong()));
                 sanPhamChiTietRepositoryP.save(sanPhamChiTiet);
+            }
+        }
+        if (trangThai.equalsIgnoreCase("Đã giao hàng")) {
+            double soTienKhachDaThanhToan = hoaDon.getListThanhToanHoaDon()
+                    .stream()
+                    .mapToDouble(ThanhToanHoaDon::getSoTienThanhToan)
+                    .sum();
+            if (soTienKhachDaThanhToan >= hoaDon.getTongTien()) {
+                trangThai = "Đã thanh toán";
             }
         }
 
@@ -215,10 +226,20 @@ public class HoaDonService {
 
     //Chuyển đổi sang object có những thông tin bên Hoa Đơn
     private HoaDonResponseDTO convertToDTO(HoaDon hoaDon) {
+        String maKhachHang = null;
+        String tenKhachHang = null;
+        String sdtKhachHang = null;
+        if (hoaDon.getKhachHang() != null) {
+            maKhachHang = hoaDon.getKhachHang().getMa();
+            tenKhachHang = hoaDon.getKhachHang().getTenKhachHang();
+            sdtKhachHang = hoaDon.getKhachHang().getSdt();
+        }
         return new HoaDonResponseDTO(
                 hoaDon.getId(),
                 hoaDon.getMa(),
-                hoaDon.getTenNguoiNhan() + " - " + hoaDon.getSdt(),
+                maKhachHang,
+                tenKhachHang,
+                sdtKhachHang,
                 hoaDon.getLoaiDon(),
                 hoaDon.getNgayTao(),
                 hoaDon.getTrangThai(),

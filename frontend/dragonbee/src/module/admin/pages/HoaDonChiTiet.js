@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import axios from "axios"; // Import axios
 import {
   Box, Table, TableBody,
-  TableCell, TableContainer, TableHead, TableRow, Typography, Button, Chip, Paper, Container, CircularProgress, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Stack
+  TableCell, TableContainer, TableHead, TableRow, Typography, Button, Chip, Paper, Container, CircularProgress, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Stack,InputAdornment
 
 } from "@mui/material";
 import { Delete, History, Close, ArrowBack, ArrowForward } from '@mui/icons-material';
@@ -11,7 +11,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
-
+import CloseIcon from '@mui/icons-material/Close';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 
 const HoaDonChiTiet = () => {
   //Khai báo useState
@@ -30,6 +31,88 @@ const HoaDonChiTiet = () => {
   const [openGhiChuNext, setOpenGhiChuNext] = useState(false);
   const [openConfirmNext, setOpenConfirmNext] = useState(false); // Mở modal xác nhận
   const [ghiChuTrangThai, setGhiChuTrangThai] = useState("");
+  const [openTT, setOpenTT] = useState(false);
+  const [tienKhachDua, setTienKhachDua] = useState(0);
+  const [tienKhachChuyen, setTienKhachChuyen] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState('cash'); // Mặc định là 'cash' (tiền mặt)
+  const [errorTienKhachChuyen, setErrorTienKhachChuyen] = useState("");
+  const [errorTienKhachDua, setErrorTienKhachDua] = useState("");
+
+  const handleTienKhachDua = (e) => {
+    let newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
+
+    if (/^0+$/.test(newValue)) {
+      newValue = "0";
+    } else {
+      newValue = newValue.replace(/^0+/, ''); // Xóa 0 thừa đầu
+    }
+
+    setTienKhachDua(newValue);
+    // Kiểm tra lỗi ngay khi nhập
+    if (Number(newValue) < 1000) {
+      setErrorTienKhachDua("Số tiền khách đưa phải lớn hơn 1,000 VNĐ");
+    } else {
+      setErrorTienKhachDua(""); // Xóa lỗi nếu nhập đúng
+    }
+  };
+
+
+  // Hàm để xử lý nhập liệu cho "tiền khách đưa"
+  const handleTienKhachChuyen = (e) => {
+    var newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
+
+    if (/^0+$/.test(newValue)) {
+      newValue = "0";
+    } else {
+      newValue = newValue.replace(/^0+/, ''); // Xóa 0 thừa đầu
+    }
+    setTienKhachChuyen(newValue);
+    // Kiểm tra lỗi ngay khi nhập
+    if (Number(newValue) < 1000) {
+      setErrorTienKhachChuyen("Số tiền chuyển phải lớn hơn 1,000 VNĐ");
+    } else {
+      setErrorTienKhachChuyen(""); // Xóa lỗi nếu nhập đúng
+    }
+  };
+
+  const xacNhanThanhToan = async () => {
+    try {
+      let errorChuyen = "";
+      let errorDua = "";
+
+      if (paymentMethod === 'transfer' && Number(tienKhachChuyen) < 1000) {
+        errorChuyen = "Số tiền chuyển phải lớn hơn 1,000 VNĐ";
+      }
+      if (paymentMethod === 'cash' && Number(tienKhachDua) < 1000) {
+        errorDua = "Số tiền khách đưa phải lớn hơn 1,000 VNĐ";
+      }
+      if (paymentMethod === 'both') {
+        if (Number(tienKhachChuyen) < 1000) errorChuyen = "Số tiền chuyển phải lớn hơn 1,000 VNĐ";
+        if (Number(tienKhachDua) < 1000) errorDua = "Số tiền khách đưa phải lớn hơn 1,000 VNĐ";
+      }
+
+      setErrorTienKhachChuyen(errorChuyen);
+      setErrorTienKhachDua(errorDua);
+      if (!errorChuyen && !errorDua) {
+        const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/thanhToanHoaDon`, {
+          idHoaDon: hoaDon.id, pttt: paymentMethod, tienMat: tienKhachDua, chuyenKhoan: tienKhachChuyen
+        })
+        if (response.data) {
+          setTienKhachDua(0);
+          setTienKhachChuyen(0);
+          setPaymentMethod('cash');
+          setOpenTT(false);
+          showSuccessToast("Xác nhận thanh toán thành công");
+          fetchHoaDon();
+        } else {
+          showErrorToast("Lỗi thanh toán");
+        }
+      }
+    } catch (err) {
+      console.log(err)
+      showErrorToast("Lỗi thanh toán");
+    }
+  }
 
   //Thông báo thành công
   const showSuccessToast = (message) => {
@@ -268,6 +351,147 @@ const HoaDonChiTiet = () => {
 
   return (
     <div>
+      <Dialog open={openTT} onClose={() => setOpenTT(false)} maxWidth="sm" fullWidth>
+        {/* Tiêu đề có nút đóng */}
+        <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center', fontSize: '25px', color: '#1976D2', position: 'relative' }}>
+          THANH TOÁN
+          <IconButton
+            onClick={() => {
+              setTienKhachDua(0);
+              setTienKhachChuyen(0);
+              setPaymentMethod('cash');
+              setOpenTT(false)
+            }}
+            sx={{ position: 'absolute', top: 8, right: 8, color: '#1976D2' }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent>
+          {/* Tổng tiền hàng */}
+          {/* Nút Chuyển Khoản - Tiền Mặt - Cả Hai */}
+          <Grid container justifyContent="center" spacing={1} sx={{ mb: 2 }}>
+            <Grid item xs={4}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => {
+                  setPaymentMethod('transfer');
+                  setTienKhachDua(0);
+                  setTienKhachChuyen(0);
+                }}
+                sx={{
+                  backgroundColor: paymentMethod === 'transfer' ? 'red' : '#FFB6C1',
+                  color: 'white',
+                  opacity: paymentMethod === 'transfer' ? 1 : 0.5,
+                }}
+              >
+                CHUYỂN KHOẢN
+              </Button>
+            </Grid>
+            <Grid item xs={4}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => {
+                  setPaymentMethod('cash');
+                  setTienKhachDua(0);
+                  setTienKhachChuyen(0);
+                }}
+                sx={{
+                  backgroundColor: paymentMethod === 'cash' ? 'green' : '#a3c88e',
+                  color: 'white',
+                  opacity: paymentMethod === 'cash' ? 1 : 0.5,
+                }}
+              >
+                TIỀN MẶT
+              </Button>
+            </Grid>
+            <Grid item xs={4}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => {
+                  setPaymentMethod('both');
+                  setTienKhachDua(0);
+                  setTienKhachChuyen(0);
+                }}
+                sx={{
+                  backgroundColor: paymentMethod === 'both' ? '#1976D2' : '#B6D0FF',
+                  color: 'white',
+                  opacity: paymentMethod === 'both' ? 1 : 0.5,
+                }}
+              >
+                CẢ HAI
+              </Button>
+            </Grid>
+          </Grid>
+
+          {/* Nếu chọn TIỀN MẶT hoặc CẢ HAI thì hiển thị input nhập tiền khách đưa */}
+          {(paymentMethod === 'cash' || paymentMethod === 'both') && (
+            <>
+              <Typography sx={{ color: '#1976D2', fontSize: 14 }}>Tiền khách đưa</Typography>
+              <TextField
+                fullWidth
+                variant="standard"
+                value={tienKhachDua ? parseInt(tienKhachDua, 10).toLocaleString() : tienKhachDua}
+                onChange={handleTienKhachDua}
+                error={!!errorTienKhachDua} // Nếu có lỗi thì hiển thị lỗi
+                helperText={errorTienKhachDua} // Nội dung lỗi
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Typography sx={{ color: 'black' }}>VNĐ</Typography>
+                    </InputAdornment>
+                  )
+                }}
+                sx={{
+                  mb: 2,
+                  '& .MuiInputBase-input': { fontSize: 18, fontWeight: 'bold', textAlign: 'right' }
+                }}
+              />
+            </>
+          )}
+
+          {/* Nếu chọn CHUYỂN KHOẢN hoặc CẢ HAI thì hiển thị input Mã giao dịch & Tiền khách chuyển */}
+          {(paymentMethod === 'transfer' || paymentMethod === 'both') && (
+            <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
+
+              <Grid item xs={12}>
+                <Typography sx={{ color: '#1976D2', fontSize: 14 }}>Tiền khách chuyển</Typography>
+                <TextField
+                  fullWidth
+                  variant="standard"
+                  value={tienKhachChuyen ? parseInt(tienKhachChuyen, 10).toLocaleString() : tienKhachChuyen}
+                  onChange={handleTienKhachChuyen}
+                  error={!!errorTienKhachChuyen}
+                  helperText={errorTienKhachChuyen}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Typography sx={{ color: 'black' }}>VNĐ</Typography>
+                      </InputAdornment>
+                    )
+                  }}
+                  sx={{
+                    '& .MuiInputBase-input': { fontSize: 18, fontWeight: 'bold', textAlign: 'right' }
+                  }}
+                />
+              </Grid>
+            </Grid>
+          )}</DialogContent> <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button onClick={xacNhanThanhToan} variant="contained" sx={{ backgroundColor: 'green', color: 'white', fontWeight: 'bold' }}
+            disabled={
+              (paymentMethod === 'transfer' && errorTienKhachChuyen) ||
+              (paymentMethod === 'cash' && errorTienKhachDua) ||
+              (paymentMethod === 'both' && errorTienKhachChuyen || errorTienKhachDua)
+            }
+          >
+            Xác nhận thanh toán
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Box display="flex" alignItems="center" mb={3}>
         <IconButton onClick={() => navigate(`/hoaDon`)} sx={{ marginRight: 2 }}>
           <ArrowBackIcon />
@@ -650,7 +874,19 @@ const HoaDonChiTiet = () => {
               Thông tin khách hàng
             </Typography>
             <Typography>
-              {hoaDon.maKhachHang} - {hoaDon.tenKhachHang} - {hoaDon.sdtKhachHang}
+              <Box sx={{
+                backgroundColor: "#D1E8FF",
+                color: "#0D47A1",
+                borderRadius: "8px",
+                padding: "4px 10px",
+                fontWeight: "normal",
+                display: "inline-block",
+
+              }}>
+                {hoaDon.maKhachHang ?
+                  `${hoaDon.maKhachHang} - ${hoaDon.tenKhachHang} - ${hoaDon.sdtKhachHang}` : "Khách vãng lai"}
+              </Box>
+
             </Typography>
           </Grid>
         </Grid>
@@ -659,14 +895,35 @@ const HoaDonChiTiet = () => {
 
 
       {/* Lịch sử thanh toán */}
-      <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: "hidden" }}>
-        <Typography
-          variant="h6"  // Giảm kích thước tiêu đề
-          align="center"
-          sx={{ fontWeight: "bold", p: 2, textTransform: "uppercase", fontSize: "1.2rem" }} // Giảm size chữ
-        >
-          Lịch sử thanh toán
-        </Typography>
+
+      <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: "hidden", flex: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "1.2rem", flex: 1, textAlign: "center" }}
+          >
+            Lịch sử thanh toán
+          </Typography>
+          <Button
+            variant="outlined" // Đặt kiểu viền
+            onClick={() => setOpenTT(true)} // Khi nhấn mở modal
+            sx={{
+              borderColor: 'black', // Viền màu đen
+              color: 'black', // Màu chữ đen
+              backgroundColor: 'white', // Nền trắng
+              borderRadius: '8px', // Bo góc
+              padding: '3px 13px', // Khoảng cách trong button
+              minWidth: '40px', // Kích thước tối thiểu cho button không bị co lại
+              marginRight: 20,
+              '&:hover': {
+                backgroundColor: '#f5f5f5', // Màu nền nhạt hơn khi hover
+                borderColor: 'black' // Giữ viền màu đen khi hover
+              }
+            }}
+          >
+            <CreditCardIcon style={{ color: 'black' }} /> {/* Icon ví */}
+          </Button>
+        </Box>
         <Table sx={{ border: "1px solid #ddd" }}>
           <TableHead>
             <TableRow>
@@ -773,14 +1030,14 @@ const HoaDonChiTiet = () => {
         {/* Tổng tiền hàng */}
         <Box display="flex" justifyContent="space-between" mb={1}>
           <Typography variant="body1" fontWeight={500}>Tổng tiền hàng:</Typography>
-          <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienSanPham.toLocaleString()} ₫</Typography>
+          <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienSanPham?.toLocaleString()} ₫</Typography>
         </Box>
 
         {/* Phí ship */}
-        {hoaDon.phiVanChuyen > 0 && (
+        {(hoaDon?.phiVanChuyen ?? 0) > 0 && (
           <Box display="flex" justifyContent="space-between" mb={1}>
             <Typography variant="body1" fontWeight={500}>Phí vận chuyển:</Typography>
-            <Typography variant="body1" fontWeight={500}>{hoaDon.phiVanChuyen.toLocaleString()} đ</Typography>
+            <Typography variant="body1" fontWeight={500}>{(hoaDon?.phiVanChuyen ?? 0).toLocaleString()} đ</Typography>
           </Box>
         )}
 
@@ -789,7 +1046,7 @@ const HoaDonChiTiet = () => {
           <Box display="flex" justifyContent="space-between" mb={2}>
             <Typography variant="body1" fontWeight={500}>Mã giảm giá:</Typography>
             <Typography variant="body1" fontWeight={500} color="error">
-              {hoaDon.maVoucher} - {(hoaDon.tongTienSanPham + hoaDon.phiVanChuyen - hoaDon.tongTienThanhToan).toLocaleString()} đ
+              {hoaDon.maVoucher} - {(hoaDon.tongTienSanPham + (hoaDon?.phiVanChuyen ?? 0) - (hoaDon?.tongTienThanhToan ?? 0)).toLocaleString()} đ
             </Typography>
           </Box>
         )}
@@ -809,7 +1066,7 @@ const HoaDonChiTiet = () => {
               // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
             }}
           >
-            {hoaDon.tongTienThanhToan.toLocaleString()} VNĐ
+            {(hoaDon.tongTienThanhToan ?? 0).toLocaleString()} VNĐ
           </Typography>
         </Box>
       </Box>

@@ -510,6 +510,23 @@ const BanTaiQuay = () => {
     return () => clearInterval(interval);
   }, [selectedOrder?.listDanhSachSanPham]);
 
+  //Set lại thông tin khách hàng phí ship và voucher khi chuyển hóa đơn
+  const prevSelectedOrderRef = useRef(null);
+
+  useEffect(() => {
+    if (selectedOrder !== prevSelectedOrderRef.current) {
+      setSelectedCustomerId(null);
+      setDiscount(0);
+      setSelectedVoucherCode("");
+      setShowLeftPanel(false);
+      setKeyword("");
+      setDiscountAmount(0);
+  
+      // Cập nhật giá trị trước đó của selectedOrder
+      prevSelectedOrderRef.current = selectedOrder;
+    }
+  }, [selectedOrder]);
+
   //Hàm xử lý khi đóng mở modal
   useEffect(() => {
     if (openSPModal) { // Khi mở modal add sản phẩm vào giỏ hàng thì load bộ lọc và sản phẩm thêm
@@ -1315,7 +1332,7 @@ const BanTaiQuay = () => {
                   </TableContainer>
 
                   {/* Box hiển thị tổng tiền */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2,marginTop: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2, marginTop: 2 }}>
                     <Box></Box>
                     <Box>
                       <Typography component="span" variant="body1" sx={{ mr: 2 }}>Tổng tiền:</Typography>
@@ -1627,6 +1644,11 @@ const BanTaiQuay = () => {
                             variant="standard"
                             value={discount ? parseInt(discount, 10).toLocaleString() : discount}
                             onChange={handleDiscountInput}
+                            onBlur={() => {
+                              if (discount === '') {
+                                setDiscount(0);
+                              }
+                            }}
                             InputProps={{
                               endAdornment: (
                                 <InputAdornment position="end">

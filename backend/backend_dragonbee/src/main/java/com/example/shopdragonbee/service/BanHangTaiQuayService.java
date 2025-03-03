@@ -61,8 +61,8 @@ public class BanHangTaiQuayService {
             hoaDon.setTrangThai("Chờ thêm sản phẩm");
             hoaDon.setNgayTao(LocalDateTime.now());
             //Chú lại đoạn này nên set 0 hay set null
-            hoaDon.setTongTien((float) 0);
-            hoaDon.setPhiShip((float) 0);
+            hoaDon.setTongTien(null);
+            hoaDon.setPhiShip(null);
             return hoaDonRepository.save(hoaDon);
         } catch (Exception e) {
             return null;
