@@ -9,6 +9,7 @@
     "@mui/icons-material": "^6.4.1",
     "@mui/material": "^6.4.1",
     "axios": "^1.7.9",
+    "cloudinary-core": "^2.13.1",
     "cra-template": "1.2.0",
     "font-awesome": "^4.7.0",
     "html5-qrcode": "^2.3.8",
@@ -26,7 +27,8 @@
     "sweetalert2": "^11.17.2",
     "web-vitals": "^4.2.4",
     "xlsx": "^0.18.5",
-    "yup": "^1.6.1"
+    "yup": "^1.6.1",
+    "proxy": "http://localhost:8080"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -16,7 +16,19 @@ import { SnackbarProvider } from 'notistack';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import KhachHang from './module/admin/pages/KhachHang';
 import ThongTinKhachHang from './module/admin/pages/ThongTinKhachHang';
-
+import SanPham from "./module/admin/pages/SanPham";
+import ChatLieu from "./module/admin/pages/ChatLieu";
+import MauSac from "./module/admin/pages/MauSac";
+import PhongCach from "./module/admin/pages/PhongCach";
+import Size from "./module/admin/pages/Size";
+import KieuDang from "./module/admin/pages/KieuDang";
+import KieuDaiQuan from "./module/admin/pages/KieuDaiQuan";
+import XuatSu from "./module/admin/pages/XuatSu";
+import DanhMuc from "./module/admin/pages/DanhMuc";
+import ThuongHieu from "./module/admin/pages/ThuongHieu";
+import SanPhamChiTiet from "./module/admin/pages/SanPhamChiTiet";
+import AddProduct from "./module/admin/pages/AddProduct";
+import AddChatLieu from "./module/admin/pages/AddChatLieu";
 import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
 
 const theme = createTheme({
@@ -52,7 +64,7 @@ const App = () => {
               <Header toggleSidebar={toggleSidebar} />
 
               {/* Routing */}
-              <Box sx={{ padding: 3, backgroundColor:'#f3f3f3' , height:'100%'}}>
+              <Box sx={{ padding: 3, backgroundColor: '#f3f3f3', height: '100%' }}>
                 <Routes>
                   <Route path="/" element={<NavigateToThongKe />} />
                   <Route path="/thongKe" element={<ThongKe />} />
@@ -68,6 +80,37 @@ const App = () => {
                   <Route path="/khachHang" element={<KhachHang />} />
                   <Route path="/khachHang/detail/:id" element={<ThongTinKhachHang />} />
                   <Route path="/khachHang/add/" element={<ThongTinKhachHang />} />
+
+                  {/* san pham */}
+                  <Route path="/thongKe" element={<ThongKe />} />
+                  <Route path="/banTaiQuay" element={<BanTaiQuay />} />
+                  <Route path="/hoaDon" element={<HoaDon />} />
+                  {/* sản phẩm */}
+                  <Route path="/sanpham" element={<SanPham />} />
+                  {/* chất liệu */}
+                  <Route path="/chatlieu" element={<ChatLieu />} />
+                  {/* màu sác */}
+                  <Route path="/mausac" element={<MauSac />} />
+                  {/* Phong cách */}
+                  <Route path="/phongcach" element={<PhongCach />} />
+                  {/* Size */}
+                  <Route path="/size" element={<Size />} />
+                  {/* kiểu dáng */}
+                  <Route path="/kieudang" element={<KieuDang />} />
+                  {/* kiểu đai quần */}
+                  <Route path="/kieudaiquan" element={<KieuDaiQuan />} />
+                  {/* Xuất sứ */}
+                  <Route path="/xuatsu" element={<XuatSu />} />
+                  {/* Danh Muc */}
+                  <Route path="/danhmuc" element={<DanhMuc />} />
+                  {/* Thuong Hieu */}
+                  <Route path="/thuonghieu" element={<ThuongHieu />} />
+                  {/* chi tiết sản phẩm */}
+                  <Route path="/sanpham/:id" element={<SanPhamChiTiet />} />
+                  {/* ADD San Pham */}
+                  <Route path="/sanpham/addProduct" element={<AddProduct />} />
+                  {/* Add Chất liệu */}
+                  <Route path="/chatlieu/addChatLieu" element={<AddChatLieu />} />
                 </Routes>
               </Box>
             </Box>
