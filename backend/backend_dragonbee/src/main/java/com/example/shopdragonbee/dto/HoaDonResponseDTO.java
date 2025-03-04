@@ -13,7 +13,9 @@ public class HoaDonResponseDTO {
 
     private Integer id;
     private String ma;
-    private String nguoiNhanHang; // Kết hợp tên và số điện thoại
+    private String maKhachHang; // Kết hợp tên và số điện thoại
+    private String tenKhachHang;
+    private String sdtKhachHang;
     private String loaiDon;
     private LocalDateTime ngayTao;
     private String trangThai;
