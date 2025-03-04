@@ -60,8 +60,8 @@ const App = () => {
                   <Route path="/hoaDon" element={<HoaDon />} />
                   <Route path="/hoaDon/:id" element={<HoaDonChiTiet />} />
                   <Route path='/phieu-giam-gia' element={<PhieuGiamGia />} />
-                  <Route path="/them-phieu-giam-gia" element={<ThemPhieuGiamGia />} />
-                  <Route path="/detail-phieu-giam-gia/:ma" element={<DetailPhieuGiamGia />} />
+                  <Route path="/phieu-giam-gia/them-moi" element={<ThemPhieuGiamGia />} />
+                  <Route path="/phieu-giam-gia/chinh-sua/:ma" element={<DetailPhieuGiamGia />} />
                   <Route path="/nhanvien" element={<NhanVien />} />
                   <Route path="/nhanvien/tao-moi" element={<TaoMoiNhanVien />} />
                   <Route path="/nhanvien/chinh-sua/:id" element={<NhanVienEdit />} />
