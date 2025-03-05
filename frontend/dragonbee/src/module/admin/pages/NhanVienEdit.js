@@ -51,7 +51,7 @@ const NhanVienEdit = () => {
   const [quanList, setQuanList] = useState([]);
   const [xaList, setXaList] = useState([]);
   const handleBack = () => {
-    navigate("/nhanvien"); // Điều hướng về trang phiếu giảm giá
+    navigate("/admin/nhanvien"); // Điều hướng về trang phiếu giảm giá
   };
 
   const [diaChiParts, setDiaChiParts] = useState({
@@ -70,7 +70,7 @@ const NhanVienEdit = () => {
         setNhanVien(data);
       } else {
         enqueueSnackbar("Không tìm thấy nhân viên!", { variant: "error" });
-        navigate("/nhanvien");
+        navigate("/admin/nhanvien");
       }
     };
     fetchNhanVien();
@@ -315,7 +315,7 @@ const NhanVienEdit = () => {
           anchorOrigin: { vertical: "top", horizontal: "right" },
         });
 
-        setTimeout(() => navigate("/nhanvien"), 1000);
+        setTimeout(() => navigate("/admin/nhanvien"), 1000);
       })
       .catch((error) => {
         console.error("Lỗi khi cập nhật nhân viên:", error);
@@ -683,7 +683,7 @@ const NhanVienEdit = () => {
               <Box display="flex" justifyContent="flex-end" mt={3} gap={2}>
                 <Button
                   variant="outlined"
-                  onClick={() => navigate("/nhanvien")}
+                  onClick={() => navigate("/admin/nhanvien")}
                 >
                   Hủy
                 </Button>

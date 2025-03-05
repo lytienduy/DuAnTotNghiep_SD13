@@ -62,7 +62,7 @@ const KhachHang = () => {
     const showKhachHang = filterKhachHang.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
     const viewDetailHandler = (id) => {
-        navigate(`/khachHang/detail/${id}`);
+        navigate(`/admin/khachHang/detail/${id}`);
     }
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(event.target.value)
@@ -138,7 +138,7 @@ const KhachHang = () => {
                         Xuất Excel
                     </Button>
                     {/* </DownloadTableExcel> */}
-                    <Button variant="outlined" startIcon={<Add />} onClick={() => navigate('/khachHang/add')}>
+                    <Button variant="outlined" startIcon={<Add />} onClick={() => navigate('/admin/khachHang/add')}>
                         Tạo khách hàng
                     </Button>
 

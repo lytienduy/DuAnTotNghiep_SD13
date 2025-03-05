@@ -195,7 +195,7 @@ const DiscountCoupons = () => {
                 color: "#1565c0",
               },
             }}
-            onClick={() => navigate("/phieu-giam-gia/them-moi")}
+            onClick={() => navigate("/admin/phieu-giam-gia/them-moi")}
           >
             + Tạo mới
           </Button>
@@ -369,7 +369,7 @@ const DiscountCoupons = () => {
                     </TableCell>
                     <TableCell align="center" sx={{ width: 150, whiteSpace: 'nowrap' }}>
                       <Tooltip title="Chỉnh sửa" arrow>
-                        <IconButton onClick={() => navigate(`/phieu-giam-gia/chinh-sua/${row.ma}`)}>
+                        <IconButton onClick={() => navigate(`/admin/phieu-giam-gia/chinh-sua/${row.ma}`)}>
                           <ModeEditOutlineIcon />
                         </IconButton>
                       </Tooltip>

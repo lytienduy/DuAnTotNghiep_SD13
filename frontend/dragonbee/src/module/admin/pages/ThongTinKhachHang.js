@@ -129,14 +129,14 @@ const ThongTinKhachHang = () => {
 
     const capNhatKhachHang = () => {
         axios.put(`http://localhost:8080/khach-hang/${id}`, khachHang)
-            .then(response => { toast.success('Cập nhật khách hàng thành công'); setTimeout(() => navigate('/khachhang'), 2000); })
+            .then(response => { toast.success('Cập nhật khách hàng thành công'); setTimeout(() => navigate('/admin/khachhang'), 2000); })
             .catch(error => toast.error('Cập nhật khách hàng thất bại'));
         setIsUpdateCustomer(false);
     }
 
     const themKhachHang = () => {
         axios.post('http://localhost:8080/khach-hang/', khachHang)
-            .then(response => { toast.success('Thêm khách hàng thành công'); setTimeout(() => navigate('/khachhang'), 2000); })
+            .then(response => { toast.success('Thêm khách hàng thành công'); setTimeout(() => navigate('/admin/khachhang'), 2000); })
             .catch(error => { toast.error(error.response.data.message) });
     }
 
@@ -305,7 +305,7 @@ const ThongTinKhachHang = () => {
         <Box >
             <h2 style={{ display: 'flex', alignItems: 'center' }}>
                 <ArrowBack onClick={() => {
-                    navigate('/khachhang');
+                    navigate('/admin/khachhang');
                 }} sx={{ marginRight: 1 }} />
                 Khách hàng <span style={{ fontWeight: 'lighter' }}>/ {id}</span>
             </h2>

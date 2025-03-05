@@ -152,7 +152,7 @@ const ThongKe = () => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
         Thống Kê
       </Typography>

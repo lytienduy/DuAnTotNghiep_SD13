@@ -450,7 +450,7 @@ const SanPhamChiTiet = () => {
       >
         <Typography variant="h4">Chi Tiết Sản Phẩm</Typography>
       </Grid>
-      <Button color="black" sx={{ mr: 2 }} onClick={() => navigate("/sanpham")}>
+      <Button color="black" sx={{ mr: 2 }} onClick={() => navigate("/admin/sanpham")}>
         <ArrowBack />
       </Button>
 

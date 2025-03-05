@@ -244,7 +244,7 @@ const SanPham = () => {
               },
             }}
             startIcon={<Add sx={{ color: "primary" }} />} // Màu của biểu tượng dấu "+"
-            onClick={() => navigate("/sanpham/addProduct")}
+            onClick={() => navigate("/admin/sanpham/addProduct")}
           >
             Tạo Mới
           </Button>
@@ -338,7 +338,7 @@ const SanPham = () => {
                       <TableCell align="center">
                         <Button
                           color="primary"
-                          onClick={() => navigate(`/sanpham/${sp.id}`)}
+                          onClick={() => navigate(`/admin/sanpham/${sp.id}`)}
                         >
                           <Visibility />
                         </Button>

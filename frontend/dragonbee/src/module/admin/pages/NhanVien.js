@@ -490,7 +490,7 @@ const NhanVien = () => {
           variant="outlined"
           color="primary"
           startIcon={<Add />}
-          onClick={() => navigate("/nhanvien/tao-moi")}
+          onClick={() => navigate("/admin/nhanvien/tao-moi")}
         >
           Thêm Nhân Viên
         </Button>
@@ -579,7 +579,7 @@ const NhanVien = () => {
                           <IconButton
                             color="primary"
                             onClick={() =>
-                              navigate(`/nhanvien/chinh-sua/${nv.id}`)
+                              navigate(`/admin/nhanvien/chinh-sua/${nv.id}`)
                             }
                           >
                             <Edit />

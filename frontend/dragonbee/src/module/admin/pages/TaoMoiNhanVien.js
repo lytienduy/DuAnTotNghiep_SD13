@@ -205,7 +205,7 @@ const TaoMoiNhanVien = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/nhanvien");
+    navigate("/admin/nhanvien");
   };
 
   useEffect(() => {
@@ -548,7 +548,7 @@ const TaoMoiNhanVien = () => {
       setQuanList([]);
       setXaList([]);
 
-      navigate("/nhanvien");
+      navigate("/admin/nhanvien");
     } catch (error) {
       enqueueSnackbar("Lỗi khi thêm nhân viên!", {
         variant: "error",

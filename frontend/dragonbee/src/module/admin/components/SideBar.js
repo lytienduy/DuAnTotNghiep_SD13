@@ -82,11 +82,11 @@ const Sidebar = ({ isSidebarOpen }) => {
           {/* Thống kê */}
           <ListItemButton
             component={Link}
-            to="/thongKe"
+            to="/admin/thongKe"
             sx={{
               borderRadius: 3,
-              backgroundColor: isActive('/thongKe') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
-              color: isActive('/thongKe') ? '#fff' : 'inherit',
+              backgroundColor: isActive('/admin/thongKe') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
+              color: isActive('/admin/thongKe') ? '#fff' : 'inherit',
               '&:hover': {
                 backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
                 color: '#fff', // Chữ màu trắng khi hover
@@ -96,7 +96,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             <Tooltip title="Thống kê" placement="right" disableHoverListener={isSidebarOpen}>
               <ListItemIcon
                 sx={{
-                  color: isActive('/thongKe') ? '#fff' : 'inherit',
+                  color: isActive('/admin/thongKe') ? '#fff' : 'inherit',
                   minWidth: '40px',
                 }}
               >
@@ -113,11 +113,11 @@ const Sidebar = ({ isSidebarOpen }) => {
           {/* POS */}
           <ListItemButton
             component={Link}
-            to="/banTaiQuay"
+            to="/admin/banTaiQuay"
             sx={{
               borderRadius: 3,
-              backgroundColor: isActive('/banTaiQuay') ? 'rgb(52, 152, 234)' : 'transparent',
-              color: isActive('/banTaiQuay') ? '#fff' : 'inherit',
+              backgroundColor: isActive('/admin/banTaiQuay') ? 'rgb(52, 152, 234)' : 'transparent',
+              color: isActive('/admin/banTaiQuay') ? '#fff' : 'inherit',
               '&:hover': {
                 backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
                 color: '#fff', // Chữ màu trắng khi hover
@@ -125,7 +125,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             }}
           >
             <Tooltip title="Bán tại quầy" placement="right" disableHoverListener={isSidebarOpen}>
-              <ListItemIcon sx={{ color: isActive('/banTaiQuay') ? '#fff' : 'inherit', minWidth: '40px', }}>
+              <ListItemIcon sx={{ color: isActive('/admin/banTaiQuay') ? '#fff' : 'inherit', minWidth: '40px', }}>
                 <StoreIcon />
               </ListItemIcon></Tooltip>
             {isSidebarOpen && <ListItemText primary="Tại Quầy" primaryTypographyProps={{ fontSize: '13.6px' }} />}
@@ -134,11 +134,11 @@ const Sidebar = ({ isSidebarOpen }) => {
           {/* Hóa Đơn */}
           <ListItemButton
             component={Link}
-            to="/hoaDon"
+            to="/admin/hoaDon"
             sx={{
               borderRadius: 3,
-              backgroundColor: isActive('/hoaDon') ? 'rgb(52, 152, 234)' : 'transparent',
-              color: isActive('/hoaDon') ? '#fff' : 'inherit',
+              backgroundColor: isActive('/admin/hoaDon') ? 'rgb(52, 152, 234)' : 'transparent',
+              color: isActive('/admin/hoaDon') ? '#fff' : 'inherit',
               '&:hover': {
                 backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
                 color: '#fff', // Chữ màu trắng khi hover
@@ -146,7 +146,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             }}
           >
             <Tooltip title="Hóa đơn" placement="right" disableHoverListener={isSidebarOpen}>
-              <ListItemIcon sx={{ color: isActive('/hoaDon') ? '#fff' : 'inherit', minWidth: '40px', }}>
+              <ListItemIcon sx={{ color: isActive('/admin/hoaDon') ? '#fff' : 'inherit', minWidth: '40px', }}>
                 <ReceiptIcon />
               </ListItemIcon></Tooltip>
             {isSidebarOpen && <ListItemText primary="Hóa Đơn" primaryTypographyProps={{ fontSize: '13.6px' }} />}
@@ -154,7 +154,7 @@ const Sidebar = ({ isSidebarOpen }) => {
 
           {/* Quản Lý Sản Phẩm */ }
             < ListItemButton onClick={handleToggleProducts} sx={{ borderRadius: 2 }} component={Link}
-            to="/sanpham">
+            to="/admin/sanpham">
           <ListItemIcon sx={{ minWidth: '40px' }}>
             <CategoryIcon />
           </ListItemIcon>
@@ -168,16 +168,16 @@ const Sidebar = ({ isSidebarOpen }) => {
         <Collapse in={openProducts} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             {[
-              { icon: <CheckroomIcon />, to: "/sanpham", text: 'Sản Phẩm' },
-              { icon: <WaterDropIcon />, to: "/chatlieu", text: 'Chất Liệu' },
-              { icon: <PaletteIcon />, to: "/mausac", text: 'Màu Sắc' },
-              { icon: <ViewListIcon />, to: "/danhmuc", text: 'Danh Mục' },
-              { icon: <StraightenIcon />, to: "/size", text: 'Kích Thước' },
-              { icon: <StarIcon />, to: "/thuonghieu", text: 'Thương Hiệu' },
-              { icon: <StyleIcon />, to: "/kieudang", text: 'Kiểu Dáng' },
-              { icon: <BrushIcon />, to: "/phongcach", text: 'Phong Cách' },
-              { icon: <PublicIcon />, to: "/xuatsu", text: 'Xuất Xứ' },
-              { icon: <PanoramaHorizontalIcon />, to: "/kieudaiquan", text: 'Kiểu Đai Quần' }
+              { icon: <CheckroomIcon />, to: "/admin/sanpham", text: 'Sản Phẩm' },
+              { icon: <WaterDropIcon />, to: "/admin/chatlieu", text: 'Chất Liệu' },
+              { icon: <PaletteIcon />, to: "/admin/mausac", text: 'Màu Sắc' },
+              { icon: <ViewListIcon />, to: "/admin/danhmuc", text: 'Danh Mục' },
+              { icon: <StraightenIcon />, to: "/admin/size", text: 'Kích Thước' },
+              { icon: <StarIcon />, to: "/admin/thuonghieu", text: 'Thương Hiệu' },
+              { icon: <StyleIcon />, to: "/admin/kieudang", text: 'Kiểu Dáng' },
+              { icon: <BrushIcon />, to: "/admin/phongcach", text: 'Phong Cách' },
+              { icon: <PublicIcon />, to: "/admin/xuatsu", text: 'Xuất Xứ' },
+              { icon: <PanoramaHorizontalIcon />, to: "/admin/kieudaiquan", text: 'Kiểu Đai Quần' }
             ].map((item, index) => (
               <ListItemButton sx={{ pl: isSidebarOpen ? 4 : 2 }} key={index} component={Link} to={item.to}>
                 <ListItemIcon sx={{ minWidth: '40px' }}>{item.icon}</ListItemIcon>
@@ -192,28 +192,28 @@ const Sidebar = ({ isSidebarOpen }) => {
         {/* Quản Lý Tài Khoản */}
         <ListItemButton
           component={Link}
-          to="/khachHang"
+          to="/admin/khachHang"
           sx={{
             borderRadius: 3,
-            backgroundColor: isActive('/khachHang') ? 'rgb(52, 152, 234)' : 'transparent',
-            color: isActive('/khachHang') ? '#fff' : 'inherit',
+            backgroundColor: isActive('/admin/khachHang') ? 'rgb(52, 152, 234)' : 'transparent',
+            color: isActive('/admin/khachHang') ? '#fff' : 'inherit',
             '&:hover': {
               backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
               color: '#fff', // Chữ màu trắng khi hover
             },
           }}>
           <Tooltip title="Khách Hàng" placement="right" disableHoverListener={isSidebarOpen}>
-            <ListItemIcon sx={{ color: isActive('/khachHang') ? '#fff' : 'inherit', minWidth: '40px', }}>
+            <ListItemIcon sx={{ color: isActive('/admin/khachHang') ? '#fff' : 'inherit', minWidth: '40px', }}>
               <PeopleIcon />
             </ListItemIcon>
           </Tooltip>
           {isSidebarOpen && <ListItemText primary="Khách Hàng" primaryTypographyProps={{ fontSize: '13.6px' }} />}
         </ListItemButton>
-        <ListItemButton component={Link} to="/nhanvien"
+        <ListItemButton component={Link} to="/admin/nhanvien"
           sx={{
             borderRadius: 3,
-            backgroundColor: isActive('/nhanvien') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
-            color: isActive('/nhanvien') ? '#fff' : 'inherit',
+            backgroundColor: isActive('/admin/nhanvien') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
+            color: isActive('/admin/nhanvien') ? '#fff' : 'inherit',
             '&:hover': {
               backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
               color: '#fff', // Chữ màu trắng khi hover
@@ -222,7 +222,7 @@ const Sidebar = ({ isSidebarOpen }) => {
         >
           <Tooltip title="Nhân viên" placement="right" disableHoverListener={isSidebarOpen}>
             <ListItemIcon sx={{
-              color: isActive('/nhanvien') ? '#fff' : 'inherit',
+              color: isActive('/admin/nhanvien') ? '#fff' : 'inherit',
               minWidth: '40px',
             }}>
               <PersonIcon />
@@ -234,11 +234,11 @@ const Sidebar = ({ isSidebarOpen }) => {
         {/* Phiếu giảm giá */}
         <ListItemButton
           component={Link}
-          to="/phieu-giam-gia"
+          to="/admin/phieu-giam-gia"
           sx={{
             borderRadius: 3,
-            backgroundColor: isActive('/phieu-giam-gia') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
-            color: isActive('/phieu-giam-gia') ? '#fff' : 'inherit',
+            backgroundColor: isActive('/admin/phieu-giam-gia') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
+            color: isActive('/admin/phieu-giam-gia') ? '#fff' : 'inherit',
             '&:hover': {
               backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
               color: '#fff', // Chữ màu trắng khi hover
@@ -248,7 +248,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           <Tooltip title="Phiếu giảm giá" placement="right" disableHoverListener={isSidebarOpen}>
             <ListItemIcon
               sx={{
-                color: isActive('/phieu-giam-gia') ? '#fff' : 'inherit',
+                color: isActive('/admin/phieu-giam-gia') ? '#fff' : 'inherit',
                 minWidth: '40px',
               }}
             >

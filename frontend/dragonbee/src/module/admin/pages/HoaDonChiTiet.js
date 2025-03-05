@@ -493,7 +493,7 @@ const HoaDonChiTiet = () => {
         </DialogActions>
       </Dialog>
       <Box display="flex" alignItems="center" mb={3}>
-        <IconButton onClick={() => navigate(`/hoaDon`)} sx={{ marginRight: 2 }}>
+        <IconButton onClick={() => navigate(`/admin/hoaDon`)} sx={{ marginRight: 2 }}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" sx={{ fontWeight: "bold" }}>

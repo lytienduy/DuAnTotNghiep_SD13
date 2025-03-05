@@ -156,7 +156,7 @@ public class SanPhamService {
 
         // Đặt trạng thái dựa trên số lượng
         if (newSanPhamChiTiet.getSoLuong() > 0) {
-            newSanPhamChiTiet.setTrangThai("Còn hàng");
+            newSanPhamChiTiet.setTrangThai("Hoạt động");
         } else {
             newSanPhamChiTiet.setTrangThai("Hết hàng");
         }

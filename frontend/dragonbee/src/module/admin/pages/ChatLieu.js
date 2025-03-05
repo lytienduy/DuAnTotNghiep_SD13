@@ -48,7 +48,7 @@ const ChatLieu = () => {
                     },
                   }}
                   startIcon={<Add sx={{ color: "lightblue" }} />} // Màu của biểu tượng dấu "+"
-                  onClick={() => navigate("/chatlieu/addChatLieu")}
+                  onClick={() => navigate("/admin/chatlieu/addChatLieu")}
                 >
                   Tạo Mới
                 </Button>

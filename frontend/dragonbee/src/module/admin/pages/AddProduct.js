@@ -366,7 +366,7 @@ const AddSanPham = ({sanPhamChiTietId}) => {
         console.log("✅ Phản hồi từ Backend:", response.data);
         setSnackMessage("Thêm sản phẩm chi tiết thành công!");
         setSnackOpen(true);
-        navigate("/sanpham", { replace: true });
+        navigate("/admin/sanpham", { replace: true });
       }
     } catch (error) {
       console.error(

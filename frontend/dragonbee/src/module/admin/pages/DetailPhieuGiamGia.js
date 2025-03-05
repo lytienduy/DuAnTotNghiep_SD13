@@ -60,7 +60,7 @@ const DetailPhieuGiamGia = () => {
 
   // Hàm xử lý quay lại trang trước
   const handleBack = () => {
-    navigate("/phieu-giam-gia"); // Điều hướng về trang phiếu giảm giá
+    navigate("/admin/phieu-giam-gia"); // Điều hướng về trang phiếu giảm giá
   };
 
   // Lấy chi tiết phiếu giảm giá từ API
@@ -245,7 +245,7 @@ const DetailPhieuGiamGia = () => {
         }));
 
         // Chuyển hướng sang trang Phiếu Giảm Giá và gửi state chứa thông báo
-        navigate("/phieu-giam-gia", { state: { successMessage: "Cập nhật phiếu giảm giá thành công" } });
+        navigate("/admin/phieu-giam-gia", { state: { successMessage: "Cập nhật phiếu giảm giá thành công" } });
       }
     } catch (error) {
       console.error("Lỗi khi thêm mới phiếu giảm giá:", error);
