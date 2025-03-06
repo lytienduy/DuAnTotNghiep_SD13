@@ -56,7 +56,7 @@ public class HoaDon {
     @Column(name = "phi_ship")
     private Float phiShip;
 
-    @Column(name = "tong_tien", nullable = false)
+    @Column(name = "tong_tien")
     private Float tongTien;
 
     @Column(name = "trang_thai")
