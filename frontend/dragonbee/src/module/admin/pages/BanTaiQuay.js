@@ -19,14 +19,10 @@ import { ToastContainer } from "react-toastify";
 import { Remove as RemoveIcon } from "@mui/icons-material";
 import soldOutImg from '../../../img/sold-out.png';
 import inactiveImg from '../../../img/inactive.png';
-
-
-
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-
+import QrScanner from "react-qr-scanner";
 
 const BanTaiQuay = () => {
-
   //Khai báo Thành phố huyện xã
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -72,6 +68,7 @@ const BanTaiQuay = () => {
   const [imageIndexesThemSanPham, setImageIndexesThemSanPham] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại tại thêm sản phẩm vào giỏ hàng 
   const [openConfirmModal, setOpenConfirmModal] = useState(false);//Mở confirm có muốn xóa sản phẩm khỏi giỏ hàng không
   const [selectedProductId, setSelectedProductId] = useState(null);//Lưu ID sản phẩm được chọn trong giỏ hàng
+  const [checkSelectedOrder, setCheckSelectedOrder] = useState(null);//Lưu ID sản phẩm được chọn trong giỏ hàng
   const [tempValues, setTempValues] = useState({}); // State tạm để lưu giá trị nhập vào của từng sản phẩm trong giỏ hàng
   const [products, setProducts] = useState([]);//Các sản phẩm của cửa hàng để bán
   const [danhMuc, setDanhMuc] = useState(0); // Giá trị của bộ lọc danh mục
@@ -113,15 +110,14 @@ const BanTaiQuay = () => {
   const [errorTienKhachDua, setErrorTienKhachDua] = useState("");
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
   const [openConfirmXacNhanDatHang, setOpenConfirmXacNhanDatHang] = useState(false);
-
+  const [openQRQuetSanPham, setOpenQRQuetSanPham] = useState(false);
+  const [qrData, setQrData] = useState("");
 
 
   // Hàm mở và đóng modal voucher
   const handleOpenVoucherModal = () => {
     setOpenVoucherModal(true);
   };
-
-
 
   const handleCloseVoucherModal = () => {
     setOpenVoucherModal(false);
@@ -437,7 +433,20 @@ const BanTaiQuay = () => {
   ///
 
 
+  //Quét QR
+  const handleScan = (data) => {
+    console.log("Đã scan");
 
+    if (data) {
+      setQrData(data);
+      console.log("Đã quét ra data");
+      setOpenQRQuetSanPham(false); // Đóng camera sau khi quét thành công
+    }
+  };
+
+  const handleError = (err) => {
+    console.error(err);
+  };
   //Thông báo Toast
   const showSuccessToast = (message) => {
     toast.success(message, {
@@ -510,22 +519,15 @@ const BanTaiQuay = () => {
     return () => clearInterval(interval);
   }, [selectedOrder?.listDanhSachSanPham]);
 
-  //Set lại thông tin khách hàng phí ship và voucher khi chuyển hóa đơn
-  const prevSelectedOrderRef = useRef(null);
 
   useEffect(() => {
-    if (selectedOrder !== prevSelectedOrderRef.current) {
-      setSelectedCustomerId(null);
-      setDiscount(0);
-      setSelectedVoucherCode("");
-      setShowLeftPanel(false);
-      setKeyword("");
-      setDiscountAmount(0);
-  
-      // Cập nhật giá trị trước đó của selectedOrder
-      prevSelectedOrderRef.current = selectedOrder;
-    }
-  }, [selectedOrder]);
+    setSelectedCustomerId(null);
+    setDiscount(0);
+    setSelectedVoucherCode("");
+    setShowLeftPanel(false);
+    setKeyword("");
+    setDiscountAmount(0);
+  }, [checkSelectedOrder]);
 
   //Hàm xử lý khi đóng mở modal
   useEffect(() => {
@@ -583,6 +585,9 @@ const BanTaiQuay = () => {
 
   //Hàm cập nhật id hóa đơn được chọn
   const handleSelectOrder = (order) => {
+    if (order?.id != selectedOrder?.id) {
+      setCheckSelectedOrder(order);
+    }
     setSelectedOrder(order); // Cập nhật id của hóa đơn đã chọn
   };
 
@@ -922,6 +927,10 @@ const BanTaiQuay = () => {
   }
 
 
+  //   const kiemTraThayDoiSelectedOrderTruocKhiSet = (order){
+  // if(selectedOrder)
+  //   }
+
 
   // Lấy ngày hiện tại và cộng thêm 3 ngày
   const currentDate = new Date();
@@ -1188,9 +1197,21 @@ const BanTaiQuay = () => {
                             color: "#1565c0",
                           },
                         }}
+                        onClick={() => setOpenQRQuetSanPham(true)}
                       >
                         Quét QR Sản Phẩm
                       </Button>
+                      <Dialog open={openQRQuetSanPham} onClose={() => setOpenQRQuetSanPham(false)}>
+                        <DialogContent>
+                          <QrScanner
+                            delay={300}
+                            onError={handleError}
+                            onScan={handleScan}
+                            style={{ width: "100%" }}
+                          />
+                        </DialogContent>
+                      </Dialog>
+
                       <Button
                         variant="outlined"
                         sx={{
