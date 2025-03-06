@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import './App.css';
 // Import Admin Components
 import AdminSidebar from './module/admin/components/SideBar';
 import AdminHeader from './module/admin/components/Header';
@@ -33,11 +34,11 @@ import AddChatLieu from "./module/admin/pages/AddChatLieu";
 import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
 
 // Import Client Components
-import ClientSidebar from './module/client/components/Sidebar';
+import ClientFooter from './module/client/components/Footer';
 import ClientHeader from './module/client/components/Header';
 // Import Client Pages
 import Home from './module/client/pages/Home';
-import Shop from './module/client/pages/Shop';
+import SanPhamClient from './module/client/pages/SanPham';
 // Thêm các trang Client khác ở đây...
 
 const theme = createTheme({
@@ -83,15 +84,15 @@ const MainLayout = () => {
 
       <Box sx={{ flexGrow: 1, backgroundColor: '#f9f9f9', minHeight: '100vh' }}>
         {/* Header */}
-        
+
         {isAdminRoute ? (
           <AdminHeader toggleSidebar={toggleSidebar} />
         ) : (
-          <ClientHeader toggleSidebar={toggleSidebar} />
+          <ClientHeader />
         )}
 
         {/* Routing */}
-        <Box sx={{ padding: 3, backgroundColor: '#f3f3f3', height: '100%' }}>
+        <Box sx={{ padding: 3, backgroundColor: '#f3f3f3',  flexGrow: 1 }}>
           <Routes>
             {/* Admin Routes */}
             <Route path="/" element={<NavigateToThongKe />} />
@@ -140,10 +141,12 @@ const MainLayout = () => {
 
             {/* Client Routes */}
             <Route path="/home" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
+            <Route path="/sanPham" element={<SanPhamClient />} />
             {/* Thêm các route Client khác... */}
           </Routes>
         </Box>
+        {/* Footer */}
+        {!isAdminRoute && <ClientFooter />}
       </Box>
     </Box>
   );

@@ -78,7 +78,7 @@ public class EmailPGGService {
                         "Đến ngày: " + validUntil +
                         "</div>" +
                         "<p>Hãy sử dụng phiếu giảm giá này khi bạn mua sắm trên trang web của chúng tôi để nhận được ưu đãi đặc biệt.</p>" +
-                        "<a style='color:white' href='your_website_link_here' class='button'>Xem Chi Tiết</a>" +
+                        "<a style='color:white' href='http://localhost:3000/home' class='button'>Xem Chi Tiết</a>" +
                         "<p class='footer'>Cảm ơn bạn đã ủng hộ chúng tôi!</p>" +
                         "</div>" +
                         "</div>" +
@@ -175,7 +175,7 @@ public class EmailPGGService {
                         "<p>Xin chào quý khách hàng thân yêu,</p>" +
                         "<p>Chúng tôi xin thông báo rằng phiếu giảm giá <strong>" + discountName + "</strong> của bạn đã hoạt động trở lại. Xin lỗi vì sự bất tiện này.</p>" +
                         "<p>Hãy sử dụng phiếu giảm giá này khi bạn mua sắm trên trang web của chúng tôi để nhận được ưu đãi đặc biệt.</p>" +
-                        "<a style='color:white' href='your_website_link_here' class='button'>Xem Chi Tiết</a>" +
+                        "<a style='color:white' href='http://localhost:3000/home' class='button'>Xem Chi Tiết</a>" +
                         "<p class='footer'>Cảm ơn bạn đã ủng hộ chúng tôi!</p>" +
                         "</div>" +
                         "</div>" +
