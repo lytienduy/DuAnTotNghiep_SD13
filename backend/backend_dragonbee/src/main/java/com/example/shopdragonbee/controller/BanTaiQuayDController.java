@@ -2,11 +2,15 @@ package com.example.shopdragonbee.controller;
 
 import com.example.shopdragonbee.dto.KhachHangBTQDTO;
 import com.example.shopdragonbee.dto.PhieuGiamGiaDTO;
+import com.example.shopdragonbee.entity.DiaChi;
 import com.example.shopdragonbee.entity.KhachHang;
 import com.example.shopdragonbee.entity.PhieuGiamGia;
+import com.example.shopdragonbee.service.DiaChiService;
 import com.example.shopdragonbee.service.KhachHangService;
 import com.example.shopdragonbee.service.PhieuGiamGiaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +26,9 @@ public class BanTaiQuayDController {
 
     @Autowired
     private PhieuGiamGiaService phieuGiamGiaService;
+
+    @Autowired
+    private DiaChiService diaChiService;
 
     @GetMapping("/tim-kiem-khach-hang")
     public List<KhachHangBTQDTO> timKiemKhachHang(@RequestParam String keyword) {
@@ -48,5 +55,19 @@ public class BanTaiQuayDController {
         return phieuGiamGias.stream()
                 .map(PhieuGiamGiaDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    @PostMapping("/them-dia-chi")
+    public ResponseEntity<String> themDiaChi(@RequestBody DiaChi diaChi) {
+        try {
+            diaChiService.themDiaChi(diaChi);
+            return ResponseEntity.ok("Thêm địa chỉ thành công!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Có lỗi khi thêm địa chỉ: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Có lỗi xảy ra khi thêm địa chỉ.");
+        }
     }
 }

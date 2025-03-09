@@ -143,18 +143,11 @@ const BanTaiQuay = () => {
     }
   };
 
-  // Fetch tất cả voucher khi không có mã tìm kiếm
+  // Tự động chọn voucher tốt nhất khi fetch dữ liệu
   const fetchVouchers = async () => {
     try {
-      // Xác định id khách hàng nếu có
       const customerId = selectedCustomerId ? selectedCustomerId : null;
-
-      // Tạo params cho API
-      const params = {
-        keyword: '',
-      };
-
-      // Nếu có khách hàng được chọn, thêm idKhachHang vào params
+      const params = { keyword: '' };
       if (customerId) {
         params.idKhachHang = customerId;
       }
@@ -163,11 +156,42 @@ const BanTaiQuay = () => {
 
       // Sắp xếp dữ liệu theo ngày tạo (ngayTao)
       const sortedVouchers = response.data.sort((a, b) => {
-        return new Date(b.ngayTao) - new Date(a.ngayTao);  // Sắp xếp giảm dần theo ngày tạo
+        return new Date(b.ngayTao) - new Date(a.ngayTao);
       });
 
-      // Cập nhật dữ liệu voucher sau khi đã sắp xếp
+      // Tính toán giá trị giảm của tất cả các phiếu giảm giá
+      const validVouchers = sortedVouchers.filter(voucher => selectedOrder?.tongTienSanPham >= voucher.soTienToiThieu);
+
+      // Tìm voucher tốt nhất
+      let bestVoucher = null;
+      let bestDiscount = 0;
+
+      validVouchers.forEach(voucher => {
+        let discountAmount = 0;
+        if (voucher.loaiPhieuGiamGia === "Cố định") {
+          discountAmount = voucher.giaTriGiam;
+        } else if (voucher.loaiPhieuGiamGia === "Phần trăm") {
+          discountAmount = (selectedOrder?.tongTienSanPham || 0) * (voucher.giaTriGiam / 100);
+          if (voucher.soTienGiamToiDa) {
+            discountAmount = Math.min(discountAmount, voucher.soTienGiamToiDa);
+          }
+        }
+
+        if (discountAmount > bestDiscount) {
+          bestDiscount = discountAmount;
+          bestVoucher = voucher;
+        }
+      });
+
+      // Cập nhật voucher tốt nhất nếu có
+      if (bestVoucher) {
+        setSelectedVoucherCode(bestVoucher.ma);
+        setDiscountAmount(bestDiscount);
+      }
+
+      // Cập nhật danh sách phiếu giảm giá
       setVouchers(sortedVouchers);
+
     } catch (error) {
       console.error("Error fetching vouchers:", error);
     }
@@ -182,6 +206,7 @@ const BanTaiQuay = () => {
   }, [openVoucherModal, selectedCustomerId]); // Thêm selectedCustomerId vào dependency
 
 
+  // Khi người dùng chọn một phiếu giảm giá
   const handleUseVoucher = (voucherCode) => {
     const selectedVoucher = vouchers.find(v => v.ma === voucherCode);
     if (!selectedVoucher) return;
@@ -198,8 +223,42 @@ const BanTaiQuay = () => {
     }
 
     setSelectedVoucherCode(voucherCode);
-    setDiscountAmount(discountAmount); // Cập nhật số tiền giảm giá
+    setDiscountAmount(discountAmount);
     handleCloseVoucherModal();
+  };
+
+  // Cập nhật UI để làm mờ và hiển thị thông báo nếu không đủ điều kiện
+  const isVoucherValid = (voucher) => {
+    return selectedOrder?.tongTienSanPham >= voucher.soTienToiThieu;
+  };
+
+  // Hàm để tính toán số tiền thiếu để áp dụng voucher
+  const calculateAmountToSpend = (voucher) => {
+    if (selectedOrder?.tongTienSanPham < voucher.soTienToiThieu) {
+      return voucher.soTienToiThieu - selectedOrder?.tongTienSanPham;
+    }
+    return 0;
+  };
+
+  // Hàm fetchVouchers đã được cập nhật trong trước đó, bạn không cần thay đổi hàm này
+
+  useEffect(() => {
+    if (selectedOrder?.tongTienSanPham) {
+      fetchVouchers(); // Gọi lại fetchVouchers mỗi khi tổng tiền thay đổi
+    }
+  }, [selectedOrder?.tongTienSanPham]); // Lắng nghe sự thay đổi của tổng tiền (tongTienSanPham)
+
+  // Hàm để hiển thị thông báo thiếu tiền
+  const renderAdditionalAmountMessage = (voucher) => {
+    const amountToSpend = calculateAmountToSpend(voucher);
+    if (amountToSpend > 0) {
+      return (
+        <Typography sx={{ color: 'red', marginTop: 1, fontSize: 12 }}>
+          Bạn cần chi tiêu thêm {amountToSpend.toLocaleString()} VNĐ để áp dụng phiếu giảm giá này.
+        </Typography>
+      );
+    }
+    return null;
   };
 
   //Hàm tìm khách hàng
@@ -377,11 +436,16 @@ const BanTaiQuay = () => {
   };
 
 
-  // State cho các dropdown
+  // Khởi tạo các state là mảng rỗng
+  const [citiess, setCitiess] = useState([]);  // Thay vì ''
+  const [districtss, setDistrictss] = useState([]);  // Thay vì ''
+  const [wardss, setWardss] = useState([]);  // Thay vì ''
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
   const [ward, setWard] = useState('');
-  // hàm sử dụng để gọi tỉnh thành quận huyện xã việt nam
+  const [openChonDC, setOpenChonDC] = useState(false);
+
+  // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
   useEffect(() => {
     axios.get("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json")
       .then(response => {
@@ -389,21 +453,37 @@ const BanTaiQuay = () => {
           ...city,
           Name: city.Name.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
         }));
-        setCities(normalizedCities);
+        setCities(normalizedCities);  // Cập nhật citiess thay vì setCities
+        setCitiess(normalizedCities);  // Cập nhật citiess thay vì setCities
       })
       .catch(error => console.error("Error fetching data:", error));
   }, []);
 
+  // Hàm mở modal
+  const handleClickOpen = () => {
+    setOpenChonDC(true);
+  };
+
+  // Hàm đóng modal
+const handleCloseChonDC = () => {
+  // Chỉ reset các giá trị đã chọn, không xóa dữ liệu
+  setCity('');  // Reset thành phố
+  setDistrict('');  // Reset quận/huyện
+  setWard('');  // Reset xã/phường
+
+  setOpenChonDC(false);  // Đóng modal
+};
+
 
   const handleCityChange = (event) => {
     const cityName = event.target.value;
-    setSelectedCity(cityName);
-    setSelectedDistrict(""); // Reset huyện
-    setSelectedWard(""); // Reset xã
+    setCity(cityName);  // Cập nhật giá trị của city
+    setDistrict("");  // Reset quận/huyện khi thay đổi tỉnh thành
+    setWard("");  // Reset xã/phường khi thay đổi quận/huyện
 
     const city = cities.find(city => city.Name === cityName);
-    setDistricts(city ? city.Districts : []);
-    setWards([]);
+    setDistricts(city ? city.Districts : []);  // Cập nhật danh sách quận/huyện
+    setWards([]);  // Reset xã/phường
   };
 
   const handleDistrictChange = (event) => {
@@ -417,6 +497,33 @@ const BanTaiQuay = () => {
 
   const handleWardChange = (event) => {
     setSelectedWard(event.target.value);
+  };
+
+  // Hàm thay đổi tỉnh thành cho modal
+  const handleCityChangeModal = (event) => {
+    const cityName = event.target.value;
+    setCity(cityName);
+    setDistrict(""); // Reset quận/huyện khi thay đổi tỉnh thành
+    setWard(""); // Reset xã/phường khi thay đổi quận/huyện
+    // Tìm thành phố đã chọn và cập nhật districtss
+    const selectedCity = citiess.find(city => city.Name === cityName);
+    setDistrictss(selectedCity ? selectedCity.Districts : []);  // Cập nhật quận/huyện
+    setWardss([]);  // Reset xã/phường
+  };
+
+  // Hàm thay đổi quận/huyện cho modal
+  const handleDistrictChangeModal = (event) => {
+    const districtName = event.target.value;
+    setDistrict(districtName);
+    setWard(""); // Reset xã/phường khi thay đổi quận/huyện
+    // Tìm quận/huyện đã chọn và cập nhật wardss
+    const selectedDistrict = districtss.find(d => d.Name === districtName);
+    setWardss(selectedDistrict ? selectedDistrict.Wards : []);  // Cập nhật xã/phường
+  };
+
+  // Hàm thay đổi xã/phường cho modal
+  const handleWardChangeModal = (event) => {
+    setWard(event.target.value);
   };
 
   //Hàm mở giao hàng
@@ -2130,53 +2237,52 @@ const BanTaiQuay = () => {
             />
           </Box>
 
-          {/* Danh sách voucher */}
+          {/* // Trong phần render danh sách các voucher */}
           <Box sx={{ maxHeight: '400px', overflowY: 'auto' }}>
             {vouchers.map((voucher) => (
-              <Box key={voucher.id} sx={{ border: '1px dashed #db5656', padding: 2, marginBottom: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                {/* Box 1: Mã và giảm giá */}
+              <Box
+                key={voucher.id}
+                sx={{
+                  border: '1px dashed #db5656',
+                  padding: 2,
+                  marginBottom: 2,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  opacity: isVoucherValid(voucher) ? 1 : 0.5,
+                  pointerEvents: isVoucherValid(voucher) ? 'auto' : 'none',
+                }}
+              >
+                {/* Nội dung voucher */}
                 <Box sx={{ flex: 2, padding: '20px 30px', marginRight: 2, backgroundColor: '#db5656', borderRadius: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'white' }}>
                     Mã: {voucher.ma}
                   </Typography>
                   <Typography variant="body1" sx={{ color: 'white' }}>
-                    Giảm: <span> </span>
-                    {voucher.giaTriGiam < 100
-                      ? `${voucher.giaTriGiam}${voucher.loaiPhieuGiamGia === 'Phần trăm' ? '%' : ' VNĐ'}` // Khoảng cách chỉ có khi là VNĐ
-                      : `${new Intl.NumberFormat().format(voucher.giaTriGiam)}${voucher.loaiPhieuGiamGia === 'Phần trăm' ? '%' : ' VNĐ'}`}
+                    Giảm: {voucher.giaTriGiam < 100 ? `${voucher.giaTriGiam}${voucher.loaiPhieuGiamGia === 'Phần trăm' ? '%' : ' VNĐ'}` : `${new Intl.NumberFormat().format(voucher.giaTriGiam)}${voucher.loaiPhieuGiamGia === 'Phần trăm' ? '%' : ' VNĐ'}`}
                   </Typography>
-
                 </Box>
 
-                {/* Box 2: Các thông tin còn lại */}
+                {/* Các thông tin còn lại */}
                 <Box sx={{ flex: 3, paddingRight: 2 }}>
-                  <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                    {voucher.tenPhieuGiamGia}
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                    {voucher.moTa}
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                    {voucher.trangThai}
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                    Số tiền tối thiểu: {voucher.soTienToiThieu}
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                    Số lượng: {voucher.soLuong}
-                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{voucher.tenPhieuGiamGia}</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>{voucher.moTa}</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>{voucher.trangThai}</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>Số tiền tối thiểu: {voucher.soTienToiThieu}</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>Số lượng: {voucher.soLuong}</Typography>
+                  {renderAdditionalAmountMessage(voucher)} {/* Hiển thị thông báo nếu thiếu tiền */}
                 </Box>
 
-                {/* Box 3: Nút sử dụng */}
+                {/* Nút sử dụng */}
                 <Box sx={{ flex: 1, textAlign: 'center' }}>
                   <Button
                     variant="contained"
                     sx={{ backgroundColor: '#d32f2f' }}
-                    onClick={() => handleUseVoucher(voucher.ma)} // Truyền mã voucher vào khi nhấn nút Sử dụng
+                    onClick={() => handleUseVoucher(voucher.ma)}
+                    disabled={!isVoucherValid(voucher)} // Disable button nếu không đủ điều kiện
                   >
                     Sử dụng
                   </Button>
-
                 </Box>
               </Box>
             ))}
@@ -2620,11 +2726,106 @@ const BanTaiQuay = () => {
           </TableContainer>
 
           {/* Nút thêm địa chỉ */}
-          <Button variant="contained" color="warning" sx={{ mt: 2 }} fullWidth>
+          <Button variant="contained" color="warning" sx={{ mt: 2 }} fullWidth onClick={handleClickOpen}>
             THÊM ĐỊA CHỈ
           </Button>
         </Box>
       </Modal>
+
+      {/* Modal cho chọn địa chỉ */}
+      <Dialog open={openChonDC} onClose={handleCloseChonDC}>
+        <DialogTitle>Chọn địa chỉ</DialogTitle>
+        <DialogContent>
+          {/* Thành phố */}
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="city-label" size="small">Tỉnh/Thành phố</InputLabel>
+            <Select
+              labelId="city-label"
+              value={city}  // Sử dụng state cho modal là 'city'
+              label="Tỉnh/Thành phố"
+              onChange={handleCityChangeModal}
+              size="small" // Áp dụng size nhỏ cho Select
+            >
+              {citiess.map((city) => (  // Sử dụng citiess (dữ liệu cho modal)
+                <MenuItem key={city.Name} value={city.Name}>
+                  {city.Name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Quận/Huyện */}
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="district-label" size="small">Quận/Huyện</InputLabel>
+            <Select
+              labelId="district-label"
+              value={district}  // Sử dụng state cho modal là 'district'
+              label="Quận/Huyện"
+              onChange={handleDistrictChangeModal}
+              disabled={!city}  // Disable nếu chưa chọn thành phố
+              size="small" // Áp dụng size nhỏ cho Select
+            >
+              {districtss.map((district) => (  // Sử dụng districtss (dữ liệu cho modal)
+                <MenuItem key={district.Name} value={district.Name}>
+                  {district.Name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Xã/Phường */}
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="ward-label" size="small">Xã/Phường</InputLabel>
+            <Select
+              labelId="ward-label"
+              value={ward}  // Sử dụng state cho modal là 'ward'
+              label="Xã/Phường"
+              onChange={handleWardChangeModal}
+              disabled={!district}  // Disable nếu chưa chọn quận/huyện
+              size="small" // Áp dụng size nhỏ cho Select
+            >
+              {wardss.map((ward) => (  // Sử dụng wardss (dữ liệu cho modal)
+                <MenuItem key={ward.Name} value={ward.Name}>
+                  {ward.Name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Địa chỉ cụ thể */}
+          <FormControl fullWidth margin="normal">
+            <TextField
+              id="detailed-address"
+              label="Địa chỉ cụ thể"
+              variant="outlined"
+              placeholder="Nhập địa chỉ cụ thể"
+              fullWidth
+              size="small" // Áp dụng size nhỏ cho TextField
+            />
+          </FormControl>
+
+          {/* Mô tả */}
+          <FormControl fullWidth margin="normal">
+            <TextField
+              id="description"
+              label="Mô tả"
+              variant="outlined"
+              placeholder="Nhập mô tả"
+              fullWidth
+              size="small" // Áp dụng size nhỏ cho TextField
+            />
+          </FormControl>
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseChonDC} color="primary">
+            Hủy
+          </Button>
+          <Button onClick={handleCloseChonDC} color="primary">
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box >
   );
 };
