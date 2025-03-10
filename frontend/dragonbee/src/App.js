@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, } from 'react-router-dom';
 import Sidebar from './module/admin/components/SideBar';
 import Header from './module/admin/components/Header';
 import ThongKe from './module/admin/pages/ThongKe';
@@ -30,6 +30,7 @@ import SanPhamChiTiet from "./module/admin/pages/SanPhamChiTiet";
 import AddProduct from "./module/admin/pages/AddProduct";
 import AddChatLieu from "./module/admin/pages/AddChatLieu";
 import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
+import LoginPage from "./module/admin/pages/LoginPage";
 
 const theme = createTheme({
   components: {
@@ -67,6 +68,7 @@ const App = () => {
               <Box sx={{ padding: 3, backgroundColor: '#f3f3f3', height: '100%' }}>
                 <Routes>
                   <Route path="/" element={<NavigateToThongKe />} />
+                  <Route path="/login" element={<LoginPage />} />
                   <Route path="/thongKe" element={<ThongKe />} />
                   <Route path="/banTaiQuay" element={<BanTaiQuay />} />
                   <Route path="/hoaDon" element={<HoaDon />} />

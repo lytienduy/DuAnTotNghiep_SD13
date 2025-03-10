@@ -3,8 +3,10 @@ package com.example.shopdragonbee.service;
 import com.example.shopdragonbee.dto.NhanVienRequestDTO;
 import com.example.shopdragonbee.entity.NhanVien;
 import com.example.shopdragonbee.entity.TaiKhoan;
+import com.example.shopdragonbee.entity.VaiTro;
 import com.example.shopdragonbee.repository.NhanVienRepository;
 import com.example.shopdragonbee.repository.TaiKhoanRepository;
+import com.example.shopdragonbee.repository.VaiTroRepositoty;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
@@ -37,88 +39,184 @@ public class NhanVienService {
     private TaiKhoanRepository taiKhoanRepository;
 
     @Autowired
+    private VaiTroRepositoty vaiTroRepositoty;
+
+    @Autowired
     private MailService mailService;
 
     @Autowired
     private JavaMailSender mailSender;
 
 
-    private static final String UPLOAD_DIR = "E:/uploads/";
+    private static final String UPLOAD_DIR = "D:/uploads/";
 
     public NhanVien themMoiNhanVien(NhanVienRequestDTO dto) {
+        // Kiểm tra xem CCCD đã tồn tại hay chưa
         if (nhanVienRepository.findByCccd(dto.getCccd()).isPresent()) {
             throw new RuntimeException("CCCD đã tồn tại!");
         }
 
-        String randomPassword = RandomStringUtils.randomAlphanumeric(8);
+        // Tạo mật khẩu ngẫu nhiên chỉ chứa số (8 chữ số)
+        String randomPassword = RandomStringUtils.randomNumeric(8);
 
-        TaiKhoan taiKhoan = taiKhoanRepository.findById(dto.getIdTaiKhoan())
-                .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại!"));
+        // Sinh mã nhân viên và tên đăng nhập theo quy tắc
+        String maNhanVien = generateMaNhanVien(); // Phương thức này tự sinh mã nhân viên (ví dụ: NV001, NV002,...)
+        String tenDangNhap = UsernameGenerator.generateUsername(dto.getTenNhanVien(), maNhanVien);
 
-        taiKhoan.setMatKhau(randomPassword);
-        taiKhoanRepository.save(taiKhoan);
+        // Lấy vai trò mặc định cho nhân viên (ví dụ: với mã vai trò "NV")
+        VaiTro vaiTroNV = vaiTroRepositoty.findByMa("VT002")
+                .orElseThrow(() -> new RuntimeException("Vai trò nhân viên không tồn tại!"));
 
+        // Tạo tài khoản mới cho nhân viên (không dựa vào idTaiKhoan từ frontend)
+        TaiKhoan taiKhoanMoi = TaiKhoan.builder()
+                .vaiTro(vaiTroNV)
+                .tenNguoiDung(tenDangNhap)
+                .matKhau(randomPassword)
+                .trangThai("Hoạt động")
+                .ngayTao(LocalDateTime.now())
+                .nguoiTao(dto.getNguoiTao())
+                .build();
+        taiKhoanRepository.save(taiKhoanMoi);
+
+        // Lưu ảnh nếu có (nếu không có thì fileName sẽ là null)
         String fileName = (dto.getAnh() != null && !dto.getAnh().isEmpty()) ? saveFile(dto.getAnh()) : null;
 
+        // Tạo đối tượng nhân viên và gán tài khoản vừa tạo
         NhanVien nhanVien = NhanVien.builder()
-                .ma(generateMaNhanVien())
+                .ma(maNhanVien)
                 .tenNhanVien(dto.getTenNhanVien())
                 .ngaySinh(dto.getNgaySinh())
                 .gioiTinh(dto.getGioiTinh())
                 .sdt(dto.getSdt())
                 .email(dto.getEmail())
-                .diaChi(dto.getFullAddress()) // Gộp địa chỉ lại trước khi lưu
+                .diaChi(dto.getFullAddress())
                 .anh(fileName)
                 .cccd(dto.getCccd())
                 .trangThai(dto.getTrangThai() != null ? dto.getTrangThai() : "Hoạt động")
                 .ngayTao(LocalDateTime.now())
                 .nguoiTao(dto.getNguoiTao())
-                .taiKhoan(taiKhoan)
+                .taiKhoan(taiKhoanMoi)
                 .build();
-
         nhanVienRepository.save(nhanVien);
 
-        // Gửi email
+        // Chuẩn bị nội dung email gửi cho nhân viên mới
         String subject = "Thông tin tài khoản nhân viên";
-        String htmlContent =
-                "<html>" +
-                        "<head>" +
-                        "<style>" +
-                        "body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }" +
-                        "div.container { display: flex; justify-content: center; align-items: center; background-color: #f4f4f4; padding: 20px; }" +
-                        "div.content { width: 100%; max-width: 600px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); padding: 30px; text-align: center; margin: 0 auto; }" +
-                        "h2 { color: #3498ea; }" +
-                        "p { font-size: 16px; color: #333333; line-height: 1.6; }" +
-                        ".highlight-box { background-color: #dff0d8; padding: 15px; border-radius: 8px; border: 1px solid #b2dba1; display: inline-block; font-weight: bold; margin: 15px auto; }" +
-                        ".footer { font-size: 14px; color: #777777; margin-top: 20px; }" +
-                        ".btn { display: inline-block; background-color: #3498ea; color: white; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-top: 15px; }" +
-                        ".btn:hover { background-color: #217dbb; }" +
-                        "</style>" +
-                        "</head>" +
-                        "<body>" +
-                        "<div class='container'>" +
-                        "<div class='content'>" +
-                        "<div><img src='https://raw.githubusercontent.com/lytienduy/DuAnTotNghiep_SD13/refs/heads/main/frontend/dragonbee/src/img/dragonbee_logo_v1.png' alt='Logo' style='max-width: 100px; height: auto;' /></div>" +
-                        "<h2>Xin chào " + dto.getTenNhanVien() + ",</h2>" +
-                        "<p>Tài khoản của bạn đã được tạo thành công!</p>" +
-                        "<div class='highlight-box'>" +
-                        "<p><strong>Tên đăng nhập:</strong> " + taiKhoan.getTenNguoiDung() + "</p>" +
-                        "<p><strong>Mật khẩu:</strong> " + randomPassword + "</p>" +
-                        "</div>" +
-                        "<p>Vui lòng đổi mật khẩu sau khi đăng nhập.</p>" +
-                        "<p class='footer'>Cảm ơn bạn đã đồng hành cùng chúng tôi!</p>" +
-                        "<p class='footer'>Mọi thắc mắc xin vui lòng liên hệ: <strong>dragonbeeshop@gmail.com</strong></p>" +
-                        "</div>" +
-                        "</body>" +
-                        "</html>";
+        String htmlContent = "<html>" +
+                "<head>" +
+                "<style>" +
+                "body { font-family: Arial, sans-serif; background-color: #e0e0e0; padding: 20px; }" + // Nền màu xám
+                "div.content { max-width: 600px; background: #fff; padding: 30px; border-radius: 10px; " +
+                "box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; margin: auto; " +
+                "border: 1px solid #ddd; }" + // Viền ngoài màu xám nhạt
+                "h2 { color: #3498ea; }" +
+                "p { font-size: 16px; color: #333; line-height: 1.6; }" +
+                ".highlight-box { background: #dff0d8; padding: 15px; border-radius: 8px; " +
+                "border: 1px solid #b2dba1; display: inline-block; font-weight: bold; margin: 15px auto; }" +
+                ".footer { font-size: 14px; color: #777; margin-top: 20px; }" +
+                "</style>" +
+                "</head>" +
+                "<body>" +
+                "<div class='content'>" +
+                "<div><img src='https://raw.githubusercontent.com/lytienduy/DuAnTotNghiep_SD13/refs/heads/main/frontend/dragonbee/src/img/dragonbee_logo_v1.png' " +
+                "alt='Logo' style='max-width: 100px; height: auto;' /></div>" +
+                "<h2>Xin chào " + dto.getTenNhanVien() + ",</h2>" +
+                "<p>Tài khoản của bạn đã được tạo thành công!</p>" +
+                "<div class='highlight-box'>" +
+                "<p><strong>Tên đăng nhập:</strong> " + tenDangNhap + "</p>" +
+                "<p><strong>Mật khẩu:</strong> " + randomPassword + "</p>" +
+                "</div>" +
+                "<p>Vui lòng đổi mật khẩu sau khi đăng nhập.</p>" +
+                "<p class='footer'>Cảm ơn bạn đã đồng hành cùng chúng tôi!</p>" +
+                "<p class='footer'>Mọi thắc mắc xin vui lòng liên hệ: <strong>dragonbeeshop@gmail.com</strong></p>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
 
 
-        // Gọi dịch vụ gửi email với nội dung HTML
+
+        // Gửi email thông báo cho nhân viên mới
         mailService.sendMail(dto.getEmail(), subject, htmlContent);
-
 
         return nhanVien;
     }
+
+
+
+//    public NhanVien themMoiNhanVien(NhanVienRequestDTO dto) {
+//        if (nhanVienRepository.findByCccd(dto.getCccd()).isPresent()) {
+//            throw new RuntimeException("CCCD đã tồn tại!");
+//        }
+//
+//        String randomPassword = RandomStringUtils.randomNumeric(8); // Mật khẩu chỉ chứa số
+//
+//        TaiKhoan taiKhoan = taiKhoanRepository.findById(dto.getIdTaiKhoan())
+//                .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại!"));
+//
+//        // Tạo tên đăng nhập theo quy tắc mới
+//        String maNhanVien = generateMaNhanVien();
+//        String tenDangNhap = UsernameGenerator.generateUsername(dto.getTenNhanVien(), maNhanVien);
+//
+//        taiKhoan.setTenNguoiDung(tenDangNhap);
+//        taiKhoan.setMatKhau(randomPassword);
+//        taiKhoanRepository.save(taiKhoan);
+//
+//        String fileName = (dto.getAnh() != null && !dto.getAnh().isEmpty()) ? saveFile(dto.getAnh()) : null;
+//
+//        NhanVien nhanVien = NhanVien.builder()
+//                .ma(maNhanVien)
+//                .tenNhanVien(dto.getTenNhanVien())
+//                .ngaySinh(dto.getNgaySinh())
+//                .gioiTinh(dto.getGioiTinh())
+//                .sdt(dto.getSdt())
+//                .email(dto.getEmail())
+//                .diaChi(dto.getFullAddress())
+//                .anh(fileName)
+//                .cccd(dto.getCccd())
+//                .trangThai(dto.getTrangThai() != null ? dto.getTrangThai() : "Hoạt động")
+//                .ngayTao(LocalDateTime.now())
+//                .nguoiTao(dto.getNguoiTao())
+//                .taiKhoan(taiKhoan)
+//                .build();
+//
+//        nhanVienRepository.save(nhanVien);
+//
+//        // Gửi email với tên đăng nhập mới
+//        String subject = "Thông tin tài khoản nhân viên";
+//        String htmlContent =
+//                "<html>" +
+//                        "<head>" +
+//                        "<style>" +
+//                        "body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }" +
+//                        "div.content { max-width: 600px; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; margin: auto; }" +
+//                        "h2 { color: #3498ea; }" +
+//                        "p { font-size: 16px; color: #333; line-height: 1.6; }" +
+//                        ".highlight-box { background: #dff0d8; padding: 15px; border-radius: 8px; border: 1px solid #b2dba1; display: inline-block; font-weight: bold; margin: 15px auto; }" +
+//                        ".footer { font-size: 14px; color: #777; margin-top: 20px; }" +
+//                        ".btn { display: inline-block; background: #3498ea; color: white; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-top: 15px; }" +
+//                        ".btn:hover { background: #217dbb; }" +
+//                        "</style>" +
+//                        "</head>" +
+//                        "<body>" +
+//                        "<div class='content'>" +
+//                        "<h2>Xin chào " + dto.getTenNhanVien() + ",</h2>" +
+//                        "<p>Tài khoản của bạn đã được tạo thành công!</p>" +
+//                        "<div class='highlight-box'>" +
+//                        "<p><strong>Tên đăng nhập:</strong> " + tenDangNhap + "</p>" +
+//                        "<p><strong>Mật khẩu:</strong> " + randomPassword + "</p>" +
+//                        "</div>" +
+//                        "<p>Vui lòng đổi mật khẩu sau khi đăng nhập.</p>" +
+//                        "<p class='footer'>Cảm ơn bạn đã đồng hành cùng chúng tôi!</p>" +
+//                        "<p class='footer'>Mọi thắc mắc xin vui lòng liên hệ: <strong>dragonbeeshop@gmail.com</strong></p>" +
+//                        "</div>" +
+//                        "</body>" +
+//                        "</html>";
+//
+//        mailService.sendMail(dto.getEmail(), subject, htmlContent);
+//
+//        return nhanVien;
+//    }
+
+
 
 
     private String saveFile(MultipartFile file) {

@@ -4,8 +4,11 @@ import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PersonIcon from "@mui/icons-material/Person";
+import { useNavigate } from "react-router-dom"; // Thêm để điều hướng
 
 const Header = ({ toggleSidebar }) => {
+  const navigate = useNavigate(); // Hook để điều hướng
+
 
   return (
     <AppBar
@@ -42,7 +45,8 @@ const Header = ({ toggleSidebar }) => {
           </IconButton>
 
           {/* User Avatar */}
-          <Paper
+          <IconButton onClick={() => navigate("/login")} sx={{ padding: 0 }}>
+            <Paper
             elevation={3}
             sx={{
               display: "flex",
@@ -51,12 +55,14 @@ const Header = ({ toggleSidebar }) => {
               borderRadius: "50px",
               marginRight: 2,
             }}
-          >
+            >
             <Avatar sx={{ bgcolor: "#90caf9", width: 30, height: 30, marginRight: 1 }}>
               <PersonIcon />
             </Avatar>
             <SettingsIcon sx={{ color: "#6a5acd" }} />
-          </Paper>
+            </Paper>
+          </IconButton>
+          
         </Box>
       </Toolbar>
     </AppBar>
