@@ -27,10 +27,21 @@ const BanTaiQuay = () => {
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
-
+  const [city, setCity] = useState('');
+  const [district, setDistrict] = useState('');
+  const [ward, setWard] = useState('');
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedWard, setSelectedWard] = useState("");
+
+  //Thêm mới địa chỉ
+  const [newCities, setNewCities] = useState([]);
+  const [newDistricts, setNewDistricts] = useState([]);
+  const [newWards, setNewWards] = useState([]);
+  const [newCity, setNewCity] = useState('');
+  const [newDistrict, setNewDistrict] = useState('');
+  const [newWard, setNewWard] = useState('');
+  const [openChonDC, setOpenChonDC] = useState(false);
 
   // State để lưu danh sách các đơn hàng
   const [orders, setOrders] = useState([]);
@@ -112,6 +123,7 @@ const BanTaiQuay = () => {
   const [openConfirmXacNhanDatHang, setOpenConfirmXacNhanDatHang] = useState(false);
   const [openQRQuetSanPham, setOpenQRQuetSanPham] = useState(false);
   const [qrData, setQrData] = useState("");
+
 
 
   // Hàm mở và đóng modal voucher
@@ -300,11 +312,11 @@ const BanTaiQuay = () => {
     // Reset tất cả các trường trước khi cập nhật dữ liệu mới
     setRecipientName('');
     setRecipientPhone('');
-    setSelectedCity('');
-    setSelectedDistrict('');
-    setSelectedWard('');
+    setCity('');
+    setDistrict('');
+    setWard('');
     setSpecificAddress('');
-    setDescription(''); // Reset mô tả
+    setDescription('');
     setDistricts([]);
     setWards([]);
 
@@ -320,23 +332,26 @@ const BanTaiQuay = () => {
       const address = customer.diaChis[0];
 
       setSelectedCity(address.thanhPho);
+      setCity(address.thanhPho); // Cập nhật vào giá trị của form
 
       const city = cities.find(c => c.Name === address.thanhPho);
       if (city) {
         setDistricts(city.Districts);
-
         setSelectedDistrict(address.huyen);
+        setDistrict(address.huyen); // Cập nhật vào giá trị của form
+
         const district = city.Districts.find(d => d.Name === address.huyen);
         if (district) {
           setWards(district.Wards);
           setSelectedWard(address.xa);
+          setWard(address.xa); // Cập nhật vào giá trị của form
         }
       }
 
       setSpecificAddress(`${address.soNha}, ${address.duong}`);
-      setDescription(address.moTa || ""); // Cập nhật mô tả, nếu không có thì đặt là chuỗi rỗng
+      setDescription(address.moTa || "");
     } else {
-      setDescription(""); // Nếu không có địa chỉ nào, đặt lại mô tả thành chuỗi rỗng
+      setDescription("");
     }
   };
 
@@ -435,16 +450,6 @@ const BanTaiQuay = () => {
     }
   };
 
-
-  // Khởi tạo các state là mảng rỗng
-  const [citiess, setCitiess] = useState([]);  // Thay vì ''
-  const [districtss, setDistrictss] = useState([]);  // Thay vì ''
-  const [wardss, setWardss] = useState([]);  // Thay vì ''
-  const [city, setCity] = useState('');
-  const [district, setDistrict] = useState('');
-  const [ward, setWard] = useState('');
-  const [openChonDC, setOpenChonDC] = useState(false);
-
   // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
   useEffect(() => {
     axios.get("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json")
@@ -454,7 +459,7 @@ const BanTaiQuay = () => {
           Name: city.Name.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
         }));
         setCities(normalizedCities);  // Cập nhật citiess thay vì setCities
-        setCitiess(normalizedCities);  // Cập nhật citiess thay vì setCities
+        setNewCities(normalizedCities);  // Cập nhật citiess thay vì setCities
       })
       .catch(error => console.error("Error fetching data:", error));
   }, []);
@@ -465,14 +470,14 @@ const BanTaiQuay = () => {
   };
 
   // Hàm đóng modal
-const handleCloseChonDC = () => {
-  // Chỉ reset các giá trị đã chọn, không xóa dữ liệu
-  setCity('');  // Reset thành phố
-  setDistrict('');  // Reset quận/huyện
-  setWard('');  // Reset xã/phường
+  const handleCloseChonDC = () => {
+    // Chỉ reset các giá trị đã chọn, không xóa dữ liệu
+    setNewCity('');  // Reset thành phố
+    setNewDistrict('');  // Reset quận/huyện
+    setNewWard('');  // Reset xã/phường
 
-  setOpenChonDC(false);  // Đóng modal
-};
+    setOpenChonDC(false);  // Đóng modal
+  };
 
 
   const handleCityChange = (event) => {
@@ -488,42 +493,42 @@ const handleCloseChonDC = () => {
 
   const handleDistrictChange = (event) => {
     const districtName = event.target.value;
-    setSelectedDistrict(districtName);
-    setSelectedWard(""); // Reset xã
+    setDistrict(districtName);  // Cập nhật giá trị của district
+    setWard("");  // Reset xã/phường khi thay đổi quận/huyện
 
     const district = districts.find(d => d.Name === districtName);
-    setWards(district ? district.Wards : []);
+    setWards(district ? district.Wards : []);  // Cập nhật danh sách xã/phường
   };
 
   const handleWardChange = (event) => {
-    setSelectedWard(event.target.value);
+    setWard(event.target.value);
   };
 
   // Hàm thay đổi tỉnh thành cho modal
   const handleCityChangeModal = (event) => {
     const cityName = event.target.value;
-    setCity(cityName);
-    setDistrict(""); // Reset quận/huyện khi thay đổi tỉnh thành
-    setWard(""); // Reset xã/phường khi thay đổi quận/huyện
+    setNewCity(cityName);
+    setNewDistrict(""); // Reset quận/huyện khi thay đổi tỉnh thành
+    setNewWard(""); // Reset xã/phường khi thay đổi quận/huyện
     // Tìm thành phố đã chọn và cập nhật districtss
-    const selectedCity = citiess.find(city => city.Name === cityName);
-    setDistrictss(selectedCity ? selectedCity.Districts : []);  // Cập nhật quận/huyện
-    setWardss([]);  // Reset xã/phường
+    const selectedCity = newCities.find(city => city.Name === cityName);
+    setNewDistricts(selectedCity ? selectedCity.Districts : []);  // Cập nhật quận/huyện
+    setNewWards([]);  // Reset xã/phường
   };
 
   // Hàm thay đổi quận/huyện cho modal
   const handleDistrictChangeModal = (event) => {
     const districtName = event.target.value;
-    setDistrict(districtName);
-    setWard(""); // Reset xã/phường khi thay đổi quận/huyện
+    setNewDistrict(districtName);
+    setNewWard(""); // Reset xã/phường khi thay đổi quận/huyện
     // Tìm quận/huyện đã chọn và cập nhật wardss
-    const selectedDistrict = districtss.find(d => d.Name === districtName);
-    setWardss(selectedDistrict ? selectedDistrict.Wards : []);  // Cập nhật xã/phường
+    const district = newDistricts.find(d => d.Name === districtName);
+    setNewWards(district ? district.Wards : []);  // Cập nhật danh sách xã/phường
   };
 
   // Hàm thay đổi xã/phường cho modal
   const handleWardChangeModal = (event) => {
-    setWard(event.target.value);
+    setNewWard(event.target.value);
   };
 
   //Hàm mở giao hàng
@@ -1013,7 +1018,7 @@ const handleCloseChonDC = () => {
   const xacNhanDatHang = async () => {
     try {
       // if (!errorChuyen && !errorDua) {
-      const addressParts = [specificAddress, selectedWard, selectedDistrict, selectedCity]
+      const addressParts = [specificAddress, ward, district, city]
         .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
         .join(" "); // Ghép chuỗi với dấu cách
       const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/xacNhanDatHang`, {
@@ -1539,7 +1544,7 @@ const handleCloseChonDC = () => {
                           {/* Các dropdowns chỉ hiển thị khi showLeftPanel là true */}
                           <FormControl fullWidth size='small'>
                             <InputLabel>Tỉnh/Thành phố</InputLabel>
-                            <Select value={selectedCity} onChange={handleCityChange} label="Tỉnh/Thành phố">
+                            <Select value={city} onChange={handleCityChange} label="Tỉnh/Thành phố">
                               {cities.map((city) => (
                                 <MenuItem key={city.Id} value={city.Name}>{city.Name}</MenuItem>
                               ))}
@@ -1547,9 +1552,9 @@ const handleCloseChonDC = () => {
                           </FormControl>
 
                           {/* Chọn Quận/Huyện */}
-                          <FormControl fullWidth size='small' disabled={!selectedCity}>
+                          <FormControl fullWidth size='small'>
                             <InputLabel>Quận/Huyện</InputLabel>
-                            <Select value={selectedDistrict} onChange={handleDistrictChange} label="Quận/Huyện">
+                            <Select value={district} onChange={handleDistrictChange} label="Quận/Huyện">
                               {districts.map((district) => (
                                 <MenuItem key={district.Id} value={district.Name}>{district.Name}</MenuItem>
                               ))}
@@ -1557,12 +1562,22 @@ const handleCloseChonDC = () => {
                           </FormControl>
 
                           {/* Chọn Xã/Phường */}
-                          <FormControl fullWidth size='small' disabled={!selectedDistrict}>
+                          <FormControl fullWidth size='small'>
                             <InputLabel>Xã/Phường</InputLabel>
-                            <Select value={selectedWard} onChange={handleWardChange} label="Xã/Phường">
-                              {wards.map((ward) => (
-                                <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
-                              ))}
+                            <Select
+                              value={ward}
+                              onChange={handleWardChange}
+                              label="Xã/Phường"
+                            >
+                              {wards.length > 0 ? (
+                                wards.map((ward) => (
+                                  <MenuItem key={ward.Id} value={ward.Name}>
+                                    {ward.Name}
+                                  </MenuItem>
+                                ))
+                              ) : (
+                                <MenuItem disabled>No wards available</MenuItem>
+                              )}
                             </Select>
                           </FormControl>
                         </Box>
@@ -2741,14 +2756,14 @@ const handleCloseChonDC = () => {
             <InputLabel id="city-label" size="small">Tỉnh/Thành phố</InputLabel>
             <Select
               labelId="city-label"
-              value={city}  // Sử dụng state cho modal là 'city'
+              value={newCity}  // Sử dụng state cho modal là 'city'
               label="Tỉnh/Thành phố"
               onChange={handleCityChangeModal}
               size="small" // Áp dụng size nhỏ cho Select
             >
-              {citiess.map((city) => (  // Sử dụng citiess (dữ liệu cho modal)
-                <MenuItem key={city.Name} value={city.Name}>
-                  {city.Name}
+              {newCities.map((newCity) => (  // Sử dụng citiess (dữ liệu cho modal)
+                <MenuItem key={newCity.Id} value={newCity.Name}>
+                  {newCity.Name}
                 </MenuItem>
               ))}
             </Select>
@@ -2759,15 +2774,15 @@ const handleCloseChonDC = () => {
             <InputLabel id="district-label" size="small">Quận/Huyện</InputLabel>
             <Select
               labelId="district-label"
-              value={district}  // Sử dụng state cho modal là 'district'
+              value={newDistrict}  // Sử dụng state cho modal là 'district'
               label="Quận/Huyện"
               onChange={handleDistrictChangeModal}
-              disabled={!city}  // Disable nếu chưa chọn thành phố
+              disabled={!newCities}  // Disable nếu chưa chọn thành phố
               size="small" // Áp dụng size nhỏ cho Select
             >
-              {districtss.map((district) => (  // Sử dụng districtss (dữ liệu cho modal)
-                <MenuItem key={district.Name} value={district.Name}>
-                  {district.Name}
+              {newDistricts.map((newDistrict) => (  // Sử dụng districtss (dữ liệu cho modal)
+                <MenuItem key={newDistrict.Id} value={newDistrict.Name}>
+                  {newDistrict.Name}
                 </MenuItem>
               ))}
             </Select>
@@ -2778,15 +2793,15 @@ const handleCloseChonDC = () => {
             <InputLabel id="ward-label" size="small">Xã/Phường</InputLabel>
             <Select
               labelId="ward-label"
-              value={ward}  // Sử dụng state cho modal là 'ward'
+              value={newWard}  // Sử dụng state cho modal là 'ward'
               label="Xã/Phường"
               onChange={handleWardChangeModal}
-              disabled={!district}  // Disable nếu chưa chọn quận/huyện
+              disabled={!newDistrict}  // Disable nếu chưa chọn quận/huyện
               size="small" // Áp dụng size nhỏ cho Select
             >
-              {wardss.map((ward) => (  // Sử dụng wardss (dữ liệu cho modal)
-                <MenuItem key={ward.Name} value={ward.Name}>
-                  {ward.Name}
+              {newWards.map((newWard) => (  // Sử dụng wardss (dữ liệu cho modal)
+                <MenuItem key={newWard.Id} value={newWard.Name}>
+                  {newWard.Name}
                 </MenuItem>
               ))}
             </Select>
