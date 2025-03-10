@@ -205,7 +205,7 @@ const TaoMoiNhanVien = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/nhanvien");
+    navigate("/admin/nhanvien");
   };
 
   useEffect(() => {
@@ -509,7 +509,7 @@ const TaoMoiNhanVien = () => {
     formData.append("soNha", diaChiParts.soNha);
     // formData.append("diaChi", fullDiaChi);
     formData.append("nguoiTao", "admin");
-    formData.append("idTaiKhoan", 1);
+    formData.append("idTaiKhoan", 3);
 
     if (nhanVien.anh) {
       formData.append("anh", nhanVien.anh);
@@ -548,7 +548,7 @@ const TaoMoiNhanVien = () => {
       setQuanList([]);
       setXaList([]);
 
-      navigate("/nhanvien");
+      navigate("/admin/nhanvien");
     } catch (error) {
       enqueueSnackbar("Lỗi khi thêm nhân viên!", {
         variant: "error",

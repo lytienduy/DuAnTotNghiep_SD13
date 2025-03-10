@@ -13,6 +13,9 @@ public class DiaChiService {
     @Autowired
     private DiaChiRepository diaChiRepository;
 
+    @Autowired
+    private KhachHangRepository khachHangRepository;
+
     public static DiaChiDto mapToDto(DiaChi diaChi) {
         return new DiaChiDto(diaChi.getId(), diaChi.getSoNha(), diaChi.getDuong(), diaChi.getXa(), diaChi.getHuyen(), diaChi.getThanhPho(), diaChi.getMoTa(), diaChi.getTrangThai(), diaChi.getMacDinh());
     }
@@ -36,4 +39,18 @@ public class DiaChiService {
             }
         });
     }
+
+    //Thêm địa chỉ trong bán tại quầy
+    public void themDiaChi(DiaChi diaChi) {
+        // Kiểm tra xem khách hàng có tồn tại hay không
+        KhachHang khachHang = khachHangRepository.findById(diaChi.getKhachHang().getId())
+                .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại"));
+
+        // Gán khách hàng vào địa chỉ
+        diaChi.setKhachHang(khachHang);
+
+        // Lưu địa chỉ vào cơ sở dữ liệu
+        diaChiRepository.save(diaChi);
+    }
+
 }

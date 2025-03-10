@@ -202,7 +202,7 @@ const HoaDon = () => {
   //Dùng để chuyển trang
   const navigate = useNavigate();
   const handleCreateInvoice = () => {
-    navigate("/banTaiQuay"); // Chuyển đến trang bán hàng tại quầy
+    navigate("/admin/banTaiQuay"); // Chuyển đến trang bán hàng tại quầy
   };
 
   // Gắn funtion setTimeOut cho ô tìm kiếm searchText cứ 800ms thì mới chạy chức năng lọc háo đơn
@@ -535,7 +535,7 @@ const HoaDon = () => {
                   <TableCell align="center">
                     <Stack direction="row" spacing={1}>
                       <IconButton color="primary" size="small"
-                        onClick={() => navigate(`/hoaDon/${order.id}`)}
+                        onClick={() => navigate(`/admin/hoaDon/${order.id}`)}
                       // onClick={() => xemHoaDonChiTiet(order.id)}
                       >
                         <VisibilityIcon />

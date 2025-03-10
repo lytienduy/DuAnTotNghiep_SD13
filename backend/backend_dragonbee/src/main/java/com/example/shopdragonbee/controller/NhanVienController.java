@@ -14,6 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -96,6 +101,7 @@ public class NhanVienController {
     }
 
 
+    private static final String UPLOAD_DIR = "E:/uploads/";
 
     // Cập nhật nhân viên
     @PutMapping("/{id}")
@@ -107,6 +113,35 @@ public class NhanVienController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    // API Upload ảnh
+    @PostMapping("/upload-anh")
+    public ResponseEntity<String> uploadAnh(@RequestParam("anh") MultipartFile file) {
+        try {
+            // Kiểm tra nếu file rỗng
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("File ảnh không được để trống!");
+            }
+
+            // Tạo tên file mới để tránh trùng lặp
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(UPLOAD_DIR + fileName);
+
+            // Kiểm tra thư mục lưu ảnh, nếu chưa có thì tạo mới
+            Files.createDirectories(filePath.getParent());
+
+            // Lưu file vào thư mục
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Trả về đường dẫn ảnh
+            String fileUrl = "http://localhost:8080/uploads/" + fileName;
+            return ResponseEntity.ok(fileUrl);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi upload ảnh: " + e.getMessage());
+        }
+    }
+
+
 
     // Xóa nhân viên
     @DeleteMapping("/{id}")

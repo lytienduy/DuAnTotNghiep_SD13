@@ -67,7 +67,7 @@ const ThemPhieuGiamGia = () => {
 
   // Hàm xử lý quay lại trang trước
   const handleBack = () => {
-    navigate("/phieu-giam-gia"); // Điều hướng về trang phiếu giảm giá
+    navigate("/admin/phieu-giam-gia"); // Điều hướng về trang phiếu giảm giá
   };
 
   // Add phiếu giảm giá
@@ -221,7 +221,7 @@ const ThemPhieuGiamGia = () => {
       const response = await axios.post("http://localhost:8080/dragonbee/add-phieu-giam-gia", pendingRequestData);
 
       if (response.status === 200) {
-        navigate("/phieu-giam-gia", { state: { successMessage: "Thêm mới phiếu giảm giá thành công" } });
+        navigate("/admin/phieu-giam-gia", { state: { successMessage: "Thêm mới phiếu giảm giá thành công" } });
       }
     } catch (error) {
       console.error("Lỗi khi thêm mới phiếu giảm giá:", error);

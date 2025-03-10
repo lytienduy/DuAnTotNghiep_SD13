@@ -2,6 +2,9 @@ package com.example.shopdragonbee.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,6 +16,7 @@ import java.util.List;
 @Builder
 public class SanPhamChiTiet {
 
+    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -21,7 +25,7 @@ public class SanPhamChiTiet {
     private String ma;
 
     @Column(name = "so_luong", nullable = false)
-    private Integer soLuong;
+    private Integer soLuong = 0;
 
     @Column(name = "mo_ta")
     private String moTa;
@@ -30,7 +34,7 @@ public class SanPhamChiTiet {
     private String trangThai;
 
     @Column(name = "gia", nullable = false)
-    private Double gia;
+    private Double gia = 0.0;
 
     @ManyToOne
     @JoinColumn(name = "id_san_pham", nullable = false)
@@ -86,4 +90,5 @@ public class SanPhamChiTiet {
 
     @OneToMany(mappedBy = "sanPhamChiTiet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnhSanPham> listAnh;
+
 }

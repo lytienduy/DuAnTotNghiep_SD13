@@ -1,14 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { alpha, Box, Button, Chip, FormControl, InputBase, InputLabel, MenuItem, Pagination, Paper, Select, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, IconButton, Tooltip } from '@mui/material';
-import { Add, GetApp, Visibility } from '@mui/icons-material';
+import { Add, Edit, GetApp } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { exportToExcel } from '../../../utils';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
-    width: '60%',
+    width: '40%',
     borderRadius: theme.shape.borderRadius,
     backgroundColor: alpha(theme.palette.common.white, 0.15),
     '&:hover': {
@@ -62,7 +62,7 @@ const KhachHang = () => {
     const showKhachHang = filterKhachHang.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
     const viewDetailHandler = (id) => {
-        navigate(`/khachHang/detail/${id}`);
+        navigate(`/admin/khachHang/detail/${id}`);
     }
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(event.target.value)
@@ -87,8 +87,8 @@ const KhachHang = () => {
     return (
         <Box>
             <h1>Khách hàng </h1>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'column', gap: 1 }}>
-                <Box sx={styles.headerContainer}>
+            <Box style={styles.headerContainer}>
+                <Box sx={styles.header}>
                     <Search>
                         <SearchIconWrapper>
                             <SearchIcon />
@@ -100,12 +100,7 @@ const KhachHang = () => {
                             inputProps={{ 'aria-label': 'search' }}
                         />
                     </Search>
-                    <Button variant="outlined" startIcon={<Add />} onClick={() => navigate('/khachHang/add')}>
-                        Tạo khách hàng
-                    </Button>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <FormControl variant="standard" sx={{ minWidth: 120, mx: 2 }}>
+                    <FormControl sx={{ minWidth: 120, mx: 2 }}>
                         <InputLabel id="demo-simple-select-label">Giới tính</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
@@ -120,7 +115,7 @@ const KhachHang = () => {
                         </Select>
                     </FormControl>
 
-                    <FormControl variant="standard" sx={{ minWidth: 120, mx: 2 }}>
+                    <FormControl sx={{ minWidth: 120, mx: 2 }}>
                         <InputLabel id="demo-simple-select-label">Trạng thái</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
@@ -143,6 +138,13 @@ const KhachHang = () => {
                         Xuất Excel
                     </Button>
                     {/* </DownloadTableExcel> */}
+                    <Button variant="outlined" startIcon={<Add />} onClick={() => navigate('/admin/khachHang/add')}>
+                        Tạo khách hàng
+                    </Button>
+
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+
 
                 </Box>
             </Box>
@@ -164,29 +166,22 @@ const KhachHang = () => {
                         </TableHead>
                         <TableBody>
                             {showKhachHang.map((kh, index) => (
-                                <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                    <TableCell component="th" scope="row" sx={{ fontWeight: 'bold', color: 'black' }}>
-                                        {index + 1}
+                                <TableRow
+                                    key={index}
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell component="th" scope="row">
+                                        {rowsPerPage * page + index + 1}
                                     </TableCell>
-                                    <TableCell>{kh.ma}</TableCell>
-                                    <TableCell>{kh.email}</TableCell>
-                                    <TableCell>{kh.tenKhachHang}</TableCell>
-                                    <TableCell>{kh.ngaySinh}</TableCell>
-                                    <TableCell>{kh.sdt}</TableCell>
-                                    <TableCell>{kh.gioiTinh}</TableCell>
-                                    <TableCell>
-                                        {kh.trangThai === 'Hoạt động' ? (
-                                            <Chip label="Hoạt động" color="success" />
-                                        ) : (
-                                            <Chip label="Tạm ngưng" color="error" />
-                                        )}
-                                    </TableCell>
+                                    <TableCell >{kh.ma}</TableCell>
+                                    <TableCell >{kh.email}</TableCell>
+                                    <TableCell >{kh.tenKhachHang}</TableCell>
+                                    <TableCell >{kh.ngaySinh}</TableCell>
+                                    <TableCell >{kh.sdt}</TableCell>
+                                    <TableCell >{kh.gioiTinh}</TableCell>
+                                    <TableCell >{kh.trangThai === 'Hoạt động' ? <Chip label="Hoạt động" color="success" /> : <Chip label="Tạm ngưng" color="error" />}</TableCell>
                                     <TableCell onClick={viewDetailHandler.bind(this, kh.ma)}>
-                                        <Tooltip title="Xem chi tiết" placement="bottom-start">
-                                            <IconButton>
-                                                <Visibility style={{ color: 'orange' }} />
-                                            </IconButton>
-                                        </Tooltip>
+                                        <Tooltip title="Chỉnh sửa" placement="bottom-start"><IconButton><Edit style={{ color: 'orange' }} /></IconButton></Tooltip>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -219,6 +214,16 @@ export default KhachHang;
 
 const styles = {
     headerContainer: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexDirection: 'column',
+        gap: 1,
+        backgroundColor: 'white',
+        padding: 10,
+        borderRadius: 5,
+        boxShadow: '0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12)'
+    },
+    header: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',

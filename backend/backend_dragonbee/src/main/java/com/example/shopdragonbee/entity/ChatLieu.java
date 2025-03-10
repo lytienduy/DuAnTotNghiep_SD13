@@ -2,6 +2,9 @@ package com.example.shopdragonbee.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+
+
 
 @Entity
 @Table(name = "chat_lieu")
@@ -11,6 +14,7 @@ import lombok.*;
 @Builder
 public class ChatLieu {
 
+    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -24,6 +28,8 @@ public class ChatLieu {
     @Column(name = "mo_ta")
     private String moTa;
 
-    @Column(name = "trang_thai")
+    @Column(name = "trang_thai", nullable = false)
     private String trangThai;
+
+
 }
