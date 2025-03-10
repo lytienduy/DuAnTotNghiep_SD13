@@ -77,7 +77,6 @@
             <version>5.2.3</version>
         </dependency>
 
-
         <!--gửi mail-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

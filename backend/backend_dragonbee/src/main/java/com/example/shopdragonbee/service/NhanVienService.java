@@ -48,7 +48,7 @@ public class NhanVienService {
     private JavaMailSender mailSender;
 
 
-    private static final String UPLOAD_DIR = "E:/uploads/";
+    private static final String UPLOAD_DIR = "D:/uploads/";
 
     public NhanVien themMoiNhanVien(NhanVienRequestDTO dto) {
         // Kiểm tra xem CCCD đã tồn tại hay chưa
