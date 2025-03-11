@@ -43,6 +43,23 @@ const BanTaiQuay = () => {
   const [newWard, setNewWard] = useState('');
   const [openChonDC, setOpenChonDC] = useState(false);
 
+  //Thêm khách hàng mới
+  const [citiesKH, setCitiesKH] = useState([]);
+  const [districtsKH, setDistrictsKH] = useState([]);
+  const [wardsKH, setWardsKH] = useState([]);
+  const [cityKH, setCityKH] = useState('');
+  const [districtKH, setDistrictKH] = useState('');
+  const [wardKH, setWardKH] = useState('');
+  const [selectedCityKH, setSelectedCityKH] = useState('');
+  const [selectedDistrictKH, setSelectedDistrictKH] = useState('');
+  const [selectedWardKH, setSelectedWardKH] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
+  const [gender, setGender] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+
   // State để lưu danh sách các đơn hàng
   const [orders, setOrders] = useState([]);
   // const [isShowOrders, setIsShowOrders] = useState(false); // Trạng thái để kiểm soát hiển thị đơn hàng
@@ -320,10 +337,14 @@ const BanTaiQuay = () => {
     setDistricts([]);
     setWards([]);
 
+    // Cập nhật lại giá trị tìm kiếm và id khách hàng
     setKeyword(`${customer.tenKhachHang} - ${customer.sdt}`);
-    setSelectedCustomerId(customer.id);
+    setSelectedCustomerId(customer.id);  // Giữ ID của khách hàng mới
+
+    // Đóng Popper
     setOpenKH(false);
 
+    // Cập nhật các trường địa chỉ
     setRecipientName(customer.tenKhachHang);
     setRecipientPhone(customer.sdt);
     setAddresses(customer.diaChis || []);
@@ -353,7 +374,8 @@ const BanTaiQuay = () => {
     } else {
       setDescription("");
     }
-  };
+};
+
 
   // Hiển thị 5 khách hàng đầu tiên khi vừa mở trang (ngay khi chưa nhập gì)
   useEffect(() => {
@@ -458,8 +480,9 @@ const BanTaiQuay = () => {
           ...city,
           Name: city.Name.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
         }));
-        setCities(normalizedCities);  // Cập nhật citiess thay vì setCities
-        setNewCities(normalizedCities);  // Cập nhật citiess thay vì setCities
+        setCities(normalizedCities);
+        setNewCities(normalizedCities);
+        setCitiesKH(normalizedCities);
       })
       .catch(error => console.error("Error fetching data:", error));
   }, []);
@@ -533,55 +556,150 @@ const BanTaiQuay = () => {
     setNewWard(event.target.value);
   };
 
+  //Tỉnh thành huyện xã của thêm khách hàng
+  // Cập nhật giá trị khi chọn thành phố
+  const handleCityChangeKH = (event) => {
+    const cityName = event.target.value;
+    setCityKH(cityName);  // Cập nhật giá trị thành phố
+    setDistrictKH("");  // Reset quận/huyện
+    setWardKH("");  // Reset xã/phường khi thay đổi thành phố
+
+    // Cập nhật danh sách quận/huyện
+    const selectedCity = citiesKH.find(city => city.Name === cityName);
+    setDistrictsKH(selectedCity ? selectedCity.Districts : []);  // Cập nhật danh sách quận/huyện
+    setWardsKH([]);  // Reset danh sách xã/phường
+  };
+
+  // Cập nhật giá trị khi chọn quận/huyện
+  const handleDistrictChangeKH = (event) => {
+    const districtName = event.target.value;
+    setDistrictKH(districtName);  // Cập nhật giá trị quận/huyện
+    setWardKH("");  // Reset xã/phường khi thay đổi quận/huyện
+
+    // Cập nhật danh sách xã/phường
+    const selectedDistrict = districtsKH.find(d => d.Name === districtName);
+    setWardsKH(selectedDistrict ? selectedDistrict.Wards : []);  // Cập nhật danh sách xã/phường
+  };
+
+  // Cập nhật giá trị khi chọn xã/phường
+  const handleWardChangeKH = (event) => {
+    setWardKH(event.target.value);  // Cập nhật giá trị xã/phường
+  };
+
+
   //Hàm mở giao hàng
   const handleSwitchChange = (event) => {
     setShowLeftPanel(event.target.checked);
   };
 
-// Thêm mới địa chỉ cho khách hàng được chọn
-const handleSaveAddress = () => {
-  const detailedAddress = document.getElementById('detailed-address').value.trim();
-  const description = document.getElementById('description').value.trim();
-  const [soNha, duong] = detailedAddress.split(',');
-
-  const newAddress = {
-    khachHang: { id: selectedCustomerId },
-    soNha: soNha.trim(),
-    duong: duong.trim(),
-    xa: newWard,
-    huyen: newDistrict,
-    thanhPho: newCity,
-    moTa: description || '',
-    trangThai: 'Hoạt động',
-    macDinh: false,
+  // Thêm mới địa chỉ cho khách hàng được chọn
+  const handleSaveAddress = () => {
+    const detailedAddress = document.getElementById('detailed-address').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const [soNha, duong] = detailedAddress.split(',');
+  
+    const newAddress = {
+      khachHang: { id: selectedCustomerId },
+      soNha: soNha.trim(),
+      duong: duong.trim(),
+      xa: newWard,
+      huyen: newDistrict,
+      thanhPho: newCity,
+      moTa: description || '',
+      trangThai: 'Hoạt động',
+      macDinh: false,
+    };
+  
+    // Gọi API để thêm địa chỉ mới
+    axios.post('http://localhost:8080/dragonbee/them-dia-chi', newAddress)
+      .then(response => {
+        // Sau khi thêm địa chỉ, gọi lại API để lấy danh sách địa chỉ mới nhất từ server
+        axios.get(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`)
+          .then(response => {
+            // Cập nhật lại danh sách địa chỉ từ response
+            setAddresses(response.data);
+  
+            // Lấy địa chỉ mới nhất (ở cuối danh sách) để tự động chọn
+            const lastAddress = response.data[response.data.length - 1];
+            handleSelectAddress(lastAddress);  // Chọn địa chỉ cuối cùng trong danh sách
+  
+            // Đóng modal thêm địa chỉ sau khi lưu thành công
+            setOpenChonDC(false);  // Đóng modal thêm địa chỉ
+  
+            alert('Thêm địa chỉ thành công!');
+            setNewCity('');  // Reset thành phố
+            setNewDistrict('');  // Reset quận/huyện
+            setNewWard('');  // Reset xã/phường
+          })
+          .catch(error => {
+            console.error('Lỗi khi lấy danh sách địa chỉ:', error);
+            alert('Có lỗi khi lấy danh sách địa chỉ.');
+          });
+      })
+      .catch(error => {
+        console.error('Có lỗi khi thêm địa chỉ:', error);
+        alert('Có lỗi khi thêm địa chỉ.');
+      });
   };
 
-  // Gọi API để thêm địa chỉ mới
-  axios.post('http://localhost:8080/dragonbee/them-dia-chi', newAddress)
-    .then(response => {
-      // Sau khi thêm địa chỉ, gọi lại API để lấy danh sách địa chỉ mới nhất từ server
-      axios.get(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`)
-        .then(response => {
-          // Cập nhật lại danh sách địa chỉ từ response
-          setAddresses(response.data);
+  // Hàm submit khi thêm khách hàng mới
+  const handleSubmitAddNewKH = async (e) => {
+    e.preventDefault();
 
-          // // Đóng modal chọn địa chỉ sau khi lưu thành công
-          setOpenChonDC(false);  // Đóng modal thêm địa chỉ
+    // Tách "Số nhà, Đường" thành hai trường 'soNha' và 'duong' ngăn cách bởi dấu phẩy
+    const [soNha, duong] = address.split(',');
 
-          alert('Thêm địa chỉ thành công!');
-          setNewCity('');  // Reset thành phố
-          setNewDistrict('');  // Reset quận/huyện
-          setNewWard('');  // Reset xã/phường
-        })
-        .catch(error => {
-          console.error('Lỗi khi lấy danh sách địa chỉ:', error);
-          alert('Có lỗi khi lấy danh sách địa chỉ.');
-        });
-    })
-    .catch(error => {
-      console.error('Có lỗi khi thêm địa chỉ:', error);
-      alert('Có lỗi khi thêm địa chỉ.');
-    });
+    // Tạo đối tượng dữ liệu để gửi lên API
+    const customerData = {
+      tenKhachHang: name,
+      ngaySinh: dob,
+      gioiTinh: gender,
+      sdt: phone,
+      email: email,
+      diaChi: {
+        soNha: soNha.trim(),
+        duong: duong ? duong.trim() : '',
+        xa: wardKH,
+        huyen: districtKH,
+        thanhPho: cityKH,
+        moTa: ''
+      }
+    };
+
+    try {
+      // Gửi dữ liệu đến API để thêm khách hàng mới
+      const response = await axios.post('http://localhost:8080/dragonbee/them-khach-hang', customerData);
+      alert('Thêm khách hàng thành công');
+      fetchDefaultCustomers();
+      // Sau khi thêm thành công, gọi hàm để lấy thông tin khách hàng mới nhất
+      fetchNewestCustomer();
+
+      // Đóng pop-up hoặc modal
+      setOpenKH(false);
+      setOpen(false);
+    } catch (error) {
+      console.error('Có lỗi xảy ra khi thêm khách hàng:', error);
+      alert('Có lỗi xảy ra khi thêm khách hàng!');
+    }
+};
+
+// Hàm tìm kiếm khách hàng mới nhất
+const fetchNewestCustomer = async () => {
+  try {
+    // Lấy thông tin khách hàng mới nhất từ API
+    const response = await axios.get('http://localhost:8080/dragonbee/tim-kiem-khach-hang?keyword=');
+    
+    // Lấy khách hàng mới nhất từ kết quả
+    const newestCustomer = response.data[response.data.length - 1];
+
+    // Tự động chọn khách hàng mới nhất
+    handleSelectCustomer(newestCustomer);
+
+    // Đảm bảo Popper vẫn hiển thị khách hàng mới nhất
+    setOpenKH(true);
+  } catch (error) {
+    console.error('Lỗi khi gọi API tìm kiếm khách hàng:', error);
+  }
 };
 
 
@@ -1106,7 +1224,7 @@ const handleSaveAddress = () => {
     // Tìm khách hàng dựa vào ID đã chọn
     const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
     if (!selectedCustomer) return; // Nếu không tìm thấy khách hàng thì thoát
-
+  
     setRecipientName(selectedCustomer.tenKhachHang);
     setRecipientPhone(selectedCustomer.sdt);
     setCity(address.thanhPho);  // Cập nhật thành phố
@@ -1114,7 +1232,7 @@ const handleSaveAddress = () => {
     setWard(address.xa);  // Cập nhật xã/phường
     setSpecificAddress(`${address.soNha}, ${address.duong}`);  // Cập nhật địa chỉ cụ thể
     setDescription(address.moTa || "");  // Cập nhật mô tả
-
+  
     // Cập nhật lại danh sách quận/huyện và xã/phường dựa trên thành phố và huyện
     const city = cities.find(city => city.Name === address.thanhPho);
     if (city) {
@@ -1129,7 +1247,7 @@ const handleSaveAddress = () => {
       setDistricts([]);  // Nếu không tìm thấy thành phố, reset danh sách quận/huyện
       setWards([]);  // Reset xã/phường
     }
-
+  
     setOpenDC(false);  // Đóng modal sau khi chọn
   };
 
@@ -2157,113 +2275,117 @@ const handleSaveAddress = () => {
           </IconButton>
 
           <h2>Thêm mới khách hàng</h2>
+          <form onSubmit={handleSubmitAddNewKH}>
+            <Grid container spacing={2}>
+              {/* Cột bên trái */}
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Tên khách hàng"
+                  variant="outlined"
+                  margin="normal"
+                  size='small'
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  label="Số điện thoại"
+                  variant="outlined"
+                  margin="normal"
+                  size='small'
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  label="Ngày sinh"
+                  variant="outlined"
+                  margin="normal"
+                  type="date"
+                  size='small'
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <FormControl fullWidth margin="normal" size='small'>
+                  <InputLabel>Giới tính</InputLabel>
+                  <Select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    label="Giới tính"
+                  >
+                    <MenuItem value="male">Nam</MenuItem>
+                    <MenuItem value="female">Nữ</MenuItem>
+                    <MenuItem value="other">Khác</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  variant="outlined"
+                  margin="normal"
+                  size='small'
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Grid>
 
-          <Grid container spacing={2}>
-            {/* Cột bên trái */}
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Tên khách hàng"
-                variant="outlined"
-                margin="normal"
-                name="name"
-                size='small'
-              />
-              <TextField
-                fullWidth
-                label="Số điện thoại"
-                variant="outlined"
-                margin="normal"
-                name="phone"
-                size='small'
-              />
-              <TextField
-                fullWidth
-                label="Ngày sinh"
-                variant="outlined"
-                margin="normal"
-                type="date"
-                size='small'
-                name="dob"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Thành phố"
-                variant="outlined"
-                margin="normal"
-                name="area"
-                size='small'
-              />
-              <TextField
-                fullWidth
-                label="Xã / Thị trấn"
-                variant="outlined"
-                margin="normal"
-                name="address"
-                size='small'
-              />
+              {/* Cột bên phải */}
+              <Grid item xs={6}>
+                <FormControl fullWidth size='small' sx={{ marginTop: 2 }}>
+                  <InputLabel>Tỉnh/Thành phố</InputLabel>
+                  <Select value={cityKH} onChange={handleCityChangeKH} label="Tỉnh/Thành phố">
+                    {citiesKH.map((city) => (
+                      <MenuItem key={city.Id} value={city.Name}>{city.Name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth size='small' sx={{ marginTop: 3 }}>
+                  <InputLabel>Quận/Huyện</InputLabel>
+                  <Select value={districtKH} onChange={handleDistrictChangeKH} label="Quận/Huyện">
+                    {districtsKH.map((district) => (
+                      <MenuItem key={district.Id} value={district.Name}>{district.Name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth size='small' sx={{ marginTop: 3 }}>
+                  <InputLabel>Xã/Phường</InputLabel>
+                  <Select value={wardKH} onChange={handleWardChangeKH} label="Xã/Phường">
+                    {wardsKH.length > 0 ? (
+                      wardsKH.map((ward) => (
+                        <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No wards available</MenuItem>
+                    )}
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  fullWidth
+                  label="Số nhà, Đường, Thôn/Xóm"
+                  variant="outlined"
+                  margin="normal"
+                  size='small'
+                  sx={{ marginTop: 3 }}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </Grid>
             </Grid>
 
-            {/* Cột bên phải */}
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Mã khách hàng (Có thể nhập hoặc không)"
-                variant="outlined"
-                margin="normal"
-                name="customerId"
-                size='small'
-              />
-              <FormControl fullWidth margin="normal" size='small'>
-                <InputLabel>Giới tính</InputLabel>
-                <Select
-                  name="gender"
-                  label="Giới tính"
-                >
-                  <MenuItem value="male">Nam</MenuItem>
-                  <MenuItem value="female">Nữ</MenuItem>
-                  <MenuItem value="other">Khác</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField
-                fullWidth
-                label="Email"
-                variant="outlined"
-                margin="normal"
-                name="email"
-                size='small'
-              />
-
-              <TextField
-                fullWidth
-                label="Quận / Huyện"
-                variant="outlined"
-                margin="normal"
-                name="district"
-                size='small'
-              />
-              <TextField
-                fullWidth
-                label="Số nhà, Đường, Thôn/Xóm"
-                variant="outlined"
-                margin="normal"
-                name="district"
-                size='small'
-              />
-            </Grid>
-          </Grid>
-
-          <Button
-
-            variant="contained"
-            color="primary"
-            sx={{ marginTop: '20px', left: 270 }}
-          >
-            Thêm khách hàng
-          </Button>
+            <Button
+              type='submit'
+              variant="contained"
+              color="primary"
+              sx={{ marginTop: '20px', left: 270 }}
+            >
+              Thêm khách hàng
+            </Button>
+          </form>
         </Box>
       </Modal>
 
