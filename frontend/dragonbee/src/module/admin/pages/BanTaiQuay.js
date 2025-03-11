@@ -482,20 +482,22 @@ const BanTaiQuay = () => {
 
   const handleCityChange = (event) => {
     const cityName = event.target.value;
-    setCity(cityName);  // Cập nhật giá trị của city
-    setDistrict("");  // Reset quận/huyện khi thay đổi tỉnh thành
-    setWard("");  // Reset xã/phường khi thay đổi quận/huyện
+    setCity(cityName);  // Cập nhật giá trị thành phố
+    setDistrict("");  // Reset quận/huyện
+    setWard("");  // Reset xã/phường khi thay đổi thành phố
 
+    // Cập nhật danh sách quận/huyện
     const city = cities.find(city => city.Name === cityName);
     setDistricts(city ? city.Districts : []);  // Cập nhật danh sách quận/huyện
-    setWards([]);  // Reset xã/phường
+    setWards([]);  // Reset danh sách xã/phường
   };
 
   const handleDistrictChange = (event) => {
     const districtName = event.target.value;
-    setDistrict(districtName);  // Cập nhật giá trị của district
+    setDistrict(districtName);  // Cập nhật giá trị quận/huyện
     setWard("");  // Reset xã/phường khi thay đổi quận/huyện
 
+    // Cập nhật danh sách xã/phường
     const district = districts.find(d => d.Name === districtName);
     setWards(district ? district.Wards : []);  // Cập nhật danh sách xã/phường
   };
@@ -536,7 +538,51 @@ const BanTaiQuay = () => {
     setShowLeftPanel(event.target.checked);
   };
 
+// Thêm mới địa chỉ cho khách hàng được chọn
+const handleSaveAddress = () => {
+  const detailedAddress = document.getElementById('detailed-address').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const [soNha, duong] = detailedAddress.split(',');
 
+  const newAddress = {
+    khachHang: { id: selectedCustomerId },
+    soNha: soNha.trim(),
+    duong: duong.trim(),
+    xa: newWard,
+    huyen: newDistrict,
+    thanhPho: newCity,
+    moTa: description || '',
+    trangThai: 'Hoạt động',
+    macDinh: false,
+  };
+
+  // Gọi API để thêm địa chỉ mới
+  axios.post('http://localhost:8080/dragonbee/them-dia-chi', newAddress)
+    .then(response => {
+      // Sau khi thêm địa chỉ, gọi lại API để lấy danh sách địa chỉ mới nhất từ server
+      axios.get(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`)
+        .then(response => {
+          // Cập nhật lại danh sách địa chỉ từ response
+          setAddresses(response.data);
+
+          // // Đóng modal chọn địa chỉ sau khi lưu thành công
+          setOpenChonDC(false);  // Đóng modal thêm địa chỉ
+
+          alert('Thêm địa chỉ thành công!');
+          setNewCity('');  // Reset thành phố
+          setNewDistrict('');  // Reset quận/huyện
+          setNewWard('');  // Reset xã/phường
+        })
+        .catch(error => {
+          console.error('Lỗi khi lấy danh sách địa chỉ:', error);
+          alert('Có lỗi khi lấy danh sách địa chỉ.');
+        });
+    })
+    .catch(error => {
+      console.error('Có lỗi khi thêm địa chỉ:', error);
+      alert('Có lỗi khi thêm địa chỉ.');
+    });
+};
 
 
 
@@ -1063,22 +1109,29 @@ const BanTaiQuay = () => {
 
     setRecipientName(selectedCustomer.tenKhachHang);
     setRecipientPhone(selectedCustomer.sdt);
-    setSelectedCity(address.thanhPho);
-    setSelectedDistrict(address.huyen);
+    setCity(address.thanhPho);  // Cập nhật thành phố
+    setDistrict(address.huyen);  // Cập nhật huyện
+    setWard(address.xa);  // Cập nhật xã/phường
+    setSpecificAddress(`${address.soNha}, ${address.duong}`);  // Cập nhật địa chỉ cụ thể
+    setDescription(address.moTa || "");  // Cập nhật mô tả
 
-    // Cập nhật danh sách xã theo huyện mới
+    // Cập nhật lại danh sách quận/huyện và xã/phường dựa trên thành phố và huyện
     const city = cities.find(city => city.Name === address.thanhPho);
     if (city) {
+      setDistricts(city.Districts);  // Cập nhật danh sách quận/huyện của thành phố
       const district = city.Districts.find(d => d.Name === address.huyen);
-      setWards(district ? district.Wards : []);
+      if (district) {
+        setWards(district.Wards);  // Cập nhật danh sách xã/phường của huyện
+      } else {
+        setWards([]);  // Nếu không tìm thấy huyện, reset danh sách xã/phường
+      }
+    } else {
+      setDistricts([]);  // Nếu không tìm thấy thành phố, reset danh sách quận/huyện
+      setWards([]);  // Reset xã/phường
     }
 
-    setSelectedWard(address.xa);
-    setSpecificAddress(`${address.soNha}, ${address.duong}`);
-    setDescription(address.moTa || ""); // Nếu không có mô tả, đặt rỗng
-    setOpenDC(false); // Đóng modal
+    setOpenDC(false);  // Đóng modal sau khi chọn
   };
-
 
   return (
     <Box
@@ -1551,7 +1604,6 @@ const BanTaiQuay = () => {
                             </Select>
                           </FormControl>
 
-                          {/* Chọn Quận/Huyện */}
                           <FormControl fullWidth size='small'>
                             <InputLabel>Quận/Huyện</InputLabel>
                             <Select value={district} onChange={handleDistrictChange} label="Quận/Huyện">
@@ -1561,19 +1613,12 @@ const BanTaiQuay = () => {
                             </Select>
                           </FormControl>
 
-                          {/* Chọn Xã/Phường */}
                           <FormControl fullWidth size='small'>
                             <InputLabel>Xã/Phường</InputLabel>
-                            <Select
-                              value={ward}
-                              onChange={handleWardChange}
-                              label="Xã/Phường"
-                            >
+                            <Select value={ward} onChange={handleWardChange} label="Xã/Phường">
                               {wards.length > 0 ? (
                                 wards.map((ward) => (
-                                  <MenuItem key={ward.Id} value={ward.Name}>
-                                    {ward.Name}
-                                  </MenuItem>
+                                  <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
                                 ))
                               ) : (
                                 <MenuItem disabled>No wards available</MenuItem>
@@ -2836,7 +2881,7 @@ const BanTaiQuay = () => {
           <Button onClick={handleCloseChonDC} color="primary">
             Hủy
           </Button>
-          <Button onClick={handleCloseChonDC} color="primary">
+          <Button onClick={handleSaveAddress} color="primary">
             Lưu
           </Button>
         </DialogActions>

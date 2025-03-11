@@ -60,7 +60,7 @@ public class BanTaiQuayDController {
     @PostMapping("/them-dia-chi")
     public ResponseEntity<String> themDiaChi(@RequestBody DiaChi diaChi) {
         try {
-            diaChiService.themDiaChi(diaChi);
+            diaChiService.themDiaChi(diaChi);  // Gọi service để thêm địa chỉ vào cơ sở dữ liệu
             return ResponseEntity.ok("Thêm địa chỉ thành công!");
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -68,6 +68,17 @@ public class BanTaiQuayDController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Có lỗi xảy ra khi thêm địa chỉ.");
+        }
+    }
+
+    // API để lấy danh sách địa chỉ của khách hàng theo customerId
+    @GetMapping("/danh-sach-dia-chi")
+    public List<DiaChi> layDiaChi(@RequestParam Integer customerId) {
+        try {
+            // Gọi service để lấy danh sách địa chỉ của khách hàng
+            return diaChiService.layDiaChiTheoKhachHang(customerId);
+        } catch (Exception e) {
+            throw new RuntimeException("Có lỗi khi lấy danh sách địa chỉ: " + e.getMessage());
         }
     }
 }
