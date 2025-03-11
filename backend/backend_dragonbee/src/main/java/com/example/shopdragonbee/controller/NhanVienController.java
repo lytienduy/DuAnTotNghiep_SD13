@@ -58,47 +58,87 @@ public class NhanVienController {
 //            return ResponseEntity.badRequest().body(e.getMessage());
 //        }
 //    }
+@PostMapping("/them-moi")
+public ResponseEntity<?> themMoiNhanVien(
+        @RequestParam("tenNhanVien") String tenNhanVien,
+        @RequestParam("ngaySinh") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngaySinh,
+        @RequestParam("gioiTinh") String gioiTinh,
+        @RequestParam("sdt") String sdt,
+        @RequestParam("email") String email,
+        @RequestParam("tinhThanh") String tinhThanh,
+        @RequestParam("quanHuyen") String quanHuyen,
+        @RequestParam("xaPhuong") String xaPhuong,
+        @RequestParam("soNha") String soNha,
+        @RequestParam(value = "anh", required = false) MultipartFile anh,
+        @RequestParam("cccd") String cccd,
+        @RequestParam("trangThai") String trangThai,
+        @RequestParam("nguoiTao") String nguoiTao
+        // Bỏ luôn @RequestParam("idTaiKhoan")
+) {
+    try {
+        NhanVienRequestDTO dto = new NhanVienRequestDTO();
+        dto.setTenNhanVien(tenNhanVien);
+        dto.setNgaySinh(ngaySinh);
+        dto.setGioiTinh(gioiTinh);
+        dto.setSdt(sdt);
+        dto.setEmail(email);
+        dto.setTinhThanh(tinhThanh);
+        dto.setQuanHuyen(quanHuyen);
+        dto.setXaPhuong(xaPhuong);
+        dto.setSoNha(soNha);
+        dto.setAnh(anh);
+        dto.setCccd(cccd);
+        dto.setTrangThai(trangThai);
+        dto.setNguoiTao(nguoiTao);
 
-    @PostMapping("/them-moi")
-    public ResponseEntity<?> themMoiNhanVien(
-            @RequestParam("tenNhanVien") String tenNhanVien,
-            @RequestParam("ngaySinh") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngaySinh,
-            @RequestParam("gioiTinh") String gioiTinh,
-            @RequestParam("sdt") String sdt,
-            @RequestParam("email") String email,
-            @RequestParam("tinhThanh") String tinhThanh,
-            @RequestParam("quanHuyen") String quanHuyen,
-            @RequestParam("xaPhuong") String xaPhuong,
-            @RequestParam("soNha") String soNha,
-            @RequestParam(value = "anh", required = false) MultipartFile anh,
-            @RequestParam("cccd") String cccd,
-            @RequestParam("trangThai") String trangThai,
-            @RequestParam("nguoiTao") String nguoiTao,
-            @RequestParam("idTaiKhoan") Integer idTaiKhoan
-    ) {
-        try {
-            NhanVienRequestDTO dto = new NhanVienRequestDTO();
-            dto.setTenNhanVien(tenNhanVien);
-            dto.setNgaySinh(ngaySinh);
-            dto.setGioiTinh(gioiTinh);
-            dto.setSdt(sdt);
-            dto.setEmail(email);
-            dto.setTinhThanh(tinhThanh);
-            dto.setQuanHuyen(quanHuyen);
-            dto.setXaPhuong(xaPhuong);
-            dto.setSoNha(soNha);
-            dto.setAnh(anh);
-            dto.setCccd(cccd);
-            dto.setTrangThai(trangThai);
-            dto.setNguoiTao(nguoiTao);
-            dto.setIdTaiKhoan(idTaiKhoan);
-
-            NhanVien nhanVien = nhanVienService.themMoiNhanVien(dto);
-            return ResponseEntity.ok(nhanVien);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        NhanVien nhanVien = nhanVienService.themMoiNhanVien(dto);
+        return ResponseEntity.ok(nhanVien);
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
+}
+
+
+//    @PostMapping("/them-moi")
+//    public ResponseEntity<?> themMoiNhanVien(
+//            @RequestParam("tenNhanVien") String tenNhanVien,
+//            @RequestParam("ngaySinh") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngaySinh,
+//            @RequestParam("gioiTinh") String gioiTinh,
+//            @RequestParam("sdt") String sdt,
+//            @RequestParam("email") String email,
+//            @RequestParam("tinhThanh") String tinhThanh,
+//            @RequestParam("quanHuyen") String quanHuyen,
+//            @RequestParam("xaPhuong") String xaPhuong,
+//            @RequestParam("soNha") String soNha,
+//            @RequestParam(value = "anh", required = false) MultipartFile anh,
+//            @RequestParam("cccd") String cccd,
+//            @RequestParam("trangThai") String trangThai,
+//            @RequestParam("nguoiTao") String nguoiTao
+////            @RequestParam("idTaiKhoan") Integer idTaiKhoan
+//    ) {
+//        try {
+//            NhanVienRequestDTO dto = new NhanVienRequestDTO();
+//            dto.setTenNhanVien(tenNhanVien);
+//            dto.setNgaySinh(ngaySinh);
+//            dto.setGioiTinh(gioiTinh);
+//            dto.setSdt(sdt);
+//            dto.setEmail(email);
+//            dto.setTinhThanh(tinhThanh);
+//            dto.setQuanHuyen(quanHuyen);
+//            dto.setXaPhuong(xaPhuong);
+//            dto.setSoNha(soNha);
+//            dto.setAnh(anh);
+//            dto.setCccd(cccd);
+//            dto.setTrangThai(trangThai);
+//            dto.setNguoiTao(nguoiTao);
+////            dto.setIdTaiKhoan(idTaiKhoan);
+//
+//            NhanVien nhanVien = nhanVienService.themMoiNhanVien(dto);
+//            return ResponseEntity.ok(nhanVien);
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//    }
 
 
     private static final String UPLOAD_DIR = "E:/uploads/";

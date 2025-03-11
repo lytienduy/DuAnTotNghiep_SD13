@@ -30,7 +30,7 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 const TaoMoiNhanVien = () => {
   const scannerRef = useRef(null);
   const [nhanVien, setNhanVien] = useState({
-    ma: "",
+    // ma: "",
     tenNhanVien: "",
     cccd: "",
     email: "",
@@ -486,7 +486,7 @@ const TaoMoiNhanVien = () => {
 
     // Tạo FormData để gửi dữ liệu
     const formData = new FormData();
-    formData.append("ma", nhanVien.ma);
+    // formData.append("ma", nhanVien.ma);
     formData.append("tenNhanVien", nhanVien.tenNhanVien);
     formData.append("cccd", nhanVien.cccd);
     formData.append("email", nhanVien.email);
@@ -509,20 +509,23 @@ const TaoMoiNhanVien = () => {
     formData.append("soNha", diaChiParts.soNha);
     // formData.append("diaChi", fullDiaChi);
     formData.append("nguoiTao", "admin");
-    formData.append("idTaiKhoan", 3);
+    // formData.append("idTaiKhoan", 3);
 
     if (nhanVien.anh) {
       formData.append("anh", nhanVien.anh);
     }
 
     try {
-      await axios.post(
+       await axios.post(
         "http://localhost:8080/api/nhanvien/them-moi",
         formData,
         {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
+
 
       enqueueSnackbar("Thêm nhân viên thành công!", {
         variant: "success",
@@ -532,7 +535,7 @@ const TaoMoiNhanVien = () => {
 
       // Reset form sau khi thêm thành công
       setNhanVien({
-        ma: "",
+        // ma: "",
         tenNhanVien: "",
         cccd: "",
         email: "",

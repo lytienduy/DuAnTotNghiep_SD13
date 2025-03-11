@@ -32,6 +32,7 @@ import SanPhamChiTiet from "./module/admin/pages/SanPhamChiTiet";
 import AddProduct from "./module/admin/pages/AddProduct";
 import AddChatLieu from "./module/admin/pages/AddChatLieu";
 import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
+import LoginPage from "./module/admin/pages/LoginPage";
 
 // Import Client Components
 import ClientFooter from './module/client/components/Footer';
