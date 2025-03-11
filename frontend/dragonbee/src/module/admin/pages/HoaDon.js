@@ -179,20 +179,14 @@ const HoaDon = () => {
   };
 
   // List trạng thái hóa đơn
-  const tabLabels = (typeFilter === "all" || typeFilter === "Online") ? [
+  const tabLabels = [
     "TẤT CẢ",
+    "CHỜ THÊM SẢN PHẨM",
     "CHỜ XÁC NHẬN",
     "ĐÃ XÁC NHẬN",
     "CHỜ GIAO HÀNG",
     "ĐANG VẬN CHUYỂN",
     "ĐÃ GIAO HÀNG", "CHỜ THANH TOÁN",
-    "ĐÃ THANH TOÁN",
-    "HOÀN THÀNH",
-    "ĐÃ HỦY",
-  ] : [
-    "TẤT CẢ",
-    "CHỜ THÊM SẢN PHẨM",
-    "CHỜ THANH TOÁN",
     "ĐÃ THANH TOÁN",
     "HOÀN THÀNH",
     "ĐÃ HỦY",

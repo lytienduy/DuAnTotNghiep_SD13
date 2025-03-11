@@ -21,6 +21,8 @@ import soldOutImg from '../../../img/sold-out.png';
 import inactiveImg from '../../../img/inactive.png';
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import QrScanner from "react-qr-scanner";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import HoaDonPrint from "./HoaDonPrint";
 
 const BanTaiQuay = () => {
   //Khai báo Thành phố huyện xã
@@ -122,7 +124,9 @@ const BanTaiQuay = () => {
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
   const [openConfirmXacNhanDatHang, setOpenConfirmXacNhanDatHang] = useState(false);
   const [openQRQuetSanPham, setOpenQRQuetSanPham] = useState(false);
-  const [qrData, setQrData] = useState("");
+  const [scannedData, setScannedData] = useState("");
+  const [qrScanner, setQrScanner] = useState(null);
+  const [nhuCauInHoaDon, setNhuCauInHoaDon] = useState(false);
 
 
 
@@ -542,23 +546,75 @@ const BanTaiQuay = () => {
 
 
 
+
   ///
 
 
   //Quét QR
-  const handleScan = (data) => {
-    console.log("Đã scan");
+  // const handleScan = (data) => {
+  //   console.log("Đã scan");
+  //   console.log(data);
 
-    if (data) {
-      setQrData(data);
-      console.log("Đã quét ra data");
-      setOpenQRQuetSanPham(false); // Đóng camera sau khi quét thành công
+  //   if (data) {
+  //     setQrData(data);
+  //     setOpenQRQuetSanPham(false); // Đóng camera sau khi quét thành công
+  //   }
+  // };
+
+  // const handleError = (err) => {
+  //   console.error(err);
+  // };
+  const scannerRef = useRef(null);
+  const isScanningRef = useRef(false); // Trạng thái đang quét
+  const handleCloseQRScanner = () => {
+    setOpenQRQuetSanPham(false); // Đóng modal
+  
+    if (scannerRef.current) {
+      try {
+        scannerRef.current.clear()
+          .then(() => {
+            console.log("Scanner đã dừng");
+            isScanningRef.current = false;
+            scannerRef.current = null; // Reset scanner để tránh lỗi
+          })
+          .catch(err => console.error("Lỗi dừng scanner:", err));
+      } catch (error) {
+        console.error("Scanner không thể dừng:", error);
+      }
     }
   };
+  useEffect(() => {
+    if (openQRQuetSanPham && !isScanningRef.current) {
+      setTimeout(() => {
+        const readerElement = document.getElementById("reader");
 
-  const handleError = (err) => {
-    console.error(err);
-  };
+        if (readerElement) {
+          const scanner = new Html5QrcodeScanner("reader", {
+            fps: 10,
+            qrbox: 250,
+            disableFlip: false,
+          });
+
+          scanner.render(
+            (decodedText) => {
+              setScannedData(decodedText);
+              console.log("Đã quét được:", decodedText);
+
+              handleCloseQRScanner(); // Đóng modal & dừng quét
+            },
+            (errorMessage) => {
+              console.error("Lỗi quét QR:", errorMessage);
+            }
+          );
+
+          scannerRef.current = scanner;
+          isScanningRef.current = true;
+        }
+      }, 500);
+    } else if (!openQRQuetSanPham && scannerRef.current) {
+      handleCloseQRScanner();
+    }
+  }, [openQRQuetSanPham]);
   //Thông báo Toast
   const showSuccessToast = (message) => {
     toast.success(message, {
@@ -639,6 +695,7 @@ const BanTaiQuay = () => {
     setShowLeftPanel(false);
     setKeyword("");
     setDiscountAmount(0);
+    setNhuCauInHoaDon(false);
   }, [checkSelectedOrder]);
 
   //Hàm xử lý khi đóng mở modal
@@ -697,7 +754,7 @@ const BanTaiQuay = () => {
 
   //Hàm cập nhật id hóa đơn được chọn
   const handleSelectOrder = (order) => {
-    if (order?.id != selectedOrder?.id) {
+    if (order?.id !== selectedOrder?.id) {
       setCheckSelectedOrder(order);
     }
     setSelectedOrder(order); // Cập nhật id của hóa đơn đã chọn
@@ -878,7 +935,7 @@ const BanTaiQuay = () => {
       newValue = "";
     }
 
-    if (newValue != "") {
+    if (newValue !== "") {
       if (Number(newValue) > selectedProduct.soLuong) {
         newValue = Number(newValue).toString().slice(0, -1) || selectedProduct.soLuong;
       }
@@ -1015,6 +1072,37 @@ const BanTaiQuay = () => {
     setOpenConfirmXacNhanDatHang(false);
   };
 
+  const handlePrint = async () => {
+    // Lấy thông tin hóa đơn từ API hoặc dữ liệu có sẵn và gán vào state
+    try {
+      // const response = await axios.get(`http://localhost:8080/hoa-don/${id}`);
+      // if (response.data) {
+      //   setHoaDon(response.data);
+      setTimeout(() => {
+        const printContent = document.getElementById("hoaDonPrint");
+        if (!printContent) {
+          showErrorToast("Không tìm thấy nội dung hóa đơn để in!");
+          return;
+        }
+
+        const printWindow = window.open("", "_blank");
+        printWindow.document.write(printContent.innerHTML);
+        printWindow.document.close();
+
+        // Thêm sự kiện khi in xong
+        printWindow.onafterprint = () => {
+          showSuccessToast("In hóa đơn thành công!");
+        };
+
+        printWindow.print();
+      }, 500);
+      // }
+    } catch (error) {
+      showErrorToast("Lỗi khi tải hóa đơn, vui lòng thử lại!");
+      console.error("Lỗi khi lấy dữ liệu hóa đơn:", error);
+    }
+  };
+
   const xacNhanDatHang = async () => {
     try {
       // if (!errorChuyen && !errorDua) {
@@ -1024,17 +1112,22 @@ const BanTaiQuay = () => {
       const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/xacNhanDatHang`, {
         idHoaDon: selectedOrder.id, idKhachHang: selectedCustomerId, pgg: selectedVoucherCode, giaoHang: showLeftPanel, tenNguoiNhan: recipientName, sdtNguoiNhan: recipientPhone, diaChiNhanHang: addressParts, tongTienPhaiTra: selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount), phiShip: discount
       })
-      if (response.data) {
-        setShowLeftPanel(false);
+      if (response.data !== null) {
         showSuccessToast("Đặt hàng thành công");
+        if (nhuCauInHoaDon == true) {
+          setSelectedOrder(response.data);
+          handlePrint();
+        }
+        setShowLeftPanel(false);
         fetchOrders();
+
       } else {
-        showErrorToast("Lỗi thanh toán");
+        showErrorToast("Lỗi đặt hàng");
       }
       // }
     } catch (err) {
       console.log(err)
-      showErrorToast("Lỗi thanh toán2");
+      showErrorToast("Lỗi đặt hàng catch");
     }
   }
 
@@ -1313,7 +1406,7 @@ const BanTaiQuay = () => {
                       >
                         Quét QR Sản Phẩm
                       </Button>
-                      <Dialog open={openQRQuetSanPham} onClose={() => setOpenQRQuetSanPham(false)}>
+                      {/* <Dialog open={openQRQuetSanPham} onClose={() => setOpenQRQuetSanPham(false)}>
                         <DialogContent>
                           <QrScanner
                             delay={300}
@@ -1322,6 +1415,18 @@ const BanTaiQuay = () => {
                             style={{ width: "100%" }}
                           />
                         </DialogContent>
+                      </Dialog> */}
+                      {/* Dialog chứa camera */}
+                      <Dialog open={openQRQuetSanPham} onClose={handleCloseQRScanner} fullWidth maxWidth="sm">
+                        <DialogTitle>Quét mã QR</DialogTitle>
+                        <DialogContent>
+                          <div id="reader" style={{ width: "100%" }}></div>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={handleCloseQRScanner} color="secondary">
+                            Đóng
+                          </Button>
+                        </DialogActions>
                       </Dialog>
 
                       <Button
@@ -1867,6 +1972,11 @@ const BanTaiQuay = () => {
                           <span style={{ color: 'red' }}> VNĐ</span>
                         </span>
                       </Typography>
+
+                      <FormControlLabel
+                        control={<Switch checked={nhuCauInHoaDon} onChange={(event) => { setNhuCauInHoaDon(event.target.checked) }} />}
+                        label="In hóa đơn"
+                      />
 
                       <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }}
                         disabled={
@@ -2841,7 +2951,13 @@ const BanTaiQuay = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* In hóa đơn */}
+      <Box id="hoaDonPrint" style={{ display: "none" }}> {/* Thay display: none bằng block */}
+        <HoaDonPrint hoaDon={selectedOrder} />
+      </Box>
     </Box >
+
   );
 };
 

@@ -121,7 +121,7 @@ public class BanHangTaiQuayController {
     }
 
     @PostMapping("/xacNhanDatHang")
-    public Boolean xacNhanDatHang(@RequestBody Map<String, String> body) {
+    public HoaDonChiTietResponseDTO.HoaDonChiTietDTO xacNhanDatHang(@RequestBody Map<String, String> body) {
         String idHoaDon = body.get("idHoaDon");
         String idkhachHang = body.get("idKhachHang");
         String maPGG = body.get("pgg");

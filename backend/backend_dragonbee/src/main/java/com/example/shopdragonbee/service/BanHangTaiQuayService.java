@@ -52,6 +52,9 @@ public class BanHangTaiQuayService {
     @Autowired
     private PhieuGiamGiaRepository phieuGiamGiaRepository;
 
+    @Autowired
+    private HoaDonService hoaDonService;
+
     //Tạo hóa đơn tại quầy
     public HoaDon taoHoaDon() {
         try {
@@ -358,7 +361,7 @@ public class BanHangTaiQuayService {
         }
     }
 
-    public Boolean xacNhanDatHang(Integer idHoaDon, Integer idKhachHang, String pgg, Boolean giaoHang, String tenNguoiNhan, String sdtNguoiNhan, String diaChiNhanHang, Float tongTienPhaiTra, Float phiShip) {
+    public HoaDonChiTietResponseDTO.HoaDonChiTietDTO xacNhanDatHang(Integer idHoaDon, Integer idKhachHang, String pgg, Boolean giaoHang, String tenNguoiNhan, String sdtNguoiNhan, String diaChiNhanHang, Float tongTienPhaiTra, Float phiShip) {
         try {
             HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
             if (idKhachHang != null) {
@@ -379,10 +382,10 @@ public class BanHangTaiQuayService {
                 hoaDon.setTrangThai("Đã thanh toán");
             }
             hoaDon.setTongTien(tongTienPhaiTra);
-            hoaDonRepository.save(hoaDon);
-            return true;
+
+            return hoaDonService.convertHoaDonChiTietToDTO(hoaDonRepository.save(hoaDon));
         } catch (Exception e) {
-            return false;
+            return null;
         }
     }
 }

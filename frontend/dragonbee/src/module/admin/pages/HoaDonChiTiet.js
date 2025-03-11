@@ -105,6 +105,135 @@ const HoaDonChiTiet = () => {
     }
   };
 
+  //Hàm lọcThemSanPhamHoaDonTaiQuay
+  const getSanPhamThem = async () => {
+    let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layListCacSanPhamHienThiThem";
+    // Xây dựng query string
+    const params = new URLSearchParams();
+    params.append("timKiem", timKiem);//Truyền vào loại đơn
+    params.append("fromGia", value[0]);//Truyền vào loại đơn
+    params.append("toGia", value[1]);//Truyền vào loại đơn
+    params.append("danhMuc", danhMuc);//Truyền vào loại đơn
+    params.append("mauSac", mauSac);//Truyền vào loại đơn
+    params.append("chatLieu", chatLieu);//Truyền vào loại đơn
+    params.append("kichCo", kichCo);//Truyền vào loại đơn
+    params.append("kieuDang", kieuDang);//Truyền vào loại đơn
+    params.append("thuongHieu", thuongHieu);//Truyền vào loại đơn
+    params.append("phongCach", phongCach);//Truyền vào loại đơn
+    try {
+      const response = await axios.get(`${apiUrl}?${params.toString()}`);//Gọi api bằng axiosGet
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi lấy dữ liệu sản phẩm để thêm vào giỏ hàng")
+    }
+  };
+
+  //get set toàn bộ bộ lọc
+  const getAndSetToanBoBoLoc = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/ban-hang-tai-quay/layListDanhMuc`);
+      var doiTuongCoCacThuocTinhListCacBoLoc = response.data;
+      setListDanhMuc(doiTuongCoCacThuocTinhListCacBoLoc.listDanhMuc);
+      setListMauSac(doiTuongCoCacThuocTinhListCacBoLoc.listMauSac);
+      setListChatLieu(doiTuongCoCacThuocTinhListCacBoLoc.listChatLieu);
+      setListKichCo(doiTuongCoCacThuocTinhListCacBoLoc.listSize);
+      setListKieuDang(doiTuongCoCacThuocTinhListCacBoLoc.listKieuDang);
+      setListThuongHieu(doiTuongCoCacThuocTinhListCacBoLoc.listThuongHieu);
+      setListPhongCach(doiTuongCoCacThuocTinhListCacBoLoc.listPhongCach);
+    } catch (err) {
+      console.log(err)
+      showErrorToast("Lỗi lấy dữ liệu bộ lọc");
+    }
+  };
+
+  //Hàm confirm xóa sản phẩm khỏi giỏ hàng
+  const handleConfirmDelete = async () => {
+    xoaSanPham(selectedProductId);
+    setOpenConfirmModal(false);
+  };
+
+  //Lấy dữ liệu hóa đơn
+  useEffect(() => {
+    fetchHoaDon();
+  }, []);
+
+
+  //Hàm load ảnh
+  useEffect(() => {
+    if (!hoaDon || !hoaDon.listDanhSachSanPham) return; // Kiểm tra nếu hoaDon chưa load hoặc hoaDon.listDanhSachSanPham rỗng
+    const interval = setInterval(() => {
+      setImageIndexes((prevIndexes) => {
+        const newIndexes = { ...prevIndexes };
+        hoaDon.listDanhSachSanPham.forEach((product) => {
+          if (product.hinhAnh.length > 1) {
+            newIndexes[product.id] = (prevIndexes[product.id] + 1) % product.hinhAnh.length || 0;
+          }
+        });
+        return newIndexes;
+      });
+    }, 3000); // Chuyển ảnh sau mỗi 3 giây
+    return () => clearInterval(interval);
+  }, [hoaDon?.listDanhSachSanPham]);
+
+  //Hàm load ảnh sản phẩm để thêm vào giỏ hàng
+  useEffect(() => {
+    if (!products) return;
+    const interval = setInterval(() => {
+      setImageIndexesThemSanPham((prevIndexes) => {
+        const newIndexes = { ...prevIndexes };
+        products.forEach((product) => {
+          if (product.hinhAnh.length > 1) {
+            newIndexes[product.id] = (prevIndexes[product.id] + 1) % product.hinhAnh.length || 0;
+          }
+        });
+        return newIndexes;
+      });
+    }, 3000); // Chuyển ảnh sau mỗi 3 giây
+    return () => clearInterval(interval);
+  }, [products]);
+
+
+  //Hàm xử lý khi đóng mở modal
+  useEffect(() => {
+    if (openSPModal) { // Khi mở modal add sản phẩm vào giỏ hàng thì load bộ lọc và sản phẩm thêm
+      getAndSetToanBoBoLoc();
+      getSanPhamThem();
+    }
+    else { // Khi modal add sản phẩm vào giỏ hàng đóng thì load lại hóa đơn
+      fetchHoaDon();
+    }
+  }, [openSPModal]);
+
+  //Tạo độ trễ cho ô tìm kiếm
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      getSanPhamThem();
+    }, 800); // Chờ 800ms sau khi user dừng nhập
+    return () => clearTimeout(handler); // Hủy timeout nếu user nhập tiếp
+  }, [timKiem]);
+
+  //Tạo độ trễ khi kéo slider khoảng giá
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value); // Chỉ cập nhật giá trị sau 1.5s
+    }, 1500);
+    return () => clearTimeout(handler); // Xóa timeout nếu người dùng tiếp tục kéo
+  }, [value]);
+
+  //Khi bộ lọc khoảng giá thay đổi
+  useEffect(() => {
+    getSanPhamThem();
+  }, [debouncedValue]);
+
+  //Khi thay đổi bộ lọc
+  useEffect(() => {
+    getSanPhamThem();
+  }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
+
+
+
+
   //Validate nhập tiền khách đưa
   const handleTienKhachDua = (e) => {
     let newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
@@ -270,131 +399,7 @@ const HoaDonChiTiet = () => {
       console.error(error);
     }
   };
-  //Hàm lọcThemSanPhamHoaDonTaiQuay
-  const getSanPhamThem = async () => {
-    let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layListCacSanPhamHienThiThem";
-    // Xây dựng query string
-    const params = new URLSearchParams();
-    params.append("timKiem", timKiem);//Truyền vào loại đơn
-    params.append("fromGia", value[0]);//Truyền vào loại đơn
-    params.append("toGia", value[1]);//Truyền vào loại đơn
-    params.append("danhMuc", danhMuc);//Truyền vào loại đơn
-    params.append("mauSac", mauSac);//Truyền vào loại đơn
-    params.append("chatLieu", chatLieu);//Truyền vào loại đơn
-    params.append("kichCo", kichCo);//Truyền vào loại đơn
-    params.append("kieuDang", kieuDang);//Truyền vào loại đơn
-    params.append("thuongHieu", thuongHieu);//Truyền vào loại đơn
-    params.append("phongCach", phongCach);//Truyền vào loại đơn
-    try {
-      const response = await axios.get(`${apiUrl}?${params.toString()}`);//Gọi api bằng axiosGet
-      setProducts(response.data);
-    } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu:", error);
-      showErrorToast("Lỗi khi lấy dữ liệu sản phẩm để thêm vào giỏ hàng")
-    }
-  };
 
-  //get set toàn bộ bộ lọc
-  const getAndSetToanBoBoLoc = async () => {
-    try {
-      const response = await axios.get(`http://localhost:8080/ban-hang-tai-quay/layListDanhMuc`);
-      var doiTuongCoCacThuocTinhListCacBoLoc = response.data;
-      setListDanhMuc(doiTuongCoCacThuocTinhListCacBoLoc.listDanhMuc);
-      setListMauSac(doiTuongCoCacThuocTinhListCacBoLoc.listMauSac);
-      setListChatLieu(doiTuongCoCacThuocTinhListCacBoLoc.listChatLieu);
-      setListKichCo(doiTuongCoCacThuocTinhListCacBoLoc.listSize);
-      setListKieuDang(doiTuongCoCacThuocTinhListCacBoLoc.listKieuDang);
-      setListThuongHieu(doiTuongCoCacThuocTinhListCacBoLoc.listThuongHieu);
-      setListPhongCach(doiTuongCoCacThuocTinhListCacBoLoc.listPhongCach);
-    } catch (err) {
-      console.log(err)
-      showErrorToast("Lỗi lấy dữ liệu bộ lọc");
-    }
-  };
-
-  //Hàm confirm xóa sản phẩm khỏi giỏ hàng
-  const handleConfirmDelete = async () => {
-    xoaSanPham(selectedProductId);
-    setOpenConfirmModal(false);
-  };
-
-  //Lấy dữ liệu hóa đơn
-  useEffect(() => {
-    fetchHoaDon();
-  }, []);
-
-
-  //Hàm load ảnh
-  useEffect(() => {
-    if (!hoaDon || !hoaDon.listDanhSachSanPham) return; // Kiểm tra nếu hoaDon chưa load hoặc hoaDon.listDanhSachSanPham rỗng
-    const interval = setInterval(() => {
-      setImageIndexes((prevIndexes) => {
-        const newIndexes = { ...prevIndexes };
-        hoaDon.listDanhSachSanPham.forEach((product) => {
-          if (product.hinhAnh.length > 1) {
-            newIndexes[product.id] = (prevIndexes[product.id] + 1) % product.hinhAnh.length || 0;
-          }
-        });
-        return newIndexes;
-      });
-    }, 3000); // Chuyển ảnh sau mỗi 3 giây
-    return () => clearInterval(interval);
-  }, [hoaDon?.listDanhSachSanPham]);
-
-  //Hàm load ảnh sản phẩm để thêm vào giỏ hàng
-  useEffect(() => {
-    if (!products) return;
-    const interval = setInterval(() => {
-      setImageIndexesThemSanPham((prevIndexes) => {
-        const newIndexes = { ...prevIndexes };
-        products.forEach((product) => {
-          if (product.hinhAnh.length > 1) {
-            newIndexes[product.id] = (prevIndexes[product.id] + 1) % product.hinhAnh.length || 0;
-          }
-        });
-        return newIndexes;
-      });
-    }, 3000); // Chuyển ảnh sau mỗi 3 giây
-    return () => clearInterval(interval);
-  }, [products]);
-
-
-  //Hàm xử lý khi đóng mở modal
-  useEffect(() => {
-    if (openSPModal) { // Khi mở modal add sản phẩm vào giỏ hàng thì load bộ lọc và sản phẩm thêm
-      getAndSetToanBoBoLoc();
-      getSanPhamThem();
-    }
-    else { // Khi modal add sản phẩm vào giỏ hàng đóng thì load lại hóa đơn
-      fetchHoaDon();
-    }
-  }, [openSPModal]);
-
-  //Tạo độ trễ cho ô tìm kiếm
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      getSanPhamThem();
-    }, 800); // Chờ 800ms sau khi user dừng nhập
-    return () => clearTimeout(handler); // Hủy timeout nếu user nhập tiếp
-  }, [timKiem]);
-
-  //Tạo độ trễ khi kéo slider khoảng giá
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value); // Chỉ cập nhật giá trị sau 1.5s
-    }, 1500);
-    return () => clearTimeout(handler); // Xóa timeout nếu người dùng tiếp tục kéo
-  }, [value]);
-
-  //Khi bộ lọc khoảng giá thay đổi
-  useEffect(() => {
-    getSanPhamThem();
-  }, [debouncedValue]);
-
-  //Khi thay đổi bộ lọc
-  useEffect(() => {
-    getSanPhamThem();
-  }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
   //Hàm trả về CSS khung theo trạng thái
   const getStatusStyles = (status) => {
     switch (status) {
@@ -621,11 +626,6 @@ const HoaDonChiTiet = () => {
       console.error(error.response || error.message);
     }
   };
-
-
-
-
-
 
   return (
     <div>
