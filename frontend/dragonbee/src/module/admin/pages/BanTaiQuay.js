@@ -1854,7 +1854,7 @@ const BanTaiQuay = () => {
                       <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
                         Tiền thiếu: <span style={{ color: 'red' }}>
                           {tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)) < 0
-                            ? (tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0))).toLocaleString()
+                            ? Math.abs(tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0))).toLocaleString()
                             : "0"}
                           <span style={{ color: 'red' }}> VNĐ</span>
                         </span>
@@ -1870,7 +1870,7 @@ const BanTaiQuay = () => {
 
                       <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }}
                         disabled={
-                          selectedOrder.trangThai === "Chờ thêm sản phẩm" ||
+                          selectedOrder.listDanhSachSanPham?.length === 0 ||
                           (!showLeftPanel && tongTienKhachDaThanhToan < (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)))
                         }
                         onClick={() => { setOpenConfirmXacNhanDatHang(true) }}

@@ -318,7 +318,6 @@ public class BanHangTaiQuayService {
                 sanPhamChiTietRepository.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
             }
             HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
-            hoaDon.setTrangThai("Chờ thanh toán");
             hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
             hoaDonRepository.save(hoaDon);
             return true;
