@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet, Integer>, JpaSpecificationExecutor<SanPhamChiTiet> {
+    SanPhamChiTiet findByMa(String ma);
+
 }

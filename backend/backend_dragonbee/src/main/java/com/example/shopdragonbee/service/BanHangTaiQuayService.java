@@ -271,7 +271,7 @@ public class BanHangTaiQuayService {
 
 
     //Chuyển đổi sang object có những thông tin bên Hóa Đơn Chi Tiết
-    private BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay convertSanPhamHienThiTrongThemBanHangTaiQuayToDTO(SanPhamChiTiet sanPhamChiTiet) {
+    public BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay convertSanPhamHienThiTrongThemBanHangTaiQuayToDTO(SanPhamChiTiet sanPhamChiTiet) {
         return new BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay(
                 sanPhamChiTiet.getId(),
                 sanPhamChiTiet.getMa(),
