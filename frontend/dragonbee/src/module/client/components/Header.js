@@ -126,7 +126,7 @@ const Header = () => {
             </Box>
 
             {/* Giỏ hàng & tài khoản */}
-            <IconButton>
+            <IconButton component="a" href="/gioHang">
               <ShoppingCart />
             </IconButton>
             <IconButton>

@@ -335,7 +335,7 @@ const Home = () => {
               exit="exit"
               transition={{ duration: 0.3 }}
             >
-              <Grid container spacing={2} justifyContent="center" sx={{ marginBottom: '2px'}}>
+              <Grid container spacing={2} justifyContent="center" sx={{ marginBottom: '2px' }}>
                 {displayedProductsWomens.map((product) => (
                   <Grid item key={product.id} xs={12} sm={4} md={2.4}>
                     <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
@@ -368,28 +368,28 @@ const Home = () => {
                         }}
                       />
                       <CardContent
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          minHeight: '70px',
+                        }}
+                      >
+                        <Typography
                           sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            minHeight: '70px',
+                            fontSize: 14,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
                           }}
                         >
-                          <Typography
-                            sx={{
-                              fontSize: 14,
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                            }}
-                          >
-                            {product.title}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" fontWeight="bold" sx={{ mb: -2 }}>
-                            {product.price}
-                          </Typography>
-                        </CardContent>
+                          {product.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" fontWeight="bold" sx={{ mb: -2 }}>
+                          {product.price}
+                        </Typography>
+                      </CardContent>
                     </Card>
                   </Grid>
                 ))}
