@@ -148,32 +148,5 @@ public class SanPhamService {
 
         return String.format("SP%03d", newNumber);
     }
-// add sản phẩm chi tiết
-    public SanPhamChiTiet addSanPhamChiTiet(SanPhamChiTiet newSanPhamChiTiet) {
-        // Tạo mã sản phẩm (ma)
-        String newMa = generateProductCode();
-        newSanPhamChiTiet.setMa(newMa);
-
-        // Đặt trạng thái dựa trên số lượng
-        if (newSanPhamChiTiet.getSoLuong() > 0) {
-            newSanPhamChiTiet.setTrangThai("Còn hàng");
-        } else {
-            newSanPhamChiTiet.setTrangThai("Hết hàng");
-        }
-
-        newSanPhamChiTiet.setNgayTao(LocalDateTime.now());
-        newSanPhamChiTiet.setNguoiTao("Admin"); // Hoặc đặt tự động theo người dùng hiện tại
-
-        return sanPhamChiTietRepository.save(newSanPhamChiTiet);
-    }
-
-    public String generateProductCode() {
-        Integer maxId = sanPhamChiTietRepository.getMaxId();  // Truy vấn max ID từ cơ sở dữ liệu
-        if (maxId == null || maxId < 0) {
-            maxId = 0;  // Nếu không có giá trị hợp lệ, sử dụng giá trị mặc định
-        }
-        return "SPCT" + (maxId + 1);  // Tạo mã sản phẩm chi tiết
-    }
-
 
 }

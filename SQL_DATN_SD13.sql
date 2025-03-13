@@ -135,13 +135,14 @@ CREATE TABLE san_pham_chi_tiet (
 -- Bảng ảnh sản phẩm
 CREATE TABLE anh_san_pham (
     id INT PRIMARY KEY IDENTITY,            -- ID chính của bảng
-    ma NVARCHAR(50) NOT NULL UNIQUE,        -- Mã ảnh sản phẩm
+    ma NVARCHAR(50) NOT NULL,               -- Mã ảnh sản phẩm (Không cần UNIQUE)
     anh_url NVARCHAR(255) NOT NULL,         -- Đường dẫn ảnh
     mo_ta NVARCHAR(500),                    -- Mô tả ảnh
     trang_thai NVARCHAR(50),                -- Trạng thái ảnh
     id_san_pham_chi_tiet INT NOT NULL,      -- FK liên kết với bảng san_pham_chi_tiet
-    FOREIGN KEY (id_san_pham_chi_tiet) REFERENCES san_pham_chi_tiet(id) -- Khóa ngoại
+    FOREIGN KEY (id_san_pham_chi_tiet) REFERENCES san_pham_chi_tiet(id), -- Khóa ngoại
 );
+
 
 -- Bảng vai_tro
 CREATE TABLE vai_tro (

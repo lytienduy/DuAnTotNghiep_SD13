@@ -30,16 +30,20 @@ import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Cloudinary } from 'cloudinary-core';
+import { Cloudinary } from "cloudinary-core";
 /* global cloudinary */
 
-const AddSanPham = ({sanPhamChiTietId}) => {
+const AddSanPham = ({ sanPhamChiTietId }) => {
   const { control, handleSubmit, getValues } = useForm();
   const navigate = useNavigate();
   const [selectedImages, setSelectedImages] = useState([]);
   const [cloudinaryImages, setCloudinaryImages] = useState([]); // Dùng toán tử optional chaining để tránh lỗi khi result là undefined
-  const [openModalAnh,setOpenModalAnh] = useState(false);
+  const [openModalAnh, setOpenModalAnh] = useState(false);
+  const [cloudImages, setCloudImages] = useState([]);
   const [newImage, setNewImage] = useState(null);
+  const [uploadedImages, setUploadedImages] = useState([]); // Lưu trữ ảnh đã tải lên
+  const [selectedProductId, setSelectedProductId] = useState(null);
+  const [loading, setLoading] = useState(false);
   // lưu sản phẩm
   const [newProductName, setNewProductName] = useState("");
   const [productStatus, setProductStatus] = useState("Đang bán");
@@ -285,7 +289,7 @@ const AddSanPham = ({sanPhamChiTietId}) => {
       alert("Vui lòng chọn đầy đủ sản phẩm, màu sắc và kích thước.");
       return;
     }
-
+  
     const selectedProductName = sanPhamList.find(
       (sp) => sp.id === selectedProduct
     )?.tenSanPham;
@@ -293,9 +297,12 @@ const AddSanPham = ({sanPhamChiTietId}) => {
       alert("Sản phẩm không hợp lệ.");
       return;
     }
-
+  
     const newDetails = [];
-
+    let tempId = productDetails.length > 0 
+      ? Math.max(...productDetails.map((p) => p.id), 0) + 1 
+      : 1; // Tạo ID tạm
+  
     selectedMauSacs.forEach((colorId) => {
       selectedSizes.forEach((sizeId) => {
         const color = colors.find((c) => c.id === colorId);
@@ -304,163 +311,166 @@ const AddSanPham = ({sanPhamChiTietId}) => {
           alert("Màu sắc hoặc kích thước không hợp lệ.");
           return;
         }
-
+  
         newDetails.push({
-          productCode: `SPCT-${Math.random().toString(36).substr(2, 9)}`,
+          id: tempId++, // Gán ID tạm
+          productCode: `SPCT-${tempId}`,
           productName: `${selectedProductName} - ${color.tenMauSac} - ${size.tenSize}`,
           tenMauSac: color.tenMauSac,
           tenSize: size.tenSize,
-          moTa: description,
           quantity: 0,
           price: 0,
+          images: [],
         });
       });
     });
-
+  
     setProductDetails((prevDetails) => [...prevDetails, ...newDetails]);
   };
-
+  // add sản phẩm chi tiết
   const handleSave = async () => {
     if (!selectedProduct) {
       alert("Vui lòng chọn sản phẩm.");
       return;
     }
 
-    // 🛠 Tạo danh sách sản phẩm chi tiết từ bảng
+    // Lọc các ảnh hợp lệ từ selectedImages (đảm bảo ảnh có URL hợp lệ)
+    const validImages = selectedImages.filter(image => image.secure_url);
+
+    // Nếu không có ảnh hợp lệ, có thể gửi mảng rỗng hoặc xử lý theo cách khác
+    if (validImages.length === 0) {
+      alert("Vui lòng chọn ít nhất một ảnh.");
+      return;
+    }
+
+    // Tạo danh sách sản phẩm chi tiết để gửi lên backend
     const requestDataList = productDetails.map((detail) => ({
       sanPhamId: selectedProduct,
       soLuong: detail.quantity || 0,
       gia: detail.price || 0,
-      moTa:
-        detail.moTa !== undefined
-          ? detail.moTa
-          : description || "Không có mô tả",
+      moTa: detail.moTa || "Không có mô tả",
       trangThai: "Còn hàng",
       danhMucId: selectedCategory,
       thuongHieuId: selectedThuongHieu,
       phongCachId: selectedPhongCach,
       chatLieuId: selectedChatLieu,
-      mauSacId:
-        colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
+      mauSacId: colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
       sizeId: sizes.find((s) => s.tenSize === detail.tenSize)?.id || null,
       kieuDangId: selectedKieuDang,
       kieuDaiQuanId: selectedKieuDaiQuan,
       xuatXuId: selectedXuatXus,
+      anhUrls: validImages.map(image => image.secure_url), // Gửi các URL ảnh hợp lệ
     }));
-
-    console.log(
-      "🚀 Dữ liệu gửi lên Backend:",
-      JSON.stringify(requestDataList, null, 2)
-    );
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/sanpham/add/chi-tiet",
+        "http://localhost:8080/api/san-pham-chi-tiet/add/chi-tiet",
         requestDataList,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      if (response.status === 201 || response.status === 200) {
-        console.log("✅ Phản hồi từ Backend:", response.data);
-        setSnackMessage("Thêm sản phẩm chi tiết thành công!");
-        setSnackOpen(true);
+      if (response.status === 200 || response.status === 201) {
+        console.log("Sản phẩm chi tiết đã được lưu", response.data);
+        
+        // Hiển thị thông báo thành công
+        setSnackMessage("Thêm sản phẩm thành công!");
+        setSnackOpen(true); // Mở thông báo thành công
+
+        // Chuyển hướng về trang sản phẩm
         navigate("/sanpham", { replace: true });
       }
     } catch (error) {
-      console.error(
-        "❌ Lỗi khi gửi request:",
-        error.response?.data || error.message
-      );
-      setSnackMessage("Có lỗi xảy ra, vui lòng thử lại.");
-      setSnackOpen(true);
+      console.error("Lỗi khi gửi request:", error);
+      alert("Có lỗi xảy ra khi lưu sản phẩm.");
     }
   };
-  
-   // Khi mở modal, gọi API để lấy ảnh từ Cloudinary
-   const handleOpenModalAnh = async () => {
-    try {
-      const cloudinary = new Cloudinary({ cloud_name: 'dy095esr7' });
-    
-      // Gọi API Cloudinary để lấy ảnh từ thư mục 'QL_AnhDATN'
-      const result = await cloudinary.api.resources({
-        type: 'upload', 
-        prefix: 'QL_AnhDATN',  // Đảm bảo thư mục đúng
-        max_results: 100  // Tùy chọn số lượng ảnh trả về (có thể chỉnh lại số lượng ảnh bạn muốn lấy)
-      });
-    
-      console.log("Kết quả trả về từ Cloudinary:", result);  // Kiểm tra kết quả trả về
-    
-      // Kiểm tra nếu result và result.resources hợp lệ
-      if (result && result.resources && result.resources.length > 0) {
-        // Cập nhật danh sách ảnh
-        setCloudinaryImages(result.resources);
-      } else {
-        console.error("Không có ảnh trong thư mục hoặc dữ liệu trả về không hợp lệ.");
-        setCloudinaryImages([]);  // Mảng trống nếu không có ảnh
-      }
-    } catch (error) {
-      // Xử lý lỗi khi kết nối API
-      console.error("Lỗi khi gọi API Cloudinary:", error);
-      setCloudinaryImages([]);  // Nếu có lỗi, đảm bảo mảng trống
-    }
-    
-    setOpenModalAnh(true);  // Mở modal
-  }; 
-  
-  const handleSelectImage = (image) => {
-    // Kiểm tra nếu ảnh chưa có trong danh sách, mới thêm vào
-    if (!selectedImages.some(img => img.public_id === image.public_id)) {
-      setSelectedImages([...selectedImages, image]); // Thêm ảnh vào danh sách đã chọn
-    }
-  };
-  
+  // Khi mở modal, gọi API để lấy ảnh từ Cloudinary
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Tải ảnh lên Cloudinary
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'upload_QL_AnhDATN');
-  
-      fetch('https://api.cloudinary.com/v1_1/dy095esr7/image/upload', {
-        method: 'POST',
+      formData.append("file", file);
+      formData.append("upload_preset", "upload_QL_AnhDATN");
+      formData.append("folder", "anh");
+
+      fetch("https://api.cloudinary.com/v1_1/dy095esr7/image/upload", {
+        method: "POST",
         body: formData,
       })
-        .then(response => response.json())
-        .then(data => {
-          setCloudinaryImages(prev => [...prev, data]);  // Cập nhật danh sách ảnh
+        .then((response) => response.json())
+        .then((data) => {
+          // Cập nhật danh sách ảnh đã tải lên
+          setUploadedImages((prev) => [...prev, data]);
+          setCloudinaryImages((prev) => [...prev, data]); // Kết hợp ảnh mới vào danh sách hiện tại
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Lỗi khi tải ảnh lên Cloudinary:", error);
         });
     }
   };
+
+  const handleOpenModalAnh = async (id) => {
+    // Cập nhật trạng thái loading
+    setLoading(true);  // setLoading là state quản lý trạng thái đang tải
+  
+    try {
+      const response = await fetch("http://localhost:8080/api/anh-san-pham/cloudinary-images");
+  
+      if (!response.ok) {
+        throw new Error("Không thể lấy ảnh từ backend, mã lỗi: " + response.status);
+      }
+  
+      const data = await response.json();
+      console.log("Dữ liệu ảnh từ API:", data); // Kiểm tra xem dữ liệu có hợp lệ không
+  
+      // Kiểm tra và cập nhật danh sách ảnh từ API
+      if (data && Array.isArray(data.resources)) {
+        setCloudinaryImages(data.resources); // Cập nhật danh sách ảnh từ API
+      } else {
+        setCloudinaryImages([]); // Nếu không có ảnh hợp lệ, gán mảng rỗng
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy ảnh từ backend", error);
+      alert("Có lỗi xảy ra khi tải ảnh, vui lòng thử lại!");
+    } finally {
+      setLoading(false); // Kết thúc trạng thái loading
+    }
+  
+    setSelectedProductId(id); // Lưu ID sản phẩm
+    setOpenModalAnh(true); // Mở modal sau khi dữ liệu đã được tải
+  };
+  
+
+  // Hàm chọn ảnh
+  const handleSelectImage = (e, image) => {
+    const checked = e.target.checked;
+    if (checked) {
+      setSelectedImages([...selectedImages, image]); // Thêm ảnh vào danh sách đã chọn
+    } else {
+      setSelectedImages(
+        selectedImages.filter((img) => img.public_id !== image.public_id) // Xóa ảnh khỏi danh sách
+      );
+    }
+  };
   
   const handleAddProductImages = (selectedImages) => {
-    // Tạo một payload chứa danh sách ảnh
-    const imagePayload = selectedImages.map((image) => ({
-      imageUrl: image.secure_url, // Lưu trữ URL ảnh từ Cloudinary
-    }));
+    // Cập nhật ảnh cho sản phẩm chi tiết
+    const imageUrls = selectedImages.map((image) => image.secure_url);
+    
+    // Cập nhật danh sách sản phẩm chi tiết với các ảnh đã chọn
+    const updatedProductDetails = productDetails.map((detail) => {
+      if (detail.id === selectedProductId) {
+        return { ...detail, images: imageUrls }; // Gán các ảnh cho sản phẩm chi tiết
+      }
+      return detail;
+    });
   
-    // Gửi yêu cầu API để lưu ảnh vào sản phẩm
-    fetch(`/api/anh-san-pham/${sanPhamChiTietId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(imagePayload),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Ảnh đã được thêm vào sản phẩm:', data);
-        // Có thể thực hiện các hành động khác như cập nhật UI hoặc thông báo thành công
-      })
-      .catch((error) => {
-        console.error('Lỗi khi thêm ảnh:', error);
-      });
+    setProductDetails(updatedProductDetails); // Cập nhật lại danh sách sản phẩm chi tiết
+    setOpenModalAnh(false); // Đóng modal sau khi lưu ảnh
   };
+  
+  
+  
   
   // xóa spct
   const removeSanPhamChiTiet = (index) => {
@@ -770,8 +780,8 @@ const AddSanPham = ({sanPhamChiTietId}) => {
   //add sản phẩm chi tiết
 
   //số lượng chung và checkbox
-   // Xử lý thay đổi checkbox
-   const handleCheckboxChange = (index) => {
+  // Xử lý thay đổi checkbox
+  const handleCheckboxChange = (index) => {
     setSelectedProducts((prevSelected) =>
       prevSelected.includes(index)
         ? prevSelected.filter((i) => i !== index)
@@ -1451,97 +1461,102 @@ const AddSanPham = ({sanPhamChiTietId}) => {
       </Paper>
       {/* chọn màu và size */}
       <Paper sx={{ padding: 2, mb: 2, position: "relative" }}>
-  <Typography variant="h5">Màu sắc & Kích Cỡ</Typography>
+        <Typography variant="h5">Màu sắc & Kích Cỡ</Typography>
 
-  {/* Màu sắc */}
-  <FormControl fullWidth margin="normal" sx={{ width: "300px", display: "block" }}>
-    <InputLabel sx={{ fontSize: "16px" }}>Màu Sắc</InputLabel>
-    <Select
-      label="Màu Sắc"
-      value={selectedMauSacs}
-      onChange={handleColorChange}
-      multiple
-      renderValue={(selected) => {
-        const selectedColors = selected.map((id) => {
-          const selectedColor = colors.find((color) => color.id === id);
-          return selectedColor ? selectedColor.tenMauSac : "";
-        });
-        return selectedColors.join(", ");
-      }}
-      sx={{
-        width: "50%", // Kéo dài hết phần FormControl
-        fontSize: "16px",
-        padding: "5px",
-      }}
-    >
-      {colors.map((color) => (
-        <MenuItem key={color.id} value={color.id}>
-          <Checkbox checked={selectedMauSacs.indexOf(color.id) > -1} />
-          {color.tenMauSac}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+        {/* Màu sắc */}
+        <FormControl
+          fullWidth
+          margin="normal"
+          sx={{ width: "300px", display: "block" }}
+        >
+          <InputLabel sx={{ fontSize: "16px" }}>Màu Sắc</InputLabel>
+          <Select
+            label="Màu Sắc"
+            value={selectedMauSacs}
+            onChange={handleColorChange}
+            multiple
+            renderValue={(selected) => {
+              const selectedColors = selected.map((id) => {
+                const selectedColor = colors.find((color) => color.id === id);
+                return selectedColor ? selectedColor.tenMauSac : "";
+              });
+              return selectedColors.join(", ");
+            }}
+            sx={{
+              width: "50%", // Kéo dài hết phần FormControl
+              fontSize: "16px",
+              padding: "5px",
+            }}
+          >
+            {colors.map((color) => (
+              <MenuItem key={color.id} value={color.id}>
+                <Checkbox checked={selectedMauSacs.indexOf(color.id) > -1} />
+                {color.tenMauSac}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-  {/* Size */}
-  <FormControl fullWidth margin="normal" sx={{ width: "300px", display: "block", mt: 2 }}>
-    <InputLabel sx={{ fontSize: "16px" }}>Size</InputLabel>
-    <Select
-      label="Size"
-      value={selectedSizes}
-      onChange={handleSizeChange}
-      multiple
-      renderValue={(selected) => {
-        const selectedSizes = selected.map((id) => {
-          const selectedSize = sizes.find((size) => size.id === id);
-          return selectedSize ? selectedSize.tenSize : "";
-        });
-        return selectedSizes.join(", ");
-      }}
-      sx={{
-        width: "50%", // Kéo dài hết phần FormControl
-        fontSize: "16px",
-        padding: "5px",
-      }}
-    >
-      {sizes.map((size) => (
-        <MenuItem key={size.id} value={size.id}>
-          <Checkbox checked={selectedSizes.indexOf(size.id) > -1} />
-          {size.tenSize}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+        {/* Size */}
+        <FormControl
+          fullWidth
+          margin="normal"
+          sx={{ width: "300px", display: "block", mt: 2 }}
+        >
+          <InputLabel sx={{ fontSize: "16px" }}>Size</InputLabel>
+          <Select
+            label="Size"
+            value={selectedSizes}
+            onChange={handleSizeChange}
+            multiple
+            renderValue={(selected) => {
+              const selectedSizes = selected.map((id) => {
+                const selectedSize = sizes.find((size) => size.id === id);
+                return selectedSize ? selectedSize.tenSize : "";
+              });
+              return selectedSizes.join(", ");
+            }}
+            sx={{
+              width: "50%", // Kéo dài hết phần FormControl
+              fontSize: "16px",
+              padding: "5px",
+            }}
+          >
+            {sizes.map((size) => (
+              <MenuItem key={size.id} value={size.id}>
+                <Checkbox checked={selectedSizes.indexOf(size.id) > -1} />
+                {size.tenSize}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-  {/* Ô nhập số lượng chung và giá chung - đặt góc phải */}
-  <div
-    style={{
-      display: "flex",
-      gap: "10px", // Khoảng cách nhỏ giữa 2 ô
-      position: "absolute",
-      bottom: "10px",
-      right: "10px",
-    }}
-  >
-    <TextField
-      label="Số lượng chung"
-      type="number"
-      value={commonQuantity}
-      onChange={(e) => handleCommonChange("quantity", e.target.value)}
-      size="small"
-    />
-    <TextField
-      label="Giá chung"
-      type="number"
-      value={commonPrice}
-      onChange={(e) => handleCommonChange("price", e.target.value)}
-      size="small"
-    />
-  </div>
-</Paper>
-
-
-
+        {/* Ô nhập số lượng chung và giá chung - đặt góc phải */}
+        <div
+          style={{
+            display: "flex",
+            gap: "10px", // Khoảng cách nhỏ giữa 2 ô
+            position: "absolute",
+            bottom: "10px",
+            right: "10px",
+          }}
+        >
+          <TextField
+            label="Số lượng chung"
+            type="number"
+            value={commonQuantity}
+            onChange={(e) => handleCommonChange("quantity", e.target.value)}
+            size="small"
+          />
+          <TextField
+            label="Giá chung"
+            type="number"
+            value={commonPrice}
+            onChange={(e) => handleCommonChange("price", e.target.value)}
+            size="small"
+          />
+        </div>
+      </Paper>
 
       <Button onClick={handleAddToTable}>Thêm vào bảng</Button>
 
@@ -1567,99 +1582,216 @@ const AddSanPham = ({sanPhamChiTietId}) => {
             <TableBody>
               {productDetails.map((detail, index) => (
                 <TableRow key={index}>
-                   <TableCell>
-                  <Checkbox
-                    checked={selectedProducts.includes(index)}
-                    onChange={() => handleCheckboxChange(index)}
-                  />
-                </TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedProducts.includes(index)}
+                      onChange={() => handleCheckboxChange(index)}
+                    />
+                  </TableCell>
                   <TableCell>{detail.productCode}</TableCell>
                   <TableCell>{detail.productName}</TableCell>
                   <TableCell>{detail.tenMauSac}</TableCell>
                   <TableCell>{detail.tenSize}</TableCell>
                   <TableCell>
-                  <TextField
-                    type="number"
-                    value={detail.quantity}
-                    onChange={(e) =>
-                      handleInputChange(index, "quantity", e.target.value)
-                    }
-                    size="small"
-                    fullWidth
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    type="number"
-                    value={detail.price}
-                    onChange={(e) =>
-                      handleInputChange(index, "price", e.target.value)
-                    }
-                    size="small"
-                    fullWidth
-                  />
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    onClick={() => removeSanPhamChiTiet(index)}
-                    color="black"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-                  <TableCell>
-                  <Button onClick={handleOpenModalAnh}>Chọn ảnh</Button>
+                    <TextField
+                      type="number"
+                      value={detail.quantity}
+                      onChange={(e) =>
+                        handleInputChange(index, "quantity", e.target.value)
+                      }
+                      size="small"
+                      fullWidth
+                    />
                   </TableCell>
+                  <TableCell>
+                    <TextField
+                      type="number"
+                      value={detail.price}
+                      onChange={(e) =>
+                        handleInputChange(index, "price", e.target.value)
+                      }
+                      size="small"
+                      fullWidth
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={() => removeSanPhamChiTiet(index)}
+                      color="black"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                  <TableCell>
+  <Button onClick={() => handleOpenModalAnh(detail.id)}>Chọn ảnh</Button>
+  <div>
+    {detail.images && detail.images.length > 0 ? (
+      detail.images.map((image, imgIndex) => (
+        <img
+          key={imgIndex}
+          src={image} // Dùng đường dẫn ảnh trực tiếp
+          alt={`product-${imgIndex}`}
+          width={40}
+          height={40}
+          style={{ borderRadius: "5px" }}
+        />
+      ))
+    ) : (
+      <p>Chưa có ảnh</p>
+    )}
+  </div>
+</TableCell>
+
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
+
         <Modal open={openModalAnh} onClose={() => setOpenModalAnh(false)}>
-  <div
-    style={{
-      width: "700px",
-      height: "500px",
-      background: "white",
-      borderRadius: "10px",
-      padding: "20px",
-      boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      margin: "auto",
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-    }}
-  >
-    <h3 style={{ marginBottom: "10px", textAlign: "right" }}>Danh sách ảnh</h3>
-    <div style={{ overflowY: "auto", maxHeight: "150px", width: "100%", textAlign: "center" }}>
-      {cloudinaryImages.length > 0 ? (
-        cloudinaryImages.map((image, index) => (
           <div
-            key={index}
-            style={{ marginBottom: "5px", cursor: "pointer" }}
-            onClick={() => handleSelectImage(image)}
+            style={{
+              width: "850px",
+              height: "550px",
+              background: "white",
+              borderRadius: "10px",
+              padding: "20px",
+              boxShadow: "0px 4px 10px rgba(104, 101, 101, 0.5)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start", // Căn lề trái cho tiêu đề
+              justifyContent: "flex-start",
+              margin: "auto",
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
           >
-            <img src={image.secure_url} alt={`image-${index}`} width={80} height={80} />
+            <h3 style={{ marginBottom: "10px", textAlign: "left" }}>
+              Danh sách ảnh
+            </h3>
+
+            <div
+              style={{
+                overflowY: "auto",
+                maxHeight: "350px", // Giới hạn chiều cao của phần ảnh
+                width: "100%",
+                display: "grid",
+                gridTemplateColumns: "repeat(6, 1fr)", // Chia thành 6 cột
+                gap: "10px", // Khoảng cách giữa các ảnh
+                textAlign: "center",
+              }}
+            >
+              {cloudinaryImages.length > 0 ? (
+                cloudinaryImages.map((image, index) => (
+                  <div key={index} style={{ cursor: "pointer" }}>
+                    <img
+                      src={image.secure_url} // Sử dụng secure_url để hiển thị ảnh
+                      alt={`image-${index}`}
+                      width={100} // Tăng kích thước ảnh
+                      height={100} // Tăng kích thước ảnh
+                      style={{ borderRadius: "5px" }}
+                    />
+                    <div>
+                      <input
+                        type="checkbox"
+                        onChange={(e) => handleSelectImage(e, image)} // Xử lý chọn ảnh
+                        checked={selectedImages.some(
+                          (img) => img.public_id === image.public_id
+                        )} // Chỉ check nếu ảnh đã được chọn
+                        disabled={
+                          selectedImages.length >= 3 &&
+                          !selectedImages.some(
+                            (img) => img.public_id === image.public_id
+                          )
+                        } // Giới hạn tối đa 3 ảnh
+                      />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>Không có ảnh để hiển thị.</p>
+              )}
+            </div>
+
+            <h3 style={{ marginBottom: "10px", textAlign: "left" }}>
+              Danh sách ảnh đã chọn
+            </h3>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "10px",
+                marginTop: "10px",
+                maxHeight: "150px",
+                overflowY: "auto",
+              }}
+            >
+              {selectedImages.length > 0 ? (
+                selectedImages.map((image, index) => (
+                  <div key={index} style={{ marginBottom: "5px" }}>
+                    <img
+                      src={image.secure_url}
+                      alt={`selected-image-${index}`}
+                      width={80}
+                      height={80}
+                      style={{ borderRadius: "5px" }}
+                    />
+                  </div>
+                ))
+              ) : (
+                <p>Chưa có ảnh nào được chọn.</p>
+              )}
+            </div>
+
+            {selectedImages.length > 3 && (
+              <p style={{ color: "red" }}>Bạn chỉ có thể chọn tối đa 3 ảnh.</p>
+            )}
+
+            <div
+              style={{
+                marginTop: "10px",
+                display: "flex",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              {/* Nút Đóng ở giữa */}
+              <div
+                style={{ flex: 1, display: "flex", justifyContent: "center" }}
+              >
+                <Button
+                  onClick={() => setOpenModalAnh(false)}
+                  variant="contained"
+                  style={{ backgroundColor: "white", color: "black" }}
+                >
+                  Đóng
+                </Button>
+              </div>
+
+              {/* Nút Thêm ảnh và Lưu bên phải */}
+              <div style={{ display: "flex", gap: "10px", marginLeft: "auto" }}>
+                <Button
+                  onClick={() => document.getElementById("file-input").click()}
+                >
+                  Thêm ảnh
+                </Button>
+                <input
+                  id="file-input"
+                  type="file"
+                  style={{ display: "none" }}
+                  onChange={handleFileUpload}
+                />
+
+<Button onClick={() => handleAddProductImages(selectedImages)}>
+  Lưu
+</Button>
+
+              </div>
+            </div>
           </div>
-        ))
-      ) : (
-        <p>Không có ảnh để hiển thị.</p>
-      )}
-    </div>
-    <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-      <Button onClick={() => document.getElementById("file-input").click()}>Thêm ảnh</Button>
-      <input id="file-input" type="file" style={{ display: "none" }} onChange={handleFileUpload} />
-      <Button onClick={() => handleAddProductImages(selectedImages)}>Lưu</Button>
-    </div>
-  </div>
-</Modal>
-
-
+        </Modal>
 
         <Button onClick={handleSave}>Lưu</Button>
       </Paper>

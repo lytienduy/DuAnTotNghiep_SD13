@@ -15,6 +15,7 @@ import {
   CircularProgress,
   Pagination,
   TextField,
+  InputLabel,
   MenuItem,
   Select,
   Switch,
@@ -253,36 +254,51 @@ const SanPham = () => {
 
       {/* Bộ lọc và ô tìm kiếm */}
       <Paper sx={{ padding: 2, mb: 2 }}>
-        <Grid container spacing={2} alignItems="center">
-          {/* Ô tìm kiếm */}
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Tìm kiếm theo tên"
-              variant="outlined"
-              fullWidth
-              size="small"
-              value={search}
-              onChange={handleSearchChange} // Gọi hàm xử lý tìm kiếm
-            />
-          </Grid>
+  <Grid container spacing={2} alignItems="center">
+    {/* Heading for the filter section */}
+    <Grid item xs={12}>
+      <Typography variant="h6">Bộ Lọc</Typography>
+    </Grid>
 
-          {/* Bộ lọc trạng thái */}
-          <Grid item xs={6} md={3}>
-            <FormControl fullWidth size="small">
-              <Typography variant="caption">Trạng Thái</Typography>
-              <Select
-                value={trangThai}
-                onChange={handleTrangThaiChange} // Gọi hàm xử lý lọc trạng thái
-                displayEmpty
-              >
-                <MenuItem value="">Tất cả</MenuItem>
-                <MenuItem value="Đang bán">Đang bán</MenuItem>
-                <MenuItem value="Ngừng bán">Ngừng bán</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-      </Paper>
+    {/* Ô tìm kiếm */}
+    <Grid item xs={12} md={6}>
+      <TextField
+        label="Tìm kiếm theo tên"
+        variant="outlined"
+        fullWidth
+        size="small"
+        value={search}
+        onChange={handleSearchChange} // Gọi hàm xử lý tìm kiếm
+      />
+    </Grid>
+
+    {/* Bộ lọc trạng thái */}
+    <Grid item xs={6} md={2}>
+      <FormControl fullWidth size="small" variant="outlined">
+        <InputLabel htmlFor="trangThai-select">Trạng Thái</InputLabel>
+        <Select
+          id="trangThai-select"
+          value={trangThai}
+          onChange={handleTrangThaiChange} // Gọi hàm xử lý lọc trạng thái
+          displayEmpty
+          fullWidth
+          label="Trạng Thái"
+        >
+          <MenuItem value="">
+            <em>Tất cả</em> {/* This is the placeholder when no option is selected */}
+          </MenuItem>
+          <MenuItem value="Đang bán">Đang bán</MenuItem>
+          <MenuItem value="Ngừng bán">Ngừng bán</MenuItem>
+        </Select>
+      </FormControl>
+    </Grid>
+  </Grid>
+</Paper>
+
+
+
+
+
 
       {/* Hiển thị dữ liệu */}
       {loading ? (
@@ -361,56 +377,57 @@ const SanPham = () => {
             </Table>
           </TableContainer>
 
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{ mt: 2, p: 1, background: "#f1f1f1", borderRadius: "5px" }}
-          >
-            {/* Dropdown to select number of items per page */}
-            <Box display="flex" alignItems="center">
-              <Typography variant="body2" sx={{ mr: 1 }}>
-                Xem
-              </Typography>
-              <Select
-                value={size}
-                onChange={(e) => {
-                  setSize(e.target.value);
-                  setPage(1); // Reset to first page
-                }}
-                size="small"
-                sx={{ width: 70, backgroundColor: "white" }}
-              >
-                <MenuItem value={5}>5</MenuItem>
-                <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={20}>20</MenuItem>
-              </Select>
-              <Typography variant="body2" sx={{ ml: 1 }}>
-                sản phẩm
-              </Typography>
-            </Box>
+         <Box
+  display="flex"
+  alignItems="center"
+  justifyContent="space-between"
+  sx={{ mt: 2, p: 1, background: "#f1f1f1", borderRadius: "5px" }}
+>
+  {/* Dropdown to select number of items per page */}
+  <Box display="flex" alignItems="center">
+    <Typography variant="body2" sx={{ mr: 1 }}>
+      Xem
+    </Typography>
+    <Select
+      value={size}
+      onChange={(e) => {
+        setSize(e.target.value);
+        setPage(1); // Reset to first page
+      }}
+      size="small"
+      sx={{ width: 70, backgroundColor: "white" }}
+    >
+      <MenuItem value={5}>5</MenuItem>
+      <MenuItem value={10}>10</MenuItem>
+      <MenuItem value={20}>20</MenuItem>
+    </Select>
+    <Typography variant="body2" sx={{ ml: 1 }}>
+      sản phẩm
+    </Typography>
+  </Box>
 
-            {/* Pagination controls */}
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={(event, value) => setPage(value)}
-              variant="outlined"
-              shape="rounded"
-              color="primary"
-              siblingCount={0} // Keep it compact
-              sx={{
-                "& .MuiPaginationItem-root": {
-                  backgroundColor: "white",
-                  border: "1px solid #ddd",
-                  "&.Mui-selected": {
-                    backgroundColor: "lightblue",
-                    color: "white",
-                  },
-                },
-              }}
-            />
-          </Box>
+  {/* Pagination controls */}
+  <Pagination
+    count={totalPages}
+    page={page}
+    onChange={(event, value) => setPage(value)}
+    shape="circular"  // This will make the border circular
+    color="primary"
+    siblingCount={0} // Keep it compact
+    sx={{
+      "& .MuiPaginationItem-root": {
+        backgroundColor: "white",
+        border: "1px solid #ddd",
+        borderRadius: "50%", // Ensures the border is round
+        "&.Mui-selected": {
+          backgroundColor: "primary", // Change the selected background to green
+          color: "white", // White text for selected page
+        },
+      },
+    }}
+  />
+</Box>
+
         </>
       )}
 
