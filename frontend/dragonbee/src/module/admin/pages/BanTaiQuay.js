@@ -2003,10 +2003,16 @@ const BanTaiQuay = () => {
                         </span>
                       </Typography>
 
-                      <FormControlLabel
-                        control={<Switch checked={nhuCauInHoaDon} onChange={(event) => { setNhuCauInHoaDon(event.target.checked) }} />}
-                        label="In hóa đơn"
-                      />
+                      <Box display="flex" justifyContent="space-between" alignItems="center" marginTop={2}>
+                        <Typography variant="h6" ></Typography>
+                        {/* Nút Switch điều khiển việc hiển thị/ẩn bên trái */}
+                        <FormControlLabel
+                          sx={{ marginRight: 0 }} // Đặt margin-right về 0
+                          control={<Switch checked={nhuCauInHoaDon} onChange={(event) => { setNhuCauInHoaDon(event.target.checked) }} />}
+                          label="In hóa đơn"
+                        />
+                      </Box>
+
 
                       <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }}
                         disabled={
