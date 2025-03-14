@@ -35,60 +35,6 @@ public class AnhSanPhamController {
     @Value("${cloudinary.api.secret}")
     private String cloudinaryApiSecret;
 
-    // API thêm nhiều ảnh cho sản phẩm chi tiết
-    @PostMapping("/{sanPhamChiTietId}")
-    public ResponseEntity<?> addAnhs(@PathVariable Integer sanPhamChiTietId,
-                                     @RequestBody List<AnhSanPhamDTO> anhSanPhamList) {
-        // Kiểm tra các ảnh trong danh sách
-        for (AnhSanPhamDTO anh : anhSanPhamList) {
-            if (anh.getAnhUrl() == null || anh.getAnhUrl().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("Ảnh URL không hợp lệ!");
-            }
-            if (anh.getTrangThai() == null || anh.getTrangThai().trim().isEmpty()) {
-                anh.setTrangThai("Hoạt động");
-            }
-        }
-
-        // Chuyển DTO thành Entity
-        List<AnhSanPham> newAnhs = anhSanPhamList.stream().map(dto -> {
-            AnhSanPham anh = new AnhSanPham();
-            anh.setAnhUrl(dto.getAnhUrl());
-            anh.setMa(dto.getMa());
-            anh.setMoTa(dto.getMoTa());
-            anh.setTrangThai(dto.getTrangThai());
-            anh.setSanPhamChiTiet(SanPhamChiTiet.builder().id(sanPhamChiTietId).build()); // Đảm bảo ID được gán đúng
-            return anh;
-        }).collect(Collectors.toList());
-
-        try {
-            List<AnhSanPham> savedAnhs = anhSanPhamService.addAnhsToSanPhamChiTiet(sanPhamChiTietId, newAnhs);
-            return ResponseEntity.ok(savedAnhs); // Trả về các ảnh đã lưu
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Lỗi khi thêm ảnh: " + e.getMessage()));
-        }
-    }
-
-
-
-
-    // ErrorResponse class
-    public class ErrorResponse {
-        private String message;
-
-        public ErrorResponse(String message) {
-            this.message = message;
-        }
-
-        // Getter and Setter
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-    }
 
     // API lấy tất cả ảnh của một sản phẩm chi tiết
     @GetMapping("/{sanPhamChiTietId}")

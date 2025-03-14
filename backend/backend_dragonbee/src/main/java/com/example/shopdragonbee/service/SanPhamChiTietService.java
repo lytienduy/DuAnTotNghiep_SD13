@@ -125,7 +125,7 @@ public class SanPhamChiTietService {
 
         // Cập nhật các trường khác
         sanPhamChiTiet.setSoLuong(request.getSoLuong());
-        sanPhamChiTiet.setTrangThai(request.getSoLuong() > 0 ? "Còn hàng" : "Hết hàng");
+        sanPhamChiTiet.setTrangThai(request.getSoLuong() > 0 ? "Hoạt động" : "Hết hàng");
         sanPhamChiTiet.setMoTa(request.getMoTa());
         sanPhamChiTiet.setGia(request.getGia());
 
@@ -174,7 +174,7 @@ public class SanPhamChiTietService {
 
         // Đặt trạng thái dựa trên số lượng
         if (newSanPhamChiTiet.getSoLuong() > 0) {
-            newSanPhamChiTiet.setTrangThai("Còn hàng");
+            newSanPhamChiTiet.setTrangThai("Hoạt động");
         } else {
             newSanPhamChiTiet.setTrangThai("Hết hàng");
         }

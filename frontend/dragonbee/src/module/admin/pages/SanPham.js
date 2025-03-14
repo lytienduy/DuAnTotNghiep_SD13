@@ -192,7 +192,7 @@ const SanPham = () => {
             ? {
                 ...sp,
                 trangThai:
-                  sp.trangThai === "Đang bán" ? "Ngừng bán" : "Đang bán",
+                  sp.trangThai === "Hoạt động" ? "Ngừng bán" : "Hoạt động",
               }
             : sp
         )
@@ -287,7 +287,7 @@ const SanPham = () => {
           <MenuItem value="">
             <em>Tất cả</em> {/* This is the placeholder when no option is selected */}
           </MenuItem>
-          <MenuItem value="Đang bán">Đang bán</MenuItem>
+          <MenuItem value="Hoạt động">Hoạt động</MenuItem>
           <MenuItem value="Ngừng bán">Ngừng bán</MenuItem>
         </Select>
       </FormControl>
@@ -345,7 +345,7 @@ const SanPham = () => {
                       </TableCell>
                       <TableCell
                         sx={{
-                          color: sp.trangThai === "Đang bán" ? "green" : "red",
+                          color: sp.trangThai === "Hoạt động" ? "green" : "red",
                         }}
                       >
                         {sp.trangThai ?? "Không xác định"}
@@ -359,7 +359,7 @@ const SanPham = () => {
                           <Visibility />
                         </Button>
                         <Switch
-                          checked={sp.trangThai === "Đang bán"} // Kiểm tra nếu trạng thái là "Đang bán"
+                          checked={sp.trangThai === "Hoạt động"} // Kiểm tra nếu trạng thái là "Đang bán"
                           onChange={() => toggleTrangThai(sp.id)}
                           color="success"
                         />

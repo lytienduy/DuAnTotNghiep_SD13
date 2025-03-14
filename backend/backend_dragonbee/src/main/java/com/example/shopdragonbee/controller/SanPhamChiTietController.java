@@ -81,7 +81,7 @@ public class SanPhamChiTietController {
                 newSanPhamChiTiet.setSoLuong(dto.getSoLuong() != null ? dto.getSoLuong() : 0);
                 newSanPhamChiTiet.setGia(dto.getGia() != null ? dto.getGia() : 0.0);
                 newSanPhamChiTiet.setMoTa(dto.getMoTa() != null ? dto.getMoTa() : "Không có mô tả");
-                newSanPhamChiTiet.setTrangThai(dto.getTrangThai() != null ? dto.getTrangThai() : "Còn hàng");
+                newSanPhamChiTiet.setTrangThai(dto.getTrangThai() != null ? dto.getTrangThai() : "Hoạt động");
                 newSanPhamChiTiet.setMa(sanPhamChiTietService.generateProductCode());
                 newSanPhamChiTiet.setNgayTao(LocalDateTime.now());
                 newSanPhamChiTiet.setNguoiTao("Admin");

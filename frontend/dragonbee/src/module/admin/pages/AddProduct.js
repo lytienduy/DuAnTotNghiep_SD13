@@ -20,6 +20,7 @@ import {
   Paper,
   Typography,
   Grid,
+  Box,
   Table,
   TableHead,
   TableCell,
@@ -31,6 +32,8 @@ import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Cloudinary } from "cloudinary-core";
+import { SketchPicker } from "react-color"; // Thêm thư viện chọn màu
+
 /* global cloudinary */
 
 const AddSanPham = ({ sanPhamChiTietId }) => {
@@ -44,7 +47,22 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   const [uploadedImages, setUploadedImages] = useState([]); // Lưu trữ ảnh đã tải lên
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [selectAll, setSelectAll] = useState(false); // State để kiểm tra "Chọn tất cả"
   // lưu sản phẩm
+  const [openColorModal, setOpenColorModal] = useState(false);
+  const [openAddColorModal, setOpenAddColorModal] = useState(false);
+  const [openColorPicker, setOpenColorPicker] = useState(false); // Open Color Picker
+  const [colors, setColors] = useState([]);
+  const [newColor, setNewColor] = useState({
+    tenMauSac: "",
+    maMau: "",
+  });
+  const [openSizeModal, setOpenSizeModal] = useState(false); // Modal chọn size
+  const [openAddSizeModal, setOpenAddSizeModal] = useState(false); // Modal thêm size
+  const [sizes, setSizes] = useState([]); // Danh sách các size có sẵn
+  const [newSize, setNewSize] = useState({ tenSize: "", moTa: "" }); // Dữ liệu cho size mới
+  const [selectedSizes, setSelectedSizes] = useState([]); // Các size đã chọn
+  const [selectedMauSacs, setSelectedMauSacs] = useState([]); // Màu sắc đã chọn
   const [newProductName, setNewProductName] = useState("");
   const [productStatus, setProductStatus] = useState("Đang bán");
   const [danhMucs, setDanhMucs] = useState([]);
@@ -62,11 +80,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   const [kieuDaiQuans, setKieuDaiQuans] = useState([]);
   const [sanPhamChiTietList, setSanPhamChiTietList] = useState([]);
   const [sanPhamList, setSanPhamList] = useState([]);
-  const [colors, setColors] = useState([]);
-  const [sizes, setSizes] = useState([]);
   const [description, setDescription] = useState("");
-  const [selectedMauSacs, setSelectedMauSacs] = useState([]);
-  const [selectedSizes, setSelectedSizes] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [quantity, setQuantity] = useState(0); // Khởi tạo với giá trị số hợp lệ
   const [price, setPrice] = useState(0);
@@ -98,6 +112,16 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   });
   const [newXuatXu, setNewXuatXu] = useState({ tenXuatXu: "", moTa: "" });
   const [openModal, setOpenModal] = useState(null); // Giá trị mặc định là null
+  const [openSnackbarXoa, setOpenSnackbarXoa] = useState(false); // Điều khiển Snackbar
+  const [snackbarMessageXoa, setSnackbarMessageXoa] = useState(""); // Thông báo hiển thị trong Snackbar
+  const [openSnackbarDM, setOpenSnackbarDM] = useState(false); // Điều khiển Snackbar
+  const [snackbarMessageDM, setSnackbarMessageDM] = useState(""); // Thông báo hiển thị trong Snackbar
+  const [openSnackbarTH, setOpenSnackbarTH] = useState(false); // Điều khiển Snackbar
+  const [openSnackbarPC, setOpenSnackbarPC] = useState(false); // Điều khiển Snackbar
+  const [openSnackbarCL, setOpenSnackbarCL] = useState(false); // Điều khiển Snackbar
+  const [openSnackbarKD, setOpenSnackbarKD] = useState(false); // Điều khiển Snackbar
+  const [openSnackbarKDQ, setOpenSnackbarKDQ] = useState(false); // Điều khiển Snackbar
+  const [openSnackbarXX, setOpenSnackbarXX] = useState(false); // Điều khiển Snackbar
 
   // Khi bạn muốn mở một modal, hãy gọi handleOpenModal với loại modal cụ thể
   const handleOpenModal = (modalType) => {
@@ -268,14 +292,6 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
 
     fetchSanPhamList();
   }, []);
-  // Cập nhật giá trị của selectedMauSacs (màu sắc đã chọn)
-  const handleColorChange = (event) => {
-    setSelectedMauSacs(event.target.value); // Chỉ lưu trữ ID của màu sắc
-  };
-
-  const handleSizeChange = (event) => {
-    setSelectedSizes(event.target.value); // Chỉ lưu trữ ID của kích thước
-  };
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value); // Cập nhật mô tả khi nhập
   };
@@ -289,7 +305,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       alert("Vui lòng chọn đầy đủ sản phẩm, màu sắc và kích thước.");
       return;
     }
-  
+
     const selectedProductName = sanPhamList.find(
       (sp) => sp.id === selectedProduct
     )?.tenSanPham;
@@ -297,21 +313,20 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       alert("Sản phẩm không hợp lệ.");
       return;
     }
-  
+
     const newDetails = [];
-    let tempId = productDetails.length > 0 
-      ? Math.max(...productDetails.map((p) => p.id), 0) + 1 
-      : 1; // Tạo ID tạm
-  
-    selectedMauSacs.forEach((colorId) => {
-      selectedSizes.forEach((sizeId) => {
-        const color = colors.find((c) => c.id === colorId);
-        const size = sizes.find((s) => s.id === sizeId);
+    let tempId =
+      productDetails.length > 0
+        ? Math.max(...productDetails.map((p) => p.id), 0) + 1
+        : 1; // Tạo ID tạm
+
+    selectedMauSacs.forEach((color) => {
+      selectedSizes.forEach((size) => {
         if (!color || !size) {
           alert("Màu sắc hoặc kích thước không hợp lệ.");
           return;
         }
-  
+
         newDetails.push({
           id: tempId++, // Gán ID tạm
           productCode: `SPCT-${tempId}`,
@@ -324,9 +339,10 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         });
       });
     });
-  
+
     setProductDetails((prevDetails) => [...prevDetails, ...newDetails]);
   };
+
   // add sản phẩm chi tiết
   const handleSave = async () => {
     if (!selectedProduct) {
@@ -335,7 +351,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
     }
 
     // Lọc các ảnh hợp lệ từ selectedImages (đảm bảo ảnh có URL hợp lệ)
-    const validImages = selectedImages.filter(image => image.secure_url);
+    const validImages = selectedImages.filter((image) => image.secure_url);
 
     // Nếu không có ảnh hợp lệ, có thể gửi mảng rỗng hoặc xử lý theo cách khác
     if (validImages.length === 0) {
@@ -354,12 +370,13 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       thuongHieuId: selectedThuongHieu,
       phongCachId: selectedPhongCach,
       chatLieuId: selectedChatLieu,
-      mauSacId: colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
+      mauSacId:
+        colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
       sizeId: sizes.find((s) => s.tenSize === detail.tenSize)?.id || null,
       kieuDangId: selectedKieuDang,
       kieuDaiQuanId: selectedKieuDaiQuan,
       xuatXuId: selectedXuatXus,
-      anhUrls: validImages.map(image => image.secure_url), // Gửi các URL ảnh hợp lệ
+      anhUrls: validImages.map((image) => image.secure_url), // Gửi các URL ảnh hợp lệ
     }));
 
     try {
@@ -371,7 +388,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
 
       if (response.status === 200 || response.status === 201) {
         console.log("Sản phẩm chi tiết đã được lưu", response.data);
-        
+
         // Hiển thị thông báo thành công
         setSnackMessage("Thêm sản phẩm thành công!");
         setSnackOpen(true); // Mở thông báo thành công
@@ -408,21 +425,28 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         });
     }
   };
-
+  const handleCloseModalAnh = () => {
+    setOpenModalAnh(false); // Đóng modal
+    setSelectedImages([]); // Reset danh sách ảnh đã chọn khi đóng modal
+  };
   const handleOpenModalAnh = async (id) => {
     // Cập nhật trạng thái loading
-    setLoading(true);  // setLoading là state quản lý trạng thái đang tải
-  
+    setLoading(true); // setLoading là state quản lý trạng thái đang tải
+
     try {
-      const response = await fetch("http://localhost:8080/api/anh-san-pham/cloudinary-images");
-  
+      const response = await fetch(
+        "http://localhost:8080/api/anh-san-pham/cloudinary-images"
+      );
+
       if (!response.ok) {
-        throw new Error("Không thể lấy ảnh từ backend, mã lỗi: " + response.status);
+        throw new Error(
+          "Không thể lấy ảnh từ backend, mã lỗi: " + response.status
+        );
       }
-  
+
       const data = await response.json();
       console.log("Dữ liệu ảnh từ API:", data); // Kiểm tra xem dữ liệu có hợp lệ không
-  
+
       // Kiểm tra và cập nhật danh sách ảnh từ API
       if (data && Array.isArray(data.resources)) {
         setCloudinaryImages(data.resources); // Cập nhật danh sách ảnh từ API
@@ -435,11 +459,10 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
     } finally {
       setLoading(false); // Kết thúc trạng thái loading
     }
-  
+
     setSelectedProductId(id); // Lưu ID sản phẩm
     setOpenModalAnh(true); // Mở modal sau khi dữ liệu đã được tải
   };
-  
 
   // Hàm chọn ảnh
   const handleSelectImage = (e, image) => {
@@ -452,11 +475,11 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       );
     }
   };
-  
+
   const handleAddProductImages = (selectedImages) => {
     // Cập nhật ảnh cho sản phẩm chi tiết
     const imageUrls = selectedImages.map((image) => image.secure_url);
-    
+
     // Cập nhật danh sách sản phẩm chi tiết với các ảnh đã chọn
     const updatedProductDetails = productDetails.map((detail) => {
       if (detail.id === selectedProductId) {
@@ -464,19 +487,55 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       }
       return detail;
     });
-  
+
     setProductDetails(updatedProductDetails); // Cập nhật lại danh sách sản phẩm chi tiết
+    setSelectedImages([]); // Reset danh sách ảnh đã chọn
     setOpenModalAnh(false); // Đóng modal sau khi lưu ảnh
   };
-  
-  
-  
-  
   // xóa spct
+  // Hàm để xử lý xóa sản phẩm
   const removeSanPhamChiTiet = (index) => {
-    const newList = sanPhamChiTietList.filter((_, i) => i !== index); // Loại bỏ sản phẩm tại index
-    setSanPhamChiTietList(newList); // Cập nhật lại state
+    const newList = productDetails.filter((_, i) => i !== index); // Loại bỏ sản phẩm tại index
+    setProductDetails(newList); // Cập nhật lại state
+
+    // Hiển thị Snackbar khi xóa sản phẩm thành công
+    setSnackbarMessageXoa("Sản phẩm đã được xóa thành công!");
+    setOpenSnackbarXoa(true); // Mở Snackbar
   };
+
+  // Hàm đóng Snackbar xóa
+  const handleCloseSnackbarXoa = () => {
+    setOpenSnackbarXoa(false);
+  };
+  // Hàm đóng Snackbar Dm
+  const handleCloseSnackbarDM = () => {
+    setOpenSnackbarDM(false);
+  };
+  // Hàm đóng Snackbar TH
+  const handleCloseSnackbarTH = () => {
+    setOpenSnackbarTH(false);
+  };
+  // Hàm đóng Snackbar PC
+  const handleCloseSnackbarPC = () => {
+    setOpenSnackbarPC(false);
+  };
+  // Hàm đóng Snackbar CL
+  const handleCloseSnackbarCL = () => {
+    setOpenSnackbarCL(false);
+  };
+  // Hàm đóng Snackbar KD
+  const handleCloseSnackbarKD = () => {
+    setOpenSnackbarKD(false);
+  };
+  // Hàm đóng Snackbar KDQ
+  const handleCloseSnackbarKDQ = () => {
+    setOpenSnackbarKDQ(false);
+  };
+  // Hàm đóng Snackbar XX
+  const handleCloseSnackbarXX = () => {
+    setOpenSnackbarXX(false);
+  };
+
   // Gửi dữ liệu lên backend để thêm sản phẩm mới
   const handleAddProduct = () => {
     if (!tenSanPham.trim()) {
@@ -533,8 +592,8 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       .post("http://localhost:8080/api/danhmuc/add", newCategory)
       .then((response) => {
         setDanhMucs([response.data, ...danhMucs]); // Thêm danh mục mới vào đầu danh sách
-        setOpenSnackbar(true); // Hiển thị snackbar thông báo thành công
-        handleCloseModal(); // Đóng modal sau khi thêm thành công
+        setSnackbarMessageDM("Thêm danh mục thành công");
+        setOpenSnackbarDM(true); // Hiển thị snackbar thông báo thành công
       })
       .catch((error) => {
         // Kiểm tra lỗi từ backend và hiển thị thông báo phù hợp
@@ -570,7 +629,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         setThuongHieus([response.data, ...thuongHieus]);
 
         // Hiển thị snackbar thông báo thành công
-        setOpenSnackbar(true);
+        setOpenSnackbarTH(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
@@ -609,7 +668,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         setPhongCachs([response.data, ...phongCachs]); // Thêm phong cách mới vào đầu danh sách
 
         // Hiển thị snackbar thông báo thành công
-        setOpenSnackbar(true);
+        setOpenSnackbarPC(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
@@ -648,7 +707,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         setChatLieus([response.data, ...chatLieus]); // Thêm chất liệu mới vào đầu danh sách
 
         // Hiển thị snackbar thông báo thành công
-        setOpenSnackbar(true);
+        setOpenSnackbarCL(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
@@ -687,7 +746,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         setKieuDangs([response.data, ...kieuDangs]); // Thêm phong cách mới vào đầu danh sách
 
         // Hiển thị snackbar thông báo thành công
-        setOpenSnackbar(true);
+        setOpenSnackbarKD(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
@@ -724,7 +783,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         setKieuDaiQuans([response.data, ...kieuDaiQuans]); // Thêm kiểu đai quần mới vào đầu danh sách
 
         // Hiển thị snackbar thông báo thành công
-        setOpenSnackbar(true);
+        setOpenSnackbarKDQ(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
@@ -763,7 +822,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         setXuatXus([response.data, ...xuatXus]); // Thêm xuất xứ mới vào đầu danh sách
 
         // Hiển thị snackbar thông báo thành công
-        setOpenSnackbar(true);
+        setOpenSnackbarXX(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
@@ -777,10 +836,174 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         }
       });
   };
-  //add sản phẩm chi tiết
+  //add màu sắc
+  useEffect(() => {
+    // Fetch all colors on page load
+    axios
+      .get("http://localhost:8080/api/mausac/mau-sac/hoat-dong")
+      .then((response) => {
+        setColors(response.data); // Assuming response.data is an array of colors
+      })
+      .catch((error) => {
+        console.error("Error fetching colors:", error);
+      });
+  }, []);
 
-  //số lượng chung và checkbox
-  // Xử lý thay đổi checkbox
+  const handleOpenColorModal = () => {
+    setOpenColorModal(true);
+  };
+
+  const handleCloseColorModal = () => {
+    setOpenColorModal(false);
+  };
+
+  const handleOpenAddColorModal = () => {
+    setOpenAddColorModal(true);
+  };
+
+  const handleCloseAddColorModal = () => {
+    setOpenAddColorModal(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewColor({
+      ...newColor,
+      [name]: value,
+    });
+  };
+
+  const handleAddColor = (e) => {
+    e.preventDefault();
+
+    axios
+      .post("http://localhost:8080/api/mausac/add-mau", newColor)
+      .then((response) => {
+        alert("Màu sắc đã được thêm!");
+        setColors([...colors, response.data]); // Add the new color to the color list
+        setNewColor({ tenMauSac: "", maMau: "" }); // Clear form inputs
+        setOpenAddColorModal(false);
+      })
+      .catch((error) => {
+        console.error("Error adding color:", error);
+      });
+  };
+
+  // Cập nhật giá trị của selectedMauSacs (màu sắc đã chọn)
+  const handleColorSelect = (color) => {
+    if (
+      selectedMauSacs.length < 3 &&
+      !selectedMauSacs.some((existingColor) => existingColor.id === color.id)
+    ) {
+      setSelectedMauSacs([...selectedMauSacs, color]);
+    }
+  };
+
+  // Xóa màu đã chọn
+  const handleRemoveColor = (colorToRemove) => {
+    setSelectedMauSacs(
+      selectedMauSacs.filter((color) => color !== colorToRemove)
+    );
+  };
+
+  const handleOpenColorPicker = () => {
+    setOpenColorPicker(true); // Open the color picker modal
+  };
+
+  const handleCloseColorPicker = () => {
+    setOpenColorPicker(false); // Close the color picker modal
+  };
+
+  // Cập nhật giá trị của selectedMauSacs (màu sắc đã chọn)
+  const handleColorChange = (event) => {
+    setSelectedMauSacs(event.target.value); // Chỉ lưu trữ ID của màu sắc
+  };
+  // Hàm xử lý khi màu thay đổi
+const handleColorChangeMau = (color) => {
+  if (color && color.hex) {
+    setNewColor({
+      ...newColor,
+      maMau: color.hex, // Cập nhật màu khi chọn
+    });
+  }
+};
+  // add size
+  // Lấy danh sách size từ API
+  useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/size/hoat-dong")
+      .then((response) => {
+        setSizes(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching sizes:", error);
+      });
+  }, []);
+
+  const handleOpenSizeModal = () => {
+    setOpenSizeModal(true);
+  };
+
+  const handleCloseSizeModal = () => {
+    setOpenSizeModal(false);
+  };
+
+  const handleOpenAddSizeModal = () => {
+    setOpenAddSizeModal(true);
+  };
+
+  const handleCloseAddSizeModal = () => {
+    setOpenAddSizeModal(false);
+  };
+
+  const handleChangeSize = (e) => {
+    const { name, value } = e.target;
+    setNewSize({
+      ...newSize,
+      [name]: value,
+    });
+  };
+
+  const handleAddSize = (e) => {
+    e.preventDefault();
+    // Gọi API POST để thêm size
+    axios
+      .post("http://localhost:8080/api/size/add-size", newSize)
+      .then((response) => {
+        alert("Size đã được thêm!");
+        setSizes([...sizes, response.data]); // Cập nhật danh sách size
+        setNewSize({ tenSize: "", moTa: "" }); // Reset form input
+        setOpenAddSizeModal(false); // Đóng modal thêm size
+      })
+      .catch((error) => {
+        console.error("Error adding size:", error);
+      });
+  };
+
+  const handleSizeSelect = (size) => {
+    if (
+      selectedSizes.length < 3 &&
+      !selectedSizes.some((existingSize) => existingSize.id === size.id)
+    ) {
+      setSelectedSizes([...selectedSizes, size]);
+    }
+  };
+
+  const handleSizeRemove = (sizeToRemove) => {
+    setSelectedSizes(
+      selectedSizes.filter((size) => size.id !== sizeToRemove.id)
+    );
+  };
+
+  // Hàm để xử lý chọn tất cả sản phẩm
+  const handleSelectAll = (event) => {
+    if (event.target.checked) {
+      setSelectedProducts(productDetails.map((_, index) => index)); // Chọn tất cả sản phẩm
+    } else {
+      setSelectedProducts([]); // Bỏ chọn tất cả
+    }
+    setSelectAll(event.target.checked); // Cập nhật trạng thái "Chọn tất cả"
+  };
   const handleCheckboxChange = (index) => {
     setSelectedProducts((prevSelected) =>
       prevSelected.includes(index)
@@ -959,13 +1182,21 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
                 </DialogActions>
               </Dialog>
             )}
-            {/* Snackbar thông báo thêm danh mục thành công */}
+            {/* Snackbar để hiển thị thông báo */}
             <Snackbar
-              open={openSnackbar}
-              autoHideDuration={3000}
-              onClose={() => setOpenSnackbar(false)}
-              message="Thêm danh mục thành công!"
-            />
+              open={openSnackbarDM}
+              autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
+              onClose={handleCloseSnackbarDM}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
+            >
+              <Alert
+                onClose={handleCloseSnackbarDM}
+                severity="success"
+                sx={{ width: "100%" }}
+              >
+                {snackbarMessageDM}
+              </Alert>
+            </Snackbar>
           </Grid>
           {/* Thương Hiệu */}
           <Grid item xs={12} md={3}>
@@ -1463,73 +1694,293 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       <Paper sx={{ padding: 2, mb: 2, position: "relative" }}>
         <Typography variant="h5">Màu sắc & Kích Cỡ</Typography>
 
-        {/* Màu sắc */}
-        <FormControl
-          fullWidth
-          margin="normal"
-          sx={{ width: "300px", display: "block" }}
-        >
-          <InputLabel sx={{ fontSize: "16px" }}>Màu Sắc</InputLabel>
-          <Select
-            label="Màu Sắc"
-            value={selectedMauSacs}
-            onChange={handleColorChange}
-            multiple
-            renderValue={(selected) => {
-              const selectedColors = selected.map((id) => {
-                const selectedColor = colors.find((color) => color.id === id);
-                return selectedColor ? selectedColor.tenMauSac : "";
-              });
-              return selectedColors.join(", ");
-            }}
-            sx={{
-              width: "50%", // Kéo dài hết phần FormControl
-              fontSize: "16px",
-              padding: "5px",
+        <div>
+          {/* Màu Sắc */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "10px",
             }}
           >
-            {colors.map((color) => (
-              <MenuItem key={color.id} value={color.id}>
-                <Checkbox checked={selectedMauSacs.indexOf(color.id) > -1} />
-                {color.tenMauSac}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            <h5 style={{ margin: 0 }}>Màu Sắc:</h5>
+            {/* Button to open color modal */}
+            <Button
+              variant="contained"
+              style={{ marginLeft: "10px", height: "30px", width: "30px" }}
+              onClick={handleOpenColorModal}
+            >
+              +
+            </Button>
+          </div>
 
-        {/* Size */}
-        <FormControl
-          fullWidth
-          margin="normal"
-          sx={{ width: "300px", display: "block", mt: 2 }}
-        >
-          <InputLabel sx={{ fontSize: "16px" }}>Size</InputLabel>
-          <Select
-            label="Size"
-            value={selectedSizes}
-            onChange={handleSizeChange}
-            multiple
-            renderValue={(selected) => {
-              const selectedSizes = selected.map((id) => {
-                const selectedSize = sizes.find((size) => size.id === id);
-                return selectedSize ? selectedSize.tenSize : "";
-              });
-              return selectedSizes.join(", ");
-            }}
-            sx={{
-              width: "50%", // Kéo dài hết phần FormControl
-              fontSize: "16px",
-              padding: "5px",
-            }}
-          >
-            {sizes.map((size) => (
-              <MenuItem key={size.id} value={size.id}>
-                <Checkbox checked={selectedSizes.indexOf(size.id) > -1} />
-                {size.tenSize}
-              </MenuItem>
+          {/* Display selected colors below the button */}
+          <div style={{ marginTop: "10px", display: "flex" }}>
+            {selectedMauSacs.map((color) => (
+              <div
+                key={color.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginRight: "10px",
+                  width: "30px",
+                  height: "10px",
+                  padding: "5px",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  backgroundColor: color.maMau,
+                  color: "white",
+                }}
+              >
+                <span style={{ fontSize: "8px" }}>{color.tenMauSac}</span>
+                <Button
+                  onClick={() => handleRemoveColor(color)}
+                  style={{ color: "red", width: "2px" }}
+                >
+                  X
+                </Button>
+              </div>
             ))}
-          </Select>
-        </FormControl>
+          </div>
+          {/* Color Modal */}
+          <Modal
+            open={openColorModal}
+            onClose={handleCloseColorModal}
+            aria-labelledby="choose-color-modal"
+          >
+            <Box sx={colorModalStyle}>
+              <Typography variant="h6">Chọn Màu Sắc</Typography>
+              <div
+                style={{ display: "flex", flexWrap: "wrap", marginTop: "20px" }}
+              >
+                {colors.map((color) => (
+                  <div
+                    key={color.ma}
+                    style={{
+                      margin: "10px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                      width: "40px", // Adjusted size for rectangular look
+                      height: "40px", // Rectangular size
+                      borderRadius: "4px", // Optional rounded corners for a nicer look
+                    }}
+                    onClick={() => handleColorSelect(color)}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: color.maMau,
+                        width: "20px", // Slightly smaller width for color box
+                        height: "20px", // Slightly smaller height
+                        marginBottom: "5px",
+                        borderRadius: "50%",
+                      }}
+                    />
+                    <p style={{ fontSize: "9px", margin: "0" }}>
+                      {color.tenMauSac}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <Button variant="outlined" onClick={handleCloseColorModal}>
+                Đóng
+              </Button>
+              <Button variant="contained" onClick={handleOpenAddColorModal}>
+                Thêm Màu
+              </Button>
+            </Box>
+          </Modal>
+
+          {/* Add Color Modal */}
+          <Modal
+            open={openAddColorModal}
+            onClose={handleCloseAddColorModal}
+            aria-labelledby="add-color-modal"
+          >
+            <Box sx={addColorModalStyle}>
+              <Typography variant="h6">Thêm Màu Mới</Typography>
+              <form onSubmit={handleAddColor}>
+                <TextField
+                  label="Tên Màu"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  name="tenMauSac"
+                  value={newColor.tenMauSac}
+                  onChange={handleChange}
+                  required
+                />
+                <TextField
+                  label="Mã Màu"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  name="maMau"
+                  value={newColor.maMau}
+                  onChange={handleChange}
+                  required
+                  onClick={handleOpenColorPicker} // Open color picker when clicked
+                />
+                <Button type="submit" variant="contained" fullWidth>
+                  Thêm Màu
+                </Button>
+              </form>
+              <Button variant="outlined" onClick={handleCloseAddColorModal}>
+                Hủy
+              </Button>
+            </Box>
+          </Modal>
+
+          {/* Color Picker Modal */}
+          <Modal
+            open={openColorPicker}
+            onClose={handleCloseColorPicker}
+            aria-labelledby="color-picker-modal"
+          >
+            <Box sx={colorPickerModalStyle}>
+              <Typography variant="h6">Chọn Mã Màu</Typography>
+              <SketchPicker
+                color={newColor.maMau || "#fff"} // Set the current color
+                onChange={handleColorChangeMau} // Update the color when selected
+              />
+              <Button variant="outlined" onClick={handleCloseColorPicker}>
+                Đóng
+              </Button>
+            </Box>
+          </Modal>
+
+          {/* Kích cỡ */}
+          <div
+            style={{ display: "flex", alignItems: "center", marginTop: "20px" }}
+          >
+            <h5 style={{ margin: 0 }}>Kích cỡ:</h5>
+            {/* Button to open size modal */}
+            <Button
+              variant="contained"
+              style={{ marginLeft: "10px", height: "30px", width: "30px" }}
+              onClick={handleOpenSizeModal}
+            >
+              +
+            </Button>
+          </div>
+
+          {/* Display selected sizes */}
+          <div style={{ marginTop: "10px", margin: "10px", display: "flex" }}>
+            {selectedSizes.map((size) => (
+              <div
+                key={size.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginRight: "10px",
+                  padding: "5px",
+                  border: "1px solid black",
+                  width: "30px",
+                  height: "20px",
+                  borderRadius: "5px",
+                  backgroundColor: "#f0f0f0",
+                }}
+              >
+                <span style={{ fontSize: "10px" }}>{size.tenSize}</span>
+                <Button
+                  onClick={() => handleSizeRemove(size)}
+                  style={{ color: "red", fontSize: "12px" }}
+                >
+                  X
+                </Button>
+              </div>
+            ))}
+          </div>
+          {/* Size Modal */}
+          <Modal
+            open={openSizeModal}
+            onClose={handleCloseSizeModal}
+            aria-labelledby="choose-size-modal"
+          >
+            <Box sx={modalStyle}>
+              <Typography variant="h6">Chọn Kích Cỡ</Typography>
+              <div
+                style={{ display: "flex", flexWrap: "wrap", marginTop: "20px" }}
+              >
+                {sizes.map((size) => (
+                  <div
+                    key={size.id}
+                    style={{
+                      margin: "10px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                      width: "30px", // Size box width
+                      height: "20px", // Size box height
+                      border: "1px solid black",
+                      borderRadius: "4px",
+                    }}
+                    onClick={() => handleSizeSelect(size)}
+                  >
+                    {/* <div style={{ backgroundColor: '#e0e0e0', width: '50px', height: '50px' }} /> */}
+                    <p style={{ fontSize: "10px", margin: "5px" }}>
+                      {size.tenSize}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <Button variant="outlined" onClick={handleCloseSizeModal}>
+                Đóng
+              </Button>
+              <Button variant="contained" onClick={handleOpenAddSizeModal}>
+                Thêm Size
+              </Button>
+            </Box>
+          </Modal>
+
+          {/* Add Size Modal */}
+          <Modal
+            open={openAddSizeModal}
+            onClose={handleCloseAddSizeModal}
+            aria-labelledby="add-size-modal"
+          >
+            <Box sx={addSizeModalStyle}>
+              <Typography variant="h6">Thêm Kích Cỡ Mới</Typography>
+              <form onSubmit={handleAddSize}>
+                <TextField
+                  label="Tên Size"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  name="tenSize"
+                  value={newSize.tenSize}
+                  onChange={handleChangeSize}
+                  required
+                  sx={inputStyle} // Apply smaller size for text input
+                />
+                <TextField
+                  label="Mô Tả"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  name="moTa"
+                  value={newSize.moTa}
+                  onChange={handleChangeSize}
+                  required
+                  sx={inputStyle} // Apply smaller size for text input
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  fullWidth
+                  sx={buttonStyle}
+                >
+                  Thêm Size
+                </Button>
+              </form>
+              <Button
+                variant="outlined"
+                onClick={handleCloseAddSizeModal}
+                sx={buttonStyle}
+              >
+                Hủy
+              </Button>
+            </Box>
+          </Modal>
+        </div>
 
         {/* Ô nhập số lượng chung và giá chung - đặt góc phải */}
         <div
@@ -1568,7 +2019,12 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Chọn</TableCell>
+                <TableCell>
+                  <Checkbox
+                    checked={selectAll} // Kiểm tra nếu chọn tất cả
+                    onChange={handleSelectAll} // Xử lý khi chọn tất cả
+                  />
+                </TableCell>
                 <TableCell>Mã Sản Phẩm Chi Tiết</TableCell>
                 <TableCell>Sản phẩm</TableCell>
                 <TableCell>Màu sắc</TableCell>
@@ -1584,8 +2040,8 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
                 <TableRow key={index}>
                   <TableCell>
                     <Checkbox
-                      checked={selectedProducts.includes(index)}
-                      onChange={() => handleCheckboxChange(index)}
+                      checked={selectedProducts.includes(index)} // Kiểm tra sản phẩm có được chọn hay không
+                      onChange={() => handleCheckboxChange(index)} // Thay đổi trạng thái của checkbox
                     />
                   </TableCell>
                   <TableCell>{detail.productCode}</TableCell>
@@ -1596,9 +2052,11 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
                     <TextField
                       type="number"
                       value={detail.quantity}
-                      onChange={(e) =>
-                        handleInputChange(index, "quantity", e.target.value)
-                      }
+                      onChange={(e) => {
+                        const newProductDetails = [...productDetails];
+                        newProductDetails[index].quantity = e.target.value;
+                        setProductDetails(newProductDetails);
+                      }}
                       size="small"
                       fullWidth
                     />
@@ -1607,9 +2065,11 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
                     <TextField
                       type="number"
                       value={detail.price}
-                      onChange={(e) =>
-                        handleInputChange(index, "price", e.target.value)
-                      }
+                      onChange={(e) => {
+                        const newProductDetails = [...productDetails];
+                        newProductDetails[index].price = e.target.value;
+                        setProductDetails(newProductDetails);
+                      }}
                       size="small"
                       fullWidth
                     />
@@ -1623,30 +2083,50 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
                     </IconButton>
                   </TableCell>
                   <TableCell>
-  <Button onClick={() => handleOpenModalAnh(detail.id)}>Chọn ảnh</Button>
-  <div>
-    {detail.images && detail.images.length > 0 ? (
-      detail.images.map((image, imgIndex) => (
-        <img
-          key={imgIndex}
-          src={image} // Dùng đường dẫn ảnh trực tiếp
-          alt={`product-${imgIndex}`}
-          width={40}
-          height={40}
-          style={{ borderRadius: "5px" }}
-        />
-      ))
-    ) : (
-      <p>Chưa có ảnh</p>
-    )}
-  </div>
-</TableCell>
-
+                    <Button
+                      onClick={() =>
+                        console.log(`Chọn ảnh cho ${detail.productCode}`)
+                      }
+                    >
+                      Chọn ảnh
+                    </Button>
+                    <div>
+                      {detail.images && detail.images.length > 0 ? (
+                        detail.images.map((image, imgIndex) => (
+                          <img
+                            key={imgIndex}
+                            src={image}
+                            alt={`product-${imgIndex}`}
+                            width={40}
+                            height={40}
+                            style={{ borderRadius: "5px" }}
+                          />
+                        ))
+                      ) : (
+                        <p>Chưa có ảnh</p>
+                      )}
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
+        {/* Snackbar để hiển thị thông báo */}
+        <Snackbar
+          open={openSnackbarXoa}
+          autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
+          onClose={handleCloseSnackbarXoa}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
+        >
+          <Alert
+            onClose={handleCloseSnackbarXoa}
+            severity="success"
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessageXoa}
+          </Alert>
+        </Snackbar>
 
         <Modal open={openModalAnh} onClose={() => setOpenModalAnh(false)}>
           <div
@@ -1762,7 +2242,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
                 style={{ flex: 1, display: "flex", justifyContent: "center" }}
               >
                 <Button
-                  onClick={() => setOpenModalAnh(false)}
+                  onClick={handleCloseModalAnh}
                   variant="contained"
                   style={{ backgroundColor: "white", color: "black" }}
                 >
@@ -1784,10 +2264,9 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
                   onChange={handleFileUpload}
                 />
 
-<Button onClick={() => handleAddProductImages(selectedImages)}>
-  Lưu
-</Button>
-
+                <Button onClick={() => handleAddProductImages(selectedImages)}>
+                  Lưu
+                </Button>
               </div>
             </div>
           </div>
@@ -1798,5 +2277,79 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
     </div>
   );
 };
+// Style for Color Modal (Smaller and rectangular)
 
+// Style for Color Modal (Smaller and rectangular)
+const colorModalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  backgroundColor: "white",
+  padding: "20px",
+  boxShadow: 24,
+  width: "300px", // Smaller width
+  height: "200px", // Adjust height
+  maxWidth: "100%", // Ensure it fits on all screen sizes
+};
+
+// Style for Add Color Modal (Smaller)
+const addColorModalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  backgroundColor: "white",
+  padding: "20px",
+  boxShadow: 24,
+  width: "200px", // Smaller width
+};
+
+// Style for Color Picker Modal (Smaller)
+const colorPickerModalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  backgroundColor: "white",
+  padding: "20px",
+  boxShadow: 24,
+  width: "300px", // Smaller width for picker
+};
+// Style for modal
+const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  backgroundColor: "white",
+  padding: "20px",
+  boxShadow: 24,
+  width: "300px", // Smaller width
+  height: "200px", // Adjust height
+  maxWidth: "100%", // Ensure it fits on all screen sizes
+};
+// Style for Add Size Modal (smaller inputs and buttons)
+const addSizeModalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  backgroundColor: "white",
+  padding: "20px",
+  boxShadow: 24,
+  width: "300px", // Smaller width
+};
+
+// Style for input fields (smaller size)
+const inputStyle = {
+  marginBottom: "10px",
+  fontSize: "14px", // Smaller font size for inputs
+};
+
+// Style for buttons (smaller size)
+const buttonStyle = {
+  fontSize: "14px", // Smaller font size for buttons
+  marginTop: "10px", // Space between buttons
+};
 export default AddSanPham;

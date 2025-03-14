@@ -18,6 +18,7 @@ CREATE TABLE mau_sac (
     id INT PRIMARY KEY IDENTITY,            -- ID chính của bảng
     ma NVARCHAR(50) NOT NULL UNIQUE,        -- Mã màu sắc
     ten_mau_sac NVARCHAR(100) NOT NULL,         -- Tên màu
+	ma_mau VARCHAR(200) NOT NULL, -- mã màu
     mo_ta NVARCHAR(500),                    -- Mô tả màu
     trang_thai NVARCHAR(50)                 -- Trạng thái màu sắc
 );
@@ -405,13 +406,13 @@ VALUES
 ('TH005', 'Gap', N'Thương hiệu thời trang Mỹ', N'Hoạt động');
 
 -- Bảng mau_sac
-INSERT INTO mau_sac (ma, ten_mau_sac, mo_ta, trang_thai)
-VALUES 
-('MS001', N'Đen', N'Quần âu màu đen cổ điển', N'Hoạt động'),
-('MS002', N'Xám', N'Quần âu màu xám hiện đại', N'Hoạt động'),
-('MS003', N'Xanh Đậm', N'Quần âu màu xanh đậm thời thượng', N'Hoạt động'),
-('MS004', N'Be', N'Quần âu màu be nhã nhặn', N'Hoạt động'),
-('MS005', N'Nâu', N'Quần âu màu nâu sang trọng', N'Hoạt động');
+INSERT INTO mau_sac (ma, ten_mau_sac, ma_mau, mo_ta, trang_thai)
+VALUES
+('MS001', 'Đỏ', '#FF0000', 'Màu đỏ tươi', 'Hoạt động'),
+('MS002', 'Xanh dương', '#0000FF', 'Màu xanh dương mát mẻ', 'Hoạt động'),
+('MS003', 'Vàng', '#FFFF00', 'Màu vàng sáng', 'Hoạt động'),
+('MS004', 'Trắng', '#FFFFFF', 'Màu trắng tinh khiết', 'Hoạt động'),
+('MS005', 'Đen', '#000000', 'Màu đen huyền bí', 'Hoạt động');
 
 -- Bảng danh_muc
 INSERT INTO danh_muc (ma, ten_danh_muc, mo_ta, trang_thai)

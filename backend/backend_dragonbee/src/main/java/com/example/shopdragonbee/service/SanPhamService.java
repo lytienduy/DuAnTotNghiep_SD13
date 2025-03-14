@@ -106,7 +106,7 @@ public class SanPhamService {
         if (optionalSanPham.isPresent()) {
             SanPham sanPham = optionalSanPham.get();
             String oldStatus = sanPham.getTrangThai();
-            String newStatus = oldStatus.equals("Đang bán") ? "Ngừng bán" : "Đang bán"; // Chuyển đổi giữa "Đang bán" và "Ngừng bán"
+            String newStatus = oldStatus.equals("Hoạt động") ? "Ngừng bán" : "Hoạt động"; // Chuyển đổi giữa "Đang bán" và "Ngừng bán"
 
             sanPham.setTrangThai(newStatus); // Cập nhật trạng thái
             sanPhamRepository.save(sanPham); // Lưu vào database
@@ -129,7 +129,7 @@ public class SanPhamService {
 
         // Thiết lập ngày tạo và trạng thái mặc định
         sanPham.setNgayTao(LocalDateTime.now());
-        sanPham.setTrangThai("Đang bán");
+        sanPham.setTrangThai("Hoạt động");
 
         return sanPhamRepository.save(sanPham);
     }
