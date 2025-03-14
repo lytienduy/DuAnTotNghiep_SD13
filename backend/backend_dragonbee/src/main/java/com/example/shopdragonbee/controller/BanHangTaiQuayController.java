@@ -4,6 +4,7 @@ import com.example.shopdragonbee.dto.BanHangTaiQuayResponseDTO;
 import com.example.shopdragonbee.dto.HoaDonChiTietResponseDTO;
 import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.entity.HoaDon;
+import com.example.shopdragonbee.entity.SanPhamChiTiet;
 import com.example.shopdragonbee.repository.DanhMucRepositoryP;
 import com.example.shopdragonbee.repository.HoaDonChiTietRepository;
 import com.example.shopdragonbee.repository.SanPhamChiTietRepositoryP;
@@ -34,6 +35,12 @@ public class BanHangTaiQuayController {
 
     @Autowired
     private DanhMucRepositoryP danhMucRepositoryP;
+
+    //Lấy sản phẩm chi tiết quét QR
+    @GetMapping("/getSanPhamChiTietByMa/{ma}")
+    public BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay getSanPhamChiTietByMa(@PathVariable String ma) {
+        return banHangTaiQuayService.convertSanPhamHienThiTrongThemBanHangTaiQuayToDTO(sanPhamChiTietRepository.findByMa(ma));
+    }
 
     //Thêm hóa đơn tại quầy
     @GetMapping("/addHoaDonTaiQuay")
@@ -121,7 +128,7 @@ public class BanHangTaiQuayController {
     }
 
     @PostMapping("/xacNhanDatHang")
-    public Boolean xacNhanDatHang(@RequestBody Map<String, String> body) {
+    public HoaDonChiTietResponseDTO.HoaDonChiTietDTO xacNhanDatHang(@RequestBody Map<String, String> body) {
         String idHoaDon = body.get("idHoaDon");
         String idkhachHang = body.get("idKhachHang");
         String maPGG = body.get("pgg");

@@ -52,6 +52,9 @@ public class BanHangTaiQuayService {
     @Autowired
     private PhieuGiamGiaRepository phieuGiamGiaRepository;
 
+    @Autowired
+    private HoaDonService hoaDonService;
+
     //Tạo hóa đơn tại quầy
     public HoaDon taoHoaDon() {
         try {
@@ -268,7 +271,7 @@ public class BanHangTaiQuayService {
 
 
     //Chuyển đổi sang object có những thông tin bên Hóa Đơn Chi Tiết
-    private BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay convertSanPhamHienThiTrongThemBanHangTaiQuayToDTO(SanPhamChiTiet sanPhamChiTiet) {
+    public BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay convertSanPhamHienThiTrongThemBanHangTaiQuayToDTO(SanPhamChiTiet sanPhamChiTiet) {
         return new BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay(
                 sanPhamChiTiet.getId(),
                 sanPhamChiTiet.getMa(),
@@ -318,7 +321,6 @@ public class BanHangTaiQuayService {
                 sanPhamChiTietRepository.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
             }
             HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
-            hoaDon.setTrangThai("Chờ thanh toán");
             hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
             hoaDonRepository.save(hoaDon);
             return true;
@@ -359,7 +361,7 @@ public class BanHangTaiQuayService {
         }
     }
 
-    public Boolean xacNhanDatHang(Integer idHoaDon, Integer idKhachHang, String pgg, Boolean giaoHang, String tenNguoiNhan, String sdtNguoiNhan, String diaChiNhanHang, Float tongTienPhaiTra, Float phiShip) {
+    public HoaDonChiTietResponseDTO.HoaDonChiTietDTO xacNhanDatHang(Integer idHoaDon, Integer idKhachHang, String pgg, Boolean giaoHang, String tenNguoiNhan, String sdtNguoiNhan, String diaChiNhanHang, Float tongTienPhaiTra, Float phiShip) {
         try {
             HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
             if (idKhachHang != null) {
@@ -380,10 +382,10 @@ public class BanHangTaiQuayService {
                 hoaDon.setTrangThai("Đã thanh toán");
             }
             hoaDon.setTongTien(tongTienPhaiTra);
-            hoaDonRepository.save(hoaDon);
-            return true;
+
+            return hoaDonService.convertHoaDonChiTietToDTO(hoaDonRepository.save(hoaDon));
         } catch (Exception e) {
-            return false;
+            return null;
         }
     }
 }

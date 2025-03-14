@@ -51,6 +51,7 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet, 
 
     @Query("SELECT COALESCE(MAX(spct.id), 0) FROM SanPhamChiTiet spct")
     Integer getMaxId();
+
     SanPhamChiTiet findById(int id);
 
     // search

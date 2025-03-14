@@ -21,6 +21,8 @@ import soldOutImg from '../../../img/sold-out.png';
 import inactiveImg from '../../../img/inactive.png';
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import QrScanner from "react-qr-scanner";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import HoaDonPrint from "./HoaDonPrint";
 
 const BanTaiQuay = () => {
   //Khai báo Thành phố huyện xã
@@ -95,6 +97,7 @@ const BanTaiQuay = () => {
   const [imageIndexes, setImageIndexes] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại tại giỏ hàng
   const [imageIndexesThemSanPham, setImageIndexesThemSanPham] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại tại thêm sản phẩm vào giỏ hàng 
   const [openConfirmModal, setOpenConfirmModal] = useState(false);//Mở confirm có muốn xóa sản phẩm khỏi giỏ hàng không
+  const [openConfirmModalAddSanPham, setOpenConfirmModalAddSanPham] = useState(false);//Mở confirm có muốn add sản phẩm vào khỏi giỏ hàng không
   const [selectedProductId, setSelectedProductId] = useState(null);//Lưu ID sản phẩm được chọn trong giỏ hàng
   const [checkSelectedOrder, setCheckSelectedOrder] = useState(null);//Lưu ID sản phẩm được chọn trong giỏ hàng
   const [tempValues, setTempValues] = useState({}); // State tạm để lưu giá trị nhập vào của từng sản phẩm trong giỏ hàng
@@ -139,7 +142,9 @@ const BanTaiQuay = () => {
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
   const [openConfirmXacNhanDatHang, setOpenConfirmXacNhanDatHang] = useState(false);
   const [openQRQuetSanPham, setOpenQRQuetSanPham] = useState(false);
-  const [qrData, setQrData] = useState("");
+  const [scannedData, setScannedData] = useState(null);
+  const [qrScanner, setQrScanner] = useState(null);
+  const [nhuCauInHoaDon, setNhuCauInHoaDon] = useState(false);
 
 
 
@@ -706,23 +711,76 @@ const fetchNewestCustomer = async () => {
 
 
 
+
   ///
 
 
   //Quét QR
-  const handleScan = (data) => {
-    console.log("Đã scan");
+  // const handleScan = (data) => {
+  //   console.log("Đã scan");
+  //   console.log(data);
 
-    if (data) {
-      setQrData(data);
-      console.log("Đã quét ra data");
-      setOpenQRQuetSanPham(false); // Đóng camera sau khi quét thành công
+  //   if (data) {
+  //     setQrData(data);
+  //     setOpenQRQuetSanPham(false); // Đóng camera sau khi quét thành công
+  //   }
+  // };
+
+  // const handleError = (err) => {
+  //   console.error(err);
+  // };
+  const scannerRef = useRef(null);
+  const isScanningRef = useRef(false); // Trạng thái đang quét
+  const handleCloseQRScanner = () => {
+    setOpenQRQuetSanPham(false); // Đóng modal
+
+    if (scannerRef.current) {
+      try {
+        scannerRef.current.clear()
+          .then(() => {
+            console.log("Scanner đã dừng");
+            isScanningRef.current = false;
+            scannerRef.current = null; // Reset scanner để tránh lỗi
+          })
+          .catch(err => console.error("Lỗi dừng scanner:", err));
+      } catch (error) {
+        console.error("Scanner không thể dừng:", error);
+      }
     }
   };
+  useEffect(() => {
+    if (openQRQuetSanPham && !isScanningRef.current) {
+      setTimeout(() => {
+        const readerElement = document.getElementById("reader");
 
-  const handleError = (err) => {
-    console.error(err);
-  };
+        if (readerElement) {
+          const scanner = new Html5QrcodeScanner("reader", {
+            fps: 10,
+            qrbox: 250,
+            disableFlip: false,
+          });
+
+          scanner.render(
+            (decodedText) => {
+              setScannedData(decodedText.trim());
+              console.log("Đã quét được:", decodedText);
+              handleCloseQRScanner(); // Đóng modal & dừng quét
+            },
+            (errorMessage) => {
+              console.error("Lỗi quét QR:", errorMessage);
+            }
+          );
+
+          scannerRef.current = scanner;
+          isScanningRef.current = true;
+        }
+      }, 200);
+    } else if (!openQRQuetSanPham && scannerRef.current) {
+      handleCloseQRScanner();
+    }
+  }, [openQRQuetSanPham]);
+
+
   //Thông báo Toast
   const showSuccessToast = (message) => {
     toast.success(message, {
@@ -803,6 +861,7 @@ const fetchNewestCustomer = async () => {
     setShowLeftPanel(false);
     setKeyword("");
     setDiscountAmount(0);
+    setNhuCauInHoaDon(false);
   }, [checkSelectedOrder]);
 
   //Hàm xử lý khi đóng mở modal
@@ -861,7 +920,7 @@ const fetchNewestCustomer = async () => {
 
   //Hàm cập nhật id hóa đơn được chọn
   const handleSelectOrder = (order) => {
-    if (order?.id != selectedOrder?.id) {
+    if (order?.id !== selectedOrder?.id) {
       setCheckSelectedOrder(order);
     }
     setSelectedOrder(order); // Cập nhật id của hóa đơn đã chọn
@@ -1009,7 +1068,7 @@ const fetchNewestCustomer = async () => {
   //Xử lý khi MỞ modal confirm thêm sản phẩm vào giỏ hàng
   const handleOpenConfirmModal = (product) => {
     setSelectedProduct(product);
-    setOpenConfirmModal(true);
+    setOpenConfirmModalAddSanPham(true);
   };
 
   //Xử lý khi confirm thêm vào giỏ hàng
@@ -1021,9 +1080,12 @@ const fetchNewestCustomer = async () => {
       if (response.data) {
         setSelectedProduct(null);
         setQuantity(1);
-        setOpenConfirmModal(false);
-        getSanPhamThem();
+        setOpenConfirmModalAddSanPham(false);
+        if (openSPModal == true) {
+          getSanPhamThem();
+        }
         showSuccessToast("Thêm sản phẩm thành công");
+        fetchOrders();
       } else {
         showErrorToast("Thêm sản phẩm thất bại");
       }
@@ -1032,6 +1094,31 @@ const fetchNewestCustomer = async () => {
       console.error(error.response || error.message);
     }
   };
+
+  //Hàm xử lý khi sacanneddata được quét
+  const handleScannedData = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/ban-hang-tai-quay/getSanPhamChiTietByMa/${scannedData}`
+      );
+      if (response.data) {
+        setSelectedProduct(response.data);
+        setOpenConfirmModalAddSanPham(true);
+      } else {
+        showErrorToast("Chúng tôi không có sản phẩm nào nhưu mã qr này");
+      }
+    } catch (error) {
+      showErrorToast("Chúng tôi không có sản phẩm nào nhưu mã qr này catch");
+      console.error(error.response || error.message);
+    }
+  }
+
+
+  useEffect(() => {
+    if (scannedData != null && scannedData != "") {
+      handleScannedData();
+    }
+  }, [scannedData]);
 
   //Cập nhật giá trị khi thay đổi số lượng nhập từ bàn phím
   const handleInputChangeThemSanPhamVaoGioHang = (value) => {
@@ -1042,7 +1129,7 @@ const fetchNewestCustomer = async () => {
       newValue = "";
     }
 
-    if (newValue != "") {
+    if (newValue !== "") {
       if (Number(newValue) > selectedProduct.soLuong) {
         newValue = Number(newValue).toString().slice(0, -1) || selectedProduct.soLuong;
       }
@@ -1179,6 +1266,37 @@ const fetchNewestCustomer = async () => {
     setOpenConfirmXacNhanDatHang(false);
   };
 
+  const handlePrint = async () => {
+    // Lấy thông tin hóa đơn từ API hoặc dữ liệu có sẵn và gán vào state
+    try {
+      // const response = await axios.get(`http://localhost:8080/hoa-don/${id}`);
+      // if (response.data) {
+      //   setHoaDon(response.data);
+      setTimeout(() => {
+        const printContent = document.getElementById("hoaDonPrint");
+        if (!printContent) {
+          showErrorToast("Không tìm thấy nội dung hóa đơn để in!");
+          return;
+        }
+
+        const printWindow = window.open("", "_blank");
+        printWindow.document.write(printContent.innerHTML);
+        printWindow.document.close();
+
+        // Thêm sự kiện khi in xong
+        printWindow.onafterprint = () => {
+          showSuccessToast("In hóa đơn thành công!");
+        };
+
+        printWindow.print();
+      }, 500);
+      // }
+    } catch (error) {
+      showErrorToast("Lỗi khi tải hóa đơn, vui lòng thử lại!");
+      console.error("Lỗi khi lấy dữ liệu hóa đơn:", error);
+    }
+  };
+
   const xacNhanDatHang = async () => {
     try {
       // if (!errorChuyen && !errorDua) {
@@ -1188,17 +1306,22 @@ const fetchNewestCustomer = async () => {
       const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/xacNhanDatHang`, {
         idHoaDon: selectedOrder.id, idKhachHang: selectedCustomerId, pgg: selectedVoucherCode, giaoHang: showLeftPanel, tenNguoiNhan: recipientName, sdtNguoiNhan: recipientPhone, diaChiNhanHang: addressParts, tongTienPhaiTra: selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount), phiShip: discount
       })
-      if (response.data) {
-        setShowLeftPanel(false);
+      if (response.data !== null) {
         showSuccessToast("Đặt hàng thành công");
+        if (nhuCauInHoaDon == true) {
+          setSelectedOrder(response.data);
+          handlePrint();
+        }
+        setShowLeftPanel(false);
         fetchOrders();
+
       } else {
-        showErrorToast("Lỗi thanh toán");
+        showErrorToast("Lỗi đặt hàng");
       }
       // }
     } catch (err) {
       console.log(err)
-      showErrorToast("Lỗi thanh toán2");
+      showErrorToast("Lỗi đặt hàng catch");
     }
   }
 
@@ -1484,7 +1607,7 @@ const fetchNewestCustomer = async () => {
                       >
                         Quét QR Sản Phẩm
                       </Button>
-                      <Dialog open={openQRQuetSanPham} onClose={() => setOpenQRQuetSanPham(false)}>
+                      {/* <Dialog open={openQRQuetSanPham} onClose={() => setOpenQRQuetSanPham(false)}>
                         <DialogContent>
                           <QrScanner
                             delay={300}
@@ -1493,6 +1616,18 @@ const fetchNewestCustomer = async () => {
                             style={{ width: "100%" }}
                           />
                         </DialogContent>
+                      </Dialog> */}
+                      {/* Dialog chứa camera */}
+                      <Dialog open={openQRQuetSanPham} onClose={handleCloseQRScanner} fullWidth maxWidth="sm">
+                        <DialogTitle>Quét mã QR</DialogTitle>
+                        <DialogContent>
+                          <div id="reader" style={{ width: "100%" }}></div>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={handleCloseQRScanner} color="secondary">
+                            Đóng
+                          </Button>
+                        </DialogActions>
                       </Dialog>
 
                       <Button
@@ -2017,7 +2152,7 @@ const fetchNewestCustomer = async () => {
                       <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
                         Tiền thiếu: <span style={{ color: 'red' }}>
                           {tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)) < 0
-                            ? (tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0))).toLocaleString()
+                            ? Math.abs(tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0))).toLocaleString()
                             : "0"}
                           <span style={{ color: 'red' }}> VNĐ</span>
                         </span>
@@ -2031,9 +2166,20 @@ const fetchNewestCustomer = async () => {
                         </span>
                       </Typography>
 
+                      <Box display="flex" justifyContent="space-between" alignItems="center" marginTop={2}>
+                        <Typography variant="h6" ></Typography>
+                        {/* Nút Switch điều khiển việc hiển thị/ẩn bên trái */}
+                        <FormControlLabel
+                          sx={{ marginRight: 0 }} // Đặt margin-right về 0
+                          control={<Switch checked={nhuCauInHoaDon} onChange={(event) => { setNhuCauInHoaDon(event.target.checked) }} />}
+                          label="In hóa đơn"
+                        />
+                      </Box>
+
+
                       <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }}
                         disabled={
-                          selectedOrder.trangThai === "Chờ thêm sản phẩm" ||
+                          selectedOrder.listDanhSachSanPham?.length === 0 ||
                           (!showLeftPanel && tongTienKhachDaThanhToan < (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)))
                         }
                         onClick={() => { setOpenConfirmXacNhanDatHang(true) }}
@@ -2735,122 +2881,123 @@ const fetchNewestCustomer = async () => {
                 </Table>
               </TableContainer>
 
-              {/* Modal xác nhận khi bấm "Chọn" */}
-              {selectedProduct && (
-                <Modal open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
-                  <Box
-                    sx={{
-                      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                      width: 400, bgcolor: 'white', p: 3, boxShadow: 24, borderRadius: 2
-                    }}
-                  >
-                    {/* Nút đóng Modal */}
-                    <IconButton
-                      sx={{ position: 'absolute', top: 8, right: 8 }}
-                      onClick={() => { setQuantity(1); fetchOrders(); setOpenConfirmModal(false) }}
-                    >
-                      <CloseIcon />
-                    </IconButton>
 
-                    {/* Tiêu đề sản phẩm (căn lề trái) */}
-                    <Typography variant="h6" fontWeight="bold" sx={{ textAlign: "left" }}>
-                      {selectedProduct?.tenMauSize} - {selectedProduct?.ma}
-                    </Typography>
-
-                    {/* Khu vực chứa ẢNH - GIÁ - Ô NHẬP SỐ LƯỢNG */}
-                    <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-                      {/* Ảnh sản phẩm (bên trái) */}
-                      <Box sx={{ flex: 1 }}>
-                        <img
-                          src={selectedProduct.hinhAnh[0]}
-                          alt={`Ảnh load`}
-                          style={{
-                            width: "60px",
-                            height: "60px",
-                            objectFit: "cover",
-                            borderRadius: "10px",
-                            transition: "transform 0.3s ease-in-out",
-                            boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
-                          }}
-                          onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
-                          onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
-                        />
-
-                      </Box>
-
-                      {/* Giá sản phẩm & Ô nhập số lượng (bên phải) */}
-                      <Box sx={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                        {/* Giá sản phẩm */}
-                        <Typography sx={{ fontSize: "16px", fontWeight: "bold", mb: 1 }}>
-                          {selectedProduct?.gia.toLocaleString()} VNĐ
-                        </Typography>
-
-                        {/* Chọn số lượng */}
-                        <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => setQuantity(prev => prev - 1)}
-                            disabled={quantity <= 1}
-                            sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
-                          >
-                            <RemoveIcon fontSize="small" />
-                          </IconButton>
-                          <TextField
-                            value={quantity}
-                            onChange={(e) => handleInputChangeThemSanPhamVaoGioHang(e.target.value)}
-                            // type="number"
-                            inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
-                            size="small"
-                            error={!!errorSoLuongThemVaoGioHang}
-                            helperText={errorSoLuongThemVaoGioHang}
-                            sx={{
-                              width: "60px",
-                              "& .MuiInputBase-input": {
-                                textAlign: "center",
-                                padding: "5px 0",
-                                backgroundColor: "transparent"
-                              },
-                              "& .MuiOutlinedInput-root": {
-                                border: "none",
-                                "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                                "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
-                                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
-                              },
-                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
-                                WebkitAppearance: "none",
-                                margin: 0
-                              }
-                            }}
-                          />
-                          <IconButton
-                            size="small"
-                            onClick={() => setQuantity(prev => Number(prev) + 1)}
-                            disabled={quantity >= selectedProduct.soLuong}
-                            sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
-                          >
-                            <AddIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      </Box>
-                    </Box>
-
-                    {/* Nút xác nhận */}
-                    <Button
-                      variant="contained"
-                      sx={{ width: '100%', mt: 2, color: '#fff', backgroundColor: '#1976D2' }}
-                      onClick={handleCloseConfirmModal}
-                      disabled={errorSoLuongThemVaoGioHang}
-                    >
-                      XÁC NHẬN
-                    </Button>
-                  </Box>
-                </Modal>
-
-              )}
             </>
           </Box>
         </Box>
       </Modal>
+      {/* Modal xác nhận khi bấm "Chọn" */}
+      {/* {selectedProduct && ( */}
+      <Modal open={openConfirmModalAddSanPham} onClose={() => setOpenConfirmModalAddSanPham(false)}>
+        <Box
+          sx={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: 400, bgcolor: 'white', p: 3, boxShadow: 24, borderRadius: 2
+          }}
+        >
+          {/* Nút đóng Modal */}
+          <IconButton
+            sx={{ position: 'absolute', top: 8, right: 8 }}
+            onClick={() => { setQuantity(1); fetchOrders(); setOpenConfirmModalAddSanPham(false) }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          {/* Tiêu đề sản phẩm (căn lề trái) */}
+          <Typography variant="h6" fontWeight="bold" sx={{ textAlign: "left" }}>
+            {selectedProduct?.tenMauSize} - {selectedProduct?.ma}
+          </Typography>
+
+          {/* Khu vực chứa ẢNH - GIÁ - Ô NHẬP SỐ LƯỢNG */}
+          <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+            {/* Ảnh sản phẩm (bên trái) */}
+            <Box sx={{ flex: 1 }}>
+              <img
+                src={selectedProduct?.hinhAnh[0]}
+                alt={`Ảnh load`}
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  objectFit: "cover",
+                  borderRadius: "10px",
+                  transition: "transform 0.3s ease-in-out",
+                  boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
+                }}
+                onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
+                onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
+              />
+
+            </Box>
+
+            {/* Giá sản phẩm & Ô nhập số lượng (bên phải) */}
+            <Box sx={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+              {/* Giá sản phẩm */}
+              <Typography sx={{ fontSize: "16px", fontWeight: "bold", mb: 1 }}>
+                {selectedProduct?.gia.toLocaleString()} VNĐ
+              </Typography>
+
+              {/* Chọn số lượng */}
+              <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
+                <IconButton
+                  size="small"
+                  onClick={() => setQuantity(prev => prev - 1)}
+                  disabled={quantity <= 1}
+                  sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                >
+                  <RemoveIcon fontSize="small" />
+                </IconButton>
+                <TextField
+                  value={quantity}
+                  onChange={(e) => handleInputChangeThemSanPhamVaoGioHang(e.target.value)}
+                  // type="number"
+                  inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
+                  size="small"
+                  error={!!errorSoLuongThemVaoGioHang}
+                  helperText={errorSoLuongThemVaoGioHang}
+                  sx={{
+                    width: "60px",
+                    "& .MuiInputBase-input": {
+                      textAlign: "center",
+                      padding: "5px 0",
+                      backgroundColor: "transparent"
+                    },
+                    "& .MuiOutlinedInput-root": {
+                      border: "none",
+                      "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                      "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
+                    },
+                    "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                      WebkitAppearance: "none",
+                      margin: 0
+                    }
+                  }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={() => setQuantity(prev => Number(prev) + 1)}
+                  disabled={quantity >= selectedProduct?.soLuong}
+                  sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Nút xác nhận */}
+          <Button
+            variant="contained"
+            sx={{ width: '100%', mt: 2, color: '#fff', backgroundColor: '#1976D2' }}
+            onClick={handleCloseConfirmModal}
+            disabled={errorSoLuongThemVaoGioHang}
+          >
+            XÁC NHẬN
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* )} */}
       {/* Gọi Modal */}
       <Modal open={openDC} onClose={handleCloseDC}>
         <Box
@@ -3008,7 +3155,13 @@ const fetchNewestCustomer = async () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* In hóa đơn */}
+      <Box id="hoaDonPrint" style={{ display: "none" }}> {/* Thay display: none bằng block */}
+        <HoaDonPrint hoaDon={selectedOrder} />
+      </Box>
     </Box >
+
   );
 };
 

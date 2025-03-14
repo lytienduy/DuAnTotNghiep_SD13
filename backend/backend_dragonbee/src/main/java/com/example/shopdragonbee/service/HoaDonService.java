@@ -160,7 +160,7 @@ public class HoaDonService {
     }
 
     //Chuyển đổi sang object có những thông tin bên Hóa Đơn Chi Tiết
-    private HoaDonChiTietResponseDTO.HoaDonChiTietDTO convertHoaDonChiTietToDTO(HoaDon hoaDon) {
+    public HoaDonChiTietResponseDTO.HoaDonChiTietDTO convertHoaDonChiTietToDTO(HoaDon hoaDon) {
 
         List<HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO> listThanhToan = hoaDon.getListThanhToanHoaDon().stream()
                 .sorted(Comparator.comparing(
@@ -249,7 +249,7 @@ public class HoaDonService {
 
     //Lấy listHoaDonTaiQuay chuyển đổi object sang DTO
     public List<HoaDonChiTietResponseDTO.HoaDonChiTietDTO> getHoaDonChiTietTaiQuay() {
-        List<String> trangThais = Arrays.asList("Chờ thêm sản phẩm", "Chờ thanh toán");
+        List<String> trangThais = Arrays.asList("Chờ thêm sản phẩm");//Nếu là chờ thêm sản phẩm mới show ra
         List<HoaDon> hoaDons = hoaDonRepository.getHoaDonByTrangThaiInAndLoaiDonOrderByNgayTaoAsc(trangThais, "Tại quầy");
         return hoaDons.stream().map(this::convertHoaDonChiTietToDTO).collect(Collectors.toList());
     }
