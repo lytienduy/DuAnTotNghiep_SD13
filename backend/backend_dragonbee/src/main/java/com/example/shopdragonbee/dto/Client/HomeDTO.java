@@ -25,4 +25,19 @@ public class HomeDTO {
         private List<String> hinhAnh;
         private Double gia;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SanPhamHienThiTrangSanPhamClient {
+        private Integer id;
+        private String ma;
+        private String ten;
+        private List<String> hinhAnh;
+        private List<SanPhamChiTiet> sanPhamChiTietList;
+        private Double gia;
+
+    }
 }

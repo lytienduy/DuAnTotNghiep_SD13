@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import {
   Box, Typography, Slider, Grid, Card, CardMedia, CardContent,
   Button, Accordion, AccordionSummary, AccordionDetails, InputAdornment, TextField
@@ -6,6 +7,9 @@ import {
 import logo from '../../../img/bannerQuanAu.png';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 
 const products = [
   { id: 1, name: 'Balenciaga Balen Grey 2023', brand: 'Balenciaga', description: 'Giày lười', price: '137,500 đ', oldPrice: '250,000 đ', discount: '45%', image: 'https://360.com.vn/wp-content/uploads/2023/12/AKGTK501-QGGTK502-2.jpg', sizes: [40, 41, 42] },
@@ -18,31 +22,106 @@ const products = [
 ];
 
 const SanPham = () => {
-  const [filters, setFilters] = useState({
-    category: "",
-    brand: "",
-    material: "",
-    sole: "",
-    size: "",
-    color: "",
-    price: [0, 300000],
-  });
+  // const [products, setProducts] = useState([]);//Các sản phẩm của cửa hàng để bán
+  const [danhMuc, setDanhMuc] = useState(null); // Giá trị của bộ lọc danh mục
+  const [mauSac, setMauSac] = useState(null); // Giá trị của bộ lọc màu sắc
+  const [chatLieu, setChatLieu] = useState(null); // Giá trị của bộ lọc chất liệu
+  const [kichCo, setKichCo] = useState(null); // Giá trị của bộ lọc sizw
+  const [kieuDang, setKieuDang] = useState(null); // Giá trị của bộ lọc kiểu dáng
+  const [thuongHieu, setThuongHieu] = useState(null); // Giá trị của bộ lọc thương hiệu
+  const [phongCach, setPhongCach] = useState(null); // Giá trị của bộ lọc phong cách
+  const [timKiem, setTimKiem] = useState(""); // Giá trị của bộ lọc tìm kiếm sản phẩm
+  const [listDanhMuc, setListDanhMuc] = useState([]);
+  const [listChatLieu, setListChatLieu] = useState([]);
+  const [listKichCo, setListKichCo] = useState([]);
+  const [listKieuDang, setListKieuDang] = useState([]);
+  const [listMauSac, setListMauSac] = useState([]);
+  const [listPhongCach, setListPhongCach] = useState([]);
+  const [listThuongHieu, setListThuongHieu] = useState([]);
+  const [value, setValue] = useState([100000, 3200000]);//giá trị slider khoảng giá
 
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
 
-  const resetFilters = () => {
-    setFilters({
-      category: "",
-      brand: "",
-      material: "",
-      sole: "",
-      size: "",
-      color: "",
-      price: [0, 300000],
+
+  //Thông báo Toast
+  const showSuccessToast = (message) => {
+    toast.success(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: {
+        backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+        color: "white", // Chữ trắng nổi bật
+        fontSize: "14px", // Nhỏ hơn một chút
+        fontWeight: "500",
+        borderRadius: "8px",
+      }
     });
   };
+  const showErrorToast = (message) => {
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: {
+        backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+        color: "white", // Chữ trắng nổi bật
+        fontSize: "14px", // Nhỏ hơn một chút
+        fontWeight: "500",
+        borderRadius: "8px",
+      }
+    });
+  };
+
+  //Hàm lọcThemSanPhamHoaDonTaiQuay
+  const getSanPhamThem = async () => {
+    let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layListCacSanPhamHienThiThem";
+    // Xây dựng query string
+    const params = new URLSearchParams();
+    params.append("timKiem", timKiem);//Truyền vào loại đơn
+    params.append("fromGia", value[0]);//Truyền vào loại đơn
+    params.append("toGia", value[1]);//Truyền vào loại đơn
+    params.append("danhMuc", danhMuc);//Truyền vào loại đơn
+    params.append("mauSac", mauSac);//Truyền vào loại đơn
+    params.append("chatLieu", chatLieu);//Truyền vào loại đơn
+    params.append("kichCo", kichCo);//Truyền vào loại đơn
+    params.append("kieuDang", kieuDang);//Truyền vào loại đơn
+    params.append("thuongHieu", thuongHieu);//Truyền vào loại đơn
+    params.append("phongCach", phongCach);//Truyền vào loại đơn
+    try {
+      const response = await axios.get(`${apiUrl}?${params.toString()}`);//Gọi api bằng axiosGet
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi lấy dữ liệu sản phẩm để thêm vào giỏ hàng")
+    }
+  };
+  //get set toàn bộ bộ lọc
+  const getAndSetToanBoBoLoc = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/ban-hang-tai-quay/layListDanhMuc`);
+      var doiTuongCoCacThuocTinhListCacBoLoc = response.data;
+      setListDanhMuc(doiTuongCoCacThuocTinhListCacBoLoc.listDanhMuc);
+      setListMauSac(doiTuongCoCacThuocTinhListCacBoLoc.listMauSac);
+      setListChatLieu(doiTuongCoCacThuocTinhListCacBoLoc.listChatLieu);
+      setListKichCo(doiTuongCoCacThuocTinhListCacBoLoc.listSize);
+      setListKieuDang(doiTuongCoCacThuocTinhListCacBoLoc.listKieuDang);
+      setListThuongHieu(doiTuongCoCacThuocTinhListCacBoLoc.listThuongHieu);
+      setListPhongCach(doiTuongCoCacThuocTinhListCacBoLoc.listPhongCach);
+    } catch (err) {
+      console.log(err)
+      showErrorToast("Lỗi lấy dữ liệu bộ lọc");
+    }
+  };
+
+
 
   return (
     <Box sx={{ margin: -3 }}>
@@ -83,7 +162,7 @@ const SanPham = () => {
             position: 'relative',
             zIndex: 1,
             fontSize: { xs: '1.5rem', md: '2.5rem' }, // Responsive font size
-          
+
           }}
         >
           Quần Âu DragonBee
@@ -93,49 +172,225 @@ const SanPham = () => {
       {/* Danh sách sản phẩm */}
       <Box sx={{ display: 'flex', padding: 3 }}>
         {/* Sidebar bộ lọc */}
-        <Box sx={{ width: 400, padding: 2, bgcolor: "white", borderRadius: 2, boxShadow: 2, height:510 }}>
+        <Box sx={{ width: 400, padding: 2, bgcolor: "white", borderRadius: 2, boxShadow: 2, height: 510 }}>
           <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-            DANH MỤC SẢN PHẨM
+            Bộ lọc sản phẩm
           </Typography>
 
-          {[
-            { key: "category", label: "Loại giày" },
-            { key: "brand", label: "Thương hiệu" },
-            { key: "material", label: "Chất liệu" },
-            { key: "sole", label: "Đế giày" },
-            { key: "size", label: "Kích cỡ" },
-            { key: "color", label: "Màu sắc" },
-          ].map((item, index) => (
-            <Accordion key={index} sx={{ boxShadow: "none", mb: 1 }}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          {/* Danh mục sản phẩm */}
+          <Accordion
+            expanded={Boolean(danhMuc)}
+            sx={{ boxShadow: "none", mb: 1 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Danh mục</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {listDanhMuc?.map((item) => (
                 <Typography
+                  key={item.id}
+                  onClick={() => setDanhMuc(item.id)}
                   sx={{
-                    fontWeight: filters[item.key] ? "bold" : "normal",
-                    color: filters[item.key] ? "#1976D2" : "black",
+                    cursor: 'pointer',
+                    mb: 1,
+                    '&:hover': { fontWeight: 600, color: 'blue' },
+                    backgroundColor: danhMuc === item.id ? 'rgba(0, 123, 255, 0.2)' : 'transparent',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
                   }}
                 >
-                  {item.label}
+                  {item.tenDanhMuc}
                 </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                {/* Nội dung bộ lọc, bạn có thể thêm tùy chọn dropdown, checkbox... */}
-                <Typography variant="body2">Tùy chọn...</Typography>
-              </AccordionDetails>
-            </Accordion>
-          ))}
+              ))}
+            </AccordionDetails>
+          </Accordion>
 
-          <Typography variant="body1" sx={{ mt: 2, fontWeight: "bold" }}>
-            Giá tiền (Giá gốc)
+          {/* Màu sắc sản phẩm */}
+          <Accordion
+            expanded={Boolean(mauSac)}
+            sx={{ boxShadow: "none", mb: 1 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Màu sắc</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {listMauSac?.map((item) => (
+                <Typography
+                  key={item.id}
+                  onClick={() => setMauSac(item.id)}
+                  sx={{
+                    cursor: 'pointer',
+                    mb: 1,
+                    '&:hover': { fontWeight: 600, color: 'blue' },
+                    backgroundColor: mauSac === item.id ? 'rgba(0, 123, 255, 0.2)' : 'transparent',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {item.tenMauSac}
+                </Typography>
+              ))}
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Chất liệu sản phẩm */}
+          <Accordion
+            expanded={Boolean(chatLieu)}
+            sx={{ boxShadow: "none", mb: 1 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Chất liệu</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {listChatLieu?.map((item) => (
+                <Typography
+                  key={item.id}
+                  onClick={() => setChatLieu(item.id)}
+                  sx={{
+                    cursor: 'pointer',
+                    mb: 1,
+                    '&:hover': { fontWeight: 600, color: 'blue' },
+                    backgroundColor: chatLieu === item.id ? 'rgba(0, 123, 255, 0.2)' : 'transparent',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {item.tenChatLieu}
+                </Typography>
+              ))}
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Kích cỡ sản phẩm */}
+          <Accordion
+            expanded={Boolean(kichCo)}
+            sx={{ boxShadow: "none", mb: 1 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Size</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {listKichCo?.map((item) => (
+                <Typography
+                  key={item.id}
+                  onClick={() => setKichCo(item.id)}
+                  sx={{
+                    cursor: 'pointer',
+                    mb: 1,
+                    '&:hover': { fontWeight: 600, color: 'blue' },
+                    backgroundColor: kichCo === item.id ? 'rgba(0, 123, 255, 0.2)' : 'transparent',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {item.tenSize}
+                </Typography>
+              ))}
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Kiểu dáng sản phẩm */}
+          <Accordion
+            expanded={Boolean(kieuDang)}
+            sx={{ boxShadow: "none", mb: 1 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Kiểu dáng</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {listKieuDang?.map((item) => (
+                <Typography
+                  key={item.id}
+                  onClick={() => setKieuDang(item.id)}
+                  sx={{
+                    cursor: 'pointer',
+                    mb: 1,
+                    '&:hover': { fontWeight: 600, color: 'blue' },
+                    backgroundColor: kieuDang === item.id ? 'rgba(0, 123, 255, 0.2)' : 'transparent',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {item.tenKieuDang}
+                </Typography>
+              ))}
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Thương hiệu sản phẩm */}
+          <Accordion
+            expanded={Boolean(thuongHieu)}
+            sx={{ boxShadow: "none", mb: 1 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Thương hiệu</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {listThuongHieu?.map((item) => (
+                <Typography
+                  key={item.id}
+                  onClick={() => setThuongHieu(item.id)}
+                  sx={{
+                    cursor: 'pointer',
+                    mb: 1,
+                    '&:hover': { fontWeight: 600, color: 'blue' },
+                    backgroundColor: thuongHieu === item.id ? 'rgba(0, 123, 255, 0.2)' : 'transparent',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {item.tenThuongHieu}
+                </Typography>
+              ))}
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Phong cách sản phẩm */}
+          <Accordion
+            expanded={Boolean(phongCach)}
+            sx={{ boxShadow: "none", mb: 1 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Phong cách</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {listPhongCach?.map((item) => (
+                <Typography
+                  key={item.id}
+                  onClick={() => setPhongCach(item.id)}
+                  sx={{
+                    cursor: 'pointer',
+                    mb: 1,
+                    '&:hover': { fontWeight: 600, color: 'blue' },
+                    backgroundColor: phongCach === item.id ? 'rgba(0, 123, 255, 0.2)' : 'transparent',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {item.tenPhongCach}
+                </Typography>
+              ))}
+            </AccordionDetails>
+          </Accordion>
+
+
+          <Typography textAlign="center" fontWeight={500} sx={{ mb: 2 }}>
+            {`${value[0].toLocaleString()} đ - ${value[1].toLocaleString()} đ`}
           </Typography>
           <Slider
-            value={filters.price}
-            onChange={(e, newValue) => handleFilterChange("price", newValue)}
-            valueLabelDisplay="auto"
-            min={0}
-            max={300000}
-            step={5000}
-            sx={{ color: filters.price[0] !== 0 || filters.price[1] !== 300000 ? "#1976D2" : "#1976D2" }}
+            value={value}
+            onChange={(e, newValue) => setValue(newValue)}
+            min={100000}
+            max={3200000}
+            valueLabelDisplay="off" // Tắt hiển thị mặc định trên hai đầu
+            sx={{
+              marginBottom: 2,
+              '& .MuiSlider-valueLabel': {
+                display: 'none', // Ẩn giá trị mặc định của Slider
+              }
+            }}
           />
+
 
           <Button
             variant="contained"
@@ -156,18 +411,13 @@ const SanPham = () => {
         <Box marginLeft={3}>
           <Box width={600}>
             <TextField
-              fullWidth
+              value={timKiem}
+              placeholder="Tìm kiếm sản phẩm theo tên, mã sản phẩm"
               variant="outlined"
-              placeholder="Tìm sản phẩm"
+              fullWidth
               size='small'
-              sx={{
-                bgcolor: "white",
-                marginBottom: 3,
-                borderRadius: 2,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                },
-              }}
+              sx={{ marginBottom: 2 }}
+              onChange={(e) => setTimKiem(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -236,7 +486,9 @@ const SanPham = () => {
           </Box>
         </Box>
       </Box>
-    </Box>
+      {/* Quan trọng để hiển thị toast */}
+      <ToastContainer />
+    </Box >
   );
 };
 

@@ -50,4 +50,21 @@ public class HomeController {
     public List<HomeDTO.SanPhamHienThiTrangHomeClient> getListTopSanPhamBanChay() {
         return homeService.getListTopSanPhamBanChay();
     }
+
+    //Nhập số lượng sản phẩm từ bán phím
+    @GetMapping("/layListCacSanPhamHienThi")
+    public List<BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay> layListCacSanPhamHienThi(
+            @RequestParam(required = false) String timKiem,
+            @RequestParam(required = false) Integer fromGia,
+            @RequestParam(required = false) Integer toGia,
+            @RequestParam(required = false) Integer danhMuc,
+            @RequestParam(required = false) Integer mauSac,
+            @RequestParam(required = false) Integer chatLieu,
+            @RequestParam(required = false) Integer kichCo,
+            @RequestParam(required = false) Integer kieuDang,
+            @RequestParam(required = false) Integer thuongHieu,
+            @RequestParam(required = false) Integer phongCach
+    ) {
+        return homeService.getListCacSanPhamHienThiTrongThemBanHangTaiQuay(timKiem, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach);
+    }
 }

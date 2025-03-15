@@ -84,7 +84,7 @@ public class BanHangTaiQuayService {
                 hoaDonChiTiet.setSoLuong(hoaDonChiTiet.getSoLuong() + 1);
                 hoaDonChiTietRepository.save(hoaDonChiTiet);
                 HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
-                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId())+ (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
                 hoaDonRepository.save(hoaDon);
                 return true;
             } else {
@@ -108,7 +108,7 @@ public class BanHangTaiQuayService {
                 hoaDonChiTiet.setSoLuong(soLuong);
                 hoaDonChiTietRepository.save(hoaDonChiTiet);
                 HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
-                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId())+ (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
                 hoaDonRepository.save(hoaDon);
             } else {
                 // Phải cập nhật hóa đơn chi tiết trước sản phẩm chi tiết
@@ -117,7 +117,7 @@ public class BanHangTaiQuayService {
                 sanPhamChiTiet.setSoLuong(0);
                 sanPhamChiTietRepository.save(sanPhamChiTiet);
                 HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
-                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId())+ (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
                 hoaDonRepository.save(hoaDon);
                 return false;
             }
@@ -241,28 +241,31 @@ public class BanHangTaiQuayService {
                     root.get("gia"), fromGia, toGia
             );
             predicates.add(datePredicate);
-            if (danhMuc != 0) {
+            // Điều kiện lọc theo danh mục, màu sắc, chất liệu, kích cỡ, kiểu dáng, thương hiệu, phong cách
+            if (danhMuc != null && danhMuc != 0) {
                 predicates.add(criteriaBuilder.equal(root.get("danhMuc").get("id"), danhMuc));
             }
-            if (mauSac != 0) {
+            if (mauSac != null && mauSac != 0) {
                 predicates.add(criteriaBuilder.equal(root.get("mauSac").get("id"), mauSac));
             }
-            if (chatLieu != 0) {
+            if (chatLieu != null && chatLieu != 0) {
                 predicates.add(criteriaBuilder.equal(root.get("chatLieu").get("id"), chatLieu));
             }
-            if (kichCo != 0) {
+            if (kichCo != null && kichCo != 0) {
                 predicates.add(criteriaBuilder.equal(root.get("size").get("id"), kichCo));
             }
-            if (kieuDang != 0) {
+            if (kieuDang != null && kieuDang != 0) {
                 predicates.add(criteriaBuilder.equal(root.get("kieuDang").get("id"), kieuDang));
             }
-            if (thuongHieu != 0) {
+            if (thuongHieu != null && thuongHieu != 0) {
                 predicates.add(criteriaBuilder.equal(root.get("thuongHieu").get("id"), thuongHieu));
             }
-            if (phongCach != 0) {
+            if (phongCach != null && phongCach != 0) {
                 predicates.add(criteriaBuilder.equal(root.get("phongCach").get("id"), phongCach));
             }
-            predicates.add(criteriaBuilder.notEqual(root.get("trangThai"), "Ngừng hoạt động"));
+            predicates.add(criteriaBuilder.equal(root.get("trangThai"), "Hoạt động"));
+            predicates.add(criteriaBuilder.equal(root.get("sanPham").get("trangThai"), "Hoạt động"));
+
             query.orderBy(criteriaBuilder.desc(root.get("ngayTao")));
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });

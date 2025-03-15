@@ -18,10 +18,12 @@ public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet,
     //Tìm sản phẩm chi tiết của sản phẩm mới nhất
     SanPhamChiTiet findTopBySanPhamOrderByNgayTaoDesc(SanPham sanPham);
 
-    @Query("SELECT DISTINCT sp FROM SanPham sp " +
-            "JOIN SanPhamChiTiet spct ON spct.sanPham =  sp " +
-            "WHERE LOWER(spct.danhMuc.tenDanhMuc) LIKE LOWER(:tenDanhMuc) " +
-            "AND LOWER(sp.trangThai) = 'hoạt động'")
+    @Query(value = " SELECT DISTINCT sp.* FROM san_pham sp " +
+            " JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham " +
+            " JOIN danh_muc dm ON spct.id_danh_muc = dm.id " +
+            " WHERE LOWER(dm.ten_danh_muc) LIKE LOWER(:tenDanhMuc) " +
+            " AND LOWER(TRIM(sp.trang_thai)) = N'hoạt động'",
+            nativeQuery = true)
     List<SanPham> getListSanPhamTheoTenDanhMucVaDangHoatDong(@Param("tenDanhMuc") String tenDanhMuc);
 
 
