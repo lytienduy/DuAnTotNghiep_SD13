@@ -54,16 +54,6 @@ public class HomeService {
         return listUrl;
     }
 
-    //Lấy list màu của sản phẩm
-    public List<String> listMauTheoSanPham() {
-        List<String> listUrl = new ArrayList<>();
-        for (AnhSanPham anh : list
-        ) {
-            listUrl.add(anh.getAnhUrl());
-        }
-        return listUrl;
-    }
-
     //Chuyển đổi sang object có những thông tin bên Hóa Đơn Chi Tiết
     public HomeDTO.SanPhamHienThiTrangHomeClient convertSanPhamHienThiTrangHomeClient(SanPham sanPham) {
         SanPhamChiTiet spct = sanPhamChiTietRepositoryP.findTopBySanPhamOrderByNgayTaoDesc(sanPham);
@@ -71,19 +61,6 @@ public class HomeService {
                 sanPham.getId(),
                 sanPham.getMa(),
                 sanPham.getTenSanPham() + spct.getDanhMuc().getTenDanhMuc() + " " + spct.getKieuDang().getTenKieuDang() + " " + sanPham.getMa(),
-                listURLAnhSanPham(spct != null ? spct.getListAnh() : Collections.emptyList()),
-                spct.getGia()
-        );
-    }
-
-    //Chuyển đổi sang object có những thông tin bên Hóa Đơn Chi Tiết
-    public HomeDTO.SanPhamHienThiTrangHomeClient convertSanPhamHienThiTrangSanPhamClient(SanPham sanPham) {
-        SanPhamChiTiet spct = .findTopBySanPhamOrderByNgayTaoDesc(sanPham);
-        return new HomeDTO.SanPhamHienThiTrangSanPhamClient(
-                sanPham.getId(),
-                sanPham.getMa(),
-                sanPham.getTenSanPham() + spct.getDanhMuc().getTenDanhMuc() + " " + spct.getKieuDang().getTenKieuDang() + " " + sanPham.getMa(),
-                listURLAnhSanPham(spct != null ? spct.getListAnh() : Collections.emptyList()),
                 listURLAnhSanPham(spct != null ? spct.getListAnh() : Collections.emptyList()),
                 spct.getGia()
         );
@@ -135,21 +112,36 @@ public class HomeService {
             Integer thuongHieu,
             Integer phongCach) {
         List<HomeDTO.SanPhamHienThiTrangSanPhamClient> listSanPham = new ArrayList<>();
-        for (SanPham sp : sanPhamRepositoryP.findByTrangThai("Hoạt động")) {
-            List<SanPhamChiTiet> listSanPhamChiTietTheoBoLoc = getListSanPhamChiTietTheoIDSanPham(searchText, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach, sp.getId());
-            SanPhamChiTiet spct = listSanPhamChiTietTheoBoLoc.get(0);
+        for (SanPham sp : sanPhamRepositoryP.findSanPhamsByTrangThai("Hoạt động")) {
+            List<String> listSanPhamChiTietTheoBoLoc = getListSanPhamChiTietTheoIDSanPham(searchText, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach, sp.getId());
             if (listSanPhamChiTietTheoBoLoc.isEmpty() == false) {
+                SanPhamChiTiet spct = sanPhamChiTietRepositoryP.findTopBySanPhamOrderByNgayTaoDesc(sp);
                 listSanPham.add(new HomeDTO.SanPhamHienThiTrangSanPhamClient(
                         sp.getId(), sp.getMa(),
                         sp.getTenSanPham() + spct.getDanhMuc().getTenDanhMuc() + " " + spct.getKieuDang().getTenKieuDang() + " " + sp.getMa(),
-                        listURLAnhSanPham(listSanPhamChiTietTheoBoLoc.get(0).getListAnh()),
+                        listURLAnhSanPham(spct.getListAnh()),
                         listSanPhamChiTietTheoBoLoc, spct.getGia()));
             }
         }
+        return listSanPham;
+    }
+
+    //Chuyển đổi sang object có những thông tin bên Hóa Đơn Chi Tiết
+    public String convertSPCTToDTO(SanPhamChiTiet sanPhamChiTiet) {
+//        return new HomeDTO.SanPhamChiTietClient(
+//                sanPhamChiTiet.getId(),
+//                sanPhamChiTiet.getMa(),
+//                listURLAnhSanPham(sanPhamChiTiet.getListAnh()),
+//                sanPhamChiTiet.getMauSac().getTenMauSac(),
+//                sanPhamChiTiet.getSize().getTenSize(),
+//                sanPhamChiTiet.getSoLuong(),
+//                sanPhamChiTiet.getTrangThai()
+//        );
+        return sanPhamChiTiet.getMauSac().getTenMauSac();
     }
 
     //Lấy các sản phẩm
-    public List<SanPhamChiTiet> getListSanPhamChiTietTheoIDSanPham(
+    public List<String> getListSanPhamChiTietTheoIDSanPham(
             String searchText,
             Integer fromGia,
             Integer toGia,
@@ -210,10 +202,12 @@ public class HomeService {
                         criteriaBuilder.and(keywordPredicates.toArray(new Predicate[0]))
                 ));
             }
-            Predicate datePredicate = criteriaBuilder.between(
-                    root.get("gia"), fromGia, toGia
-            );
-            predicates.add(datePredicate);
+            if (fromGia != null && toGia != null) {
+                Predicate datePredicate = criteriaBuilder.between(
+                        root.get("gia"), fromGia, toGia
+                );
+                predicates.add(datePredicate);
+            }
             // Điều kiện lọc theo danh mục, màu sắc, chất liệu, kích cỡ, kiểu dáng, thương hiệu, phong cách
             if (danhMuc != null && danhMuc != 0) {
                 predicates.add(criteriaBuilder.equal(root.get("danhMuc").get("id"), danhMuc));
@@ -239,7 +233,7 @@ public class HomeService {
             query.orderBy(criteriaBuilder.desc(root.get("ngayTao")));
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
-        return listSanPham;
+        return listSanPham.stream().map(this::convertSPCTToDTO).collect(Collectors.toList());
     }
 
 

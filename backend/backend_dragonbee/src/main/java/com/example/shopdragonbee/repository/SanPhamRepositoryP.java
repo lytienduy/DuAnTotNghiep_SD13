@@ -10,5 +10,5 @@ import java.util.List;
 
 @Repository
 public interface SanPhamRepositoryP extends JpaRepository<SanPham, Integer> {
-    List<SanPham> findByTrangThai(String trangThai);
+    List<SanPham> findSanPhamsByTrangThai(String trangThai);
 }

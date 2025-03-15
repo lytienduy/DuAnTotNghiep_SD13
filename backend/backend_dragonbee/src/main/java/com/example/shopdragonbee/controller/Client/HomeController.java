@@ -3,8 +3,10 @@ package com.example.shopdragonbee.controller.Client;
 
 import com.example.shopdragonbee.dto.BanHangTaiQuayResponseDTO;
 import com.example.shopdragonbee.dto.Client.HomeDTO;
+import com.example.shopdragonbee.entity.SanPham;
 import com.example.shopdragonbee.repository.SanPhamChiTietRepositoryP;
 import com.example.shopdragonbee.repository.SanPhamRepository;
+import com.example.shopdragonbee.repository.SanPhamRepositoryP;
 import com.example.shopdragonbee.service.Client.HomeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +20,7 @@ import java.util.List;
 public class HomeController {
 
     @Autowired
-    private SanPhamRepository sanPhamRepository;
+    private SanPhamRepositoryP sanPhamRepositoryP;
 
     @Autowired
     private SanPhamChiTietRepositoryP sanPhamChiTietRepositoryP;
@@ -53,7 +55,7 @@ public class HomeController {
 
     //Nhập số lượng sản phẩm từ bán phím
     @GetMapping("/layListCacSanPhamHienThi")
-    public List<BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay> layListCacSanPhamHienThi(
+    public List<HomeDTO.SanPhamHienThiTrangSanPhamClient> layListCacSanPhamHienThi(
             @RequestParam(required = false) String timKiem,
             @RequestParam(required = false) Integer fromGia,
             @RequestParam(required = false) Integer toGia,
@@ -65,6 +67,6 @@ public class HomeController {
             @RequestParam(required = false) Integer thuongHieu,
             @RequestParam(required = false) Integer phongCach
     ) {
-        return homeService.getListCacSanPhamHienThiTrongThemBanHangTaiQuay(timKiem, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach);
+        return homeService.getListSanPhamTheoBoLoc(timKiem, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach);
     }
 }
