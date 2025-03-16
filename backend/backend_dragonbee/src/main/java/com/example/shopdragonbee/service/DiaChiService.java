@@ -8,6 +8,8 @@ import com.example.shopdragonbee.repository.KhachHangRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class DiaChiService {
     @Autowired
@@ -53,4 +55,8 @@ public class DiaChiService {
         diaChiRepository.save(diaChi);
     }
 
+    // Phương thức để lấy danh sách địa chỉ của khách hàng theo customerId
+    public List<DiaChi> layDiaChiTheoKhachHang(Integer customerId) {
+        return diaChiRepository.findByKhachHangId(customerId);
+    }
 }
