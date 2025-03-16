@@ -1,6 +1,7 @@
 package com.example.shopdragonbee.controller;
 
 
+import com.example.shopdragonbee.dto.ProductOutOfStockDTO;
 import com.example.shopdragonbee.dto.SanPhamChiTietDTO;
 import com.example.shopdragonbee.dto.SanPhamDTO;
 import com.example.shopdragonbee.entity.MauSac;
@@ -177,7 +178,6 @@ public ResponseEntity<?> addSanPhamChiTiet(@RequestBody List<SanPhamChiTietDTO> 
         return new ResponseEntity<>("❌ Lỗi khi thêm sản phẩm chi tiết: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
-
 
 
 

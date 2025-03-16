@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.ProductOutOfStockDTO;
 import com.example.shopdragonbee.dto.SanPhamDTO;
 import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.*;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -174,6 +176,7 @@ public class SanPhamService {
         }
         return "SPCT" + (maxId + 1);  // Tạo mã sản phẩm chi tiết
     }
+
 
 
 }

@@ -2,6 +2,7 @@ package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.HoaDonChiTietResponseDTO;
 import com.example.shopdragonbee.dto.HoaDonResponseDTO;
+import com.example.shopdragonbee.dto.OrderStatusStatsDTO;
 import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.*;
 import jakarta.persistence.criteria.Predicate;
@@ -252,6 +253,46 @@ public class HoaDonService {
         List<String> trangThais = Arrays.asList("Chờ thêm sản phẩm", "Chờ thanh toán");
         List<HoaDon> hoaDons = hoaDonRepository.getHoaDonByTrangThaiInAndLoaiDonOrderByNgayTaoAsc(trangThais, "Tại quầy");
         return hoaDons.stream().map(this::convertHoaDonChiTietToDTO).collect(Collectors.toList());
+    }
+
+
+    //Thống kê
+
+    private List<OrderStatusStatsDTO> convertToDTO(List<Object[]> rawData) {
+        return rawData.stream().map(row -> {
+            String trangThai = row[0] != null ? row[0].toString() : "";
+            int soLuong = row[1] != null ? Integer.parseInt(row[1].toString()) : 0;
+            return new OrderStatusStatsDTO(trangThai, soLuong);
+        }).collect(Collectors.toList());
+    }
+
+    public List<OrderStatusStatsDTO> getOrderStatusStatsToday() {
+        List<Object[]> rawData = hoaDonRepository.findOrderStatusStatsToday();
+        return convertToDTO(rawData);
+    }
+
+    public List<OrderStatusStatsDTO> getOrderStatusStatsThisWeek() {
+        List<Object[]> rawData = hoaDonRepository.findOrderStatusStatsThisWeek();
+        return convertToDTO(rawData);
+    }
+
+    public List<OrderStatusStatsDTO> getOrderStatusStatsThisMonth() {
+        List<Object[]> rawData = hoaDonRepository.findOrderStatusStatsThisMonth();
+        return convertToDTO(rawData);
+    }
+
+    public List<OrderStatusStatsDTO> getOrderStatusStatsThisYear() {
+        List<Object[]> rawData = hoaDonRepository.findOrderStatusStatsThisYear();
+        return convertToDTO(rawData);
+    }
+
+    public List<OrderStatusStatsDTO> getOrderStatusStatsCustom(String startDate, String endDate) {
+        List<Object[]> rawData = hoaDonRepository.findOrderStatusStatsCustom(startDate, endDate);
+        return rawData.stream().map(row -> {
+            String trangThai = row[0] != null ? row[0].toString() : "";
+            int soLuong = row[1] != null ? Integer.parseInt(row[1].toString()) : 0;
+            return new OrderStatusStatsDTO(trangThai, soLuong);
+        }).collect(Collectors.toList());
     }
 
 
