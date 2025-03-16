@@ -12,6 +12,7 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import CloseIcon from "@mui/icons-material/Close";
 import ReactImageMagnify from "react-image-magnify";
+import { useParams } from "react-router-dom"; // Import đúng
 
 const product = {
     name: "QUẦN ÂU NAM QASTK503",
@@ -76,6 +77,7 @@ const productData = [
 ];
 
 const ChiTietSanPham = () => {
+    const { id } = useParams(); // Lấy id từ URL
     const thumbnailRefs = useRef([]);
     const [openSizeGuide, setOpenSizeGuide] = useState(false);
     const [selectedColor, setSelectedColor] = useState(product.colors[0]);

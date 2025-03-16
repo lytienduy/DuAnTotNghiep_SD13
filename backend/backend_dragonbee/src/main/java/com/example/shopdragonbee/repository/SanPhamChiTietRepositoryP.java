@@ -1,8 +1,6 @@
 package com.example.shopdragonbee.repository;
 
-import com.example.shopdragonbee.entity.HoaDon;
-import com.example.shopdragonbee.entity.SanPham;
-import com.example.shopdragonbee.entity.SanPhamChiTiet;
+import com.example.shopdragonbee.entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -25,6 +23,13 @@ public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet,
             " AND LOWER(TRIM(sp.trang_thai)) = N'hoạt động'",
             nativeQuery = true)
     List<SanPham> getListSanPhamTheoTenDanhMucVaDangHoatDong(@Param("tenDanhMuc") String tenDanhMuc);
+
+
+    @Query("SELECT spct.mauSac FROM SanPhamChiTiet spct WHERE spct.sanPham.id = :idSanPham AND spct.trangThai = :trangThai GROUP BY spct.mauSac")
+    List<MauSac> getSPCTTheoIDSanPhamAndTrangThai(@Param("idSanPham") Integer idSanPham, @Param("trangThai") String trangThai);
+
+
+    List<SanPhamChiTiet> findBySanPhamAndMauSacAndTrangThai(SanPham sanPham, MauSac mauSac,String trangThai);
 
 
 }

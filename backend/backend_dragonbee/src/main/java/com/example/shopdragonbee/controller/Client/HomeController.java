@@ -11,6 +11,7 @@ import com.example.shopdragonbee.service.Client.HomeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sound.midi.ShortMessage;
 import java.util.List;
 
 @RestController
@@ -68,5 +69,11 @@ public class HomeController {
             @RequestParam(required = false) Integer phongCach
     ) {
         return homeService.getListSanPhamTheoBoLoc(timKiem, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach);
+    }
+
+    @GetMapping("/layListCacSanPhamHienThi/{idSanPham}")
+
+    public List<HomeDTO.ListSanPhamChiTietClient> getListHienThiTrongSanPhamChiTiet(@PathVariable Integer idSanPham) {
+        return homeService.getListHienThiTrongSanPhamChiTiet(idSanPham);
     }
 }

@@ -10,9 +10,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
-
+import { useNavigate } from "react-router-dom";
 
 const SanPham = () => {
+  const navigate = useNavigate(); // Khai báo navigate
   const [products, setProducts] = useState([]);//Các sản phẩm của cửa hàng để bán
   const [danhMuc, setDanhMuc] = useState(""); // Giá trị của bộ lọc danh mục
   const [mauSac, setMauSac] = useState(""); // Giá trị của bộ lọc màu sắc
@@ -114,14 +115,14 @@ const SanPham = () => {
   };
 
   //resetToanBoBoLoc
-  const resetFilters = () =>{
-     setDanhMuc("");
-     setMauSac("");
-     setChatLieu("");
-     setKichCo("");
-     setKieuDang("");
-     setThuongHieu("");
-     setPhongCach("")
+  const resetFilters = () => {
+    setDanhMuc("");
+    setMauSac("");
+    setChatLieu("");
+    setKichCo("");
+    setKieuDang("");
+    setThuongHieu("");
+    setPhongCach("")
   }
   //Hàm xử lý khi đóng mở modal
   useEffect(() => {
@@ -480,8 +481,15 @@ const SanPham = () => {
                         p: 1,
                         display: "flex",
                         flexDirection: "column",
-                        justifyContent: "space-between"
+                        justifyContent: "space-between",
+                        cursor: "pointer", // Biến con trỏ thành hình bàn tay khi trỏ vào
+                        transition: "transform 0.2s ease-in-out", // Hiệu ứng mượt mà
+                        "&:hover": {
+                          transform: "scale(1.05)", // Phóng to nhẹ khi hover
+                          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)", // Hiệu ứng bóng đổ
+                        }
                       }}
+                      onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}
                     >
 
                       <CardMedia component="img" height="200" image={product.hinhAnh[0]} alt={product.ten} />

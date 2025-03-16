@@ -5,6 +5,7 @@ import com.example.shopdragonbee.dto.Client.HomeDTO;
 import com.example.shopdragonbee.entity.AnhSanPham;
 import com.example.shopdragonbee.entity.SanPham;
 import com.example.shopdragonbee.entity.SanPhamChiTiet;
+import com.example.shopdragonbee.entity.Size;
 import com.example.shopdragonbee.repository.*;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -43,6 +44,7 @@ public class HomeService {
     private ThuongHieuRepositoryP thuongHieuRepositoryP;
     @Autowired
     private PhongCachRepositoryP phongCachRepositoryP;
+
 
     //Chuyển đổi lấy list url hình ảnh theo listAnhSanPham
     public List<String> listURLAnhSanPham(List<AnhSanPham> list) {
@@ -138,6 +140,39 @@ public class HomeService {
 //                sanPhamChiTiet.getTrangThai()
 //        );
         return sanPhamChiTiet.getMauSac().getTenMauSac();
+    }
+
+
+    //P
+    public List<HomeDTO.SizeCuaPhong> getListSizeCuaPhong(SanPhamChiTiet sanPhamChiTiet) {
+        List<HomeDTO.SizeCuaPhong> listSizeCuaPhong = new ArrayList<>();
+
+        for (SanPhamChiTiet spct : sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThai(sanPhamRepositoryP.findById(sanPhamChiTiet.getSanPham().getId()).get(), mauSacRepositoryP.findById(sanPhamChiTiet.getMauSac().getId()).get(), "Hoạt động")
+        ) {
+            listSizeCuaPhong.add(new HomeDTO.SizeCuaPhong(
+                    spct.getSize().getId(),
+                    spct.getSize().getMa(),
+                    spct.getSize().getTenSize(),
+                    spct.getSoLuong()
+            ));
+        }
+        return listSizeCuaPhong;
+    }
+
+    public List<HomeDTO.ListSanPhamChiTietClient> getListHienThiTrongSanPhamChiTiet(Integer idSanPham) {
+        List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndTrangThaiGroupByMauSac(idSanPham, "Hoạt động");
+        List<HomeDTO.ListSanPhamChiTietClient> listTraVe = new ArrayList<>();
+        for (SanPhamChiTiet spct : listSPCT
+        ) {
+            listTraVe.add(new HomeDTO.ListSanPhamChiTietClient(
+                            listURLAnhSanPham(spct.getListAnh()),
+                            spct.getMauSac(),
+                            getListSizeCuaPhong(spct),
+                            spct.getMoTa()
+                    )
+            );
+        }
+        return listTraVe;
     }
 
     //Lấy các sản phẩm

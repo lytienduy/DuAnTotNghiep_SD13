@@ -36,9 +36,20 @@ public class HomeDTO {
         private String ma;
         private String ten;
         private List<String> hinhAnh;
-            private List<String> listMauSac;
+        private List<String> listMauSac;
         private Double gia;
 
+    }
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SizeCuaPhong {
+        private Integer id;
+        private String maSize;
+        private String tenSize;
+        private Integer soLuong;
     }
 
     @Getter
@@ -46,13 +57,13 @@ public class HomeDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class SanPhamChiTietClient {
-        private Integer id;
-        private String ma;
+    public static class ListSanPhamChiTietClient {
         private List<String> hinhAnh;
-        private String mauSac;
-        private String size;
-        private Integer soLuong;
-        private String trangThai;
+        private MauSac mauSac;
+        private List<SizeCuaPhong> listSize;
+        private String moTa;
+//        private String trangThai;
     }
+
+
 }
