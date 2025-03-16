@@ -345,20 +345,27 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
 
   // add sản phẩm chi tiết
   const handleSave = async () => {
+    console.log("selectedImages before saving:", selectedImages); // Debug selectedImages
+    
     if (!selectedProduct) {
       alert("Vui lòng chọn sản phẩm.");
       return;
     }
-
-    // Lọc các ảnh hợp lệ từ selectedImages (đảm bảo ảnh có URL hợp lệ)
-    const validImages = selectedImages.filter((image) => image.secure_url);
-
-    // Nếu không có ảnh hợp lệ, có thể gửi mảng rỗng hoặc xử lý theo cách khác
-    if (validImages.length === 0) {
+  
+    // Kiểm tra xem có ảnh hợp lệ trong selectedImages không
+    if (selectedImages.length === 0) {
       alert("Vui lòng chọn ít nhất một ảnh.");
       return;
     }
-
+  
+    const validImages = selectedImages.filter((image) => image.secure_url);
+    console.log("validImages:", validImages); // Debug validImages
+  
+    if (validImages.length === 0) {
+      alert("Vui lòng chọn ít nhất một ảnh hợp lệ.");
+      return;
+    }
+  
     // Tạo danh sách sản phẩm chi tiết để gửi lên backend
     const requestDataList = productDetails.map((detail) => ({
       sanPhamId: selectedProduct,
@@ -376,24 +383,21 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       kieuDangId: selectedKieuDang,
       kieuDaiQuanId: selectedKieuDaiQuan,
       xuatXuId: selectedXuatXus,
-      anhUrls: validImages.map((image) => image.secure_url), // Gửi các URL ảnh hợp lệ
+      anhUrls: validImages.map((image) => image.secure_url),
     }));
-
+  
     try {
       const response = await axios.post(
         "http://localhost:8080/api/san-pham-chi-tiet/add/chi-tiet",
         requestDataList,
         { headers: { "Content-Type": "application/json" } }
       );
-
+  
       if (response.status === 200 || response.status === 201) {
         console.log("Sản phẩm chi tiết đã được lưu", response.data);
-
-        // Hiển thị thông báo thành công
+  
         setSnackMessage("Thêm sản phẩm thành công!");
-        setSnackOpen(true); // Mở thông báo thành công
-
-        // Chuyển hướng về trang sản phẩm
+        setSnackOpen(true);
         navigate("/sanpham", { replace: true });
       }
     } catch (error) {
@@ -425,73 +429,77 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         });
     }
   };
-  const handleCloseModalAnh = () => {
-    setOpenModalAnh(false); // Đóng modal
-    setSelectedImages([]); // Reset danh sách ảnh đã chọn khi đóng modal
-  };
   const handleOpenModalAnh = async (id) => {
-    // Cập nhật trạng thái loading
-    setLoading(true); // setLoading là state quản lý trạng thái đang tải
-
+    setLoading(true);
+    
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/anh-san-pham/cloudinary-images"
-      );
-
+      const response = await fetch("http://localhost:8080/api/anh-san-pham/cloudinary-images");
+  
       if (!response.ok) {
-        throw new Error(
-          "Không thể lấy ảnh từ backend, mã lỗi: " + response.status
-        );
+        throw new Error("Không thể lấy ảnh từ backend");
       }
-
+  
       const data = await response.json();
-      console.log("Dữ liệu ảnh từ API:", data); // Kiểm tra xem dữ liệu có hợp lệ không
-
-      // Kiểm tra và cập nhật danh sách ảnh từ API
+      console.log("Dữ liệu ảnh từ API:", data); // Kiểm tra dữ liệu ảnh
+  
       if (data && Array.isArray(data.resources)) {
-        setCloudinaryImages(data.resources); // Cập nhật danh sách ảnh từ API
-      } else {
-        setCloudinaryImages([]); // Nếu không có ảnh hợp lệ, gán mảng rỗng
+        setCloudinaryImages(data.resources); // Cập nhật ảnh từ API
       }
+  
+      setSelectedProductId(id);
+      setOpenModalAnh(true); // Mở modal sau khi tải ảnh
     } catch (error) {
       console.error("Lỗi khi lấy ảnh từ backend", error);
-      alert("Có lỗi xảy ra khi tải ảnh, vui lòng thử lại!");
+      alert("Có lỗi khi tải ảnh, vui lòng thử lại!");
     } finally {
-      setLoading(false); // Kết thúc trạng thái loading
+      setLoading(false);
     }
-
-    setSelectedProductId(id); // Lưu ID sản phẩm
-    setOpenModalAnh(true); // Mở modal sau khi dữ liệu đã được tải
   };
-
   // Hàm chọn ảnh
-  const handleSelectImage = (e, image) => {
-    const checked = e.target.checked;
-    if (checked) {
-      setSelectedImages([...selectedImages, image]); // Thêm ảnh vào danh sách đã chọn
-    } else {
-      setSelectedImages(
-        selectedImages.filter((img) => img.public_id !== image.public_id) // Xóa ảnh khỏi danh sách
-      );
+  const handleCloseModalAnh = () => {
+ 
+    setOpenModalAnh(false); // Đóng modal
+};
+
+const handleAddProductImages = (selectedImages) => {
+    console.log("Danh sách ảnh đã chọn:", selectedImages); // Kiểm tra xem ảnh có được chọn hay không
+    
+    if (selectedImages.length === 0) {
+        alert("Vui lòng chọn ít nhất một ảnh.");
+        return;
     }
-  };
-
-  const handleAddProductImages = (selectedImages) => {
-    // Cập nhật ảnh cho sản phẩm chi tiết
+  
     const imageUrls = selectedImages.map((image) => image.secure_url);
-
+    console.log("Ảnh đã chọn:", imageUrls); // Kiểm tra ảnh đã chọn
+  
     // Cập nhật danh sách sản phẩm chi tiết với các ảnh đã chọn
     const updatedProductDetails = productDetails.map((detail) => {
-      if (detail.id === selectedProductId) {
-        return { ...detail, images: imageUrls }; // Gán các ảnh cho sản phẩm chi tiết
-      }
-      return detail;
+        if (detail.id === selectedProductId) {
+            return { ...detail, images: imageUrls }; // Gán các ảnh cho sản phẩm chi tiết
+        }
+        return detail;
     });
-
+  
     setProductDetails(updatedProductDetails); // Cập nhật lại danh sách sản phẩm chi tiết
-    setSelectedImages([]); // Reset danh sách ảnh đã chọn
+  
     setOpenModalAnh(false); // Đóng modal sau khi lưu ảnh
-  };
+};
+
+const handleSelectImage = (e, image) => {
+    const checked = e.target.checked;
+  
+    if (checked) {
+        console.log("Thêm ảnh:", image); // Debug: Kiểm tra ảnh được thêm vào
+        setSelectedImages((prevImages) => [...prevImages, image]); // Đảm bảo cập nhật đúng selectedImages
+    } else {
+        console.log("Xóa ảnh:", image); // Debug: Kiểm tra ảnh bị xóa
+        setSelectedImages((prevImages) =>
+            prevImages.filter((img) => img.public_id !== image.public_id) // Loại bỏ ảnh khỏi danh sách đã chọn
+        );
+    }
+};
+
+  
   // xóa spct
   // Hàm để xử lý xóa sản phẩm
   const removeSanPhamChiTiet = (index) => {
@@ -919,14 +927,14 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
     setSelectedMauSacs(event.target.value); // Chỉ lưu trữ ID của màu sắc
   };
   // Hàm xử lý khi màu thay đổi
-const handleColorChangeMau = (color) => {
-  if (color && color.hex) {
-    setNewColor({
-      ...newColor,
-      maMau: color.hex, // Cập nhật màu khi chọn
-    });
-  }
-};
+  const handleColorChangeMau = (color) => {
+    if (color && color.hex) {
+      setNewColor({
+        ...newColor,
+        maMau: color.hex, // Cập nhật màu khi chọn
+      });
+    }
+  };
   // add size
   // Lấy danh sách size từ API
   useEffect(() => {
@@ -2083,14 +2091,13 @@ const handleColorChangeMau = (color) => {
                     </IconButton>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      onClick={() =>
-                        console.log(`Chọn ảnh cho ${detail.productCode}`)
-                      }
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
                     >
-                      Chọn ảnh
-                    </Button>
-                    <div>
                       {detail.images && detail.images.length > 0 ? (
                         detail.images.map((image, imgIndex) => (
                           <img
@@ -2105,6 +2112,9 @@ const handleColorChangeMau = (color) => {
                       ) : (
                         <p>Chưa có ảnh</p>
                       )}
+                      <Button onClick={() => handleOpenModalAnh(detail.id)}>
+                        Chọn ảnh
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
