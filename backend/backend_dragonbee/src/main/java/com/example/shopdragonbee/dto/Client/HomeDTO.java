@@ -36,7 +36,7 @@ public class HomeDTO {
         private String ma;
         private String ten;
         private List<String> hinhAnh;
-        private List<String> listMauSac;
+            private List<String> listMauSac;
         private Double gia;
 
     }

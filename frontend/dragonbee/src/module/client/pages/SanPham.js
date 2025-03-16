@@ -30,7 +30,7 @@ const SanPham = () => {
   const [listPhongCach, setListPhongCach] = useState([]);
   const [listThuongHieu, setListThuongHieu] = useState([]);
   const [value, setValue] = useState([100000, 3200000]);//giá trị slider khoảng giá
-
+  const [debouncedValue, setDebouncedValue] = useState(value);//giá trị khoảng giá
 
 
   //Thông báo Toast
@@ -118,6 +118,32 @@ const SanPham = () => {
     getAndSetToanBoBoLoc();
     getSanPhamHienThi();
   }, []);
+
+  //Tạo độ trễ cho ô tìm kiếm
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      getSanPhamHienThi();
+    }, 800); // Chờ 800ms sau khi user dừng nhập
+    return () => clearTimeout(handler); // Hủy timeout nếu user nhập tiếp
+  }, [timKiem]);
+
+  //Tạo độ trễ khi kéo slider khoảng giá
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value); // Chỉ cập nhật giá trị sau 1.5s
+    }, 1500);
+    return () => clearTimeout(handler); // Xóa timeout nếu người dùng tiếp tục kéo
+  }, [value]);
+
+  //Khi bộ lọc khoảng giá thay đổi
+  useEffect(() => {
+    getSanPhamHienThi();
+  }, [debouncedValue]);
+
+  //Khi thay đổi bộ lọc
+  useEffect(() => {
+    getSanPhamHienThi();
+  }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
 
 
   return (
@@ -448,7 +474,7 @@ const SanPham = () => {
                       }}
                     >
 
-                      <CardMedia component="img" height="200" image={product.image} alt={product.name} />
+                      <CardMedia component="img" height="200" image={product.hinhAnh[0]} alt={product.ten} />
                       <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
 
                         <Typography
@@ -463,19 +489,19 @@ const SanPham = () => {
                             minHeight: '40px', // Giữ chiều cao cố định để tránh lệch
                           }}
                         >
-                          {product.name}
+                          {product.ten}
                         </Typography>
 
 
-                        <Typography variant="body2" color="text.secondary">{product.description}</Typography>
-                        <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{product.price}</Typography>
+                        {/* <Typography variant="body2" color="text.secondary">{product.description}</Typography> */}
+                        <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{product.gia}</Typography>
                         <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                          {Array.isArray(product.sizes) && product.sizes.length > 0 ? (
-                            product.sizes.map(size => (
-                              <Box key={size} sx={{ border: '1px solid black', borderRadius: 1, px: 1, py: 0.5 }}>{size}</Box>
+                          {Array.isArray(product.listMauSac) && product.listMauSac.length > 0 ? (
+                            product.listMauSac.map(mauSac => (
+                              <Box key={mauSac} sx={{ border: '1px solid black', borderRadius: 1, px: 1, py: 0.5 }}>{mauSac}</Box>
                             ))
                           ) : (
-                            <Typography variant="body2" color="text.secondary">Không có size</Typography>
+                            <Typography variant="body2" color="text.secondary">Không có màu nào hết</Typography>
                           )}
                         </Box>
                         <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>Mua Ngay</Button>
