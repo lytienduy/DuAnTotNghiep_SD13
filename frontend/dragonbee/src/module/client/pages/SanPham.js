@@ -90,7 +90,6 @@ const SanPham = () => {
       const response = await axios.get(`${apiUrl}?${params.toString()}`);//Gọi api bằng axiosGet
       setProducts(response.data);
       showSuccessToast("ok")
-
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
       showErrorToast("Lỗi khi lấy dữ liệu sản phẩm để thêm vào giỏ hàng")
@@ -113,6 +112,17 @@ const SanPham = () => {
       showErrorToast("Lỗi lấy dữ liệu bộ lọc");
     }
   };
+
+  //resetToanBoBoLoc
+  const resetFilters = () =>{
+     setDanhMuc("");
+     setMauSac("");
+     setChatLieu("");
+     setKichCo("");
+     setKieuDang("");
+     setThuongHieu("");
+     setPhongCach("")
+  }
   //Hàm xử lý khi đóng mở modal
   useEffect(() => {
     getAndSetToanBoBoLoc();
@@ -429,7 +439,7 @@ const SanPham = () => {
                 color: "white",
                 "&:hover": { bgcolor: "#e69500" },
               }}
-            // onClick={resetFilters}
+              onClick={resetFilters}
             >
               XÓA
             </Button>
@@ -494,9 +504,9 @@ const SanPham = () => {
 
 
                         {/* <Typography variant="body2" color="text.secondary">{product.description}</Typography> */}
-                        <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{product.gia}</Typography>
+                        <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{product.gia?.toLocaleString()}đ</Typography>
                         <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                          {Array.isArray(product.listMauSac) && product.listMauSac.length > 0 ? (
+                          {product?.listMauSac?.length > 0 ? (
                             product.listMauSac.map(mauSac => (
                               <Box key={mauSac} sx={{ border: '1px solid black', borderRadius: 1, px: 1, py: 0.5 }}>{mauSac}</Box>
                             ))

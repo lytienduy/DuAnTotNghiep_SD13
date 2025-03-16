@@ -166,28 +166,29 @@ public class HomeService {
                 String searchLower = searchText.toLowerCase().trim();
 
                 // Kiểm tra nếu searchText có thể là mã sản phẩm (ví dụ: 10001, QANAM32)
-                Predicate byMa = criteriaBuilder.like(criteriaBuilder.lower(root.get("ma")), "%" + searchLower + "%");
+                Predicate byMa = criteriaBuilder.like(criteriaBuilder.lower(root.get("sanPham").get("ma")), "%" + searchLower + "%");
 
                 // Tạo chuỗi chứa thông tin tìm kiếm (tất cả viết thường)
                 Expression<String> tenSanPhamChiTiet = criteriaBuilder.lower(
-                        criteriaBuilder.function(
-                                "concat",
-                                String.class,
-                                root.get("sanPham").get("tenSanPham"),
-                                criteriaBuilder.literal(" "),
-                                root.get("size").get("tenSize"),
-                                criteriaBuilder.literal(" "),
-                                root.get("mauSac").get("tenMauSac"),
-                                criteriaBuilder.literal(" ")
-                        )
-                );
-
-                tenSanPhamChiTiet = criteriaBuilder.lower(
                         criteriaBuilder.concat(
                                 criteriaBuilder.concat(
                                         criteriaBuilder.concat(
-                                                tenSanPhamChiTiet, root.get("kieuDang").get("tenKieuDang")), " "),
-                                root.get("thuongHieu").get("tenThuongHieu"))
+                                                criteriaBuilder.concat(
+                                                        root.get("sanPham").get("tenSanPham"),
+                                                        criteriaBuilder.literal(" ")
+                                                ),
+                                                root.get("danhMuc").get("tenDanhMuc")
+                                        ),
+                                        criteriaBuilder.literal(" ")
+                                ),
+                                criteriaBuilder.concat(
+                                        criteriaBuilder.concat(
+                                                root.get("kieuDang").get("tenKieuDang"),
+                                                criteriaBuilder.literal(" ")
+                                        ),
+                                        root.get("thuongHieu").get("tenThuongHieu")
+                                )
+                        )
                 );
 
                 // Tách từ khóa và tìm kiếm từng từ
