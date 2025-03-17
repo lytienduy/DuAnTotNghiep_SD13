@@ -69,11 +69,6 @@ const DanhMuc = () => {
                     <IconButton color="primary">
                       <Visibility />
                     </IconButton>
-                    
-                    {/* Nút sửa */}
-                   
-
-                    {/* Nút xóa */}
                    
                   </TableCell>
                 </TableRow>

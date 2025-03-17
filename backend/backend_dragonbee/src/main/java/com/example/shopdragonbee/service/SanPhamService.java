@@ -101,20 +101,20 @@ public class SanPhamService {
         return sanPhamRepository.searchSanPham(tenSanPham, trangThai, pageable);
     }
 // chuyển đổi trạng thái
-    public String toggleProductStatus(Integer id) {
-        Optional<SanPham> optionalSanPham = sanPhamRepository.findById(id);
-        if (optionalSanPham.isPresent()) {
-            SanPham sanPham = optionalSanPham.get();
-            String oldStatus = sanPham.getTrangThai();
-            String newStatus = oldStatus.equals("Hoạt động") ? "Ngừng bán" : "Hoạt động"; // Chuyển đổi giữa "Đang bán" và "Ngừng bán"
+public String toggleProductStatus(Integer id) {
+    Optional<SanPham> optionalSanPham = sanPhamRepository.findById(id);
+    if (optionalSanPham.isPresent()) {
+        SanPham sanPham = optionalSanPham.get();
+        String oldStatus = sanPham.getTrangThai();
+        String newStatus = oldStatus.equals("Hoạt động") ? "Ngừng bán" : "Hoạt động"; // Chuyển đổi giữa "Đang bán" và "Ngừng bán"
 
-            sanPham.setTrangThai(newStatus); // Cập nhật trạng thái
-            sanPhamRepository.save(sanPham); // Lưu vào database
+        sanPham.setTrangThai(newStatus); // Cập nhật trạng thái
+        sanPhamRepository.save(sanPham); // Lưu vào database
 
-            return "Trạng thái đã chuyển từ " + oldStatus + " -> " + newStatus;
-        }
-        return "Không tìm thấy sản phẩm với ID: " + id;
+        return "Trạng thái đã chuyển từ " + oldStatus + " -> " + newStatus;
     }
+    return "Không tìm thấy sản phẩm với ID: " + id;
+}
     // add sản phẩm
     public SanPham addSanPham(SanPham sanPham) throws Exception {
         // Kiểm tra trùng tên sản phẩm
@@ -148,5 +148,6 @@ public class SanPhamService {
 
         return String.format("SP%03d", newNumber);
     }
+
 
 }

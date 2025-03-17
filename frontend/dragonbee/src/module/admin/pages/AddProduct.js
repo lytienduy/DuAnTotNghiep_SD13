@@ -30,6 +30,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
+import Add from '@mui/icons-material/Add';
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Cloudinary } from "cloudinary-core";
 import { SketchPicker } from "react-color"; // Thêm thư viện chọn màu
@@ -67,12 +68,6 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   const [productStatus, setProductStatus] = useState("Đang bán");
   const [danhMucs, setDanhMucs] = useState([]);
   const [thuongHieus, setThuongHieus] = useState([]);
-  const [selectedThuongHieu, setSelectedThuongHieu] = useState(""); // Lưu thương hiệu đã chọn
-  const [selectedPhongCach, setSelectedPhongCach] = useState("");
-  const [selectedChatLieu, setSelectedChatLieu] = useState("");
-  const [selectedKieuDang, setSelectedKieuDang] = useState("");
-  const [selectedKieuDaiQuan, setSelectedKieuDaiQuan] = useState("");
-  const [selectedXuatXus, setSelectedXuatXus] = useState("");
   const [phongCachs, setPhongCachs] = useState([]);
   const [chatLieus, setChatLieus] = useState([]);
   const [xuatXus, setXuatXus] = useState([]);
@@ -81,21 +76,22 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   const [sanPhamChiTietList, setSanPhamChiTietList] = useState([]);
   const [sanPhamList, setSanPhamList] = useState([]);
   const [description, setDescription] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [quantity, setQuantity] = useState(0); // Khởi tạo với giá trị số hợp lệ
   const [price, setPrice] = useState(0);
   // Khởi tạo với giá trị số hợp lệ
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [commonQuantity, setCommonQuantity] = useState("");
   const [commonPrice, setCommonPrice] = useState("");
-
   const [productDetails, setProductDetails] = useState([]);
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackMessage, setSnackMessage] = useState("");
   const [tenSanPham, setTenSanPham] = useState("");
   const [moTa, setMoTa] = useState("");
   const [error, setError] = useState("");
-  const [newCategory, setNewCategory] = useState({ tenDanhMuc: "", moTa: "" });
+  const [newCategory, setNewCategory] = useState({
+    tenDanhMuc: "",
+    moTa: "",
+  });
   const [newThuongHieu, setNewThuongHieu] = useState({
     tenThuongHieu: "",
     moTa: "",
@@ -117,11 +113,17 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   const [openSnackbarDM, setOpenSnackbarDM] = useState(false); // Điều khiển Snackbar
   const [snackbarMessageDM, setSnackbarMessageDM] = useState(""); // Thông báo hiển thị trong Snackbar
   const [openSnackbarTH, setOpenSnackbarTH] = useState(false); // Điều khiển Snackbar
+  const [snackbarMessageTH, setSnackbarMessageTH] = useState(""); // Thông báo hiển thị trong Snackbar
   const [openSnackbarPC, setOpenSnackbarPC] = useState(false); // Điều khiển Snackbar
+  const [snackbarMessagePC, setSnackbarMessagePC] = useState(""); // Thông báo hiển thị trong Snackbar
   const [openSnackbarCL, setOpenSnackbarCL] = useState(false); // Điều khiển Snackbar
+  const [snackbarMessageCL, setSnackbarMessageCL] = useState(""); // Thông báo hiển thị trong Snackbar
   const [openSnackbarKD, setOpenSnackbarKD] = useState(false); // Điều khiển Snackbar
+  const [snackbarMessageKD, setSnackbarMessageKD] = useState(""); // Thông báo hiển thị trong Snackbar
   const [openSnackbarKDQ, setOpenSnackbarKDQ] = useState(false); // Điều khiển Snackbar
+  const [snackbarMessageKDQ, setSnackbarMessageKDQ] = useState(""); // Thông báo hiển thị trong Snackbar
   const [openSnackbarXX, setOpenSnackbarXX] = useState(false); // Điều khiển Snackbar
+  const [snackbarMessageXX, setSnackbarMessageXX] = useState(""); // Thông báo hiển thị trong Snackbar
 
   // Khi bạn muốn mở một modal, hãy gọi handleOpenModal với loại modal cụ thể
   const handleOpenModal = (modalType) => {
@@ -131,10 +133,40 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   // Khi đóng modal, đảm bảo đặt openModal về null
   const handleCloseModal = () => {
     setOpenModal(null);
+    setTenSanPham("");
+    setMoTa("");
+    setNewCategory({ tenDanhMuc: "", moTa: "" }); // Reset lại form
+    setNewThuongHieu({ tenThuongHieu: "", moTa: "" });
+    setNewChatLieu({ tenChatLieu: "", moTa: "" });
+    setNewPhongCach({ tenPhongCach: "", moTa: "" });
+    setNewKieuDaiQuan({ tenKieuDaiQuan: "", moTa: "" });
+    setNewKieuDang({ tenKieuDang: "", moTa: "" });
+    setNewXuatXu({ tenXuatXu: "", moTa: "" });
     setError(""); // Reset lỗi
   };
   const [selectedProduct, setSelectedProduct] = useState(
     sanPhamList.length > 0 ? sanPhamList[0].id : ""
+  );
+  const [selectedCategory, setSelectedCategory] = useState(
+    danhMucs.length > 0 ? danhMucs[0].id : ""
+  );
+  const [selectedThuongHieu, setSelectedThuongHieu] = useState(
+    thuongHieus.length > 0 ? thuongHieus[0].id : ""
+  ); // Lưu thương hiệu đã chọn
+  const [selectedPhongCach, setSelectedPhongCach] = useState(
+    phongCachs.length > 0 ? phongCachs[0].id : ""
+  );
+  const [selectedChatLieu, setSelectedChatLieu] = useState(
+    chatLieus.length > 0 ? chatLieus[0].id : ""
+  );
+  const [selectedKieuDang, setSelectedKieuDang] = useState(
+    kieuDangs.length > 0 ? kieuDangs[0].id : ""
+  );
+  const [selectedKieuDaiQuan, setSelectedKieuDaiQuan] = useState(
+    kieuDaiQuans.length > 0 ? kieuDaiQuans[0].id : ""
+  );
+  const [selectedXuatXus, setSelectedXuatXus] = useState(
+    xuatXus.length > 0 ? xuatXus[0].id : ""
   );
   const [openSnackbar, setOpenSnackbar] = useState(false);
   // đổ danh mục
@@ -142,28 +174,28 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
     axios
       .get("http://localhost:8080/api/danhmuc/danh-muc/hoat-dong")
       .then((res) => {
-        console.log("Danh Mục API Response:", res.data); // Kiểm tra dữ liệu API
-        if (Array.isArray(res.data)) {
-          setDanhMucs(res.data); // Đảm bảo res.data là một mảng
-        } else {
-          console.error("Dữ liệu trả về không phải là mảng:", res.data);
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const sortedDanhMucs = res.data.sort((a, b) => b.id - a.id);
+          setDanhMucs(sortedDanhMucs); // Cập nhật lại danh sách danh mục từ API
+          setSelectedCategory(sortedDanhMucs[0]?.id || ""); // Lấy danh mục mới nhất (hoặc default là không có)
         }
       })
       .catch((error) => {
-        console.error(
-          "Lỗi API Danh Mục:",
-          error.response ? error.response.data : error.message
-        );
+        console.error("Lỗi API Danh Mục:", error);
       });
-  }, []);
+  }, []); // Chạy một lần khi component mount
 
   // đổ thương hiệu
   useEffect(() => {
     axios
       .get("http://localhost:8080/api/thuonghieu/thuong-hieu/hoat-dong")
       .then((res) => {
-        console.log("Thương Hiệu API Response:", res.data); // Kiểm tra dữ liệu API
-        setThuongHieus(res.data);
+        console.log("Thương Hiệu API Response:", res.data);
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const sortedThuongHieus = res.data.sort((a, b) => b.id - a.id); // Sắp xếp theo ID giảm dần
+          setThuongHieus(sortedThuongHieus);
+          setSelectedThuongHieu(sortedThuongHieus[0].id); // Lưu ID của thương hiệu mới nhất
+        }
       })
       .catch((error) =>
         console.error(
@@ -172,13 +204,18 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         )
       );
   }, []);
-  // đổ phong cách
+
+  // Đổ Phong Cách
   useEffect(() => {
     axios
       .get("http://localhost:8080/api/phongcach/phong-cach/hoat-dong")
       .then((res) => {
-        console.log("Phong Cách API Response:", res.data); // Kiểm tra dữ liệu API
-        setPhongCachs(res.data);
+        console.log("Phong Cách API Response:", res.data);
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const sortedPhongCachs = res.data.sort((a, b) => b.id - a.id); // Sắp xếp theo ID giảm dần
+          setPhongCachs(sortedPhongCachs);
+          setSelectedPhongCach(sortedPhongCachs[0].id); // Lưu ID của phong cách mới nhất
+        }
       })
       .catch((error) =>
         console.error(
@@ -187,13 +224,19 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         )
       );
   }, []);
-  // đổ chất liệu
+
+  // Đổ Chất Liệu
+
   useEffect(() => {
     axios
       .get("http://localhost:8080/api/chatlieu/chat-lieu/hoat-dong")
       .then((res) => {
-        console.log("Chất Liệu API Response:", res.data); // Kiểm tra dữ liệu API
-        setChatLieus(res.data);
+        console.log("Chất Liệu API Response:", res.data);
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const sortedChatLieus = res.data.sort((a, b) => b.id - a.id); // Sắp xếp theo ID giảm dần
+          setChatLieus(sortedChatLieus);
+          setSelectedChatLieu(sortedChatLieus[0].id); // Lưu ID của chất liệu mới nhất
+        }
       })
       .catch((error) =>
         console.error(
@@ -202,42 +245,58 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
         )
       );
   }, []);
-  // đổ kiểu dáng
+
+  // Đổ Kiểu Dáng
   useEffect(() => {
     axios
       .get("http://localhost:8080/api/kieudang/kieu-dang/hoat-dong")
       .then((res) => {
-        console.log("Kiểu Dáng APi Response:", res.data);
-        setKieuDangs(res.data);
-        // Cập nhật danh sách kiểu dáng
+        console.log("Kiểu dáng API Response:", res.data);
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const sortedkieuDangs = res.data.sort((a, b) => b.id - a.id); // Sắp xếp theo ID giảm dần
+          setKieuDangs(sortedkieuDangs);
+          setSelectedKieuDang(sortedkieuDangs[0].id); // Lưu ID của xuất xứ mới nhất
+        }
       })
       .catch((error) =>
         console.error(
-          "Lỗi API Phong Cách:",
+          "Lỗi API kiểu dáng:",
           error.response ? error.response.data : error.message
         )
       );
   }, []);
-  // đổ kiểu đai quần
+
+  // Đổ Kiểu Đai Quần
   useEffect(() => {
     axios
       .get("http://localhost:8080/api/kieudaiquan/kieu-dai-quan/hoat-dong")
-      .then((response) => {
-        setKieuDaiQuans(response.data);
-        console.log(response.data); // Kiểm tra xem dữ liệu có được tải chính xác không
+      .then((res) => {
+        console.log("Kiểu Đai Quần API Response:", res.data);
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const sortedKieuDaiQuans = res.data.sort((a, b) => b.id - a.id); // Sắp xếp theo ID giảm dần
+          setKieuDaiQuans(sortedKieuDaiQuans);
+          setSelectedKieuDaiQuan(sortedKieuDaiQuans[0].id); // Lưu ID của kiểu đai quần mới nhất
+        }
       })
-      .catch((error) => {
-        console.error("Lỗi khi lấy kiểu đai quần:", error);
-      });
+      .catch((error) =>
+        console.error(
+          "Lỗi API Kiểu Đai Quần:",
+          error.response ? error.response.data : error.message
+        )
+      );
   }, []);
 
-  // đổ xuất xứ
+  // Đổ Xuất Xứ
   useEffect(() => {
     axios
       .get("http://localhost:8080/api/xuatxu/xuat-xu/hoat-dong")
       .then((res) => {
-        console.log("Xuất Xứ API Response:", res.data); // Kiểm tra dữ liệu API
-        setXuatXus(res.data);
+        console.log("Xuất Xứ API Response:", res.data);
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const sortedXuatXus = res.data.sort((a, b) => b.id - a.id); // Sắp xếp theo ID giảm dần
+          setXuatXus(sortedXuatXus);
+          setSelectedXuatXus(sortedXuatXus[0].id); // Lưu ID của xuất xứ mới nhất
+        }
       })
       .catch((error) =>
         console.error(
@@ -346,33 +405,33 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   // add sản phẩm chi tiết
   const handleSave = async () => {
     console.log("selectedImages before saving:", selectedImages); // Debug selectedImages
-    
+
     if (!selectedProduct) {
       alert("Vui lòng chọn sản phẩm.");
       return;
     }
-  
+
     // Kiểm tra xem có ảnh hợp lệ trong selectedImages không
     if (selectedImages.length === 0) {
       alert("Vui lòng chọn ít nhất một ảnh.");
       return;
     }
-  
+
     const validImages = selectedImages.filter((image) => image.secure_url);
     console.log("validImages:", validImages); // Debug validImages
-  
+
     if (validImages.length === 0) {
       alert("Vui lòng chọn ít nhất một ảnh hợp lệ.");
       return;
     }
-  
+
     // Tạo danh sách sản phẩm chi tiết để gửi lên backend
     const requestDataList = productDetails.map((detail) => ({
       sanPhamId: selectedProduct,
       soLuong: detail.quantity || 0,
       gia: detail.price || 0,
       moTa: detail.moTa || "Không có mô tả",
-      trangThai: "Còn hàng",
+      trangThai: "",
       danhMucId: selectedCategory,
       thuongHieuId: selectedThuongHieu,
       phongCachId: selectedPhongCach,
@@ -385,17 +444,17 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       xuatXuId: selectedXuatXus,
       anhUrls: validImages.map((image) => image.secure_url),
     }));
-  
+
     try {
       const response = await axios.post(
         "http://localhost:8080/api/san-pham-chi-tiet/add/chi-tiet",
         requestDataList,
         { headers: { "Content-Type": "application/json" } }
       );
-  
+
       if (response.status === 200 || response.status === 201) {
         console.log("Sản phẩm chi tiết đã được lưu", response.data);
-  
+
         setSnackMessage("Thêm sản phẩm thành công!");
         setSnackOpen(true);
         navigate("/sanpham", { replace: true });
@@ -431,21 +490,23 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   };
   const handleOpenModalAnh = async (id) => {
     setLoading(true);
-    
+
     try {
-      const response = await fetch("http://localhost:8080/api/anh-san-pham/cloudinary-images");
-  
+      const response = await fetch(
+        "http://localhost:8080/api/anh-san-pham/cloudinary-images"
+      );
+
       if (!response.ok) {
         throw new Error("Không thể lấy ảnh từ backend");
       }
-  
+
       const data = await response.json();
       console.log("Dữ liệu ảnh từ API:", data); // Kiểm tra dữ liệu ảnh
-  
+
       if (data && Array.isArray(data.resources)) {
         setCloudinaryImages(data.resources); // Cập nhật ảnh từ API
       }
-  
+
       setSelectedProductId(id);
       setOpenModalAnh(true); // Mở modal sau khi tải ảnh
     } catch (error) {
@@ -457,51 +518,48 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   };
   // Hàm chọn ảnh
   const handleCloseModalAnh = () => {
- 
     setOpenModalAnh(false); // Đóng modal
-};
+  };
 
-const handleAddProductImages = (selectedImages) => {
+  const handleAddProductImages = (selectedImages) => {
     console.log("Danh sách ảnh đã chọn:", selectedImages); // Kiểm tra xem ảnh có được chọn hay không
-    
+
     if (selectedImages.length === 0) {
-        alert("Vui lòng chọn ít nhất một ảnh.");
-        return;
+      alert("Vui lòng chọn ít nhất một ảnh.");
+      return;
     }
-  
+
     const imageUrls = selectedImages.map((image) => image.secure_url);
     console.log("Ảnh đã chọn:", imageUrls); // Kiểm tra ảnh đã chọn
-  
+
     // Cập nhật danh sách sản phẩm chi tiết với các ảnh đã chọn
     const updatedProductDetails = productDetails.map((detail) => {
-        if (detail.id === selectedProductId) {
-            return { ...detail, images: imageUrls }; // Gán các ảnh cho sản phẩm chi tiết
-        }
-        return detail;
+      if (detail.id === selectedProductId) {
+        return { ...detail, images: imageUrls }; // Gán các ảnh cho sản phẩm chi tiết
+      }
+      return detail;
     });
-  
+
     setProductDetails(updatedProductDetails); // Cập nhật lại danh sách sản phẩm chi tiết
-  
+
     setOpenModalAnh(false); // Đóng modal sau khi lưu ảnh
-};
+  };
 
-const handleSelectImage = (e, image) => {
+  const handleSelectImage = (e, image) => {
     const checked = e.target.checked;
-  
-    if (checked) {
-        console.log("Thêm ảnh:", image); // Debug: Kiểm tra ảnh được thêm vào
-        setSelectedImages((prevImages) => [...prevImages, image]); // Đảm bảo cập nhật đúng selectedImages
-    } else {
-        console.log("Xóa ảnh:", image); // Debug: Kiểm tra ảnh bị xóa
-        setSelectedImages((prevImages) =>
-            prevImages.filter((img) => img.public_id !== image.public_id) // Loại bỏ ảnh khỏi danh sách đã chọn
-        );
-    }
-};
 
-  
+    if (checked) {
+      console.log("Thêm ảnh:", image); // Debug: Kiểm tra ảnh được thêm vào
+      setSelectedImages((prevImages) => [...prevImages, image]); // Đảm bảo cập nhật đúng selectedImages
+    } else {
+      console.log("Xóa ảnh:", image); // Debug: Kiểm tra ảnh bị xóa
+      setSelectedImages(
+        (prevImages) =>
+          prevImages.filter((img) => img.public_id !== image.public_id) // Loại bỏ ảnh khỏi danh sách đã chọn
+      );
+    }
+  };
   // xóa spct
-  // Hàm để xử lý xóa sản phẩm
   const removeSanPhamChiTiet = (index) => {
     const newList = productDetails.filter((_, i) => i !== index); // Loại bỏ sản phẩm tại index
     setProductDetails(newList); // Cập nhật lại state
@@ -510,7 +568,6 @@ const handleSelectImage = (e, image) => {
     setSnackbarMessageXoa("Sản phẩm đã được xóa thành công!");
     setOpenSnackbarXoa(true); // Mở Snackbar
   };
-
   // Hàm đóng Snackbar xóa
   const handleCloseSnackbarXoa = () => {
     setOpenSnackbarXoa(false);
@@ -544,41 +601,37 @@ const handleSelectImage = (e, image) => {
     setOpenSnackbarXX(false);
   };
 
-  // Gửi dữ liệu lên backend để thêm sản phẩm mới
+  // add sản phẩm
   const handleAddProduct = () => {
     if (!tenSanPham.trim()) {
-      setError("Tên sản phẩm không được để trống!");
-      return;
+        setError("Tên sản phẩm không được để trống!");
+        return;
     }
 
-    axios
-      .post("http://localhost:8080/api/sanpham/add/sanpham", {
+    axios.post("http://localhost:8080/api/sanpham/add/sanpham", {
         tenSanPham: tenSanPham,
         moTa: moTa,
-      })
-      .then((res) => {
-        const newProduct = res.data; // Nhận dữ liệu sản phẩm vừa thêm từ backend
-
-        // Cập nhật danh sách sản phẩm ngay lập tức (đưa sản phẩm mới lên đầu)
-        setSanPhamList((prevList) => [newProduct, ...prevList]);
-
-        // Cập nhật sản phẩm đang chọn thành sản phẩm mới thêm
-        setSelectedProduct(newProduct.id);
-
-        // Đóng modal và reset form
-        handleCloseModal();
-
-        // Hiển thị thông báo thành công
-        setOpenSnackbar(true);
-      })
-      .catch((err) => {
-        if (err.response && err.response.data) {
-          setError(err.response.data); // Hiển thị lỗi từ backend (ví dụ: tên bị trùng)
-        } else {
-          setError("Lỗi khi thêm sản phẩm!");
+    }, {
+        headers: {
+            'Content-Type': 'application/json'
         }
-      });
-  };
+    })
+    .then((res) => {
+        const newProduct = res.data; // Nhận dữ liệu sản phẩm vừa thêm từ backend
+        setSanPhamList((prevList) => [newProduct, ...prevList]);
+        setSelectedProduct(newProduct.id);
+        handleCloseModal();
+        setOpenSnackbar(true);
+    })
+    .catch((err) => {
+        console.error(err); // Log lỗi chi tiết
+        if (err.response && err.response.data) {
+            setError(err.response.data); // Hiển thị lỗi từ backend
+        } else {
+            setError("Lỗi khi thêm sản phẩm!");
+        }
+    });
+};
   // add nhanh danh mục
   const handleAddDanhMuc = () => {
     if (!newCategory.tenDanhMuc.trim()) {
@@ -586,7 +639,6 @@ const handleSelectImage = (e, image) => {
       return;
     }
 
-    // Kiểm tra nếu tên danh mục đã tồn tại trong danh sách hiện tại
     const isDuplicate = danhMucs.some(
       (dm) => dm.tenDanhMuc === newCategory.tenDanhMuc
     );
@@ -595,23 +647,38 @@ const handleSelectImage = (e, image) => {
       return;
     }
 
-    // Gửi yêu cầu thêm danh mục mới
     axios
       .post("http://localhost:8080/api/danhmuc/add", newCategory)
-      .then((response) => {
-        setDanhMucs([response.data, ...danhMucs]); // Thêm danh mục mới vào đầu danh sách
+      .then(() => {
+        // Gọi lại API để lấy danh sách danh mục mới nhất
+        axios
+          .get("http://localhost:8080/api/danhmuc/danh-muc/hoat-dong")
+          .then((res) => {
+            if (Array.isArray(res.data) && res.data.length > 0) {
+              const sortedDanhMucs = res.data.sort((a, b) => b.id - a.id); // Sắp xếp danh mục theo ID giảm dần
+              setDanhMucs(sortedDanhMucs); // Cập nhật lại danh sách danh mục từ API
+              setSelectedCategory(sortedDanhMucs[0]?.id || ""); // Lấy danh mục mới nhất (hoặc default là không có)
+            }
+          })
+          .catch((error) => {
+            console.error("Lỗi khi gọi lại API danh mục:", error);
+          });
+
+        // Hiển thị thông báo thành công
         setSnackbarMessageDM("Thêm danh mục thành công");
-        setOpenSnackbarDM(true); // Hiển thị snackbar thông báo thành công
+        setOpenSnackbarDM(true);
+
+        handleCloseModal(); // Đóng modal
       })
       .catch((error) => {
-        // Kiểm tra lỗi từ backend và hiển thị thông báo phù hợp
         if (error.response && error.response.data) {
-          setError(error.response.data); // Hiển thị lỗi trả về từ API
+          setError(error.response.data);
         } else {
           setError("Đã có lỗi xảy ra khi thêm danh mục");
         }
       });
   };
+
   // add thương hiệu
   const handleAddThuongHieu = () => {
     // Kiểm tra nếu tên thương hiệu trống
@@ -632,25 +699,35 @@ const handleSelectImage = (e, image) => {
     // Gửi yêu cầu thêm thương hiệu mới
     axios
       .post("http://localhost:8080/api/thuonghieu/add", newThuongHieu)
-      .then((response) => {
-        // Cập nhật danh sách thương hiệu sau khi thêm mới
-        setThuongHieus([response.data, ...thuongHieus]);
+      .then(() => {
+        // Gọi lại API để lấy danh sách thương hiệu mới nhất
+        axios
+          .get("http://localhost:8080/api/thuonghieu/thuong-hieu/hoat-dong")
+          .then((res) => {
+            const sortedThuongHieus = res.data.sort((a, b) => b.id - a.id);
+            setThuongHieus(sortedThuongHieus);
+            setSelectedThuongHieu(sortedThuongHieus[0]?.id || "");
+          })
+          .catch((error) =>
+            console.error("Lỗi khi gọi lại API thương hiệu:", error)
+          );
 
         // Hiển thị snackbar thông báo thành công
+        setSnackbarMessageTH("Thêm thương hiệu thành công");
         setOpenSnackbarTH(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
       })
       .catch((error) => {
-        // Kiểm tra lỗi từ API và hiển thị thông báo lỗi chính xác
         if (error.response && error.response.data) {
-          setError(error.response.data); // Lấy lỗi từ backend
+          setError(error.response.data);
         } else {
           setError("Đã có lỗi xảy ra khi thêm thương hiệu");
         }
       });
   };
+
   /// add phong cách
   const handleAddPhongCach = () => {
     // Kiểm tra nếu tên phong cách trống
@@ -671,25 +748,35 @@ const handleSelectImage = (e, image) => {
     // Gửi yêu cầu thêm phong cách mới
     axios
       .post("http://localhost:8080/api/phongcach/add", newPhongCach)
-      .then((response) => {
-        // Cập nhật danh sách phong cách sau khi thêm mới
-        setPhongCachs([response.data, ...phongCachs]); // Thêm phong cách mới vào đầu danh sách
+      .then(() => {
+        // Gọi lại API để lấy danh sách phong cách mới nhất
+        axios
+          .get("http://localhost:8080/api/phongcach/phong-cach/hoat-dong")
+          .then((res) => {
+            const sortedPhongCachs = res.data.sort((a, b) => b.id - a.id);
+            setPhongCachs(sortedPhongCachs);
+            setSelectedPhongCach(sortedPhongCachs[0]?.id || "");
+          })
+          .catch((error) =>
+            console.error("Lỗi khi gọi lại API phong cách:", error)
+          );
 
         // Hiển thị snackbar thông báo thành công
+        setSnackbarMessagePC("Thêm phong cách thành công");
         setOpenSnackbarPC(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
       })
       .catch((error) => {
-        // Kiểm tra lỗi từ API và hiển thị thông báo lỗi chính xác
         if (error.response && error.response.data) {
-          setError(error.response.data); // Lấy lỗi từ backend
+          setError(error.response.data);
         } else {
           setError("Đã có lỗi xảy ra khi thêm phong cách");
         }
       });
   };
+
   /// add chất liệu
   const handleAddChatLieu = () => {
     // Kiểm tra nếu tên chất liệu trống
@@ -710,34 +797,45 @@ const handleSelectImage = (e, image) => {
     // Gửi yêu cầu thêm chất liệu mới
     axios
       .post("http://localhost:8080/api/chatlieu/add", newChatLieu)
-      .then((response) => {
-        // Cập nhật danh sách chất liệu sau khi thêm mới
-        setChatLieus([response.data, ...chatLieus]); // Thêm chất liệu mới vào đầu danh sách
+      .then(() => {
+        // Gọi lại API để lấy danh sách chất liệu mới nhất
+        axios
+          .get("http://localhost:8080/api/chatlieu/chat-lieu/hoat-dong")
+          .then((res) => {
+            const sortedChatLieus = res.data.sort((a, b) => b.id - a.id);
+            setChatLieus(sortedChatLieus);
+            setSelectedChatLieu(sortedChatLieus[0]?.id || "");
+          })
+          .catch((error) =>
+            console.error("Lỗi khi gọi lại API chất liệu:", error)
+          );
 
         // Hiển thị snackbar thông báo thành công
+        setSnackbarMessageCL("Thêm chất liệu thành công");
         setOpenSnackbarCL(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
       })
       .catch((error) => {
-        // Kiểm tra lỗi từ API và hiển thị thông báo lỗi chính xác
         if (error.response && error.response.data) {
-          setError(error.response.data); // Lấy lỗi từ backend
+          setError(error.response.data);
         } else {
           setError("Đã có lỗi xảy ra khi thêm chất liệu");
         }
       });
   };
+
+  // Thêm kiểu dáng
   // Thêm kiểu dáng
   const handleAddKieuDang = () => {
-    // Kiểm tra nếu tên phong cách trống
+    // Kiểm tra nếu tên chất liệu trống
     if (!newKieuDang.tenKieuDang.trim()) {
       setError("Tên kiểu dáng không được để trống");
       return;
     }
 
-    // Kiểm tra xem tên phong cách có bị trùng không
+    // Kiểm tra xem tên chất liệu có bị trùng không
     const isDuplicate = kieuDangs.some(
       (kd) => kd.tenKieuDang === newKieuDang.tenKieuDang
     );
@@ -746,14 +844,28 @@ const handleSelectImage = (e, image) => {
       return;
     }
 
-    // Gửi yêu cầu thêm phong cách mới
+    // Gửi yêu cầu thêm chất liệu mới
     axios
       .post("http://localhost:8080/api/kieudang/add", newKieuDang)
-      .then((response) => {
-        // Cập nhật danh sách phong cách sau khi thêm mới
-        setKieuDangs([response.data, ...kieuDangs]); // Thêm phong cách mới vào đầu danh sách
+      .then(() => {
+        // Gọi lại API để lấy danh sách kiểu dáng mới nhất
+        axios
+          .get("http://localhost:8080/api/kieudang/kieu-dang/hoat-dong")
+          .then((res) => {
+            console.log("Kiểu dáng API Response:", res.data);
+            const sortedkieuDangs = res.data.sort((a, b) => b.id - a.id); // Sắp xếp theo ID giảm dần
+            setKieuDangs(sortedkieuDangs);
+            setSelectedKieuDang(sortedkieuDangs[0].id); // Lưu ID của kiểu dáng mới nhất
+          })
+          .catch((error) =>
+            console.error(
+              "Lỗi API kiểu dáng:",
+              error.response ? error.response.data : error.message
+            )
+          );
 
         // Hiển thị snackbar thông báo thành công
+        setSnackbarMessageKD("Thêm kiểu dáng thành công");
         setOpenSnackbarKD(true);
 
         // Đóng modal sau khi thêm thành công
@@ -775,7 +887,8 @@ const handleSelectImage = (e, image) => {
       setError("Tên kiểu đai quần không được để trống");
       return;
     }
-    // kiểm tra tên đã tồn tại hay chưa
+
+    // Kiểm tra xem tên kiểu đai quần có bị trùng không
     const isDuplicate = kieuDaiQuans.some(
       (kdq) => kdq.tenKieuDaiQuan === newKieuDaiQuan.tenKieuDaiQuan
     );
@@ -783,28 +896,39 @@ const handleSelectImage = (e, image) => {
       setError("Tên kiểu đai quần đã tồn tại");
       return;
     }
+
     // Gửi yêu cầu thêm kiểu đai quần mới
     axios
       .post("http://localhost:8080/api/kieudaiquan/add", newKieuDaiQuan)
-      .then((response) => {
-        // Cập nhật danh sách kiểu đai quần sau khi thêm mới
-        setKieuDaiQuans([response.data, ...kieuDaiQuans]); // Thêm kiểu đai quần mới vào đầu danh sách
+      .then(() => {
+        // Gọi lại API để lấy danh sách kiểu đai quần mới nhất
+        axios
+          .get("http://localhost:8080/api/kieudaiquan/kieu-dai-quan/hoat-dong")
+          .then((res) => {
+            const sortedKieuDaiQuans = res.data.sort((a, b) => b.id - a.id);
+            setKieuDaiQuans(sortedKieuDaiQuans);
+            setSelectedKieuDaiQuan(sortedKieuDaiQuans[0]?.id || "");
+          })
+          .catch((error) =>
+            console.error("Lỗi khi gọi lại API kiểu đai quần:", error)
+          );
 
         // Hiển thị snackbar thông báo thành công
+        setSnackbarMessageKDQ("Thêm kiểu đai quần thành công");
         setOpenSnackbarKDQ(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
       })
       .catch((error) => {
-        // Kiểm tra lỗi từ API và hiển thị thông báo lỗi chính xác
         if (error.response && error.response.data) {
-          setError(error.response.data); // Lấy lỗi từ backend
+          setError(error.response.data);
         } else {
           setError("Đã có lỗi xảy ra khi thêm kiểu đai quần");
         }
       });
   };
+
   // add xuất xứ
   const handleAddXuatXu = () => {
     // Kiểm tra nếu tên xuất xứ trống
@@ -818,32 +942,42 @@ const handleSelectImage = (e, image) => {
       (xx) => xx.tenXuatXu === newXuatXu.tenXuatXu
     );
     if (isDuplicate) {
-      setError("Tên Xuất xứ đã tồn tại");
+      setError("Tên xuất xứ đã tồn tại");
       return;
     }
 
     // Gửi yêu cầu thêm xuất xứ mới
     axios
       .post("http://localhost:8080/api/xuatxu/add", newXuatXu)
-      .then((response) => {
-        // Cập nhật danh sách xuất xứ sau khi thêm mới
-        setXuatXus([response.data, ...xuatXus]); // Thêm xuất xứ mới vào đầu danh sách
+      .then(() => {
+        // Gọi lại API để lấy danh sách xuất xứ mới nhất
+        axios
+          .get("http://localhost:8080/api/xuatxu/xuat-xu/hoat-dong")
+          .then((res) => {
+            const sortedXuatXus = res.data.sort((a, b) => b.id - a.id);
+            setXuatXus(sortedXuatXus);
+            setSelectedXuatXus(sortedXuatXus[0]?.id || "");
+          })
+          .catch((error) =>
+            console.error("Lỗi khi gọi lại API xuất xứ:", error)
+          );
 
         // Hiển thị snackbar thông báo thành công
+        setSnackbarMessageXX("Thêm xuất xứ thành công");
         setOpenSnackbarXX(true);
 
         // Đóng modal sau khi thêm thành công
         handleCloseModal();
       })
       .catch((error) => {
-        // Kiểm tra lỗi từ API và hiển thị thông báo lỗi chính xác
         if (error.response && error.response.data) {
-          setError(error.response.data); // Lấy lỗi từ backend
+          setError(error.response.data);
         } else {
           setError("Đã có lỗi xảy ra khi thêm xuất xứ");
         }
       });
   };
+
   //add màu sắc
   useEffect(() => {
     // Fetch all colors on page load
@@ -1127,11 +1261,10 @@ const handleSelectImage = (e, image) => {
             <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
               <InputLabel>Danh Mục</InputLabel>
               <Select
-                value={selectedCategory || ""} // Kiểm tra value là một giá trị hợp lệ
+                value={selectedCategory || ""} // Đảm bảo rằng selectedCategory là giá trị hợp lệ
                 label="Danh Mục"
                 onChange={(e) => {
-                  console.log(e.target.value);
-                  setSelectedCategory(e.target.value); // Lưu lại giá trị khi chọn
+                  setSelectedCategory(e.target.value); // Cập nhật selectedCategory khi người dùng chọn
                 }}
               >
                 {danhMucs.length > 0 ? (
@@ -1141,10 +1274,11 @@ const handleSelectImage = (e, image) => {
                     </MenuItem>
                   ))
                 ) : (
-                  <MenuItem disabled>Không có danh mục</MenuItem> // Nếu danh mục trống, hiển thị thông báo
+                  <MenuItem disabled>Không có danh mục</MenuItem> // Hiển thị nếu danh mục trống
                 )}
               </Select>
             </FormControl>
+
             <IconButton
               color="primary"
               onClick={() => handleOpenModal("danhMuc")}
@@ -1282,11 +1416,19 @@ const handleSelectImage = (e, image) => {
 
             {/* Snackbar thông báo thêm thương hiệu thành công */}
             <Snackbar
-              open={openSnackbar}
-              autoHideDuration={3000}
-              onClose={() => setOpenSnackbar(false)}
-              message="Thêm thương hiệu thành công!"
-            />
+              open={openSnackbarTH}
+              autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
+              onClose={handleCloseSnackbarTH}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
+            >
+              <Alert
+                onClose={handleCloseSnackbarTH}
+                severity="success"
+                sx={{ width: "100%" }}
+              >
+                {snackbarMessageTH}
+              </Alert>
+            </Snackbar>
           </Grid>
           {/* phong cách */}
           <Grid item xs={12} md={3}>
@@ -1360,11 +1502,19 @@ const handleSelectImage = (e, image) => {
             )}
             {/* Snackbar thông báo thêm phong cách thành công */}
             <Snackbar
-              open={openSnackbar}
-              autoHideDuration={3000}
-              onClose={() => setOpenSnackbar(false)}
-              message="Thêm phong cách thành công!"
-            />
+              open={openSnackbarPC}
+              autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
+              onClose={handleCloseSnackbarPC}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
+            >
+              <Alert
+                onClose={handleCloseSnackbarPC}
+                severity="success"
+                sx={{ width: "100%" }}
+              >
+                {snackbarMessagePC}
+              </Alert>
+            </Snackbar>
           </Grid>
           {/* Chất liệu */}
           <Grid item xs={12} md={3}>
@@ -1439,11 +1589,19 @@ const handleSelectImage = (e, image) => {
 
             {/* Snackbar thông báo thêm chất liệu thành công */}
             <Snackbar
-              open={openSnackbar}
-              autoHideDuration={3000}
-              onClose={() => setOpenSnackbar(false)}
-              message="Thêm chất liệu thành công!"
-            />
+              open={openSnackbarCL}
+              autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
+              onClose={handleCloseSnackbarCL}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
+            >
+              <Alert
+                onClose={handleCloseSnackbarCL}
+                severity="success"
+                sx={{ width: "100%" }}
+              >
+                {snackbarMessageCL}
+              </Alert>
+            </Snackbar>
           </Grid>
           {/* Hàng 2: 3 cột */}
           {/* Kiểu dáng */}
@@ -1515,14 +1673,24 @@ const handleSelectImage = (e, image) => {
                 </DialogActions>
               </Dialog>
             )}
+
             {/* Snackbar thông báo thêm phong cách thành công */}
             <Snackbar
-              open={openSnackbar}
-              autoHideDuration={3000}
-              onClose={() => setOpenSnackbar(false)}
-              message="Thêm Kiểu dáng thành công!"
-            />
+              open={openSnackbarKD}
+              autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
+              onClose={handleCloseSnackbarKD}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
+            >
+              <Alert
+                onClose={handleCloseSnackbarKD}
+                severity="success"
+                sx={{ width: "100%" }}
+              >
+                {snackbarMessageKD}
+              </Alert>
+            </Snackbar>
           </Grid>
+
           {/* Kiểu đai quần */}
           <Grid item xs={12} md={3}>
             <FormControl fullWidth margin="normal" sx={{ width: "60%" }}>
@@ -1597,11 +1765,19 @@ const handleSelectImage = (e, image) => {
             )}
             {/* Snackbar thông báo thêm phong cách thành công */}
             <Snackbar
-              open={openSnackbar}
-              autoHideDuration={3000}
-              onClose={() => setOpenSnackbar(false)}
-              message="Thêm kiểu đai quần thành công!"
-            />
+              open={openSnackbarKDQ}
+              autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
+              onClose={handleCloseSnackbarKDQ}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
+            >
+              <Alert
+                onClose={handleCloseSnackbarKDQ}
+                severity="success"
+                sx={{ width: "100%" }}
+              >
+                {snackbarMessageKDQ}
+              </Alert>
+            </Snackbar>
           </Grid>
           {/* Xuất xứ */}
           <Grid item xs={12} md={3}>
@@ -1667,11 +1843,19 @@ const handleSelectImage = (e, image) => {
             )}
             {/* Snackbar thông báo thêm phong cách thành công */}
             <Snackbar
-              open={openSnackbar}
-              autoHideDuration={3000}
-              onClose={() => setOpenSnackbar(false)}
-              message="Thêm Xuất Xứ thành công!"
-            />
+              open={openSnackbarXX}
+              autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
+              onClose={handleCloseSnackbarXX}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
+            >
+              <Alert
+                onClose={handleCloseSnackbarXX}
+                severity="success"
+                sx={{ width: "100%" }}
+              >
+                {snackbarMessageXX}
+              </Alert>
+            </Snackbar>
           </Grid>
           {/* Mô tả */}
           <Grid item xs={12} md={6}>
@@ -2017,7 +2201,24 @@ const handleSelectImage = (e, image) => {
         </div>
       </Paper>
 
-      <Button onClick={handleAddToTable}>Thêm vào bảng</Button>
+      <Button
+        variant="outlined" // Kiểu nút với viền
+        sx={{
+          color: "primary", // Màu chữ xanh nhạt
+          backgroundColor: "white", // Màu nền trắng
+          borderColor: "lightblue", // Màu viền xanh nhạt
+          "&:hover": {
+            backgroundColor: "lightblue", // Màu nền khi hover
+            color: "white", // Màu chữ khi hover
+            borderColor: "primary", // Màu viền khi hover
+          },
+          marginBottom: "20px",
+        }}
+        startIcon={<Add sx={{ color: "primary" }} />} // Màu của biểu tượng dấu "+"
+        onClick={handleAddToTable} // Gọi hàm thêm vào bảng
+      >
+        Thêm vào bảng
+      </Button>
 
       {/* bảng hiển thị danh sách */}
 

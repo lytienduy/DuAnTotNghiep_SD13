@@ -46,6 +46,8 @@ public class SanPham {
     @JsonManagedReference // Phía "cha", quản lý vòng lặp
     private List<SanPhamChiTiet> sanPhamChiTietList;
 
+
+
 }
 
 

@@ -53,32 +53,8 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet, 
     Integer getMaxId();
     SanPhamChiTiet findById(int id);
 
-    // search
-    @Query("SELECT sp FROM SanPhamChiTiet sp " +
-            "WHERE (:tenSanPham IS NULL OR LOWER(sp.sanPham.tenSanPham) LIKE LOWER(CONCAT('%', :tenSanPham, '%'))) " +
-            "AND (:danhMucId IS NULL OR sp.danhMuc.id = :danhMucId) " +
-            "AND (:thuongHieuId IS NULL OR sp.thuongHieu.id = :thuongHieuId) " +
-            "AND (:phongCachId IS NULL OR sp.phongCach.id = :phongCachId) " +
-            "AND (:chatLieuId IS NULL OR sp.chatLieu.id = :chatLieuId) " +
-            "AND (:kieuDangId IS NULL OR sp.kieuDang.id = :kieuDangId) " +
-            "AND (:kieuDaiQuanId IS NULL OR sp.kieuDaiQuan.id = :kieuDaiQuanId) " +
-            "AND (:xuatXuId IS NULL OR sp.xuatXu.id = :xuatXuId) " +
-            "AND (:mauSacId IS NULL OR sp.mauSac.id = :mauSacId) " +
-            "AND (:sizeId IS NULL OR sp.size.id = :sizeId) " +
-            "AND (:giaMin IS NULL OR sp.gia >= :giaMin) " +
-            "AND (:giaMax IS NULL OR sp.gia <= :giaMax)")
-    List<SanPhamChiTiet> searchSanPham(
-            @Param("tenSanPham") String tenSanPham,
-            @Param("danhMucId") Integer danhMucId,
-            @Param("thuongHieuId") Integer thuongHieuId,
-            @Param("phongCachId") Integer phongCachId,
-            @Param("chatLieuId") Integer chatLieuId,
-            @Param("kieuDangId") Integer kieuDangId,
-            @Param("kieuDaiQuanId") Integer kieuDaiQuanId,
-            @Param("xuatXuId") Integer xuatXuId,
-            @Param("mauSacId") Integer mauSacId,
-            @Param("sizeId") Integer sizeId,
-            @Param("giaMin") Double giaMin,
-            @Param("giaMax") Double giaMax);
+    // tìm kiếm
+    @Query("SELECT spct FROM SanPhamChiTiet spct WHERE LOWER(spct.sanPham.tenSanPham) LIKE LOWER(CONCAT('%', :ten, '%'))")
+    List<SanPhamChiTiet> searchByTenSanPham(@Param("ten") String ten);
 
 }

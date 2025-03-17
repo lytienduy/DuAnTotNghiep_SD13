@@ -2,6 +2,7 @@ package com.example.shopdragonbee.controller;
 
 import com.example.shopdragonbee.dto.SanPhamChiTietDTO;
 import com.example.shopdragonbee.dto.SanPhamChiTietUpdateDTO;
+import com.example.shopdragonbee.dto.UpdateSanphamChiTietDTO;
 import com.example.shopdragonbee.entity.AnhSanPham;
 import com.example.shopdragonbee.entity.SanPham;
 import com.example.shopdragonbee.entity.SanPhamChiTiet;
@@ -38,28 +39,20 @@ public class SanPhamChiTietController {
     @PutMapping("/{id}")
     public ResponseEntity<SanPhamChiTietDTO> updateSanPhamChiTiet(@PathVariable Integer id,
                                                                   @RequestBody SanPhamChiTietUpdateDTO request) {
-        System.out.println("Dữ liệu nhận từ frontend: " + request); // Kiểm tra dữ liệu từ frontend
-        return ResponseEntity.ok(sanPhamChiTietService.updateSanPhamChiTiet(id, request));
+        try {
+            System.out.println("Dữ liệu nhận từ frontend: " + request); // Kiểm tra dữ liệu từ frontend
+            // Gọi service để cập nhật sản phẩm chi tiết
+            SanPhamChiTietDTO updatedProduct = sanPhamChiTietService.updateSanPhamChiTiet(id, request);
+
+            // Trả về phản hồi thành công kèm theo DTO đã được cập nhật
+            return ResponseEntity.ok(updatedProduct);
+
+        } catch (RuntimeException e) {
+            // Xử lý lỗi nếu có vấn đề trong quá trình cập nhật
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new SanPhamChiTietDTO()); // Hoặc có thể trả về thông báo lỗi chi tiết
+        }
     }
-// search
-//@GetMapping("/search")
-//public ResponseEntity<List<SanPhamChiTietDTO>> searchSanPham(
-//        @RequestParam(required = false) String tenSanPham,
-//        @RequestParam(required = false) Integer danhMucId,
-//        @RequestParam(required = false) Integer thuongHieuId,
-//        @RequestParam(required = false) Integer phongCachId,
-//        @RequestParam(required = false) Integer chatLieuId,
-//        @RequestParam(required = false) Integer kieuDangId,
-//        @RequestParam(required = false) Integer kieuDaiQuanId,
-//        @RequestParam(required = false) Integer xuatXuId,
-//        @RequestParam(required = false) Integer mauSacId,
-//        @RequestParam(required = false) Integer sizeId,
-//        @RequestParam(required = false) Double giaMin,
-//        @RequestParam(required = false) Double giaMax) {
-//
-//    List<SanPhamChiTietDTO> result = sanPhamChiTietService.searchSanPham(tenSanPham, danhMucId, thuongHieuId, phongCachId, chatLieuId, kieuDangId, kieuDaiQuanId, xuatXuId, mauSacId, sizeId, giaMin, giaMax);
-//    return ResponseEntity.ok(result);
-//}
 
     //add
     // API thêm sản phẩm chi tiết và ảnh
@@ -140,6 +133,26 @@ public class SanPhamChiTietController {
         } catch (Exception e) {
             return new ResponseEntity<>("❌ Lỗi khi thêm sản phẩm chi tiết: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+    //tìm kiếm
+    @GetMapping("/search")
+    public ResponseEntity<List<SanPhamChiTiet>> searchSanPhamChiTiet(@RequestParam("ten") String ten) {
+        List<SanPhamChiTiet> sanPhamChiTietList = sanPhamChiTietService.searchSanPhamChiTietByTen(ten);
+        return ResponseEntity.ok(sanPhamChiTietList);
+    }
+    /// update số lượng và giá
+    @PutMapping("/batch")
+    public ResponseEntity<List<SanPhamChiTiet>> updateSanPhamChiTietBatch(
+            @RequestBody List<UpdateSanphamChiTietDTO> updateDTOList) {
+
+        List<SanPhamChiTiet> updatedSanPhamChiTiet = sanPhamChiTietService.updateSanPhamChiTietBatch(updateDTOList);
+
+        if (updatedSanPhamChiTiet.isEmpty()) {
+            // Trả về thông báo rõ ràng nếu không có sản phẩm nào được cập nhật
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);  // 204: Không có nội dung
+        }
+
+        return new ResponseEntity<>(updatedSanPhamChiTiet, HttpStatus.OK);
     }
 
 }

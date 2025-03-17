@@ -1,19 +1,9 @@
 package com.example.shopdragonbee.controller;
 
 
-import com.example.shopdragonbee.dto.SanPhamChiTietDTO;
 import com.example.shopdragonbee.dto.SanPhamDTO;
-import com.example.shopdragonbee.entity.MauSac;
 import com.example.shopdragonbee.entity.SanPham;
-import com.example.shopdragonbee.entity.SanPhamChiTiet;
-import com.example.shopdragonbee.entity.Size;
-import com.example.shopdragonbee.repository.ChatLieuRepository;
-import com.example.shopdragonbee.repository.DanhMucRepository;
-import com.example.shopdragonbee.repository.MauSacRepository;
-import com.example.shopdragonbee.repository.SizeRepository;
-import com.example.shopdragonbee.repository.ThuongHieuRepository;
 import com.example.shopdragonbee.respone.SanPhamChiTietRespone;
-import com.example.shopdragonbee.respone.SanPhamRespone;
 import com.example.shopdragonbee.service.SanPhamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,9 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -104,15 +91,17 @@ public class SanPhamController {
     }
 
 // chuyển đổi trạng thái
-    @PutMapping("/{id}/toggle-trang-thai")
-    public ResponseEntity<?> toggleProductStatus(@PathVariable Integer id) {
-        String message = sanPhamService.toggleProductStatus(id);
-        if (message.startsWith("Trạng thái")) {
-            return ResponseEntity.ok(message);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        }
+@PutMapping("/{id}/toggle-trang-thai")
+public ResponseEntity<?> toggleProductStatus(@PathVariable Integer id) {
+    String message = sanPhamService.toggleProductStatus(id);
+    if (message.startsWith("Trạng thái")) {
+        return ResponseEntity.ok(message);
+    } else {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
     }
+}
+
+
 
 }
 

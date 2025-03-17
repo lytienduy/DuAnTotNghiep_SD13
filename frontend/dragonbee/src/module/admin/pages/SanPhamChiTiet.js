@@ -6,6 +6,7 @@ import {
   Visibility,
   VisibilityOff,
   Edit,
+  Add,
 } from "@mui/icons-material";
 import {
   Container,
@@ -45,6 +46,8 @@ const SanPhamChiTiet = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false); // Mở đóng Snackbar
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarMessage1, setSnackbarMessage1] = useState(""); // Nội dung thông báo
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectAll, setSelectAll] = useState(false);
   const [filters, setFilters] = useState({
     search: "",
     trangThai: "",
@@ -65,7 +68,6 @@ const SanPhamChiTiet = () => {
   const [showAllDetails, setShowAllDetails] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-
   const [open, setOpen] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(5); // Mặc định là 5 item mỗi trang
   const [selectedItems, setSelectedItems] = useState([]); // Dùng để lưu trữ các sản phẩm được chọn
@@ -78,6 +80,8 @@ const SanPhamChiTiet = () => {
   const [xuatXus, setXuatXus] = useState("");
   const [colors, setColors] = useState("");
   const [sizes, setSizes] = useState("");
+  const [openSnackbarUpdate, setOpenSnackbarUpdate] = useState(false); // Điều khiển Snackbar
+  const [snackbarMessageUpdate, setSnackbarMessageUpdate] = useState(""); // Thông báo hiển thị trong Snackbar
   // Hàm tải mã QR cho sản phẩm chi tiết
   const handleDownloadQRCode = async (productDetailId) => {
     try {
@@ -183,25 +187,7 @@ const SanPhamChiTiet = () => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
     setPage(1);
   };
-  
-  // Kiểm tra chiTietList có phải là mảng và lọc dữ liệu hợp lý
-  const filteredData = chiTietList.filter(
-    (item) =>
-      item.tenSanPham.toLowerCase().includes(filters.search.toLowerCase()) &&
-      (filters.trangThai === "" || item.trangThai === filters.trangThai) &&
-      (filters.thuongHieu === "" || item.thuongHieu === filters.thuongHieu) &&
-      (filters.danhMuc === "" || item.danhMuc === filters.danhMuc) &&
-      (filters.phongCach === "" || item.phongCach === filters.phongCach) &&
-      (filters.chatLieu === "" || item.chatLieu === filters.chatLieu) &&
-      (filters.xuatXu === "" || item.xuatXu === filters.xuatXu) &&
-      (filters.mauSac === "" || item.mauSac === filters.mauSac) &&
-      (filters.size === "" || item.size === filters.size) &&
-      (filters.kieuDang === "" || item.kieuDang === filters.kieuDang) &&
-      (filters.kieuDaiQuan === "" ||
-        item.kieuDaiQuan === filters.kieuDaiQuan) &&
-      item.gia >= filters.priceRange[0] &&
-      item.gia <= filters.priceRange[1]
-  );
+
   const fieldLabels = {
     thuongHieu: "Thương Hiệu",
     danhMuc: "Danh Mục",
@@ -349,39 +335,87 @@ const SanPhamChiTiet = () => {
     setPage(1);
   };
   // Hàm xử lý thay đổi số lượng và giá
-
-  const handleCheckboxChange = (id) => {
-    setSelectedItems(
-      (prevSelectedItems) =>
-        prevSelectedItems.includes(id)
-          ? prevSelectedItems.filter((itemId) => itemId !== id) // Bỏ chọn
-          : [...prevSelectedItems, id] // Chọn
-    );
+  // Hàm xử lý khi thay đổi checkbox "Chọn tất cả"
+  const handleSelectAllChange = (event) => {
+    if (event.target.checked) {
+      // Chọn tất cả các item
+      const allItemIds = chiTietList.map((item) => item.id);
+      setSelectedItems(allItemIds);
+    } else {
+      // Bỏ chọn tất cả các item
+      setSelectedItems([]);
+    }
+    setSelectAll(event.target.checked); // Cập nhật trạng thái "Chọn tất cả"
   };
-  const handleInputChange = (e, id, field) => {
+
+  // Hàm xử lý khi thay đổi checkbox của một item cụ thể
+  const handleCheckboxChange = (itemId) => {
+    const newSelectedItems = [...selectedItems];
+    if (newSelectedItems.includes(itemId)) {
+      // Nếu đã chọn, bỏ chọn
+      const index = newSelectedItems.indexOf(itemId);
+      newSelectedItems.splice(index, 1);
+    } else {
+      // Nếu chưa chọn, chọn
+      newSelectedItems.push(itemId);
+    }
+    setSelectedItems(newSelectedItems);
+  };
+  const isAllSelected = selectedItems.length === chiTietList.length;
+  // Hàm xử lý thay đổi số lượng hoặc giá của từng sản phẩm
+  const handleInputChange = (e, itemId, field) => {
     const value = e.target.value;
-
+  
     setChiTietList((prevList) =>
-      prevList.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
+      prevList.map((item) => {
+        if (item.id === itemId) {
+          const updatedItem = { ...item, [field]: value };
+  
+          // Kiểm tra nếu trường thay đổi là số lượng
+          if (field === "soLuong") {
+            if (value == 0) {
+              // Nếu số lượng = 0, cập nhật trạng thái thành "Hết hàng"
+              updatedItem.trangThai = "Hết hàng";
+            } else {
+              // Nếu số lượng > 0, trạng thái sẽ trở lại trạng thái của sản phẩm cha hoặc trạng thái "Hoạt động"
+              updatedItem.trangThai = item.trangThai !== "Ngừng bán" ? "Hoạt động" : "Ngừng bán";
+            }
+          }
+  
+          return updatedItem;
+        }
+        return item;
+      })
     );
   };
+  
+  
+  
 
-  const handleCommonValueChange = (type) => {
-    const updatedItems = chiTietList.map((item) => {
-      // Kiểm tra nếu sản phẩm đã được chọn, thì cập nhật thông tin
-      if (selectedItems.includes(item.id)) {
-        if (type === "soLuong") {
-          return { ...item, soLuong: parseInt(commonQuantity) || item.soLuong }; // Cập nhật số lượng
-        } else if (type === "gia") {
-          return { ...item, gia: parseFloat(commonPrice) || item.gia }; // Cập nhật giá
-        }
-      }
-      return item; // Không thay đổi với các sản phẩm không được chọn
-    });
-
-    setChiTietList(updatedItems); // Cập nhật lại bảng với dữ liệu mới
+  // Hàm để xử lý sự kiện khi thay đổi số lượng và giá chung
+  const handleCommonInputChange = (e, type) => {
+    const value = e.target.value;
+    if (type === "quantity") {
+      setCommonQuantity(value);
+      // Cập nhật số lượng của các sản phẩm đã chọn
+      selectedItems.forEach((itemId) => {
+        setChiTietList((prevList) =>
+          prevList.map((item) =>
+            item.id === itemId ? { ...item, soLuong: value } : item
+          )
+        );
+      });
+    } else if (type === "price") {
+      setCommonPrice(value);
+      // Cập nhật giá của các sản phẩm đã chọn
+      selectedItems.forEach((itemId) => {
+        setChiTietList((prevList) =>
+          prevList.map((item) =>
+            item.id === itemId ? { ...item, gia: value } : item
+          )
+        );
+      });
+    }
   };
   const handleEdit = async (id) => {
     try {
@@ -412,34 +446,120 @@ const SanPhamChiTiet = () => {
 
   const handleSave = async () => {
     console.log("Dữ liệu gửi lên API:", selectedItem); // Kiểm tra dữ liệu frontend
-
+  
     try {
-      await axios.put(
+      const response = await axios.put(
         `http://localhost:8080/api/san-pham-chi-tiet/${selectedItem.id}`,
         selectedItem
       );
-
-      console.log("Cập nhật thành công! Reload lại trang...");
+  
+      console.log("Cập nhật thành công!");
+      handleClose();
       setSnackbarMessage1("Cập nhật sản phẩm chi tiết thành công!");
       setOpenSnackbar(true);
-
-      // Reload lại trang sau khi cập nhật thành công
-      window.location.reload();
+  
+      // Cập nhật lại sản phẩm chi tiết trong state mà không cần reload trang
+      setChiTietList((prevList) =>
+        prevList.map((item) =>
+          item.id === selectedItem.id ? { ...item, ...response.data } : item
+        )
+      );
+  
     } catch (error) {
       console.error("Lỗi khi cập nhật sản phẩm chi tiết:", error);
       setSnackbarMessage1("Lỗi khi cập nhật sản phẩm chi tiết!");
       setOpenSnackbar(true);
     }
   };
-
   
-
+  
   const handleClose = () => {
     setOpen(false); // Chỉ đóng khi người dùng nhấn "Hủy"
   };
+  // tìm kiếm
+  // Gọi API khi tìm kiếm
+  useEffect(() => {
+    const fetchSanPhamChiTiet = async (ten) => {
+      if (ten && ten.length > 0) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8080/api/san-pham-chi-tiet/search?ten=${ten}`
+          );
+          console.log("Dữ liệu từ API:", response.data); // Kiểm tra dữ liệu trả về
+          setChiTietList(response.data);
+        } catch (error) {
+          console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
+        }
+      } else {
+        setChiTietList([]); // Nếu không có từ khóa, không hiển thị sản phẩm
+      }
+    };
 
-  // Hàm lưu và cập nhật thông tin sản phẩm
+    fetchSanPhamChiTiet(searchTerm);
+  }, [searchTerm]); // Chạy lại khi `searchTerm` thay đổi
 
+  // Hàm kiểm tra tồn tại trước khi áp dụng toLowerCase
+  const handleSearchFilter = (searchTerm, item) => {
+    // Kiểm tra nếu `searchTerm` và `item.tenSanPham` là chuỗi hợp lệ trước khi gọi `toLowerCase()`
+    const searchText = searchTerm ? searchTerm.toLowerCase() : ""; // Nếu `searchTerm` không hợp lệ, dùng chuỗi rỗng
+    const productName = item.tenSanPham ? item.tenSanPham.toLowerCase() : ""; // Nếu `item.tenSanPham` không hợp lệ, dùng chuỗi rỗng
+
+    return productName.includes(searchText); // So sánh chuỗi sản phẩm với từ khóa tìm kiếm
+  };
+
+  // Sử dụng filteredList thay vì chiTietList trong bảng
+  const filteredList = chiTietList.filter((item) =>
+    handleSearchFilter(searchTerm, item)
+  );
+
+  // cập nhật số lượng và giá
+  const handleUpdateProducts = async () => {
+    // Khởi tạo đối tượng updatedProducts chỉ chứa các trường thay đổi
+    const updatedProducts = selectedItems.map((id) => {
+      let updatedProduct = { id };
+  
+      // Chỉ thêm soLuong nếu nó khác giá trị ban đầu
+      if (commonQuantity !== 0) {
+        updatedProduct.soLuong = commonQuantity;
+      }
+  
+      // Chỉ thêm gia nếu nó khác giá trị ban đầu
+      if (commonPrice !== 0) {
+        updatedProduct.gia = commonPrice;
+      }
+  
+      return updatedProduct;
+    });
+  
+    try {
+      const response = await fetch("http://localhost:8080/api/san-pham-chi-tiet/batch", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedProducts),
+      });
+  
+      if (response.ok) {
+        setSnackbarMessageUpdate("Cập nhật số lượng và/hoặc giá thành công");
+        setOpenSnackbarUpdate(true);
+        
+        // Reload lại trang sau khi cập nhật thành công
+        window.location.reload();
+      } else {
+        setSnackbarMessageUpdate("Cập nhật thất bại, vui lòng thử lại!");
+        setOpenSnackbarUpdate(true);
+      }
+    } catch (error) {
+      setSnackbarMessageUpdate("Đã xảy ra lỗi khi cập nhật sản phẩm");
+      setOpenSnackbarUpdate(true);
+    }
+  };
+  
+  
+  const handleCloseSnackbarUpate = () => {
+    setOpenSnackbarUpdate(false);
+  };
   return (
     <Container maxWidth="lg">
       <Grid
@@ -458,14 +578,14 @@ const SanPhamChiTiet = () => {
       <Paper sx={{ padding: 2, mb: 2 }}>
         <Grid container spacing={1} alignItems="center">
           <Grid item xs={12} md={3}>
+            {/* Thêm ô tìm kiếm */}
             <TextField
-              label="Tìm kiếm theo tên"
+              label="Tìm kiếm sản phẩm"
               variant="outlined"
               fullWidth
-              size="small"
-              name="search"
-              value={filters.search}
-              onChange={handleFilterChange}
+              margin="normal"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)} // Cập nhật từ khóa tìm kiếm
             />
           </Grid>
 
@@ -512,53 +632,87 @@ const SanPhamChiTiet = () => {
         </Grid>
       </Paper>
       {/* Toggle Button */}
-      <Grid container justifyContent="flex-end" spacing={1}>
-        <Grid item>
-          <Button
-            variant="contained"
-            onClick={handleShowAllToggle}
-            sx={{
-              backgroundColor: "lightblue",
-              "&:hover": { backgroundColor: "lightblue" },
-            }}
-            startIcon={showAllDetails ? <VisibilityOff /> : <Visibility />}
-          >
-            {showAllDetails ? "Ẩn chi tiết" : "Hiển thị toàn bộ"}
-          </Button>
-        </Grid>
-      </Grid>
+      <Paper sx={{ padding: 2, mb: 2 }}>
+  <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+    <TextField
+      label="Số Lượng Chung"
+      type="number"
+      value={commonQuantity}
+      onChange={(e) => handleCommonInputChange(e, "quantity")}
+      sx={{ width: "150px", height: "20px" }}
+    />
+    <TextField
+      label="Giá Chung"
+      type="number"
+      value={commonPrice}
+      onChange={(e) => handleCommonInputChange(e, "price")}
+      sx={{ width: "150px", height: "20px" }}
+    />
+  </div>
+
+  {/* Sắp xếp các nút thẳng hàng và cách nhau */}
+  <Grid container justifyContent="flex-start" spacing={2} sx={{ mt: 2 }}>
+    <Grid item>
+      <Button
+        variant="contained"
+        onClick={() => setShowAllDetails(!showAllDetails)}
+        sx={{
+          backgroundColor: "lightblue",
+          "&:hover": { backgroundColor: "lightblue" },
+        }}
+        startIcon={showAllDetails ? <VisibilityOff /> : <Visibility />}
+      >
+        {showAllDetails ? "Ẩn chi tiết" : "Hiển thị toàn bộ"}
+      </Button>
+    </Grid>
+
+    <Grid item>
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ mb: 2 }}
+        onClick={handleUpdateProducts}
+      >
+        Sửa
+      </Button>
+    </Grid>
+  </Grid>
+
+  {/* Snackbar */}
+  <Snackbar
+    open={openSnackbarUpdate}
+    autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
+    onClose={handleCloseSnackbarUpate}
+    anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
+  >
+    <Alert
+      onClose={handleCloseSnackbarUpate}
+      severity="success"
+      sx={{ width: "100%" }}
+    >
+      {snackbarMessageUpdate}
+    </Alert>
+  </Snackbar>
+</Paper>
+
+
       {loading ? (
         <CircularProgress />
       ) : (
         <>
-          {/* Các ô nhập số lượng chung và giá chung */}
           <div>
-            <TextField
-              label="Giá Chung"
-              type="number"
-              value={commonPrice}
-              onChange={(e) => {
-                setCommonPrice(e.target.value); // Cập nhật giá chung
-                handleCommonValueChange("gia"); // Cập nhật bảng với giá mới
-              }}
-            />
-
-            <TextField
-              label="Số Lượng Chung"
-              type="number"
-              value={commonQuantity}
-              onChange={(e) => {
-                setCommonQuantity(e.target.value); // Cập nhật số lượng chung
-                handleCommonValueChange("soLuong"); // Cập nhật bảng với số lượng mới
-              }}
-            />
-
             {/* Bảng hiển thị sản phẩm */}
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell></TableCell>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected} // Đảm bảo checkbox "Chọn tất cả" được chọn nếu tất cả các item được chọn
+                        onChange={handleSelectAllChange} // Gọi hàm xử lý "Chọn tất cả"
+                      />
+                    </TableCell>
                     <TableCell>
                       <strong>STT</strong>
                     </TableCell>
@@ -630,15 +784,28 @@ const SanPhamChiTiet = () => {
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{item.ma}</TableCell>
                         <TableCell>{item.tenSanPham}</TableCell>
-                        <TableCell>{item.danhMuc}</TableCell>
-                        <TableCell>{item.thuongHieu}</TableCell>
-                        <TableCell>{item.phongCach}</TableCell>
-                        <TableCell>{item.chatLieu}</TableCell>
-                        <TableCell>{item.mauSac}</TableCell>
-                        <TableCell>{item.size}</TableCell>
-                        <TableCell>{item.kieuDang}</TableCell>
-                        <TableCell>{item.kieuDaiQuan}</TableCell>
-                        <TableCell>{item.xuatXu}</TableCell>
+                        <TableCell>{item.danhMuc}</TableCell>{" "}
+                        <TableCell>{item.thuongHieu}</TableCell>{" "}
+                        <TableCell>
+                          {item.phongCach || "Chưa có phong cách"}
+                        </TableCell>{" "}
+                        {/* Kiểm tra nếu phongCach tồn tại */}
+                        <TableCell>
+                          {item.chatLieu || "Chưa có chất liệu"}
+                        </TableCell>
+                        <TableCell>
+                          {item.mauSac || "Chưa có màu sắc"}
+                        </TableCell>
+                        <TableCell>{item.size || "Chưa có kích cỡ"}</TableCell>
+                        <TableCell>
+                          {item.kieuDang || "Chưa có kiểu dáng"}
+                        </TableCell>
+                        <TableCell>
+                          {item.kieuDaiQuan || "Chưa có kiểu đai quần"}
+                        </TableCell>
+                        <TableCell>
+                          {item.xuatXu || "Chưa có xuất xứ"}
+                        </TableCell>
                         <TableCell>
                           <input
                             type="number"
@@ -657,7 +824,10 @@ const SanPhamChiTiet = () => {
                             }
                           />
                         </TableCell>
-                        <TableCell>{item.trangThai}</TableCell>
+                        <TableCell>
+          {item.sanPhamTrangThai ||item.trangThai}
+          {/* Sử dụng trạng thái của sản phẩm cha nếu trạng thái của sản phẩm chi tiết không có */}
+        </TableCell>
                         <TableCell>
                           <Button
                             variant="contained"
@@ -681,6 +851,7 @@ const SanPhamChiTiet = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+
             {/* Modal chỉnh sửa */}
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
               <DialogTitle>Chỉnh Sửa Sản Phẩm</DialogTitle>
@@ -774,7 +945,7 @@ const SanPhamChiTiet = () => {
                     {/* Hàng 2: Kiểu Dáng, Kiểu Đai Quần, Xuất Xứ */}
                     <Grid container spacing={2} sx={{ mt: 2 }}>
                       <Grid item xs={4}>
-                      <FormControl fullWidth>
+                        <FormControl fullWidth>
                           <InputLabel>Kiểu Dáng</InputLabel>
                           <Select
                             value={selectedItem?.kieuDangId || ""}
@@ -946,10 +1117,10 @@ const SanPhamChiTiet = () => {
               open={openSnackbar}
               autoHideDuration={3000}
               onClose={() => setOpenSnackbar(false)}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }} 
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
-               <Alert severity="success">{snackbarMessage1}</Alert>
-              </Snackbar>
+              <Alert severity="success">{snackbarMessage1}</Alert>
+            </Snackbar>
           </div>
           <Box
             display="flex"
