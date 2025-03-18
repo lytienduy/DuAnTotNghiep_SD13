@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import axios from 'axios';
 import {
     Container, Grid, Typography, Button, Box, IconButton, Card, CardContent, CardMedia
-    , Modal, Breadcrumbs,Link
+    , Modal, Breadcrumbs, Link
 } from "@mui/material";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -12,23 +13,11 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import CloseIcon from "@mui/icons-material/Close";
 import ReactImageMagnify from "react-image-magnify";
+import { useParams } from "react-router-dom"; // Import đúng
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 
-const product = {
-    name: "QUẦN ÂU NAM QASTK503",
-    price: 489000,
-    colors: ["#1D1D1D", "#D1D1D1"],
-    sizes: [29, 30, 31, 32, 34],
-    images: [
-        "https://360.com.vn/wp-content/uploads/2023/12/AKGTK501-QGGTK502-8.jpg",
-        "https://360.com.vn/wp-content/uploads/2023/12/AKGTK501-QGGTK502-2.jpg",
-        "https://360.com.vn/wp-content/uploads/2024/11/APHTK533-QSKTK514-1.jpg",
-        "https://360.com.vn/wp-content/uploads/2024/12/AKGTK503-QGGTK502-7.jpg",
-        'https://360.com.vn/wp-content/uploads/2024/12/AKGTK503-QGGTK502-6.jpg',
-        "https://360.com.vn/wp-content/uploads/2023/12/AKGTK501-QGGTK502-8.jpg",
-        "https://360.com.vn/wp-content/uploads/2023/12/AKGTK501-QGGTK502-2.jpg",
-    ],
-    description: "- Chất liệu: Tuytsi Cafe\n- Form: Slim\n- Đặc tính: Quần âu cafe form dáng slim mặc vừa vặn với cơ thể.",
-};
 
 const productData = [
     {
@@ -76,31 +65,165 @@ const productData = [
 ];
 
 const ChiTietSanPham = () => {
+    const { id } = useParams(); // Lấy id từ URL
     const thumbnailRefs = useRef([]);
+    const [product, setProduct] = useState({});
+    const [selectedColor, setSelectedColor] = useState({});
     const [openSizeGuide, setOpenSizeGuide] = useState(false);
-    const [selectedColor, setSelectedColor] = useState(product.colors[0]);
-    const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
+    const [selectedSize, setSelectedSize] = useState({});
     const [quantity, setQuantity] = useState(1);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
     // Mở bảng chọn size
     const handleOpenSizeGuide = () => setOpenSizeGuide(true);
     const handleCloseSizeGuide = () => setOpenSizeGuide(false);
 
-    const handleNextImage = () => {
-        setSelectedImageIndex((prevIndex) => {
-            const newIndex = (prevIndex + 1) % product.images.length;
-            scrollToThumbnail(newIndex);
-            return newIndex;
+
+    //Thông báo Toast
+    const showSuccessToast = (message) => {
+        toast.success(message, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            style: {
+                backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+                color: "white", // Chữ trắng nổi bật
+                fontSize: "14px", // Nhỏ hơn một chút
+                fontWeight: "500",
+                borderRadius: "8px",
+            }
+        });
+    };
+    const showErrorToast = (message) => {
+        toast.error(message, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            style: {
+                backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+                color: "white", // Chữ trắng nổi bật
+                fontSize: "14px", // Nhỏ hơn một chút
+                fontWeight: "500",
+                borderRadius: "8px",
+            }
         });
     };
 
-    const handlePrevImage = () => {
+    const getSanPhamChiTiet = async () => {
+        // const timSelectedCorlorMoi = (data) => {
+        //     setSelectedColor(null);
+        //     setSelectedSize(null);
+        //     for (const [index, item] of data?.listHinhAnhAndMauSacAndSize.entries() || []) {
+        //         const totalQuantity = item.listSize.reduce((sum, size) => sum + size.soLuong, 0);
+        //         if (totalQuantity > 0) {
+        //             setSelectedColor(index); // Lấy vị trí phần tử
+        //             break; // Thoát khỏi vòng lặp ngay khi tìm thấy sản phẩm hợp lệ
+        //         }
+        //     }
+        // }
+        try {
+            const response = await axios.get(`http://localhost:8080/spctClient/getListSanPhamChiTietTheoMau/${id}`);//Gọi api bằng axiosGet
+            setProduct(response.data);
+            if (Object.keys(selectedColor).length === 0) {
+                setSelectedColor(response.data.listHinhAnhAndMauSacAndSize[0]);
+            }
+            // if (selectedColor !== null) {
+            //     if (response.data?.listHinhAnhAndMauSacAndSize[selectedColor].listSize.reduce((sum, size) => sum + size.soLuong, 0) <= 0) {
+            //         timSelectedCorlorMoi(response.data);
+            //     }
+            // } else {
+            //     timSelectedCorlorMoi(response.data);
+            // }
+
+            showSuccessToast("Thành công")
+        } catch (error) {
+            showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
+        }
+    };
+
+    //Hàm khởi tạo
+    useEffect(() => {
+        getSanPhamChiTiet();
+    }, []);
+
+    //Hàm khởi tạo
+    useEffect(() => {
+        const selectedSizeCopy = selectedSize;
+        setSelectedSize({});
+        if (Object.keys(selectedSizeCopy).length !== 0) {//Kiểm tra nếu có size chọn trước đấy
+            for (const [index, item] of selectedColor?.listSize?.entries() || []) {
+                if (selectedSizeCopy?.id === item?.id) {
+                    if (item?.soLuong > 0) {
+                        setSelectedSize(item);
+                        break;
+                    }
+                }
+            }
+        }
+        console.log(selectedSize);
+    }, [selectedColor]);
+
+
+    const addVaoGioHang = () => {
+        if (Object.keys(selectedSize).length === 0) { showErrorToast("Bạn chưa chọn size"); return; }
+        else {
+            try {
+
+                // Lấy giỏ hàng từ Local Storage (Nếu chưa có, thì set là mảng rỗng [])
+                const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+                // Kiểm tra xem sản phẩm đã có trong giỏ chưa
+                const index = cart.findIndex(item => item.idSPCT === selectedSize.idSPCT);
+
+                if (index !== -1) {
+                    // Nếu có, tăng số lượng
+                    cart[index].quantity += quantity;
+                } else {
+                    // Nếu chưa có, thêm sản phẩm vào giỏ hàng
+                    cart.push({
+                        idSPCT: selectedSize.idSPCT,
+                        anhSPCT: selectedColor.listAnh === null ? null : selectedColor?.listAnh[0],
+                        tenSPCT: selectedSize.tenSPCT,
+                        gia: product.gia,
+                        quantity: quantity
+                    });
+                }
+
+                // Lưu lại vào Local Storage
+                localStorage.setItem("cart", JSON.stringify(cart));
+                setQuantity(1);
+                showSuccessToast("Add thành công");
+            } catch (error) {
+                showErrorToast("Add giỏ hàng thất bại. Đã có lỗi xảy ra vui lòng thử lại");
+            }
+        }
+    };
+
+    const handleNextImage = () => {
+
         setSelectedImageIndex((prevIndex) => {
-            const newIndex = (prevIndex - 1 + product.images.length) % product.images.length;
+            const newIndex = (prevIndex + 1) % selectedColor.listAnh?.length;
             scrollToThumbnail(newIndex);
             return newIndex;
         });
+
+    };
+
+    const handlePrevImage = () => {
+
+        setSelectedImageIndex((prevIndex) => {
+            const newIndex = (prevIndex - 1 + selectedColor.listAnh?.length) % selectedColor.listAnh?.length;
+            scrollToThumbnail(newIndex);
+            return newIndex;
+        });
+
     };
 
     // Hàm cuộn thumbnail vào khung nhìn
@@ -143,26 +266,33 @@ const ChiTietSanPham = () => {
     };
 
     return (
+
         <Container maxWidth="lg" sx={{ mt: 4, marginBottom: -8 }}>
+            {/* {product === undefined || (Array.isArray(product) && product.length === 0) ? (
+                <Typography variant="h6" textAlign="center">
+                    Đang tải...
+                </Typography>
+            ) : (
+                <div> */}
             <Breadcrumbs aria-label="breadcrumb">
-                <Link color="inherit" href="http://localhost:3000/home" sx={{fontSize:'14px',textDecoration:'none'}}>
+                <Link color="inherit" href="http://localhost:3000/home" sx={{ fontSize: '14px', textDecoration: 'none' }}>
                     Trang chủ
                 </Link>
-                <Link color="inherit" href="http://localhost:3000/sanPham" sx={{fontSize:'14px',textDecoration:'none'}}>
+                <Link color="inherit" href="http://localhost:3000/sanPham" sx={{ fontSize: '14px', textDecoration: 'none' }}>
                     Sản phẩm
                 </Link>
-                <Typography color="text.primary" sx={{fontSize:'14px'}}>
-                    Tên sản phẩm 
+                <Typography color="text.primary" sx={{ fontSize: '14px' }}>
+                    {product.ten}
                 </Typography>
             </Breadcrumbs>
-            <Box sx={{ borderBottom: "1px solid rgba(0, 0, 0, 0.1)", pb: 3, marginTop:3 }}>
+            <Box sx={{ borderBottom: "1px solid rgba(0, 0, 0, 0.1)", pb: 3, marginTop: 3 }}>
                 <Grid container spacing={4}>
                     {/* Hình ảnh sản phẩm */}
                     <Grid item xs={12} md={6} display="flex" alignItems="center">
                         <Box sx={{ display: "flex", marginTop: -7 }}>
                             {/* List ảnh nhỏ */}
                             <Box sx={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: 400, mr: 2 }}>
-                                {product.images.map((image, index) => (
+                                {selectedColor.listAnh?.map((image, index) => (
                                     <img
                                         key={index}
                                         ref={(el) => (thumbnailRefs.current[index] = el)}
@@ -184,7 +314,7 @@ const ChiTietSanPham = () => {
                             {/* Ảnh lớn hiển thị */}
                             <Box sx={{ flex: 1, position: "relative", width: 450, height: 450, overflow: "hidden", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                 <img
-                                    src={product.images[selectedImageIndex]}
+                                    src={selectedColor.listAnh?.[selectedImageIndex]}
                                     alt="Selected product"
                                     style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
                                 />
@@ -200,18 +330,43 @@ const ChiTietSanPham = () => {
 
                     {/* Thông tin sản phẩm */}
                     <Grid item xs={12} md={6}>
-                        <Typography variant="h5" fontWeight="bold">{product.name}</Typography>
-                        <Typography variant="h6" color="primary" mt={1}>{product.price.toLocaleString()} VND</Typography>
+                        <Typography variant="h5" fontWeight="bold">{product.ten}</Typography>
+                        <Typography variant="h6" color="primary" mt={1}>{product?.gia?.toLocaleString()} VND</Typography>
 
                         {/* Chọn màu */}
                         <Box mt={2}>
                             <Typography variant="subtitle1">Màu sắc</Typography>
-                            {product.colors.map((color, index) => (
+                            {product?.listHinhAnhAndMauSacAndSize?.map((item, index) => (
                                 <IconButton
                                     key={index}
-                                    sx={{ bgcolor: color, width: 32, height: 32, m: 0.5, border: selectedColor === color ? "2px solid black" : "none" }}
-                                    onClick={() => setSelectedColor(color)}
-                                ></IconButton>
+                                    sx={{
+                                        width: 45, // Kích thước tổng thể
+                                        height: 30,
+                                        borderRadius: "16px", // Bo góc bầu dục
+                                        position: "relative",
+                                        backgroundColor: "transparent", // Tránh hover làm mất màu
+                                        marginRight: "7px",
+                                        // Viền xanh khi được chọn
+                                        border: selectedColor?.mauSac.id === item.mauSac.id ? "2px solid blue" : "none",
+                                        padding: 0,
+
+                                        "&::after": {
+                                            content: '""',
+                                            display: "block",
+                                            width: selectedColor?.mauSac?.id === item.mauSac.id ? "80%" : "100%", // Khi chọn, màu nhỏ đi 20%
+                                            height: selectedColor.mauSac?.id === item.mauSac.id ? "80%" : "100%",
+                                            backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                            borderRadius: "12px", // Bo góc nhỏ hơn một chút
+                                            transition: "all 0.2s ease-in-out",
+                                        },
+
+                                        // "&:hover::after": {
+                                        //     width: "90%",
+                                        //     height: "90%", // Hover làm nhỏ nhẹ hơn
+                                        // },
+                                    }}
+                                    onClick={() => setSelectedColor(item)}
+                                />
                             ))}
                         </Box>
 
@@ -219,23 +374,22 @@ const ChiTietSanPham = () => {
                         <Box mt={2}>
                             <Typography variant="subtitle1" fontWeight="bold">Kích thước</Typography>
                             <Box display="flex" gap={1} mt={1}>
-                                {product.sizes.map((size) => (
+                                {selectedColor.listSize?.map((size, index) => (
                                     <Button
-                                        key={size}
-                                        variant={selectedSize === size ? "contained" : "outlined"}
+                                        variant={selectedSize?.idSPCT === size?.idSPCT ? "contained" : "outlined"}
                                         onClick={() => setSelectedSize(size)}
                                         sx={{
                                             minWidth: 50,
                                             borderRadius: 2,
-                                            bgcolor: selectedSize === size ? "black" : "white",
-                                            color: selectedSize === size ? "white" : "black",
+                                            bgcolor: selectedSize?.idSPCT === size?.idSPCT ? "black" : "white",
+                                            color: selectedSize?.idSPCT === size?.idSPCT ? "white" : "black",
                                             borderColor: "black",
                                             "&:hover": {
-                                                bgcolor: selectedSize === size ? "black" : "#f0f0f0",
+                                                bgcolor: selectedSize?.idSPCT === size?.idSPCT ? "black" : "#f0f0f0",
                                             },
                                         }}
                                     >
-                                        {size}
+                                        {size.tenSize}
                                     </Button>
                                 ))}
                             </Box>
@@ -260,14 +414,14 @@ const ChiTietSanPham = () => {
 
                         {/* Nút thao tác */}
                         <Box mt={3} display="flex" gap={2}>
-                            <Button variant="contained" sx={{ backgroundColor: '#1976D2' }} startIcon={<AddShoppingCartIcon />}>Thêm vào giỏ hàng</Button>
+                            <Button variant="contained" sx={{ backgroundColor: '#1976D2' }} startIcon={<AddShoppingCartIcon />} onClick={() => addVaoGioHang()}>Thêm vào giỏ hàng</Button>
                             {/* <Button variant="contained" color="error" startIcon={<ShoppingCartCheckoutIcon />}>Mua ngay</Button> */}
                         </Box>
 
                         {/* Chi tiết sản phẩm */}
                         <Box mt={4}>
                             <Typography variant="h6">Chi Tiết Sản Phẩm</Typography>
-                            <Typography variant="body1" whiteSpace="pre-line">{product.description}</Typography>
+                            <Typography variant="body1" whiteSpace="pre-line">{product.moTa}</Typography>
                         </Box>
                     </Grid>
                 </Grid>
@@ -431,6 +585,8 @@ const ChiTietSanPham = () => {
                     </div>
                 </Box>
             </Modal>
+            {/* </div>)} */}
+            <ToastContainer />
         </Container>
     );
 };

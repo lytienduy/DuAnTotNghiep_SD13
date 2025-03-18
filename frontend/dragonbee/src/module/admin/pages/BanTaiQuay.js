@@ -342,14 +342,10 @@ const BanTaiQuay = () => {
     setDistricts([]);
     setWards([]);
 
-    // Cập nhật lại giá trị tìm kiếm và id khách hàng
     setKeyword(`${customer.tenKhachHang} - ${customer.sdt}`);
-    setSelectedCustomerId(customer.id);  // Giữ ID của khách hàng mới
-
-    // Đóng Popper
+    setSelectedCustomerId(customer.id);
     setOpenKH(false);
 
-    // Cập nhật các trường địa chỉ
     setRecipientName(customer.tenKhachHang);
     setRecipientPhone(customer.sdt);
     setAddresses(customer.diaChis || []);
@@ -379,8 +375,7 @@ const BanTaiQuay = () => {
     } else {
       setDescription("");
     }
-};
-
+  };
 
   // Hiển thị 5 khách hàng đầu tiên khi vừa mở trang (ngay khi chưa nhập gì)
   useEffect(() => {
@@ -485,8 +480,8 @@ const BanTaiQuay = () => {
           ...city,
           Name: city.Name.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
         }));
-        setCities(normalizedCities);
-        setNewCities(normalizedCities);
+        setCities(normalizedCities);  // Cập nhật citiess thay vì setCities
+        setNewCities(normalizedCities);  // Cập nhật citiess thay vì setCities
         setCitiesKH(normalizedCities);
       })
       .catch(error => console.error("Error fetching data:", error));
@@ -510,22 +505,20 @@ const BanTaiQuay = () => {
 
   const handleCityChange = (event) => {
     const cityName = event.target.value;
-    setCity(cityName);  // Cập nhật giá trị thành phố
-    setDistrict("");  // Reset quận/huyện
-    setWard("");  // Reset xã/phường khi thay đổi thành phố
+    setCity(cityName);  // Cập nhật giá trị của city
+    setDistrict("");  // Reset quận/huyện khi thay đổi tỉnh thành
+    setWard("");  // Reset xã/phường khi thay đổi quận/huyện
 
-    // Cập nhật danh sách quận/huyện
     const city = cities.find(city => city.Name === cityName);
     setDistricts(city ? city.Districts : []);  // Cập nhật danh sách quận/huyện
-    setWards([]);  // Reset danh sách xã/phường
+    setWards([]);  // Reset xã/phường
   };
 
   const handleDistrictChange = (event) => {
     const districtName = event.target.value;
-    setDistrict(districtName);  // Cập nhật giá trị quận/huyện
+    setDistrict(districtName);  // Cập nhật giá trị của district
     setWard("");  // Reset xã/phường khi thay đổi quận/huyện
 
-    // Cập nhật danh sách xã/phường
     const district = districts.find(d => d.Name === districtName);
     setWards(district ? district.Wards : []);  // Cập nhật danh sách xã/phường
   };
@@ -561,6 +554,7 @@ const BanTaiQuay = () => {
     setNewWard(event.target.value);
   };
 
+  
   //Tỉnh thành huyện xã của thêm khách hàng
   // Cập nhật giá trị khi chọn thành phố
   const handleCityChangeKH = (event) => {
@@ -591,121 +585,122 @@ const BanTaiQuay = () => {
     setWardKH(event.target.value);  // Cập nhật giá trị xã/phường
   };
 
-
   //Hàm mở giao hàng
   const handleSwitchChange = (event) => {
     setShowLeftPanel(event.target.checked);
   };
+// Thêm mới địa chỉ cho khách hàng được chọn
+const handleSaveAddress = () => {
+  const detailedAddress = document.getElementById('detailed-address').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const [soNha, duong] = detailedAddress.split(',');
 
-  // Thêm mới địa chỉ cho khách hàng được chọn
-  const handleSaveAddress = () => {
-    const detailedAddress = document.getElementById('detailed-address').value.trim();
-    const description = document.getElementById('description').value.trim();
-    const [soNha, duong] = detailedAddress.split(',');
-  
-    const newAddress = {
-      khachHang: { id: selectedCustomerId },
-      soNha: soNha.trim(),
-      duong: duong.trim(),
-      xa: newWard,
-      huyen: newDistrict,
-      thanhPho: newCity,
-      moTa: description || '',
-      trangThai: 'Hoạt động',
-      macDinh: false,
-    };
-  
-    // Gọi API để thêm địa chỉ mới
-    axios.post('http://localhost:8080/dragonbee/them-dia-chi', newAddress)
-      .then(response => {
-        // Sau khi thêm địa chỉ, gọi lại API để lấy danh sách địa chỉ mới nhất từ server
-        axios.get(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`)
-          .then(response => {
-            // Cập nhật lại danh sách địa chỉ từ response
-            setAddresses(response.data);
-  
-            // Lấy địa chỉ mới nhất (ở cuối danh sách) để tự động chọn
-            const lastAddress = response.data[response.data.length - 1];
-            handleSelectAddress(lastAddress);  // Chọn địa chỉ cuối cùng trong danh sách
-  
-            // Đóng modal thêm địa chỉ sau khi lưu thành công
-            setOpenChonDC(false);  // Đóng modal thêm địa chỉ
-  
-            alert('Thêm địa chỉ thành công!');
-            setNewCity('');  // Reset thành phố
-            setNewDistrict('');  // Reset quận/huyện
-            setNewWard('');  // Reset xã/phường
-          })
-          .catch(error => {
-            console.error('Lỗi khi lấy danh sách địa chỉ:', error);
-            alert('Có lỗi khi lấy danh sách địa chỉ.');
-          });
-      })
-      .catch(error => {
-        console.error('Có lỗi khi thêm địa chỉ:', error);
-        alert('Có lỗi khi thêm địa chỉ.');
-      });
+  const newAddress = {
+    khachHang: { id: selectedCustomerId },
+    soNha: soNha.trim(),
+    duong: duong.trim(),
+    xa: newWard,
+    huyen: newDistrict,
+    thanhPho: newCity,
+    moTa: description || '',
+    trangThai: 'Hoạt động',
+    macDinh: false,
   };
 
-  // Hàm submit khi thêm khách hàng mới
-  const handleSubmitAddNewKH = async (e) => {
-    e.preventDefault();
+  // Gọi API để thêm địa chỉ mới
+  axios.post('http://localhost:8080/dragonbee/them-dia-chi', newAddress)
+    .then(response => {
+      // Sau khi thêm địa chỉ, gọi lại API để lấy danh sách địa chỉ mới nhất từ server
+      axios.get(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`)
+        .then(response => {
+          // Cập nhật lại danh sách địa chỉ từ response
+          setAddresses(response.data);
 
-    // Tách "Số nhà, Đường" thành hai trường 'soNha' và 'duong' ngăn cách bởi dấu phẩy
-    const [soNha, duong] = address.split(',');
+          // Lấy địa chỉ mới nhất (ở cuối danh sách) để tự động chọn
+          const lastAddress = response.data[response.data.length - 1];
+          handleSelectAddress(lastAddress);  // Chọn địa chỉ cuối cùng trong danh sách
 
-    // Tạo đối tượng dữ liệu để gửi lên API
-    const customerData = {
-      tenKhachHang: name,
-      ngaySinh: dob,
-      gioiTinh: gender,
-      sdt: phone,
-      email: email,
-      diaChi: {
-        soNha: soNha.trim(),
-        duong: duong ? duong.trim() : '',
-        xa: wardKH,
-        huyen: districtKH,
-        thanhPho: cityKH,
-        moTa: ''
-      }
-    };
+          // Đóng modal thêm địa chỉ sau khi lưu thành công
+          setOpenChonDC(false);  // Đóng modal thêm địa chỉ
 
-    try {
-      // Gửi dữ liệu đến API để thêm khách hàng mới
-      const response = await axios.post('http://localhost:8080/dragonbee/them-khach-hang', customerData);
-      alert('Thêm khách hàng thành công');
-      fetchDefaultCustomers();
-      // Sau khi thêm thành công, gọi hàm để lấy thông tin khách hàng mới nhất
-      fetchNewestCustomer();
+          alert('Thêm địa chỉ thành công!');
+          setNewCity('');  // Reset thành phố
+          setNewDistrict('');  // Reset quận/huyện
+          setNewWard('');  // Reset xã/phường
+        })
+        .catch(error => {
+          console.error('Lỗi khi lấy danh sách địa chỉ:', error);
+          alert('Có lỗi khi lấy danh sách địa chỉ.');
+        });
+    })
+    .catch(error => {
+      console.error('Có lỗi khi thêm địa chỉ:', error);
+      alert('Có lỗi khi thêm địa chỉ.');
+    });
+};
 
-      // Đóng pop-up hoặc modal
-      setOpenKH(false);
-      setOpen(false);
-    } catch (error) {
-      console.error('Có lỗi xảy ra khi thêm khách hàng:', error);
-      alert('Có lỗi xảy ra khi thêm khách hàng!');
+// Hàm submit khi thêm khách hàng mới
+const handleSubmitAddNewKH = async (e) => {
+  e.preventDefault();
+
+  // Tách "Số nhà, Đường" thành hai trường 'soNha' và 'duong' ngăn cách bởi dấu phẩy
+  const [soNha, duong] = address.split(',');
+
+  // Tạo đối tượng dữ liệu để gửi lên API
+  const customerData = {
+    tenKhachHang: name,
+    ngaySinh: dob,
+    gioiTinh: gender,
+    sdt: phone,
+    email: email,
+    diaChi: {
+      soNha: soNha.trim(),
+      duong: duong ? duong.trim() : '',
+      xa: wardKH,
+      huyen: districtKH,
+      thanhPho: cityKH,
+      moTa: ''
     }
+  };
+
+  try {
+    // Gửi dữ liệu đến API để thêm khách hàng mới
+    const response = await axios.post('http://localhost:8080/dragonbee/them-khach-hang', customerData);
+    alert('Thêm khách hàng thành công');
+    fetchDefaultCustomers();
+    // Sau khi thêm thành công, gọi hàm để lấy thông tin khách hàng mới nhất
+    fetchNewestCustomer();
+
+    // Đóng pop-up hoặc modal
+    setOpenKH(false);
+    setOpen(false);
+  } catch (error) {
+    console.error('Có lỗi xảy ra khi thêm khách hàng:', error);
+    alert('Có lỗi xảy ra khi thêm khách hàng!');
+  }
 };
 
 // Hàm tìm kiếm khách hàng mới nhất
 const fetchNewestCustomer = async () => {
-  try {
-    // Lấy thông tin khách hàng mới nhất từ API
-    const response = await axios.get('http://localhost:8080/dragonbee/tim-kiem-khach-hang?keyword=');
-    
-    // Lấy khách hàng mới nhất từ kết quả
-    const newestCustomer = response.data[response.data.length - 1];
+try {
+  // Lấy thông tin khách hàng mới nhất từ API
+  const response = await axios.get('http://localhost:8080/dragonbee/tim-kiem-khach-hang?keyword=');
+  
+  // Lấy khách hàng mới nhất từ kết quả
+  const newestCustomer = response.data[response.data.length - 1];
 
-    // Tự động chọn khách hàng mới nhất
-    handleSelectCustomer(newestCustomer);
+  // Tự động chọn khách hàng mới nhất
+  handleSelectCustomer(newestCustomer);
 
-    // Đảm bảo Popper vẫn hiển thị khách hàng mới nhất
-    setOpenKH(true);
-  } catch (error) {
-    console.error('Lỗi khi gọi API tìm kiếm khách hàng:', error);
-  }
+  // Đảm bảo Popper vẫn hiển thị khách hàng mới nhất
+  setOpenKH(true);
+} catch (error) {
+  console.error('Lỗi khi gọi API tìm kiếm khách hàng:', error);
+}
 };
+
+
+
 
 
 
@@ -716,19 +711,6 @@ const fetchNewestCustomer = async () => {
 
 
   //Quét QR
-  // const handleScan = (data) => {
-  //   console.log("Đã scan");
-  //   console.log(data);
-
-  //   if (data) {
-  //     setQrData(data);
-  //     setOpenQRQuetSanPham(false); // Đóng camera sau khi quét thành công
-  //   }
-  // };
-
-  // const handleError = (err) => {
-  //   console.error(err);
-  // };
   const scannerRef = useRef(null);
   const isScanningRef = useRef(false); // Trạng thái đang quét
   const handleCloseQRScanner = () => {
@@ -1374,6 +1356,7 @@ const fetchNewestCustomer = async () => {
     setOpenDC(false);  // Đóng modal sau khi chọn
   };
 
+
   return (
     <Box
       sx={{
@@ -1857,6 +1840,7 @@ const fetchNewestCustomer = async () => {
                             </Select>
                           </FormControl>
 
+                          {/* Chọn Quận/Huyện */}
                           <FormControl fullWidth size='small'>
                             <InputLabel>Quận/Huyện</InputLabel>
                             <Select value={district} onChange={handleDistrictChange} label="Quận/Huyện">
@@ -1866,12 +1850,19 @@ const fetchNewestCustomer = async () => {
                             </Select>
                           </FormControl>
 
+                          {/* Chọn Xã/Phường */}
                           <FormControl fullWidth size='small'>
                             <InputLabel>Xã/Phường</InputLabel>
-                            <Select value={ward} onChange={handleWardChange} label="Xã/Phường">
+                            <Select
+                              value={ward}
+                              onChange={handleWardChange}
+                              label="Xã/Phường"
+                            >
                               {wards.length > 0 ? (
                                 wards.map((ward) => (
-                                  <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
+                                  <MenuItem key={ward.Id} value={ward.Name}>
+                                    {ward.Name}
+                                  </MenuItem>
                                 ))
                               ) : (
                                 <MenuItem disabled>No wards available</MenuItem>

@@ -82,4 +82,7 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet, 
             @Param("giaMin") Double giaMin,
             @Param("giaMax") Double giaMax);
 
+
+
+
 }

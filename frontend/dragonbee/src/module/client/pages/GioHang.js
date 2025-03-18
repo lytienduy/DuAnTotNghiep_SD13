@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Container, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Typography
     , TextField, IconButton, Checkbox, Breadcrumbs, Link
@@ -7,52 +7,123 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { useNavigate } from 'react-router-dom';
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 
 const GioHang = () => {
     const navigate = useNavigate();
-
-    const handlePaymentClick = () => {
-        navigate('/thanhToan');
-    };
-    const initialProducts = [
-        {
-            name: 'Quần âu Aristino ATRR02 (ATTR0209) dáng 29',
-            price: 347500,
-            quantity: 1,
-            image: 'https://360.com.vn/wp-content/uploads/2024/11/APHTK533-QSKTK514-2.jpg',
-        },
-        {
-            name: 'Quần Tây Nam Owen QS232454 Màu xanh navy 29',
-            price: 520000,
-            quantity: 1,
-            image: 'https://360.com.vn/wp-content/uploads/2023/12/AKGTK501-QGGTK502-8.jpg',
-        }
-    ];
-
-    const [products, setProducts] = useState(initialProducts);
+    const [products, setProducts] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
 
+    //Thông báo Toast
+    const showSuccessToast = (message) => {
+        toast.success(message, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            style: {
+                backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+                color: "white", // Chữ trắng nổi bật
+                fontSize: "14px", // Nhỏ hơn một chút
+                fontWeight: "500",
+                borderRadius: "8px",
+            }
+        });
+    };
+    const showErrorToast = (message) => {
+        toast.error(message, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            style: {
+                backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+                color: "white", // Chữ trắng nổi bật
+                fontSize: "14px", // Nhỏ hơn một chút
+                fontWeight: "500",
+                borderRadius: "8px",
+            }
+        });
+    };
+    const handlePaymentClick = () => {
+        if (selectedProducts?.length === 0) {
+            showErrorToast("Bạn chưa chọn sản phẩm cần thanh toán");
+            return;
+        } else { }
+        navigate('/thanhToan', { state: { selectedProducts } });
+    };
+
+    const layDuLieuCart = (index) => {
+        const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+        setProducts(storedCart);
+    };
+
+    useEffect(() => {
+        layDuLieuCart();
+    }, []);
+
     const handleRemoveProduct = (index) => {
-        setProducts(prevProducts => prevProducts.filter((_, i) => i !== index));
-        setSelectedProducts(prevSelected => prevSelected.filter(i => i !== index)); // Xóa sản phẩm khỏi danh sách chọn nếu bị xóa
+        //Cập nhật lại products
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        // Lọc bỏ sản phẩm có id trùng với productId
+        if (index >= 0 && index < cart.length) {
+            cart.splice(index, 1); // Xóa 1 phần tử tại vị trí `index`
+        }
+        // Cập nhật lại giỏ hàng trong Local Storage   
+        localStorage.setItem("cart", JSON.stringify(cart));
+        layDuLieuCart();
+        setSelectedProducts(prevSelected => prevSelected.filter(i => i !== index)); // Xóa sản phẩm khỏi danh sách chọn nếu bị xóa    
     };
 
     const handleChangeQuantity = (index, newQuantity) => {
-        const updatedProducts = [...products];
-        updatedProducts[index].quantity = newQuantity;
-        setProducts(updatedProducts);
+        if (newQuantity <= 10) {
+            // Lấy giỏ hàng từ Local Storage
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+            // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
+            if (index >= 0 && index < cart.length) {
+                cart[index].quantity = newQuantity;
+            }
+            // Cập nhật lại giỏ hàng trong Local Storage
+            localStorage.setItem("cart", JSON.stringify(cart));
+            // Load lại giỏ hàng sau khi cập nhật
+            layDuLieuCart();
+        }
     };
 
+
     const handleIncrement = (index) => {
-        const updatedProducts = [...products];
-        updatedProducts[index].quantity += 1;
-        setProducts(updatedProducts);
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
+        if (index >= 0 && index < cart.length) {
+            cart[index].quantity += 1;
+        }
+        // Cập nhật lại giỏ hàng trong Local Storage
+        localStorage.setItem("cart", JSON.stringify(cart));
+        // Load lại giỏ hàng sau khi cập nhật
+        layDuLieuCart();
     };
 
     const handleDecrement = (index) => {
-        const updatedProducts = [...products];
-        updatedProducts[index].quantity = Math.max(updatedProducts[index].quantity - 1, 1);
-        setProducts(updatedProducts);
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
+        if (index >= 0 && index < cart.length) {
+            cart[index].quantity = Math.max(cart[index].quantity - 1, 1);
+        }
+        // Cập nhật lại giỏ hàng trong Local Storage
+        localStorage.setItem("cart", JSON.stringify(cart));
+        // Load lại giỏ hàng sau khi cập nhật
+        layDuLieuCart();
     };
 
     const handleToggleSelect = (index) => {
@@ -78,7 +149,7 @@ const GioHang = () => {
     // Tính tổng tiền chỉ cho các sản phẩm được chọn
     const totalAmount = selectedProducts.reduce((sum, index) => {
         const product = products[index];
-        return sum + product.price * product.quantity;
+        return sum + product.gia * product.quantity;
     }, 0);
 
     return (
@@ -129,15 +200,15 @@ const GioHang = () => {
                                             <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
                                                 <Grid container spacing={2} alignItems="center" sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                                                     <Grid item>
-                                                        <img src={product.image} alt={product.name} width={80} height={80} />
+                                                        <img src={product.anhSPCT} alt={product.tenSPCT} width={80} height={80} />
                                                     </Grid>
                                                     <Grid item xs={8}>
-                                                        <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>{product.name}</Typography>
+                                                        <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>{product.tenSPCT}</Typography>
                                                     </Grid>
                                                 </Grid>
                                             </TableCell>
                                             <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                {product.price.toLocaleString()} VNĐ
+                                                {product?.gia?.toLocaleString()} VNĐ
                                             </TableCell>
                                             <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -192,7 +263,7 @@ const GioHang = () => {
                                                 </div>
                                             </TableCell>
                                             <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                {(product.price * product.quantity).toLocaleString()} VNĐ
+                                                {(product.gia * product.quantity).toLocaleString()} VNĐ
                                             </TableCell>
                                             <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
                                                 <DeleteIcon color="error" onClick={() => handleRemoveProduct(index)} />
@@ -210,7 +281,7 @@ const GioHang = () => {
                     <Paper elevation={3} sx={{ padding: 2 }}>
                         <Typography variant="h6" gutterBottom>Tạm tính</Typography>
                         <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                            {totalAmount.toLocaleString()} đ
+                            {totalAmount?.toLocaleString()} đ
                         </Typography>
                         <Button
                             variant="contained"
@@ -224,6 +295,7 @@ const GioHang = () => {
                     </Paper>
                 </Grid>
             </Grid>
+            <ToastContainer />
         </Container>
     );
 };

@@ -146,7 +146,7 @@ const MainLayout = () => {
             {/* Client Routes */}
             <Route path="/home" element={<Home />} />
             <Route path="/sanPham" element={<SanPhamClient />} />
-            <Route path="/sanPhamChiTiet" element={<ChiTietSanPham />} />
+            <Route path="/sanPhamChiTiet/:id" element={<ChiTietSanPham />} />
             <Route path="/gioHang" element={<GioHang />} />
             <Route path="/thanhToan" element={<ThanhToan />} />
             {/* Thêm các route Client khác... */}
