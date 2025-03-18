@@ -949,7 +949,7 @@ const HoaDonChiTiet = () => {
               (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Chờ thanh toán"
                 (!hoaDon.listThanhToanHoaDon ||              // Nếu danh sách lịch sử thanh toán không tồn tại
                   hoaDon.listThanhToanHoaDon.length === 0 ||  // Hoặc danh sách rỗng
-                  hoaDon.listThanhToanHoaDon.reduce((sum, item) => sum + item.soTien, 0) < hoaDon.tongTienHang)) ||
+                  hoaDon.listThanhToanHoaDon.reduce((sum, item) => sum + item.soTien, 0) < hoaDon.tongTienThanhToan)) ||
               (hoaDon.trangThai === "Đã xác nhận" &&  // Nếu trạng thái là "Đã xác nhận"
                 (!hoaDon.listDanhSachSanPham || hoaDon.listDanhSachSanPham.length === 0)) ||  // Nếu danh sách sản phẩm rỗng thì vô hiệu hóa
               (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Đã xác nhận"
