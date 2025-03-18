@@ -71,9 +71,5 @@ public class HomeController {
         return homeService.getListSanPhamTheoBoLoc(timKiem, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach);
     }
 
-    @GetMapping("/layListCacSanPhamHienThi/{idSanPham}")
 
-    public List<HomeDTO.ListSanPhamChiTietClient> getListHienThiTrongSanPhamChiTiet(@PathVariable Integer idSanPham) {
-        return homeService.getListHienThiTrongSanPhamChiTiet(idSanPham);
-    }
 }

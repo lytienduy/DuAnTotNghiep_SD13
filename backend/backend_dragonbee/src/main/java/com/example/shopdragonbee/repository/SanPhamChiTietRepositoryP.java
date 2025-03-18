@@ -25,11 +25,13 @@ public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet,
     List<SanPham> getListSanPhamTheoTenDanhMucVaDangHoatDong(@Param("tenDanhMuc") String tenDanhMuc);
 
 
+
     @Query("SELECT spct.mauSac FROM SanPhamChiTiet spct WHERE spct.sanPham.id = :idSanPham AND spct.trangThai = :trangThai GROUP BY spct.mauSac")
-    List<MauSac> getSPCTTheoIDSanPhamAndTrangThai(@Param("idSanPham") Integer idSanPham, @Param("trangThai") String trangThai);
+    List<MauSac> getMauSacTheoIDSanPhamAndTrangThai(@Param("idSanPham") Integer idSanPham, @Param("trangThai") String trangThai);
 
 
     List<SanPhamChiTiet> findBySanPhamAndMauSacAndTrangThai(SanPham sanPham, MauSac mauSac,String trangThai);
+
 
 
 }

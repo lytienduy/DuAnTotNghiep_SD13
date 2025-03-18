@@ -5,13 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="20fa4398-a540-4bcc-8ac6-98e36f4ff058" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/SanPhamChiTietClientController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/SPCTDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/SanPhamChiTietClientService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/HomeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/HomeController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/HomeDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/HomeDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/SanPhamChiTietRepositoryP.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/SanPhamChiTietRepositoryP.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/HomeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/HomeService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/App.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ChiTietSanPham.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ChiTietSanPham.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/SanPham.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/SanPham.js" afterDir="false" />
     </list>
@@ -23,8 +24,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
         <option value="Interface" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -98,7 +99,10 @@
       <workItem from="1741917518841" duration="6329000" />
       <workItem from="1742006368760" duration="11990000" />
       <workItem from="1742047458303" duration="6542000" />
-      <workItem from="1742088702884" duration="16457000" />
+      <workItem from="1742088702884" duration="17054000" />
+      <workItem from="1742176220047" duration="16936000" />
+      <workItem from="1742226924440" duration="56000" />
+      <workItem from="1742245671249" duration="2898000" />
     </task>
     <servers />
   </component>

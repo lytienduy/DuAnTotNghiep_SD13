@@ -2,10 +2,7 @@ package com.example.shopdragonbee.service.Client;
 
 import com.example.shopdragonbee.dto.BanHangTaiQuayResponseDTO;
 import com.example.shopdragonbee.dto.Client.HomeDTO;
-import com.example.shopdragonbee.entity.AnhSanPham;
-import com.example.shopdragonbee.entity.SanPham;
-import com.example.shopdragonbee.entity.SanPhamChiTiet;
-import com.example.shopdragonbee.entity.Size;
+import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.*;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -115,7 +112,7 @@ public class HomeService {
             Integer phongCach) {
         List<HomeDTO.SanPhamHienThiTrangSanPhamClient> listSanPham = new ArrayList<>();
         for (SanPham sp : sanPhamRepositoryP.findSanPhamsByTrangThai("Hoạt động")) {
-            List<String> listSanPhamChiTietTheoBoLoc = getListSanPhamChiTietTheoIDSanPham(searchText, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach, sp.getId());
+            List<MauSac> listSanPhamChiTietTheoBoLoc = getListSanPhamChiTietTheoIDSanPham(searchText, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach, sp.getId());
             if (listSanPhamChiTietTheoBoLoc.isEmpty() == false) {
                 SanPhamChiTiet spct = sanPhamChiTietRepositoryP.findTopBySanPhamOrderByNgayTaoDesc(sp);
                 listSanPham.add(new HomeDTO.SanPhamHienThiTrangSanPhamClient(
@@ -129,54 +126,12 @@ public class HomeService {
     }
 
     //Chuyển đổi sang object có những thông tin bên Hóa Đơn Chi Tiết
-    public String convertSPCTToDTO(SanPhamChiTiet sanPhamChiTiet) {
-//        return new HomeDTO.SanPhamChiTietClient(
-//                sanPhamChiTiet.getId(),
-//                sanPhamChiTiet.getMa(),
-//                listURLAnhSanPham(sanPhamChiTiet.getListAnh()),
-//                sanPhamChiTiet.getMauSac().getTenMauSac(),
-//                sanPhamChiTiet.getSize().getTenSize(),
-//                sanPhamChiTiet.getSoLuong(),
-//                sanPhamChiTiet.getTrangThai()
-//        );
-        return sanPhamChiTiet.getMauSac().getTenMauSac();
-    }
-
-
-    //P
-    public List<HomeDTO.SizeCuaPhong> getListSizeCuaPhong(SanPhamChiTiet sanPhamChiTiet) {
-        List<HomeDTO.SizeCuaPhong> listSizeCuaPhong = new ArrayList<>();
-
-        for (SanPhamChiTiet spct : sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThai(sanPhamRepositoryP.findById(sanPhamChiTiet.getSanPham().getId()).get(), mauSacRepositoryP.findById(sanPhamChiTiet.getMauSac().getId()).get(), "Hoạt động")
-        ) {
-            listSizeCuaPhong.add(new HomeDTO.SizeCuaPhong(
-                    spct.getSize().getId(),
-                    spct.getSize().getMa(),
-                    spct.getSize().getTenSize(),
-                    spct.getSoLuong()
-            ));
-        }
-        return listSizeCuaPhong;
-    }
-
-    public List<HomeDTO.ListSanPhamChiTietClient> getListHienThiTrongSanPhamChiTiet(Integer idSanPham) {
-        List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndTrangThaiGroupByMauSac(idSanPham, "Hoạt động");
-        List<HomeDTO.ListSanPhamChiTietClient> listTraVe = new ArrayList<>();
-        for (SanPhamChiTiet spct : listSPCT
-        ) {
-            listTraVe.add(new HomeDTO.ListSanPhamChiTietClient(
-                            listURLAnhSanPham(spct.getListAnh()),
-                            spct.getMauSac(),
-                            getListSizeCuaPhong(spct),
-                            spct.getMoTa()
-                    )
-            );
-        }
-        return listTraVe;
+    public MauSac convertSPCTToDTO(SanPhamChiTiet sanPhamChiTiet) {
+        return sanPhamChiTiet.getMauSac();
     }
 
     //Lấy các sản phẩm
-    public List<String> getListSanPhamChiTietTheoIDSanPham(
+    public List<MauSac> getListSanPhamChiTietTheoIDSanPham(
             String searchText,
             Integer fromGia,
             Integer toGia,

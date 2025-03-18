@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Box, Typography, Slider, Grid, Card, CardMedia, CardContent,
-  Button, Accordion, AccordionSummary, AccordionDetails, InputAdornment, TextField
+  Button, Accordion, AccordionSummary, AccordionDetails, InputAdornment, TextField,IconButton
 } from '@mui/material';
 import logo from '../../../img/bannerQuanAu.png';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -515,8 +515,31 @@ const SanPham = () => {
                         <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{product.gia?.toLocaleString()}đ</Typography>
                         <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
                           {product?.listMauSac?.length > 0 ? (
-                            product.listMauSac.map(mauSac => (
-                              <Box key={mauSac} sx={{ border: '1px solid black', borderRadius: 1, px: 1, py: 0.5 }}>{mauSac}</Box>
+                            product.listMauSac.map(item => (
+                              <IconButton
+                                sx={{
+                                  width: 32, // Kích thước tổng thể
+                                  height: 22,
+                                  borderRadius: "16px", // Bo góc bầu dục
+                                  position: "relative",
+                                  backgroundColor: "transparent", // Tránh hover làm mất màu
+                                  marginRight: "7px",
+                                  // Viền xanh khi được chọn
+                                  border: "none",
+                                  padding: 0,
+
+                                  "&::after": {
+                                    content: '""',
+                                    display: "block",
+                                    width: "100%", // Khi chọn, màu nhỏ đi 20%
+                                    height: "100%",
+                                    backgroundColor: item.ma, // Giữ màu nền
+                                    borderRadius: "12px", // Bo góc nhỏ hơn một chút
+                                    transition: "all 0.2s ease-in-out",
+                                  },
+                                }}
+                                
+                              />
                             ))
                           ) : (
                             <Typography variant="body2" color="text.secondary">Không có màu nào hết</Typography>

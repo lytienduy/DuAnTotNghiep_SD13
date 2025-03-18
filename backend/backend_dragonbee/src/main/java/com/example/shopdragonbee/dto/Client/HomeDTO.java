@@ -36,34 +36,13 @@ public class HomeDTO {
         private String ma;
         private String ten;
         private List<String> hinhAnh;
-        private List<String> listMauSac;
+        private List<MauSac> listMauSac;
         private Double gia;
 
     }
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class SizeCuaPhong {
-        private Integer id;
-        private String maSize;
-        private String tenSize;
-        private Integer soLuong;
-    }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class ListSanPhamChiTietClient {
-        private List<String> hinhAnh;
-        private MauSac mauSac;
-        private List<SizeCuaPhong> listSize;
-        private String moTa;
-//        private String trangThai;
-    }
+
+
 
 
 }
