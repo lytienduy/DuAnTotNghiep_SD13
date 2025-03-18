@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import { useLocation } from "react-router-dom";
 
 const PayNowImage = 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR-1.png'; // PayNow image URL
 const CODImage = 'https://drive.gianhangvn.com/image/thanh-toan-khi-nhan-hang-2135165j32025.jpg';
@@ -32,29 +33,27 @@ const ThanhToan = () => {
     const [discountAmount, setDiscountAmount] = useState(0);
     const [selectedCustomerId, setSelectedCustomerId] = useState(null);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+    //Phong
+    const [products, setProducts] = useState([]);
+    const location = useLocation();
+    const selectedProducts = location.state?.selectedProducts || []; // Tránh undefined
 
+
+    //Lấy dữ liệu cart
+    const layDuLieuCart = () => {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const filteredCart = cart.filter((_, index) => selectedProducts.includes(index));
+        setProducts(filteredCart);
+    };
+
+    useEffect(() => {
+        layDuLieuCart();
+    }, []);
+
+    const tongTienThanhToan = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
     const handleChange = (event) => {
         setSelectedPaymentMethod(event.target.value);
     };
-
-    const products = [
-        {
-            name: "Balen Grey 2023 Bạc Đế nhựa",
-            price: 104500,
-            quantity: 1,
-            size: 32,
-            imageUrl: "https://product.hstatic.net/200000887901/product/img_1976.1_76db4e6fba074f7386092dfe8893d231.jpg"
-        },
-        {
-            name: "Quần âu ống Loe Artrisno",
-            price: 931500,
-            quantity: 3,
-            size: 33,
-            imageUrl: "https://360.com.vn/wp-content/uploads/2023/12/AKGTK501-QGGTK502-2.jpg"
-        },
-        // Add more products as needed
-    ];
-
     // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
     useEffect(() => {
         axios.get("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json")
@@ -376,8 +375,8 @@ const ThanhToan = () => {
                                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 2, borderRadius: 2, width: '20%' }}>
                                         <Box sx={{ position: 'relative' }}>
                                             <img
-                                                src={product.imageUrl}
-                                                alt={product.name}
+                                                src={product.anhSPCT}
+                                                alt={product.ten}
                                                 width="70"
                                                 height="70"
                                                 style={{ objectFit: 'cover' }}
@@ -410,7 +409,7 @@ const ThanhToan = () => {
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis'
                                         }}>
-                                            {product.name}
+                                            {product.tenSPCT}
                                         </Typography>
                                         <Typography
                                             variant="body2"
@@ -425,7 +424,7 @@ const ThanhToan = () => {
                                                 marginTop: -0.5
                                             }}
                                         >
-                                            Size: {product.size}
+                                            Size: {product.tenSize}
                                         </Typography>
                                     </Box>
 
@@ -439,7 +438,7 @@ const ThanhToan = () => {
                                             marginRight: -2
                                         }}>
                                             <span style={{ color: 'red', marginLeft: 5 }}>
-                                                {product.price.toLocaleString()} VNĐ
+                                                {product.gia?.toLocaleString()} VNĐ
                                             </span>
                                         </Typography>
                                     </Box>
@@ -465,7 +464,7 @@ const ThanhToan = () => {
                                 fontWeight: 'bold',
                                 color: 'red'
                             }}>
-                                Tổng tiền: 0 VNĐ
+                                Tổng tiền: {tongTienThanhToan?.toLocaleString()} VNĐ
                             </Typography>
                         </Box>
 

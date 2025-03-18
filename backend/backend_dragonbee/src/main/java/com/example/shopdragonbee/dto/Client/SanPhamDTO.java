@@ -1,18 +1,18 @@
 package com.example.shopdragonbee.dto.Client;
 
-import com.example.shopdragonbee.entity.*;
+import com.example.shopdragonbee.entity.ChatLieu;
+import com.example.shopdragonbee.entity.KieuDang;
+import com.example.shopdragonbee.entity.MauSac;
 import lombok.*;
 
 import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HomeDTO {
+public class SanPhamDTO {
     private String abc;
-
 
     @Getter
     @Setter
@@ -22,7 +22,7 @@ public class HomeDTO {
     public static class SanPhamClient {
         private Integer id;
         private String ten;
-        private List<HomeDTO.MauSacAndHinhAnhAndSize> listHinhAnhAndMauSacAndSize;
+        private List<SanPhamDTO.MauSacAndHinhAnhAndSize> listHinhAnhAndMauSacAndSize;
         private Double gia;
 //        private String trangThai;
     }
@@ -34,7 +34,7 @@ public class HomeDTO {
     public static class MauSacAndHinhAnhAndSize {
         private List<String> listAnh;
         private MauSac mauSac;
-        private List<HomeDTO.SizeCuaPhong> listSize;
+        private List<SanPhamDTO.SizeCuaPhong> listSize;
     }
 
     @Getter
@@ -50,5 +50,4 @@ public class HomeDTO {
         private String tenSize;
         private Integer soLuong;
     }
-
 }

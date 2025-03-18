@@ -17,12 +17,5 @@ public interface HoaDonChiTietRepository extends JpaRepository<HoaDonChiTiet, In
 
     HoaDonChiTiet getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGia(HoaDon hoaDon, SanPhamChiTiet sanPhamChiTiet, Float donGia);
 
-    @Query("SELECT hdct.sanPhamChiTiet.sanPham FROM HoaDonChiTiet hdct " +
-            "WHERE hdct.hoaDon.trangThai = 'Hoàn thành' " +
-            "AND hdct.sanPhamChiTiet.sanPham.trangThai = 'Hoạt động' " +
-            "AND (SELECT SUM(spct.soLuong) FROM SanPhamChiTiet spct WHERE spct.sanPham = hdct.sanPhamChiTiet.sanPham) > 0 " +
-            "GROUP BY hdct.sanPhamChiTiet.sanPham " +
-            "ORDER BY SUM(hdct.soLuong) DESC")
-    List<SanPham> findTopSanPhamChiTietBanChay(Pageable pageable);
 
 }

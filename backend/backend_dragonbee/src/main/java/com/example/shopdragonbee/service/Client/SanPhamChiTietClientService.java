@@ -47,8 +47,8 @@ public class SanPhamChiTietClientService {
     }
 
     public SPCTDTO.SanPhamChiTietClient getSanPhamChiTietClient(Integer idSanPham) {
-        SPCTDTO.SanPhamChiTietClient tongQuanSanPhamCTClient = new SPCTDTO.SanPhamChiTietClient();
-        List<SPCTDTO.MauSacAndHinhAnhAndSize> listMauSacAndSizeCuaSp = new ArrayList<>();
+        SPCTDTO.SanPhamChiTietClient tongQuanSanPhamCTClient = new SPCTDTO.SanPhamChiTietClient();//Tạo ra đối tượng lưu thông tin sanPhamChiTiet
+        List<SPCTDTO.MauSacAndHinhAnhAndSize> listMauSacAndSizeCuaSp = new ArrayList<>();//Tạo ra list để lưu những sản phẩm màu sắc của đối tượng
         List<MauSac> listMauSac = sanPhamChiTietRepositoryP.getMauSacTheoIDSanPhamAndTrangThai(idSanPham, "Hoạt động");//Lấy những sản phẩm chi tiết phân biệt theo màu sắc
         int index = 0;
         for (MauSac mauSac : listMauSac//Chạy foreach lấy list size theo màu

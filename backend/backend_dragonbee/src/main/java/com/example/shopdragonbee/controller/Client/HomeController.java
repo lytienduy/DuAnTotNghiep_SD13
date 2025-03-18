@@ -32,44 +32,29 @@ public class HomeController {
 
     //Lấy list sản phẩm danh mục business
     @GetMapping("/getListSanPhamQuanAuNamDanhMucBusiness")
-    public List<HomeDTO.SanPhamHienThiTrangHomeClient> getListSanPhamQuanAuNamDanhMucBusiness() {
-        return homeService.getListSanPhamQuanAuNamDanhMucBusiness();
+    public List<HomeDTO.SanPhamClient> getListSanPhamQuanAuNamDanhMucBusiness() {
+        return homeService.getListSanPhamQuanAuNamDanhMucTheoDanhMuc("Business");
     }
 
     //Lấy list sản phẩm danh mục golf
     @GetMapping("/getListSanPhamQuanAuNamDanhMucGolf")
-    public List<HomeDTO.SanPhamHienThiTrangHomeClient> getListSanPhamQuanAuNamDanhMucGolf() {
-        return homeService.getListSanPhamQuanAuNamDanhMucGolf();
+    public List<HomeDTO.SanPhamClient> getListSanPhamQuanAuNamDanhMucGolf() {
+        return homeService.getListSanPhamQuanAuNamDanhMucTheoDanhMuc("Golf");
     }
 
     //Lấy list sản phẩm danh mục casual
     @GetMapping("/getListSanPhamQuanAuNamDanhMucCasual")
-    public List<HomeDTO.SanPhamHienThiTrangHomeClient> getListSanPhamQuanAuNamDanhMucCasual() {
-        return homeService.getListSanPhamQuanAuNamDanhMucCasual();
+    public List<HomeDTO.SanPhamClient> getListSanPhamQuanAuNamDanhMucCasual() {
+        return homeService.getListSanPhamQuanAuNamDanhMucTheoDanhMuc("Casual");
     }
 
     //Lấy list sản phẩm danh mục casual
     @GetMapping("/getListTopSanPhamBanChay")
-    public List<HomeDTO.SanPhamHienThiTrangHomeClient> getListTopSanPhamBanChay() {
-        return homeService.getListTopSanPhamBanChay();
+    public List<HomeDTO.SanPhamClient> getListTopSanPhamBanChay() {
+        return homeService.getListSanPhamQuanAuNamDanhMucTopBanChay();
     }
 
-    //Nhập số lượng sản phẩm từ bán phím
-    @GetMapping("/layListCacSanPhamHienThi")
-    public List<HomeDTO.SanPhamHienThiTrangSanPhamClient> layListCacSanPhamHienThi(
-            @RequestParam(required = false) String timKiem,
-            @RequestParam(required = false) Integer fromGia,
-            @RequestParam(required = false) Integer toGia,
-            @RequestParam(required = false) Integer danhMuc,
-            @RequestParam(required = false) Integer mauSac,
-            @RequestParam(required = false) Integer chatLieu,
-            @RequestParam(required = false) Integer kichCo,
-            @RequestParam(required = false) Integer kieuDang,
-            @RequestParam(required = false) Integer thuongHieu,
-            @RequestParam(required = false) Integer phongCach
-    ) {
-        return homeService.getListSanPhamTheoBoLoc(timKiem, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach);
-    }
+
 
 
 }

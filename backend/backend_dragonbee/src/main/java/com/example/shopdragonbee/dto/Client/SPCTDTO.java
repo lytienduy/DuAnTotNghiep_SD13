@@ -22,7 +22,6 @@ public class SPCTDTO {
         private ChatLieu chatLieu;
         private String moTa;
         private Double gia;
-//        private String trangThai;
     }
     @Getter
     @Setter

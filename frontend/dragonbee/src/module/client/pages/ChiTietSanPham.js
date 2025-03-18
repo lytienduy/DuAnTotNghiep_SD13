@@ -191,6 +191,7 @@ const ChiTietSanPham = () => {
                         idSPCT: selectedSize.idSPCT,
                         anhSPCT: selectedColor.listAnh === null ? null : selectedColor?.listAnh[0],
                         tenSPCT: selectedSize.tenSPCT,
+                        tenSize: selectedSize.tenSize,
                         gia: product.gia,
                         quantity: quantity
                     });

@@ -1,12 +1,15 @@
 package com.example.shopdragonbee.repository;
 
 import com.example.shopdragonbee.entity.*;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -24,14 +27,27 @@ public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet,
             nativeQuery = true)
     List<SanPham> getListSanPhamTheoTenDanhMucVaDangHoatDong(@Param("tenDanhMuc") String tenDanhMuc);
 
+    @Query("SELECT spct.mauSac FROM SanPhamChiTiet spct WHERE spct.sanPham.id = :idSanPham AND spct.trangThai = :trangThai AND spct.danhMuc.tenDanhMuc = :danhMuc GROUP BY spct.mauSac")
+    List<MauSac> getMauSacTheoIDSanPhamAndTrangThaiAndDanhMuc(@Param("idSanPham") Integer idSanPham, @Param("trangThai") String trangThai, @Param("danhMuc") String danhMuc);
 
+    List<SanPhamChiTiet> findBySanPhamAndMauSacAndTrangThaiAndDanhMuc_TenDanhMuc(SanPham sanPham, MauSac mauSac, String trangThai, String tenDanhMuc);
 
     @Query("SELECT spct.mauSac FROM SanPhamChiTiet spct WHERE spct.sanPham.id = :idSanPham AND spct.trangThai = :trangThai GROUP BY spct.mauSac")
     List<MauSac> getMauSacTheoIDSanPhamAndTrangThai(@Param("idSanPham") Integer idSanPham, @Param("trangThai") String trangThai);
 
 
-    List<SanPhamChiTiet> findBySanPhamAndMauSacAndTrangThai(SanPham sanPham, MauSac mauSac,String trangThai);
+    List<SanPhamChiTiet> findBySanPhamAndMauSacAndTrangThai(SanPham sanPham, MauSac mauSac, String trangThai);
 
 
+    @Query("SELECT hdct.sanPhamChiTiet.sanPham FROM HoaDonChiTiet hdct " +
+            "WHERE hdct.hoaDon.trangThai = 'Hoàn thành' " +
+            "AND hdct.sanPhamChiTiet.sanPham.trangThai = :trangThai " +
+//            "AND (SELECT SUM(spct.soLuong) FROM SanPhamChiTiet spct WHERE spct.sanPham = hdct.sanPhamChiTiet.sanPham) > 0 " +
+            "AND hdct.ngayTao BETWEEN :startDate AND :endDate " +  // Lọc theo khoảng ngày
+            "AND hdct.sanPhamChiTiet.trangThai = :trangThai " +
+            "GROUP BY hdct.sanPhamChiTiet.sanPham " +
+            "ORDER BY SUM(hdct.soLuong) DESC")
+    List<SanPham> findTopSanPhamChiTietBanChay(@Param("trangThai") String trangThai,@Param("startDate") LocalDateTime startDate,
+                                               @Param("endDate") LocalDateTime endDate, Pageable pageable);
 
 }

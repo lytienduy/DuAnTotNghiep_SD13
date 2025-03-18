@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Box, Typography, Slider, Grid, Card, CardMedia, CardContent,
-  Button, Accordion, AccordionSummary, AccordionDetails, InputAdornment, TextField,IconButton
+  Button, Accordion, AccordionSummary, AccordionDetails, InputAdornment, TextField, IconButton
 } from '@mui/material';
 import logo from '../../../img/bannerQuanAu.png';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -74,7 +74,7 @@ const SanPham = () => {
 
   //Hàm lọcThemSanPhamHoaDonTaiQuay
   const getSanPhamHienThi = async () => {
-    let apiUrl = "http://localhost:8080/home/layListCacSanPhamHienThi";
+    let apiUrl = "http://localhost:8080/spClient/layListCacSanPhamHienThi";
     // Xây dựng query string
     const params = new URLSearchParams();
     params.append("timKiem", timKiem);//Truyền vào loại đơn
@@ -89,6 +89,7 @@ const SanPham = () => {
     params.append("phongCach", phongCach);//Truyền vào loại đơn
     try {
       const response = await axios.get(`${apiUrl}?${params.toString()}`);//Gọi api bằng axiosGet
+      console.log(`${apiUrl}?${params.toString()}`);
       setProducts(response.data);
       showSuccessToast("ok")
     } catch (error) {
@@ -491,10 +492,39 @@ const SanPham = () => {
                       }}
                       onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}
                     >
+                      <CardMedia
+                        component="img"
+                        height="250"
+                        image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[0]}
+                        alt={product?.ten}
+                        sx={{
+                          transition: 'opacity 0.3s ease',
+                          '&:hover': { opacity: 0 },
+                          borderTopLeftRadius: 2,
+                          borderTopRightRadius: 2,
+                        }}
+                      />
 
-                      <CardMedia component="img" height="200" image={product.hinhAnh[0]} alt={product.ten} />
+                      {/* Chỉ hiển thị ảnh thứ hai nếu tồn tại */}
+                      {product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1] && (
+                        <CardMedia
+                          component="img"
+                          height="250"
+                          image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1]}
+                          alt={product.ten}
+                          sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            opacity: 0,
+                            transition: 'opacity 0.3s ease',
+                            '&:hover': { opacity: 1 },
+                            borderTopLeftRadius: 2,
+                            borderTopRightRadius: 2,
+                          }}
+                        />
+                      )}
                       <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-
                         <Typography
                           variant="body1"
                           sx={{
@@ -513,9 +543,9 @@ const SanPham = () => {
 
                         {/* <Typography variant="body2" color="text.secondary">{product.description}</Typography> */}
                         <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{product.gia?.toLocaleString()}đ</Typography>
-                        <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                          {product?.listMauSac?.length > 0 ? (
-                            product.listMauSac.map(item => (
+                        <Box sx={{ mt: 1, display: 'flex', gap: 1, mb: 2 }}>
+                          {product?.listHinhAnhAndMauSacAndSize?.length > 0 ? (
+                            product.listHinhAnhAndMauSacAndSize.map(item => (
                               <IconButton
                                 sx={{
                                   width: 32, // Kích thước tổng thể
@@ -533,12 +563,12 @@ const SanPham = () => {
                                     display: "block",
                                     width: "100%", // Khi chọn, màu nhỏ đi 20%
                                     height: "100%",
-                                    backgroundColor: item.ma, // Giữ màu nền
+                                    backgroundColor: item.mauSac.ma, // Giữ màu nền
                                     borderRadius: "12px", // Bo góc nhỏ hơn một chút
                                     transition: "all 0.2s ease-in-out",
                                   },
                                 }}
-                                
+
                               />
                             ))
                           ) : (
