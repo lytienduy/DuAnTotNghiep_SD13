@@ -20,8 +20,8 @@ public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet,
 
     @Query("SELECT DISTINCT sp FROM SanPham sp " +
             "JOIN SanPhamChiTiet spct ON spct.sanPham =  sp " +
-            "WHERE LOWER(spct.danhMuc.tenDanhMuc) LIKE LOWER(:tenDanhMuc) " +
-            "AND LOWER(sp.trangThai) = 'hoạt động'")
+            "WHERE LOWER(spct.danhMuc.tenDanhMuc) LIKE LOWER(:tenDanhMuc) ")
+//            "AND LOWER(sp.trangThai) = 'hoạt động'")
     List<SanPham> getListSanPhamTheoTenDanhMucVaDangHoatDong(@Param("tenDanhMuc") String tenDanhMuc);
 
 

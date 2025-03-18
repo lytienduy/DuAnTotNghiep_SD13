@@ -19,7 +19,7 @@ public interface HoaDonChiTietRepository extends JpaRepository<HoaDonChiTiet, In
 
     @Query("SELECT hdct.sanPhamChiTiet.sanPham FROM HoaDonChiTiet hdct " +
             "WHERE hdct.hoaDon.trangThai = 'Hoàn thành' " +
-            "AND hdct.sanPhamChiTiet.sanPham.trangThai = 'Hoạt động' " +
+//            "AND hdct.sanPhamChiTiet.sanPham.trangThai = 'Hoạt động' " +
             "AND (SELECT SUM(spct.soLuong) FROM SanPhamChiTiet spct WHERE spct.sanPham = hdct.sanPhamChiTiet.sanPham) > 0 " +
             "GROUP BY hdct.sanPhamChiTiet.sanPham " +
             "ORDER BY SUM(hdct.soLuong) DESC")
