@@ -307,7 +307,7 @@ const ThongTinKhachHang = () => {
                 <ArrowBack onClick={() => {
                     navigate('/khachhang');
                 }} sx={{ marginRight: 1 }} />
-                Khách hàng <span style={{ fontWeight: 'lighter' }}>/ {id}</span>
+                Khách hàng <span style={{ fontWeight: 'lighter' }}>/ {id ? id : 'Thêm khách hàng'}</span>
             </h2>
             <Box sx={classNames.container}>
                 <Box sx={classNames.infoContainer}>
@@ -392,18 +392,18 @@ const ThongTinKhachHang = () => {
                 aria-labelledby="draggable-dialog-title"
             >
                 <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
-                    Address
+                    Địa chỉ
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Do you really want delete this address?
+                        Bạn có muốn xóa địa chỉ này không?
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button autoFocus onClick={() => setIsDeleteAddress(false)}>
-                        Cancel
+                        Hủy
                     </Button>
-                    <Button onClick={deleteAddressHandler}>Confirm</Button>
+                    <Button onClick={deleteAddressHandler}>Xác nhận</Button>
                 </DialogActions>
             </Dialog>
             <Dialog
@@ -412,18 +412,18 @@ const ThongTinKhachHang = () => {
                 aria-labelledby="draggable-dialog-title"
             >
                 <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
-                    Customer
+                    Cập Nhập
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Do you really want update this customer?
+                    Bạn có muốn cập nhập không?
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button autoFocus onClick={() => setIsUpdateCustomer(false)}>
-                        Cancel
+                        Hủy
                     </Button>
-                    <Button onClick={capNhatKhachHang}>Confirm</Button>
+                    <Button onClick={capNhatKhachHang}>Xác Nhận</Button>
                 </DialogActions>
             </Dialog>
         </Box>

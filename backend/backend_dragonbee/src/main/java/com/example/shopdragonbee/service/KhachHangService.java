@@ -36,28 +36,28 @@ public class KhachHangService {
         KhachHang khachHang = khachHangRepository.findKhachHangByMa(ma);
 
         khachHangDto.getDiaChiDtos().forEach(diaChiDto -> {
-           if(diaChiDto.getId() == null){
-               DiaChi diaChi = new DiaChi();
-               diaChi.setSoNha(diaChiDto.getSoNha());
-               diaChi.setDuong(diaChiDto.getDuong());
-               diaChi.setXa(diaChiDto.getXa());
-               diaChi.setHuyen(diaChiDto.getHuyen());
-               diaChi.setThanhPho(diaChiDto.getThanhPho());
-               diaChi.setKhachHang(khachHang);
-               diaChi.setTrangThai("Hoạt động");
-               diaChi.setMacDinh(false);
-               diaChiRepository.save(diaChi);
-           } else {
-               DiaChi diaChi = diaChiRepository.findById(diaChiDto.getId()).orElse(null);
-               if(diaChi != null){
-                   diaChi.setSoNha(diaChiDto.getSoNha());
-                   diaChi.setDuong(diaChiDto.getDuong());
-                   diaChi.setXa(diaChiDto.getXa());
-                   diaChi.setHuyen(diaChiDto.getHuyen());
-                   diaChi.setThanhPho(diaChiDto.getThanhPho());
-                   diaChiRepository.save(diaChi);
-               }
-           }
+            if(diaChiDto.getId() == null){
+                DiaChi diaChi = new DiaChi();
+                diaChi.setSoNha(diaChiDto.getSoNha());
+                diaChi.setDuong(diaChiDto.getDuong());
+                diaChi.setXa(diaChiDto.getXa());
+                diaChi.setHuyen(diaChiDto.getHuyen());
+                diaChi.setThanhPho(diaChiDto.getThanhPho());
+                diaChi.setKhachHang(khachHang);
+                diaChi.setTrangThai("Hoạt động");
+                diaChi.setMacDinh(diaChiDto.getMacDinh());
+                diaChiRepository.save(diaChi);
+            } else {
+                DiaChi diaChi = diaChiRepository.findById(diaChiDto.getId()).orElse(null);
+                if(diaChi != null){
+                    diaChi.setSoNha(diaChiDto.getSoNha());
+                    diaChi.setDuong(diaChiDto.getDuong());
+                    diaChi.setXa(diaChiDto.getXa());
+                    diaChi.setHuyen(diaChiDto.getHuyen());
+                    diaChi.setThanhPho(diaChiDto.getThanhPho());
+                    diaChiRepository.save(diaChi);
+                }
+            }
         });
         khachHang.setTenKhachHang(khachHangDto.getTenKhachHang());
         khachHang.setEmail(khachHangDto.getEmail());
@@ -118,6 +118,7 @@ public class KhachHangService {
             diaChi.setThanhPho(diaChiDto.getThanhPho());
             diaChi.setKhachHang(khachHang);
             diaChi.setTrangThai("Hoạt động");
+            diaChi.setMacDinh(diaChiDto.getMacDinh());
             diaChis.add(diaChiRepository.save(diaChi));
         }
 

@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "khach_hang")
@@ -52,4 +53,7 @@ public class KhachHang {
     @OneToOne
     @JoinColumn(name = "id_tai_khoan", nullable = false)
     private TaiKhoan taiKhoan;
+
+    @OneToMany(mappedBy = "khachHang", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DiaChi> diaChis;
 }
