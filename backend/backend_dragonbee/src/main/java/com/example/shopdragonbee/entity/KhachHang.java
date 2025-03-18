@@ -56,6 +56,8 @@ public class KhachHang {
     private TaiKhoan taiKhoan;
 
     @OneToMany(mappedBy = "khachHang", cascade = CascadeType.ALL, orphanRemoval = true)
+
     @JsonIgnore // Tránh tuần hoàn khi chuyển đổi thành JSON
+
     private List<DiaChi> diaChis;
 }

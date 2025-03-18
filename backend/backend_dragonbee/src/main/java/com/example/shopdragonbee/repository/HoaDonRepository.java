@@ -180,41 +180,34 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
 
     //5. Tùy chỉnh
     @Query(value = """
-        WITH AllStatuses AS (
-          SELECT N'Chờ xác nhận' AS trangThai
-          UNION ALL
-          SELECT N'Đã xác nhận'
-          UNION ALL
-          SELECT N'Chờ giao hàng'
-          UNION ALL
-          SELECT N'Đang vận chuyển'
-          UNION ALL
-          SELECT N'Đã giao hàng'
-          UNION ALL
-          SELECT N'Chờ thanh toán'
-          UNION ALL
-          SELECT N'Đã thanh toán'
-          UNION ALL
-          SELECT N'Hoàn thành'
-          UNION ALL
-          SELECT N'Đã hủy'
-        )
-        SELECT 
-          s.trangThai,
-          ISNULL(o.soLuong, 0) AS soLuong
-        FROM AllStatuses s
-        LEFT JOIN (
-          SELECT hd.trang_thai AS trangThai,
-                 COUNT(*) AS soLuong
-          FROM hoa_don hd
-          WHERE hd.trang_thai IN (
-            N'Chờ xác nhận', N'Đã xác nhận', N'Chờ giao hàng', N'Đang vận chuyển',
-            N'Đã giao hàng', N'Chờ thanh toán', N'Đã thanh toán', N'Hoàn thành', N'Đã hủy'
-          )
-          AND hd.ngay_tao BETWEEN :startDate AND :endDate
-          GROUP BY hd.trang_thai
-        ) o ON s.trangThai = o.trangThai
-    """, nativeQuery = true)
+    WITH AllStatuses AS (
+      SELECT N'Chờ xác nhận' AS trangThai
+      UNION ALL SELECT N'Đã xác nhận'
+      UNION ALL SELECT N'Chờ giao hàng'
+      UNION ALL SELECT N'Đang vận chuyển'
+      UNION ALL SELECT N'Đã giao hàng'
+      UNION ALL SELECT N'Chờ thanh toán'
+      UNION ALL SELECT N'Đã thanh toán'
+      UNION ALL SELECT N'Hoàn thành'
+      UNION ALL SELECT N'Đã hủy'
+    )
+    SELECT 
+      s.trangThai,
+      ISNULL(o.soLuong, 0) AS soLuong
+    FROM AllStatuses s
+    LEFT JOIN (
+      SELECT hd.trang_thai AS trangThai,
+             COUNT(*) AS soLuong
+      FROM hoa_don hd
+      WHERE hd.trang_thai IN (
+        N'Chờ xác nhận', N'Đã xác nhận', N'Chờ giao hàng', N'Đang vận chuyển',
+        N'Đã giao hàng', N'Chờ thanh toán', N'Đã thanh toán', N'Hoàn thành', N'Đã hủy'
+      )
+      AND hd.ngay_tao >= :startDate
+      AND hd.ngay_tao <= DATEADD(SECOND, 86399, :endDate)
+      GROUP BY hd.trang_thai
+    ) o ON s.trangThai = o.trangThai
+""", nativeQuery = true)
     List<Object[]> findOrderStatusStatsCustom(@Param("startDate") String startDate,
                                               @Param("endDate") String endDate);
 

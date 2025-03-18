@@ -63,7 +63,7 @@ const RevenueGrowthStats = () => {
       sx={{
         p: 3,
         mt: 3,
-        backgroundColor: "#0d47a1", // Nền xanh đậm
+        backgroundColor: "#000000", // Nền xanh đậm
         borderRadius: 2,
       }}
     >
@@ -71,7 +71,7 @@ const RevenueGrowthStats = () => {
         variant="h5"
         fontWeight="bold"
         mb={2}
-        sx={{ color: "#e3f2fd" }}
+        sx={{ color: "#fff" }}
       >
         Tốc độ tăng trưởng của cửa hàng
       </Typography>
@@ -82,7 +82,7 @@ const RevenueGrowthStats = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            backgroundColor: "#1976d2", // xanh vừa
+            backgroundColor: "#333333", // xanh vừa
             p: 1,
             borderRadius: 1,
           }}
@@ -113,7 +113,7 @@ const RevenueGrowthStats = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            backgroundColor: "#1976d2",
+            backgroundColor: "#333333",
             p: 1,
             borderRadius: 1,
           }}
@@ -141,7 +141,7 @@ const RevenueGrowthStats = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            backgroundColor: "#1976d2",
+            backgroundColor: "#333333",
             p: 1,
             borderRadius: 1,
           }}
@@ -169,7 +169,7 @@ const RevenueGrowthStats = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            backgroundColor: "#1976d2",
+            backgroundColor: "#333333",
             p: 1,
             borderRadius: 1,
           }}

@@ -446,7 +446,21 @@ const ThongKe = () => {
 
               <Grid item xs={12} md={5}>
                 {/* Hiển thị biểu đồ tròn theo filter */}
-                <OrderStatusPieChart filter={convertFilter(selectedFilter)} />
+                <OrderStatusPieChart
+                  filter={
+                    selectedFilter === "Ngày"
+                      ? "today"
+                      : selectedFilter === "Tuần"
+                      ? "week"
+                      : selectedFilter === "Tháng"
+                      ? "month"
+                      : selectedFilter === "Năm"
+                      ? "year"
+                      : "custom"
+                  }
+                  customStartDate={customStartDate}
+                  customEndDate={customEndDate}
+                />
               </Grid>
             </Grid>
           </Grid>
