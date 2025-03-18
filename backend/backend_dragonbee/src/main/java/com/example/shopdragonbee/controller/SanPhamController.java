@@ -1,20 +1,10 @@
 package com.example.shopdragonbee.controller;
 
 
-import com.example.shopdragonbee.dto.ProductOutOfStockDTO;
-import com.example.shopdragonbee.dto.SanPhamChiTietDTO;
+
 import com.example.shopdragonbee.dto.SanPhamDTO;
-import com.example.shopdragonbee.entity.MauSac;
 import com.example.shopdragonbee.entity.SanPham;
-import com.example.shopdragonbee.entity.SanPhamChiTiet;
-import com.example.shopdragonbee.entity.Size;
-import com.example.shopdragonbee.repository.ChatLieuRepository;
-import com.example.shopdragonbee.repository.DanhMucRepository;
-import com.example.shopdragonbee.repository.MauSacRepository;
-import com.example.shopdragonbee.repository.SizeRepository;
-import com.example.shopdragonbee.repository.ThuongHieuRepository;
 import com.example.shopdragonbee.respone.SanPhamChiTietRespone;
-import com.example.shopdragonbee.respone.SanPhamRespone;
 import com.example.shopdragonbee.service.SanPhamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,9 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -105,81 +92,15 @@ public class SanPhamController {
     }
 
 // chuyển đổi trạng thái
-    @PutMapping("/{id}/toggle-trang-thai")
-    public ResponseEntity<?> toggleProductStatus(@PathVariable Integer id) {
-        String message = sanPhamService.toggleProductStatus(id);
-        if (message.startsWith("Trạng thái")) {
-            return ResponseEntity.ok(message);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        }
-    }
-// add chi tiết
-@PostMapping("/add/chi-tiet")
-public ResponseEntity<?> addSanPhamChiTiet(@RequestBody List<SanPhamChiTietDTO> dtoList) {
-    System.out.println("🚀 Dữ liệu nhận từ Frontend: " + dtoList);
-
-    if (dtoList.isEmpty()) {
-        return new ResponseEntity<>("❌ Danh sách sản phẩm chi tiết không được để trống.", HttpStatus.BAD_REQUEST);
-    }
-
-    try {
-        List<SanPhamChiTiet> savedProducts = new ArrayList<>();
-
-        for (SanPhamChiTietDTO dto : dtoList) {
-            SanPham sanPham = sanPhamService.getSanPhamById(dto.getSanPhamId());
-            SanPhamChiTiet newSanPhamChiTiet = new SanPhamChiTiet();
-            newSanPhamChiTiet.setSanPham(sanPham);
-            newSanPhamChiTiet.setSoLuong(dto.getSoLuong() != null ? dto.getSoLuong() : 0);
-            newSanPhamChiTiet.setGia(dto.getGia() != null ? dto.getGia() : 0.0);
-            newSanPhamChiTiet.setMoTa(dto.getMoTa() != null ? dto.getMoTa() : "Không có mô tả");
-            newSanPhamChiTiet.setTrangThai(dto.getTrangThai() != null ? dto.getTrangThai() : "Còn hàng");
-            newSanPhamChiTiet.setMa(sanPhamService.generateProductCode());
-            newSanPhamChiTiet.setNgayTao(LocalDateTime.now());
-            newSanPhamChiTiet.setNguoiTao("Admin");
-
-            // Gán các thuộc tính khác nếu có ID
-            if (dto.getDanhMucId() != null) {
-                newSanPhamChiTiet.setDanhMuc(sanPhamService.getDanhMucById(dto.getDanhMucId()));
-            }
-            if (dto.getThuongHieuId() != null) {
-                newSanPhamChiTiet.setThuongHieu(sanPhamService.getThuongHieuById(dto.getThuongHieuId()));
-            }
-            if (dto.getPhongCachId() != null) {
-                newSanPhamChiTiet.setPhongCach(sanPhamService.getPhongCachById(dto.getPhongCachId()));
-            }
-            if (dto.getChatLieuId() != null) {
-                newSanPhamChiTiet.setChatLieu(sanPhamService.getChatLieuById(dto.getChatLieuId()));
-            }
-            if (dto.getKieuDangId() != null) {
-                newSanPhamChiTiet.setKieuDang(sanPhamService.getKieuDangById(dto.getKieuDangId()));
-            }
-            if (dto.getKieuDaiQuanId() != null) {
-                newSanPhamChiTiet.setKieuDaiQuan(sanPhamService.getKieuDaiQuanById(dto.getKieuDaiQuanId()));
-            }
-            if (dto.getXuatXuId() != null) {
-                newSanPhamChiTiet.setXuatXu(sanPhamService.getXuatXuById(dto.getXuatXuId()));
-            }
-
-            // Gán Màu Sắc và Size
-            if (dto.getMauSacId() != null) {
-                newSanPhamChiTiet.setMauSac(sanPhamService.getMauSacById(dto.getMauSacId()));
-            }
-            if (dto.getSizeId() != null) {
-                newSanPhamChiTiet.setSize(sanPhamService.getSizeById(dto.getSizeId()));
-            }
-
-            // Lưu sản phẩm chi tiết vào danh sách
-            savedProducts.add(sanPhamService.addSanPhamChiTiet(newSanPhamChiTiet));
-        }
-
-        return new ResponseEntity<>(savedProducts, HttpStatus.CREATED);
-    } catch (Exception e) {
-        return new ResponseEntity<>("❌ Lỗi khi thêm sản phẩm chi tiết: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+@PutMapping("/{id}/toggle-trang-thai")
+public ResponseEntity<?> toggleProductStatus(@PathVariable Integer id) {
+    String message = sanPhamService.toggleProductStatus(id);
+    if (message.startsWith("Trạng thái")) {
+        return ResponseEntity.ok(message);
+    } else {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
     }
 }
-
-
 
 
 }

@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -19,7 +20,7 @@ public class AnhSanPham {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "ma", nullable = false, unique = true)
+    @Column(name = "ma", nullable = false)
     private String ma;
 
     @Column(name = "anh_url", nullable = false)
@@ -29,12 +30,12 @@ public class AnhSanPham {
     private String moTa;
 
     @Column(name = "trang_thai")
-    private String trangThai;
+    private String trangThai = "Hoạt động";
 
     @ManyToOne
     @JoinColumn(name = "id_san_pham_chi_tiet", nullable = false)
+    @JsonBackReference // Phía "con", ngừng vòng lặp
     private SanPhamChiTiet sanPhamChiTiet;
-
-
 }
+
 

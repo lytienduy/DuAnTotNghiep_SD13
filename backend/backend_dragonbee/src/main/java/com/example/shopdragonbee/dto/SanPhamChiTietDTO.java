@@ -25,5 +25,6 @@ public class SanPhamChiTietDTO {
     private Double gia = 0.0;
     private String trangThai;
     private String moTa;
+    private List<String> anhUrls; // Thêm trường cho danh sách ảnh
 
 }

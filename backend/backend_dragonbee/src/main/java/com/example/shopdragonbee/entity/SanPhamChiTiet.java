@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -38,6 +39,7 @@ public class SanPhamChiTiet {
 
     @ManyToOne
     @JoinColumn(name = "id_san_pham", nullable = false)
+    @JsonBackReference  // Loại bỏ vòng lặp khi serialize
     private SanPham sanPham;
 
     @ManyToOne

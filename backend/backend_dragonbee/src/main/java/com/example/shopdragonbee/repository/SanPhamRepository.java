@@ -19,7 +19,7 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
         sp.id,
         sp.ma,
         sp.tenSanPham,
-        COALESCE(SUM(spct.soLuong), 0), 
+        COALESCE(SUM(spct.soLuong), 0),
         sp.ngayTao,
         sp.trangThai
     )
@@ -37,9 +37,12 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
         sp.id,
         sp.ma,
         sp.tenSanPham,
-        COALESCE(SUM(spct.soLuong), 0), 
+        COALESCE(SUM(spct.soLuong), 0) AS tongSoLuong,
         sp.ngayTao,
-        sp.trangThai
+        CASE 
+            WHEN COALESCE(SUM(spct.soLuong), 0) = 0 THEN 'Hết hàng' 
+            ELSE sp.trangThai 
+        END AS trangThai
     )
     FROM SanPham sp
     LEFT JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id
@@ -55,9 +58,12 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
         sp.id,
         sp.ma,
         sp.tenSanPham,
-        COALESCE(SUM(spct.soLuong), 0), 
+        COALESCE(SUM(spct.soLuong), 0) AS tongSoLuong,
         sp.ngayTao,
-        sp.trangThai
+        CASE 
+            WHEN COALESCE(SUM(spct.soLuong), 0) = 0 THEN 'Hết hàng' 
+            ELSE sp.trangThai 
+        END
     )
     FROM SanPham sp
     LEFT JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id
@@ -71,7 +77,6 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
             @Param("trangThai") String trangThai,
             Pageable pageable
     );
-
     @Query("SELECT MAX(s.ma) FROM SanPham s")
     String findLastMaSanPham();
 

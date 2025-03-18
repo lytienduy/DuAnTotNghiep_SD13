@@ -21,6 +21,9 @@ public class MauSac {
     @Column(name = "ten_mau_sac", nullable = false)
     private String tenMauSac;
 
+    @Column(name = "ma_mau", nullable = false)
+    private String maMau;
+
     @Column(name = "mo_ta")
     private String moTa;
 

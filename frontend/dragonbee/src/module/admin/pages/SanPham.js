@@ -15,6 +15,7 @@ import {
   CircularProgress,
   Pagination,
   TextField,
+  InputLabel,
   MenuItem,
   Select,
   Switch,
@@ -181,22 +182,22 @@ const SanPham = () => {
       const response = await axios.put(
         `http://localhost:8080/api/sanpham/${id}/toggle-trang-thai`
       );
-
+  
       console.log("Phản hồi API:", response.data);
-
-      // Cập nhật trực tiếp trạng thái trong sanPhams state
+  
+      // Cập nhật trạng thái trực tiếp trong sanPhams state
       setSanPhams((prevSanPhams) =>
         prevSanPhams.map((sp) =>
           sp.id === id
             ? {
                 ...sp,
                 trangThai:
-                  sp.trangThai === "Đang bán" ? "Ngừng bán" : "Đang bán",
+                  sp.tongSoLuong === 0 ? "Hết hàng" : (sp.trangThai === "Hoạt động" ? "Ngừng bán" : "Hoạt động"),
               }
             : sp
         )
       );
-
+  
       setSnackbarMessage("Cập nhật trạng thái thành công!");
       setOpenSnackbar(true);
     } catch (error) {
@@ -204,6 +205,9 @@ const SanPham = () => {
       alert("Có lỗi xảy ra khi cập nhật trạng thái sản phẩm!");
     }
   };
+  
+  
+  
 
   return (
     <Container maxWidth="lg">
@@ -254,8 +258,16 @@ const SanPham = () => {
       {/* Bộ lọc và ô tìm kiếm */}
       <Paper sx={{ padding: 2, mb: 2 }}>
         <Grid container spacing={2} alignItems="center">
+          {/* Heading for the filter section */}
+          <Grid item xs={12}>
+            <Typography variant="h6">Bộ Lọc</Typography>
+          </Grid>
+
           {/* Ô tìm kiếm */}
           <Grid item xs={12} md={6}>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+              Tên sản phẩm
+            </Typography>
             <TextField
               label="Tìm kiếm theo tên"
               variant="outlined"
@@ -267,16 +279,19 @@ const SanPham = () => {
           </Grid>
 
           {/* Bộ lọc trạng thái */}
-          <Grid item xs={6} md={3}>
-            <FormControl fullWidth size="small">
-              <Typography variant="caption">Trạng Thái</Typography>
+          <Grid item xs={6} md={2}>
+            <FormControl fullWidth size="small" variant="outlined">
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                Trạng thái
+              </Typography>
               <Select
                 value={trangThai}
                 onChange={handleTrangThaiChange} // Gọi hàm xử lý lọc trạng thái
                 displayEmpty
+                fullWidth
               >
                 <MenuItem value="">Tất cả</MenuItem>
-                <MenuItem value="Đang bán">Đang bán</MenuItem>
+                <MenuItem value="Hoạt động">Hoạt động</MenuItem>
                 <MenuItem value="Ngừng bán">Ngừng bán</MenuItem>
               </Select>
             </FormControl>
@@ -289,77 +304,59 @@ const SanPham = () => {
         <CircularProgress />
       ) : (
         <>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <strong>STT</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Mã Sản Phẩm</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Tên Sản Phẩm</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Số Lượng</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Ngày Tạo</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Trạng Thái</strong>
-                  </TableCell>
-                  <TableCell align="center">
-                    <strong>Hành Động</strong>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {sanPhams.length > 0 ? (
-                  sanPhams.map((sp, index) => (
-                    <TableRow key={sp.id}>
-                      <TableCell>{(page - 1) * 5 + index + 1}</TableCell>
-                      <TableCell>{sp.ma}</TableCell>
-                      <TableCell>{sp.tenSanPham}</TableCell>
-                      <TableCell>{sp.tongSoLuong ?? "0"}</TableCell>
-                      <TableCell>
-                        {new Date(sp.ngayTao).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          color: sp.trangThai === "Đang bán" ? "green" : "red",
-                        }}
-                      >
-                        {sp.trangThai ?? "Không xác định"}
-                      </TableCell>
+        <TableContainer component={Paper}>
+  <Table>
+    <TableHead>
+      <TableRow>
+        <TableCell><strong>STT</strong></TableCell>
+        <TableCell><strong>Mã Sản Phẩm</strong></TableCell>
+        <TableCell><strong>Tên Sản Phẩm</strong></TableCell>
+        <TableCell><strong>Số Lượng</strong></TableCell>
+        <TableCell><strong>Ngày Tạo</strong></TableCell>
+        <TableCell><strong>Trạng Thái</strong></TableCell>
+        <TableCell align="center"><strong>Hành Động</strong></TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {sanPhams.length > 0 ? (
+        sanPhams.map((sp, index) => (
+          <TableRow key={sp.id}>
+            <TableCell>{(page - 1) * 5 + index + 1}</TableCell>
+            <TableCell>{sp.ma}</TableCell>
+            <TableCell>{sp.tenSanPham}</TableCell>
+            <TableCell>{sp.tongSoLuong ?? "0"}</TableCell>
+            <TableCell>{new Date(sp.ngayTao).toLocaleDateString()}</TableCell>
+            <TableCell
+  sx={{
+    color: sp.tongSoLuong === 0 ? "red" : sp.trangThai === "Hoạt động" ? "green" : "red",
+  }}
+>
+  {sp.tongSoLuong === 0 ? "Hết hàng" : sp.trangThai}
+</TableCell>
 
-                      <TableCell align="center">
-                        <Button
-                          color="primary"
-                          onClick={() => navigate(`/admin/sanpham/${sp.id}`)}
-                        >
-                          <Visibility />
-                        </Button>
-                        <Switch
-                          checked={sp.trangThai === "Đang bán"} // Kiểm tra nếu trạng thái là "Đang bán"
-                          onChange={() => toggleTrangThai(sp.id)}
-                          color="success"
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center">
-                      Không tìm thấy sản phẩm nào!
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+            <TableCell align="center">
+              <Button color="primary" onClick={() => navigate(`/admin/sanpham/${sp.id}`)}>
+                <Visibility />
+              </Button>
+              <Switch
+                checked={sp.trangThai === "Hoạt động"}
+                onChange={() => toggleTrangThai(sp.id)}
+                color="success"
+                disabled={sp.tongSoLuong === 0 || sp.trangThai === "Hết hàng"}
+              />
+            </TableCell>
+          </TableRow>
+        ))
+      ) : (
+        <TableRow>
+          <TableCell colSpan={7} align="center">
+            Không tìm thấy sản phẩm nào!
+          </TableCell>
+        </TableRow>
+      )}
+    </TableBody>
+  </Table>
+</TableContainer>
 
           <Box
             display="flex"
@@ -395,17 +392,17 @@ const SanPham = () => {
               count={totalPages}
               page={page}
               onChange={(event, value) => setPage(value)}
-              variant="outlined"
-              shape="rounded"
+              shape="circular" // This will make the border circular
               color="primary"
               siblingCount={0} // Keep it compact
               sx={{
                 "& .MuiPaginationItem-root": {
                   backgroundColor: "white",
                   border: "1px solid #ddd",
+                  borderRadius: "50%", // Ensures the border is round
                   "&.Mui-selected": {
-                    backgroundColor: "lightblue",
-                    color: "white",
+                    backgroundColor: "primary", // Change the selected background to green
+                    color: "white", // White text for selected page
                   },
                 },
               }}
