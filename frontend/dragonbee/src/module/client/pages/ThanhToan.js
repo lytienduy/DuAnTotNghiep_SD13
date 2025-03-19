@@ -51,6 +51,7 @@ const ThanhToan = () => {
     }, []);
 
     const tongTienThanhToan = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
+    
     const handleChange = (event) => {
         setSelectedPaymentMethod(event.target.value);
     };

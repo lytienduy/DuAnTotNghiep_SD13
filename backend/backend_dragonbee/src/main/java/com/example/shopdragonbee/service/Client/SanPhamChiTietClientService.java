@@ -38,7 +38,7 @@ public class SanPhamChiTietClientService {
     public SPCTDTO.SizeCuaPhong convertSangListSizeCuaPhong(SanPhamChiTiet sanPhamChiTiet) {
         return new SPCTDTO.SizeCuaPhong(
                 sanPhamChiTiet.getId(),
-                sanPhamChiTiet.getSanPham().getTenSanPham() + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang() + " - " + sanPhamChiTiet.getMauSac().getTenMauSac() + " -sz" + sanPhamChiTiet.getSize().getTenSize(),
+                sanPhamChiTiet.getSanPham().getTenSanPham() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang() + " - " + sanPhamChiTiet.getMauSac().getTenMauSac() + " - sz" + sanPhamChiTiet.getSize().getTenSize(),
                 sanPhamChiTiet.getSize().getId(),
                 sanPhamChiTiet.getSize().getMa(),
                 sanPhamChiTiet.getSize().getTenSize(),
@@ -62,7 +62,7 @@ public class SanPhamChiTietClientService {
             for (SanPhamChiTiet sanPhamChiTiet : listSPCT
             ) {
                 if (index == 0) {
-                    tongQuanSanPhamCTClient.setTen(sp.getTenSanPham() + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang() + " " + sp.getMa());
+                    tongQuanSanPhamCTClient.setTen(sp.getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
                     tongQuanSanPhamCTClient.setMoTa(sanPhamChiTiet.getMoTa());
                     tongQuanSanPhamCTClient.setGia(sanPhamChiTiet.getGia());
                     tongQuanSanPhamCTClient.setKieuDang(sanPhamChiTiet.getKieuDang());

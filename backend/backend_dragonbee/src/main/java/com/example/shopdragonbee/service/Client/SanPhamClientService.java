@@ -13,9 +13,7 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,8 +85,16 @@ public class SanPhamClientService {
             Integer thuongHieu,
             Integer phongCach) {
         List<SanPhamDTO.SanPhamClient> listTraVe = new ArrayList<>();
-        Set<SanPham> listSanPhamChiTietTheoBoLoc = getListSanPhamChiTietTheoIDSanPham(searchText, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach);
-        for (SanPham sanPham : listSanPhamChiTietTheoBoLoc) {//Nhưng chỉ có một bạn ghi nên dựa vào để lấy sản phẩm
+        List<SanPhamChiTiet> listSanPhamChiTietTheoBoLoc = getListSanPhamChiTietTheoIDSanPham(searchText, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach);
+        // Dùng LinkedHashMap để loại bỏ trùng nhưng giữ đúng thứ tự
+        Map<Integer, SanPham> uniqueSanPhamMap = new LinkedHashMap<>();
+
+        for (SanPhamChiTiet spct : listSanPhamChiTietTheoBoLoc) {
+            SanPham sanPham = spct.getSanPham();
+            uniqueSanPhamMap.putIfAbsent(sanPham.getId(), sanPham); // Chỉ thêm nếu chưa có
+        }
+
+        for (SanPham sanPham : new ArrayList<>(uniqueSanPhamMap.values())) {//Nhưng chỉ có một bạn ghi nên dựa vào để lấy sản phẩm
             SanPhamDTO.SanPhamClient tongQuanSanPhamCTClient = new SanPhamDTO.SanPhamClient();//Tạo ra đối tượng của listTraVe
             tongQuanSanPhamCTClient.setId(sanPham.getId());
             List<SanPhamDTO.MauSacAndHinhAnhAndSize> listMauSacAndSizeCuaSp = new ArrayList<>();//Tạo ra list để lưu những sản phẩm màu sắc, hình ảnh và size của sản phẩm
@@ -126,7 +132,7 @@ public class SanPhamClientService {
     }
 
     //Lấy các sản phẩm
-    public Set<SanPham> getListSanPhamChiTietTheoIDSanPham(
+    public List<SanPhamChiTiet> getListSanPhamChiTietTheoIDSanPham(
             String searchText,
             Integer fromGia,
             Integer toGia,
@@ -137,8 +143,8 @@ public class SanPhamClientService {
             Integer kieuDang,
             Integer thuongHieu,
             Integer phongCach
-            ) {
-        List<SanPhamChiTiet> listSanPham = sanPhamChiTietRepositoryP.findAll((root, query, criteriaBuilder) -> {
+    ) {
+        List<SanPhamChiTiet> listSanPhamChiTiet = sanPhamChiTietRepositoryP.findAll((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
 //            predicates.add(criteriaBuilder.equal(root.get("sanPham").get("id"), idSanPham));
@@ -223,11 +229,9 @@ public class SanPhamClientService {
 //                .map(SanPhamChiTiet::getSanPham)
 //                .distinct() // Lọc trùng
 //                .collect(Collectors.toList());
-        Set<SanPham> uniqueSanPhams = listSanPham.stream()
-                .map(SanPhamChiTiet::getSanPham) // Lấy sản phẩm từ mỗi SanPhamChiTiet
-                .collect(Collectors.toSet());
+
 //        return listSanPham.stream().map(this::convertSPCTToSPDTO).collect(Collectors.toList());//Convert spct để lấy về sp thôi
-        return uniqueSanPhams;
+        return listSanPhamChiTiet;
     }
 
 

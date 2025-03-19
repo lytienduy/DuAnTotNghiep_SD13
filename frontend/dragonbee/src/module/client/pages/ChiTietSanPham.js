@@ -175,10 +175,8 @@ const ChiTietSanPham = () => {
         if (Object.keys(selectedSize).length === 0) { showErrorToast("Bạn chưa chọn size"); return; }
         else {
             try {
-
                 // Lấy giỏ hàng từ Local Storage (Nếu chưa có, thì set là mảng rỗng [])
                 const cart = JSON.parse(localStorage.getItem("cart")) || [];
-
                 // Kiểm tra xem sản phẩm đã có trong giỏ chưa
                 const index = cart.findIndex(item => item.idSPCT === selectedSize.idSPCT);
 
@@ -208,23 +206,19 @@ const ChiTietSanPham = () => {
     };
 
     const handleNextImage = () => {
-
         setSelectedImageIndex((prevIndex) => {
             const newIndex = (prevIndex + 1) % selectedColor.listAnh?.length;
             scrollToThumbnail(newIndex);
             return newIndex;
         });
-
     };
 
     const handlePrevImage = () => {
-
         setSelectedImageIndex((prevIndex) => {
             const newIndex = (prevIndex - 1 + selectedColor.listAnh?.length) % selectedColor.listAnh?.length;
             scrollToThumbnail(newIndex);
             return newIndex;
         });
-
     };
 
     // Hàm cuộn thumbnail vào khung nhìn
@@ -311,7 +305,6 @@ const ChiTietSanPham = () => {
                                     />
                                 ))}
                             </Box>
-
                             {/* Ảnh lớn hiển thị */}
                             <Box sx={{ flex: 1, position: "relative", width: 450, height: 450, overflow: "hidden", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                 <img
