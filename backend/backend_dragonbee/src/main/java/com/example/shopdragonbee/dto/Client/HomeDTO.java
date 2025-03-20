@@ -13,17 +13,28 @@ import java.util.List;
 public class HomeDTO {
     private String abc;
 
+
     @Getter
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class SanPhamHienThiTrangHomeClient {
+    public static class SanPhamClient {
         private Integer id;
-        private String ma;
         private String ten;
-        private List<String> hinhAnh;
+        private List<HomeDTO.MauSacAndHinhAnhAndSize> listHinhAnhAndMauSacAndSize;
         private Double gia;
+//        private String trangThai;
+    }
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class MauSacAndHinhAnhAndSize {
+        private List<String> listAnh;
+        private MauSac mauSac;
+        private List<HomeDTO.SizeCuaPhong> listSize;
     }
 
     @Getter
@@ -31,18 +42,13 @@ public class HomeDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class SanPhamHienThiTrangSanPhamClient {
+    public static class SizeCuaPhong {
+        private Integer idSPCT;
+        private String tenSPCT;
         private Integer id;
-        private String ma;
-        private String ten;
-        private List<String> hinhAnh;
-        private List<MauSac> listMauSac;
-        private Double gia;
-
+        private String maSize;
+        private String tenSize;
+        private Integer soLuong;
     }
-
-
-
-
 
 }

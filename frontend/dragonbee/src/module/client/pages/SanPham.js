@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Box, Typography, Slider, Grid, Card, CardMedia, CardContent,
-  Button, Accordion, AccordionSummary, AccordionDetails, InputAdornment, TextField,IconButton
+  Button, Accordion, AccordionSummary, AccordionDetails, InputAdornment, TextField, IconButton
 } from '@mui/material';
 import logo from '../../../img/bannerQuanAu.png';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -74,7 +74,7 @@ const SanPham = () => {
 
   //Hàm lọcThemSanPhamHoaDonTaiQuay
   const getSanPhamHienThi = async () => {
-    let apiUrl = "http://localhost:8080/home/layListCacSanPhamHienThi";
+    let apiUrl = "http://localhost:8080/spClient/layListCacSanPhamHienThi";
     // Xây dựng query string
     const params = new URLSearchParams();
     params.append("timKiem", timKiem);//Truyền vào loại đơn
@@ -89,6 +89,7 @@ const SanPham = () => {
     params.append("phongCach", phongCach);//Truyền vào loại đơn
     try {
       const response = await axios.get(`${apiUrl}?${params.toString()}`);//Gọi api bằng axiosGet
+      console.log(`${apiUrl}?${params.toString()}`);
       setProducts(response.data);
       showSuccessToast("ok")
     } catch (error) {
@@ -146,15 +147,11 @@ const SanPham = () => {
     return () => clearTimeout(handler); // Xóa timeout nếu người dùng tiếp tục kéo
   }, [value]);
 
-  //Khi bộ lọc khoảng giá thay đổi
-  useEffect(() => {
-    getSanPhamHienThi();
-  }, [debouncedValue]);
 
   //Khi thay đổi bộ lọc
   useEffect(() => {
     getSanPhamHienThi();
-  }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
+  }, [debouncedValue, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
 
 
   return (
@@ -473,49 +470,63 @@ const SanPham = () => {
               {products.length > 0 ? (
                 products.map((product) => (
                   <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}> {/* Cập nhật lg={3} để có 4 sản phẩm mỗi dòng */}
-                    <Card
-                      sx={{
-                        width: 280, // Cố định chiều rộng
-                        height: 400, // Cố định chiều cao
-                        position: 'relative',
-                        p: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        cursor: "pointer", // Biến con trỏ thành hình bàn tay khi trỏ vào
-                        transition: "transform 0.2s ease-in-out", // Hiệu ứng mượt mà
-                        "&:hover": {
-                          transform: "scale(1.05)", // Phóng to nhẹ khi hover
-                          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)", // Hiệu ứng bóng đổ
-                        }
-                      }}
-                      onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}
-                    >
+                    <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
+                      <CardMedia
+                        component="img"
+                        height="250"
+                        image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[0]}
+                        alt={product?.ten}
+                        sx={{
+                          transition: 'opacity 0.3s ease',
+                          '&:hover': { opacity: 0 },
+                          borderTopLeftRadius: 2,
+                          borderTopRightRadius: 2,
+                        }}
+                      />
 
-                      <CardMedia component="img" height="200" image={product.hinhAnh[0]} alt={product.ten} />
-                      <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-
-                        <Typography
-                          variant="body1"
+                      {/* Chỉ hiển thị ảnh thứ hai nếu tồn tại */}
+                      {product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1] && (
+                        <CardMedia
+                          component="img"
+                          height="250"
+                          image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1]}
+                          alt={product.ten}
                           sx={{
-                            fontWeight: 'bold',
-                            fontSize: '0.9rem',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            opacity: 0,
+                            transition: 'opacity 0.3s ease',
+                            '&:hover': { opacity: 1 },
+                            borderTopLeftRadius: 2,
+                            borderTopRightRadius: 2,
+                          }}
+                        />
+                      )}
+
+                      <CardContent CardContent
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          minHeight: '70px',
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontSize: 14,
                             display: '-webkit-box',
-                            WebkitBoxOrient: 'vertical',
                             WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
-                            minHeight: '40px', // Giữ chiều cao cố định để tránh lệch
+                            fontWeight: 'bold'
                           }}
                         >
                           {product.ten}
                         </Typography>
-
-
-                        {/* <Typography variant="body2" color="text.secondary">{product.description}</Typography> */}
-                        <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{product.gia?.toLocaleString()}đ</Typography>
-                        <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                          {product?.listMauSac?.length > 0 ? (
-                            product.listMauSac.map(item => (
+                        <Box sx={{ mt: 1, display: 'flex', gap: 1, mb: 2 }}>
+                          {product?.listHinhAnhAndMauSacAndSize?.length > 0 ? (
+                            product.listHinhAnhAndMauSacAndSize.map(item => (
                               <IconButton
                                 sx={{
                                   width: 32, // Kích thước tổng thể
@@ -533,17 +544,57 @@ const SanPham = () => {
                                     display: "block",
                                     width: "100%", // Khi chọn, màu nhỏ đi 20%
                                     height: "100%",
-                                    backgroundColor: item.ma, // Giữ màu nền
+                                    backgroundColor: item.mauSac.ma, // Giữ màu nền
                                     borderRadius: "12px", // Bo góc nhỏ hơn một chút
                                     transition: "all 0.2s ease-in-out",
                                   },
                                 }}
-                                
+
                               />
                             ))
                           ) : (
                             <Typography variant="body2" color="text.secondary">Không có màu nào hết</Typography>
                           )}
+                        </Box>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: 'inline-flex',
+                              alignItems: 'flex-start', // Để chữ 'đ' nằm cao hơn
+                              gap: '2px', // Khoảng cách giữa giá và chữ 'đ'
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              fontWeight="bold"
+                              sx={{
+                                textAlign: 'center',
+                                fontSize: '16px',
+                              }}
+                            >
+                              {product.gia?.toLocaleString()}
+                            </Typography>
+
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              fontWeight="bold"
+                              sx={{
+                                fontSize: '12px',
+                                lineHeight: '1', // Giúp chữ 'đ' không bị lệch nhiều so với giá
+                                transform: 'translateY(-2px)', // Nhích lên trên một chút
+                              }}
+                            >
+                              đ
+                            </Typography>
+                          </Box>
                         </Box>
                         <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>Mua Ngay</Button>
                       </CardContent>

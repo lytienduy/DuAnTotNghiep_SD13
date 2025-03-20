@@ -128,10 +128,6 @@ const Home = () => {
     setStartBusiness((prev) => (prev - 1 + productDataBusiness?.length) % productDataBusiness?.length);
   };
 
-  // const displayedProductsBusiness = [...Array(-5)].map(
-  //   (_, i) => productDataBusiness[(startBusiness + i) % productDataBusiness?.length]
-  // );
-
   const variants = {
     initial: (directionSPNam) => ({
       opacity: 0,
@@ -165,11 +161,6 @@ const Home = () => {
     setStartGolf((prev) => (prev - 1 + productDataGolf.length) % productDataGolf.length);
   };
 
-
-  // const displayedProductsGolf = [...Array(5)].map(
-  //   (_, i) => productDataGolf[(startGolf + i) % productDataGolf?.length]
-  // );
-
   // Quần âu nam casual (tạo state và hàm riêng)
   const [startCasual, setStartCasual] = useState(0);
   const [directionCasual, setDirectionCasual] = useState(0);
@@ -187,13 +178,6 @@ const Home = () => {
     setDirectionCasual(-1);
     setStartCasual((prev) => (prev - 1 + productDataCasual?.length) % productDataCasual?.length);
   };
-
-  // const displayedProductsCasual = [...Array(5)].map(
-  //   (_, i) => productDataCasual[(startCasual + i) % productDataCasual?.length]
-  // );
-
-
-
 
   return (
     <Box margin={-3}>
@@ -305,12 +289,12 @@ const Home = () => {
                     Array.from({ length: Math.min(5, productDataBusiness.length) }).map((_, index) => {
                       const product = productDataBusiness[(startBusiness + index) % productDataBusiness?.length];
                       return (
-                        <Grid item key={product.id} xs={12} sm={4} md={2.4}>                              
-                                <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
+                        <Grid item key={product.id} xs={12} sm={4} md={2.4}>
+                          <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
                             <CardMedia
                               component="img"
                               height="250"
-                              image={product?.hinhAnh[0]}
+                              image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[0]}
                               alt={product?.ten}
                               sx={{
                                 transition: 'opacity 0.3s ease',
@@ -321,11 +305,11 @@ const Home = () => {
                             />
 
                             {/* Chỉ hiển thị ảnh thứ hai nếu tồn tại */}
-                            {product?.hinhAnh[1] && (
+                            {product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1] && (
                               <CardMedia
                                 component="img"
                                 height="250"
-                                image={product?.hinhAnh[1]}
+                                image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1]}
                                 alt={product.ten}
                                 sx={{
                                   position: 'absolute',
@@ -341,6 +325,7 @@ const Home = () => {
                                 }}
                               />
                             )}
+
                             <CardContent CardContent
                               sx={{
                                 display: 'flex',
@@ -361,8 +346,40 @@ const Home = () => {
                               >
                                 {product.ten}
                               </Typography>
+                              <Box sx={{ mt: 1, display: 'flex', gap: 1, mb: 2 }}>
+                                {product?.listHinhAnhAndMauSacAndSize?.length > 0 ? (
+                                  product.listHinhAnhAndMauSacAndSize.map(item => (
+                                    <IconButton
+                                      sx={{
+                                        width: 32, // Kích thước tổng thể
+                                        height: 22,
+                                        borderRadius: "16px", // Bo góc bầu dục
+                                        position: "relative",
+                                        backgroundColor: "transparent", // Tránh hover làm mất màu
+                                        marginRight: "7px",
+                                        // Viền xanh khi được chọn
+                                        border: "none",
+                                        padding: 0,
+
+                                        "&::after": {
+                                          content: '""',
+                                          display: "block",
+                                          width: "100%", // Khi chọn, màu nhỏ đi 20%
+                                          height: "100%",
+                                          backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                          borderRadius: "12px", // Bo góc nhỏ hơn một chút
+                                          transition: "all 0.2s ease-in-out",
+                                        },
+                                      }}
+
+                                    />
+                                  ))
+                                ) : (
+                                  <Typography variant="body2" color="text.secondary">Không có màu nào hết</Typography>
+                                )}
+                              </Box>
                               <Box
-                                sx={{                                  
+                                sx={{
                                   display: 'flex',
                                   justifyContent: 'center',
                                   alignItems: 'center',
@@ -463,7 +480,7 @@ const Home = () => {
                             <CardMedia
                               component="img"
                               height="250"
-                              image={product?.hinhAnh[0]}
+                              image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[0]}
                               alt={product?.ten}
                               sx={{
                                 transition: 'opacity 0.3s ease',
@@ -474,11 +491,11 @@ const Home = () => {
                             />
 
                             {/* Chỉ hiển thị ảnh thứ hai nếu tồn tại */}
-                            {product?.hinhAnh[1] && (
+                            {product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1] && (
                               <CardMedia
                                 component="img"
                                 height="250"
-                                image={product?.hinhAnh[1]}
+                                image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1]}
                                 alt={product.ten}
                                 sx={{
                                   position: 'absolute',
@@ -514,6 +531,38 @@ const Home = () => {
                               >
                                 {product.ten}
                               </Typography>
+                              <Box sx={{ mt: 1, display: 'flex', gap: 1, mb: 2 }}>
+                                {product?.listHinhAnhAndMauSacAndSize?.length > 0 ? (
+                                  product.listHinhAnhAndMauSacAndSize.map(item => (
+                                    <IconButton
+                                      sx={{
+                                        width: 32, // Kích thước tổng thể
+                                        height: 22,
+                                        borderRadius: "16px", // Bo góc bầu dục
+                                        position: "relative",
+                                        backgroundColor: "transparent", // Tránh hover làm mất màu
+                                        marginRight: "7px",
+                                        // Viền xanh khi được chọn
+                                        border: "none",
+                                        padding: 0,
+
+                                        "&::after": {
+                                          content: '""',
+                                          display: "block",
+                                          width: "100%", // Khi chọn, màu nhỏ đi 20%
+                                          height: "100%",
+                                          backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                          borderRadius: "12px", // Bo góc nhỏ hơn một chút
+                                          transition: "all 0.2s ease-in-out",
+                                        },
+                                      }}
+
+                                    />
+                                  ))
+                                ) : (
+                                  <Typography variant="body2" color="text.secondary">Không có màu nào hết</Typography>
+                                )}
+                              </Box>
                               <Box
                                 sx={{
                                   display: 'flex',
@@ -614,7 +663,7 @@ const Home = () => {
                             <CardMedia
                               component="img"
                               height="250"
-                              image={product?.hinhAnh[0]}
+                              image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[0]}
                               alt={product?.ten}
                               sx={{
                                 transition: 'opacity 0.3s ease',
@@ -625,11 +674,11 @@ const Home = () => {
                             />
 
                             {/* Chỉ hiển thị ảnh thứ hai nếu tồn tại */}
-                            {product?.hinhAnh[1] && (
+                            {product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1] && (
                               <CardMedia
                                 component="img"
                                 height="250"
-                                image={product?.hinhAnh[1]}
+                                image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1]}
                                 alt={product.ten}
                                 sx={{
                                   position: 'absolute',
@@ -665,6 +714,38 @@ const Home = () => {
                               >
                                 {product.ten}
                               </Typography>
+                              <Box sx={{ mt: 1, display: 'flex', gap: 1, mb: 2 }}>
+                                {product?.listHinhAnhAndMauSacAndSize?.length > 0 ? (
+                                  product.listHinhAnhAndMauSacAndSize.map(item => (
+                                    <IconButton
+                                      sx={{
+                                        width: 32, // Kích thước tổng thể
+                                        height: 22,
+                                        borderRadius: "16px", // Bo góc bầu dục
+                                        position: "relative",
+                                        backgroundColor: "transparent", // Tránh hover làm mất màu
+                                        marginRight: "7px",
+                                        // Viền xanh khi được chọn
+                                        border: "none",
+                                        padding: 0,
+
+                                        "&::after": {
+                                          content: '""',
+                                          display: "block",
+                                          width: "100%", // Khi chọn, màu nhỏ đi 20%
+                                          height: "100%",
+                                          backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                          borderRadius: "12px", // Bo góc nhỏ hơn một chút
+                                          transition: "all 0.2s ease-in-out",
+                                        },
+                                      }}
+
+                                    />
+                                  ))
+                                ) : (
+                                  <Typography variant="body2" color="text.secondary">Không có màu nào hết</Typography>
+                                )}
+                              </Box>
                               <Box
                                 sx={{
                                   display: 'flex',
@@ -748,7 +829,7 @@ const Home = () => {
                   <CardMedia
                     component="img"
                     height="350"
-                    image={product.hinhAnh[0]}
+                    image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[0]}
                     alt={product.ten}
                     sx={{
                       transition: 'all 0.3s ease',
@@ -759,11 +840,11 @@ const Home = () => {
                       borderTopRightRadius: 2,
                     }}
                   />
-                  {product?.hinhAnh[1] && (
+                  {product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1] && (
                     <CardMedia
                       component="img"
                       height="350"
-                      image={product.hinhAnh[0]}
+                      image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1]}
                       alt={product.ten}
                       sx={{
                         position: 'absolute',
@@ -785,6 +866,38 @@ const Home = () => {
                     <Typography sx={{ mb: 1, fontSize: 15, fontWeight: 'bold' }}>
                       {product.ten}
                     </Typography>
+                    <Box sx={{ mt: 1, display: 'flex', gap: 1, mb: 2 }}>
+                      {product?.listHinhAnhAndMauSacAndSize?.length > 0 ? (
+                        product.listHinhAnhAndMauSacAndSize.map(item => (
+                          <IconButton
+                            sx={{
+                              width: 32, // Kích thước tổng thể
+                              height: 22,
+                              borderRadius: "16px", // Bo góc bầu dục
+                              position: "relative",
+                              backgroundColor: "transparent", // Tránh hover làm mất màu
+                              marginRight: "7px",
+                              // Viền xanh khi được chọn
+                              border: "none",
+                              padding: 0,
+
+                              "&::after": {
+                                content: '""',
+                                display: "block",
+                                width: "100%", // Khi chọn, màu nhỏ đi 20%
+                                height: "100%",
+                                backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                borderRadius: "12px", // Bo góc nhỏ hơn một chút
+                                transition: "all 0.2s ease-in-out",
+                              },
+                            }}
+
+                          />
+                        ))
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">Không có màu nào hết</Typography>
+                      )}
+                    </Box>
                     <Box
                       sx={{
                         display: 'flex',

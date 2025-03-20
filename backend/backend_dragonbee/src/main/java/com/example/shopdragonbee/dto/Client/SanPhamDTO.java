@@ -6,8 +6,12 @@ import com.example.shopdragonbee.entity.MauSac;
 import lombok.*;
 
 import java.util.List;
-
-public class SPCTDTO {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class SanPhamDTO {
     private String abc;
 
     @Getter
@@ -15,15 +19,13 @@ public class SPCTDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class SanPhamChiTietClient {
+    public static class SanPhamClient {
+        private Integer id;
         private String ten;
-        private List<SPCTDTO.MauSacAndHinhAnhAndSize> listHinhAnhAndMauSacAndSize;
-        private KieuDang kieuDang;
-        private ChatLieu chatLieu;
-        private String moTa;
+        private List<SanPhamDTO.MauSacAndHinhAnhAndSize> listHinhAnhAndMauSacAndSize;
         private Double gia;
+//        private String trangThai;
     }
-
     @Getter
     @Setter
     @NoArgsConstructor
@@ -32,7 +34,7 @@ public class SPCTDTO {
     public static class MauSacAndHinhAnhAndSize {
         private List<String> listAnh;
         private MauSac mauSac;
-        private List<SizeCuaPhong> listSize;
+        private List<SanPhamDTO.SizeCuaPhong> listSize;
     }
 
     @Getter
@@ -47,20 +49,5 @@ public class SPCTDTO {
         private String maSize;
         private String tenSize;
         private Integer soLuong;
-    }
-
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class SanPhamCart {
-            private Integer idSPCT;
-        private String anhSPCT;
-        private String tenSPCT;
-        private String tenSize;
-        private Double gia;
-        private Integer quantity;
     }
 }
