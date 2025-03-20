@@ -295,6 +295,36 @@ const BanTaiQuay = () => {
     return null;
   };
 
+  const checkVoucherAvailability = async (voucherCode) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/dragonbee/kiem-tra-voucher/${voucherCode}`);
+      console.log(response.data.soLuong);
+      return response.data.soLuong > 0; // Kiểm tra số lượng voucher còn lại
+    } catch (error) {
+      console.error("Error checking voucher availability:", error);
+      return false;
+    }
+  };
+  
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      // Kiểm tra nếu có voucher đã chọn, đơn hàng chưa thanh toán và đơn hàng đã được chọn (selectedOrder)
+      if (selectedVoucherCode && selectedOrder && !selectedOrder?.isPaid) {
+        const isAvailable = await checkVoucherAvailability(selectedVoucherCode);
+        if (!isAvailable) {
+          alert("Phiếu giảm giá đã hết, vui lòng chọn phiếu khác.");
+          
+          // Reset lại voucher đã chọn
+          setSelectedVoucherCode(''); 
+          setDiscountAmount(0); // Đặt giảm giá về 0
+        }
+      }
+    }, 1000); // Kiểm tra mỗi 3 giây
+  
+    // Cleanup interval khi component unmount hoặc khi mã voucher thay đổi
+    return () => clearInterval(intervalId);
+  }, [selectedVoucherCode, selectedOrder?.isPaid, selectedOrder?.id]);  // Thêm selectedOrder vào dependency để theo dõi sự thay đổi
+
   //Hàm tìm khách hàng
   const searchCustomers = async (e) => {
     const value = e.target.value;
