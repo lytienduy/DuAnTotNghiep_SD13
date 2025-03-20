@@ -23,6 +23,7 @@ public class SPCTDTO {
         private String moTa;
         private Double gia;
     }
+
     @Getter
     @Setter
     @NoArgsConstructor
@@ -46,5 +47,20 @@ public class SPCTDTO {
         private String maSize;
         private String tenSize;
         private Integer soLuong;
+    }
+
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SanPhamCart {
+            private Integer idSPCT;
+        private String anhSPCT;
+        private String tenSPCT;
+        private String tenSize;
+        private Double gia;
+        private Integer quantity;
     }
 }

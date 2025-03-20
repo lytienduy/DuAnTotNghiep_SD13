@@ -15,9 +15,13 @@ public class SanPhamChiTietClientController {
     @Autowired
     private SanPhamChiTietClientService sanPhamChiTietService;
 
-    @GetMapping("/getListSanPhamChiTietTheoMau/{idSanPham}")
-
-    public SPCTDTO.SanPhamChiTietClient getListHienThiTrongSanPhamChiTiet(@PathVariable Integer idSanPham) {
-        return sanPhamChiTietService.getSanPhamChiTietClient(idSanPham);
+    @PostMapping("/getListSanPhamChiTietTheoMau/{idSanPham}")
+    public SPCTDTO.SanPhamChiTietClient getListHienThiTrongSanPhamChiTiet(@PathVariable Integer idSanPham, @RequestBody List<SPCTDTO.SanPhamCart> danhSachSanPhamTrongGioHang) {
+        return sanPhamChiTietService.getSanPhamChiTietClient(idSanPham,danhSachSanPhamTrongGioHang);
     }
+
+//    @GetMapping("/getListSanPhamChiTietTheoMau/{idSanPham}")
+//    public SPCTDTO.SanPhamChiTietClient getListHienThiTrongSanPhamChiTiet(@PathVariable Integer idSanPham,@RequestBody List<ProductDTO> products) {
+//        return sanPhamChiTietService.getListSizeDeUpdateKhiChonMau(idSanPham,products);
+//    }
 }

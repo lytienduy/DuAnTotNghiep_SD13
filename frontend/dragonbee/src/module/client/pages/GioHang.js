@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
     Container, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Typography
     , TextField, IconButton, Checkbox, Breadcrumbs, Link
@@ -15,6 +16,7 @@ const GioHang = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
+    const [productsCapNhat, setProductsCapNhat] = useState([]);
 
     //Thông báo Toast
     const showSuccessToast = (message) => {
@@ -53,12 +55,46 @@ const GioHang = () => {
             }
         });
     };
+
+    //Hàm cập nhật số lượng trong giỏ hàng
+    const getListDanhSachCapNhatSoLuongSanPhamGioHang = async () => {
+        try { 
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            const response = await axios.post(`http://localhost:8080/gioHang/getListDanhSachCapNhatSoLuongSanPhamGioHang`, cart, // Gửi mảng JSON
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });//Gọi api bằng axiosGet
+            setProductsCapNhat(response.data);
+            for (const [index, item] of cart.entries()) {
+                if (response.data?.[index]?.quantity === 0) {
+                    cart[index].quantity = 0;
+                    showErrorToast("Sản phẩm đã hết hàng bạn có thể tham khảo sản phẩm khác");
+                } else if (item?.quantity !== response.data?.[index]?.quantity) {
+                    cart[index].quantity = response.data?.[index]?.quantity;
+                    showErrorToast("Sản phẩm không còn đủ số lượng bạn mong muốn");
+                }
+            }
+            for (let i = 0; i < cart.length; ++i) {
+                if (cart[i]?.quantity === 0) {
+                    cart.splice(i, 1); // Xóa sản phẩm đã hết hàng
+                }
+            }
+            localStorage.setItem("cart", JSON.stringify(cart));
+            layDuLieuCart();
+        } catch (error) {
+            showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
+        }
+    };
+
     const handlePaymentClick = () => {
         if (selectedProducts?.length === 0) {
             showErrorToast("Bạn chưa chọn sản phẩm cần thanh toán");
             return;
-        } else { }
-        navigate('/thanhToan', { state: { selectedProducts } });
+        } else {
+            navigate('/thanhToan', { state: { selectedProducts } });
+        }
     };
 
     const layDuLieuCart = (index) => {
@@ -68,6 +104,11 @@ const GioHang = () => {
 
     useEffect(() => {
         layDuLieuCart();
+        const interval = setInterval(() => {
+            getListDanhSachCapNhatSoLuongSanPhamGioHang();
+        }, 10000); // 60 giây
+
+        return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
     }, []);
 
     const handleRemoveProduct = (index) => {
@@ -101,11 +142,12 @@ const GioHang = () => {
 
 
     const handleIncrement = (index) => {
+        
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
         // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
         if (index >= 0 && index < cart.length) {
             cart[index].quantity += 1;
+            
         }
         // Cập nhật lại giỏ hàng trong Local Storage
         localStorage.setItem("cart", JSON.stringify(cart));
@@ -118,7 +160,7 @@ const GioHang = () => {
 
         // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
         if (index >= 0 && index < cart.length) {
-            cart[index].quantity = Math.max(cart[index].quantity - 1, 1);
+            cart[index].quantity = Math.max(cart[index]?.quantity - 1, 1);
         }
         // Cập nhật lại giỏ hàng trong Local Storage
         localStorage.setItem("cart", JSON.stringify(cart));
@@ -149,7 +191,7 @@ const GioHang = () => {
     // Tính tổng tiền chỉ cho các sản phẩm được chọn
     const totalAmount = selectedProducts.reduce((sum, index) => {
         const product = products[index];
-        return sum + product.gia * product.quantity;
+        return sum + product.gia * product?.quantity;
     }, 0);
 
     return (
@@ -167,7 +209,6 @@ const GioHang = () => {
                 {/* Phần hiển thị sản phẩm */}
                 <Grid item xs={9}>
                     <Paper elevation={3}>
-
                         <TableContainer>
                             <Table>
                                 <TableHead>
@@ -214,7 +255,7 @@ const GioHang = () => {
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <TextField
                                                         type="text"
-                                                        value={product.quantity}
+                                                        value={product?.quantity}
                                                         onChange={(e) => {
                                                             const inputValue = e.target.value;
                                                             // Kiểm tra xem giá trị có phải là số nguyên và nằm trong khoảng từ 1 đến 999 không
@@ -245,6 +286,7 @@ const GioHang = () => {
                                                                     onClick={() => handleDecrement(index)}
                                                                     size="small"
                                                                     style={{ padding: '2px', marginLeft: -10 }}
+
                                                                 >
                                                                     <RemoveIcon fontSize="small" />
                                                                 </IconButton>
@@ -254,6 +296,7 @@ const GioHang = () => {
                                                                     onClick={() => handleIncrement(index)}
                                                                     size="small"
                                                                     style={{ padding: '2px', marginRight: -10 }}
+                                                                    // disabled={product.quantity >= productsCapNhat?.[index]?.quantity}
                                                                 >
                                                                     <AddIcon fontSize="small" />
                                                                 </IconButton>
@@ -263,7 +306,7 @@ const GioHang = () => {
                                                 </div>
                                             </TableCell>
                                             <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                {(product.gia * product.quantity).toLocaleString()} VNĐ
+                                                {(product.gia * product?.quantity).toLocaleString()} VNĐ
                                             </TableCell>
                                             <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
                                                 <DeleteIcon color="error" onClick={() => handleRemoveProduct(index)} />
