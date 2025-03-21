@@ -21,4 +21,9 @@ public class GioHangController {
         return gioHangService.getListDanhSachCapNhatSoLuongSanPhamGioHang(danhSachSanPhamTrongGioHang);
     }
 
+    @PostMapping("/getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang")
+    public List<SPCTDTO.SanPhamCart> getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang(@RequestBody List<SPCTDTO.SanPhamCart> danhSachSanPhamTrongGioHang) {
+        return gioHangService.getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang(danhSachSanPhamTrongGioHang);
+    }
+
 }

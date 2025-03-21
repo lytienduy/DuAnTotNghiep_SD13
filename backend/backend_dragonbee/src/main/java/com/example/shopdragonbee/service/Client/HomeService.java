@@ -11,6 +11,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -98,7 +99,7 @@ public class HomeService {
         // Lấy thời gian của 2 tháng trước
         LocalDateTime twoMonthsAgo = now.minusMonths(2);
         List<HomeDTO.SanPhamClient> listTraVe = new ArrayList<>();
-        List<SanPham> listSP = sanPhamChiTietRepositoryP.findTopSanPhamChiTietBanChay("Hoạt động",twoMonthsAgo, now, pageable);
+        Page<SanPham> listSP = sanPhamChiTietRepositoryP.findTopSanPhamChiTietBanChay("Hoạt động",twoMonthsAgo, now, pageable);
         for (SanPham sanPham : listSP //Chạy một vòng các sp để lấy các biển thế màu
         ) {
             HomeDTO.SanPhamClient tongQuanSanPhamCTClient = new HomeDTO.SanPhamClient();//Tạo ra đối tượng của listTraVe

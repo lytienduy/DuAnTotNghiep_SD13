@@ -903,15 +903,11 @@ try {
     return () => clearTimeout(handler); // Xóa timeout nếu người dùng tiếp tục kéo
   }, [value]);
 
-  //Khi bộ lọc khoảng giá thay đổi
-  useEffect(() => {
-    getSanPhamThem();
-  }, [debouncedValue]);
 
   //Khi thay đổi bộ lọc
   useEffect(() => {
     getSanPhamThem();
-  }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
+  }, [debouncedValue, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
 
   useEffect(() => {
     if (selectedOrder) {

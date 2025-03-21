@@ -8,6 +8,10 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import { useLocation } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
+import { useNavigate } from 'react-router-dom';
 
 const PayNowImage = 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR-1.png'; // PayNow image URL
 const CODImage = 'https://drive.gianhangvn.com/image/thanh-toan-khi-nhan-hang-2135165j32025.jpg';
@@ -15,6 +19,7 @@ const CODImage = 'https://drive.gianhangvn.com/image/thanh-toan-khi-nhan-hang-21
 
 const ThanhToan = () => {
     //Khai báo Thành phố huyện xã
+    const navigate = useNavigate();
     const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
@@ -24,6 +29,11 @@ const ThanhToan = () => {
     const [selectedCity, setSelectedCity] = useState("");
     const [selectedDistrict, setSelectedDistrict] = useState("");
     const [selectedWard, setSelectedWard] = useState("");
+    const [specificAddress, setSpecificAddress] = useState('');
+    const [ghiChu, setGhiChu] = useState('');
+    const [tenNguoiNhan, setTenNguoiNhan] = useState('');
+    const [sdtNguoiNhan, setSdtNguoiNhan] = useState('');
+
 
     //khai báo phiếu giảm giá
     const [openVoucherModal, setOpenVoucherModal] = useState(false);
@@ -33,12 +43,54 @@ const ThanhToan = () => {
     const [discountAmount, setDiscountAmount] = useState(0);
     const [selectedCustomerId, setSelectedCustomerId] = useState(null);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+    const [phiShip, setPhiShip] = useState(0);
+
     //Phong
     const [products, setProducts] = useState([]);
     const location = useLocation();
     const selectedProducts = location.state?.selectedProducts || []; // Tránh undefined
 
+    const tongTien = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
+    const tongTienThanhToan = tongTien - discountAmount + phiShip;
 
+
+    //Thông báo Toast
+    const showSuccessToast = (message) => {
+        toast.success(message, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            style: {
+                backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+                color: "white", // Chữ trắng nổi bật
+                fontSize: "14px", // Nhỏ hơn một chút
+                fontWeight: "500",
+                borderRadius: "8px",
+            }
+        });
+    };
+    const showErrorToast = (message) => {
+        toast.error(message, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            style: {
+                backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+                color: "white", // Chữ trắng nổi bật
+                fontSize: "14px", // Nhỏ hơn một chút
+                fontWeight: "500",
+                borderRadius: "8px",
+            }
+        });
+    };
     //Lấy dữ liệu cart
     const layDuLieuCart = () => {
         const cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -50,7 +102,42 @@ const ThanhToan = () => {
         layDuLieuCart();
     }, []);
 
-    const tongTienThanhToan = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
+    const xacNhanDatHang = async () => {
+        try {
+            if (selectedPaymentMethod === "") {
+                showErrorToast("Bạn chưa chọn phương thức thanh toán");
+                return;
+            }
+            // if (!errorChuyen && !errorDua) {
+            const addressParts = [specificAddress, ward, district, city]
+                .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
+                .join(" "); // Ghép chuỗi với dấu cách
+            const response = await axios.post(`http://localhost:8080/thanhToanClient/xacNhanDatHangKhongDangNhap`, {
+                pgg: selectedVoucherCode,
+                tenNguoiNhan: tenNguoiNhan,
+                sdtNguoiNhan: sdtNguoiNhan,
+                diaChiNhanHang: addressParts,
+                tongTienPhaiTra: tongTienThanhToan,
+                phiShip: phiShip,
+                ghiChu: ghiChu,
+                danhSachThanhToan: products //đây là mảng json
+            })
+            if (response.data === "OK") {
+                const cart = JSON.parse(localStorage.getItem("cart")) || [];
+                // Loại bỏ các phần tử có index nằm trong selectedProducts
+                const updatedCart = cart.filter((_, index) => !selectedProducts.includes(index));
+                localStorage.setItem("cart", JSON.stringify(updatedCart));
+                showSuccessToast("Đặt hàng thành công. Cảm ơn quý khách");
+                navigate('/home', { state: { selectedProducts } });             
+            }
+            else {
+                showErrorToast(response.data);
+            }
+        } catch (err) {
+            console.log(err)
+            showErrorToast("Có lỗi không mong muốn xảy ra. Vui lòng load lại trang");
+        }
+    }
 
     const handleChange = (event) => {
         setSelectedPaymentMethod(event.target.value);
@@ -140,7 +227,7 @@ const ThanhToan = () => {
             });
 
             // Tính toán giá trị giảm của tất cả các phiếu giảm giá
-            const validVouchers = sortedVouchers.filter(voucher => tongTienThanhToan >= voucher.soTienToiThieu);
+            const validVouchers = sortedVouchers.filter(voucher => tongTien >= voucher.soTienToiThieu);
 
             // Tìm voucher tốt nhất
             let bestVoucher = null;
@@ -151,7 +238,7 @@ const ThanhToan = () => {
                 if (voucher.loaiPhieuGiamGia === "Cố định") {
                     discountAmount = voucher.giaTriGiam;
                 } else if (voucher.loaiPhieuGiamGia === "Phần trăm") {
-                    discountAmount = (tongTienThanhToan || 0) * (voucher.giaTriGiam / 100);
+                    discountAmount = (tongTien || 0) * (voucher.giaTriGiam / 100);
                     if (voucher.soTienGiamToiDa) {
                         discountAmount = Math.min(discountAmount, voucher.soTienGiamToiDa);
                     }
@@ -196,7 +283,7 @@ const ThanhToan = () => {
         if (selectedVoucher.loaiPhieuGiamGia === "Cố định") {
             discountAmount = selectedVoucher.giaTriGiam;
         } else if (selectedVoucher.loaiPhieuGiamGia === "Phần trăm") {
-            discountAmount = (tongTienThanhToan || 0) * (selectedVoucher.giaTriGiam / 100);
+            discountAmount = (tongTien || 0) * (selectedVoucher.giaTriGiam / 100);
             if (selectedVoucher.soTienGiamToiDa) {
                 discountAmount = Math.min(discountAmount, selectedVoucher.soTienGiamToiDa);
             }
@@ -209,13 +296,13 @@ const ThanhToan = () => {
 
     // Cập nhật UI để làm mờ và hiển thị thông báo nếu không đủ điều kiện
     const isVoucherValid = (voucher) => {
-        return tongTienThanhToan >= voucher.soTienToiThieu;
+        return tongTien >= voucher.soTienToiThieu;
     };
 
     // Hàm để tính toán số tiền thiếu để áp dụng voucher
     const calculateAmountToSpend = (voucher) => {
-        if (tongTienThanhToan < voucher.soTienToiThieu) {
-            return voucher.soTienToiThieu - tongTienThanhToan;
+        if (tongTien < voucher.soTienToiThieu) {
+            return voucher.soTienToiThieu - tongTien;
         }
         return 0;
     };
@@ -223,10 +310,10 @@ const ThanhToan = () => {
     // Hàm fetchVouchers đã được cập nhật trong trước đó, bạn không cần thay đổi hàm này
 
     useEffect(() => {
-        if (tongTienThanhToan) {
+        if (tongTien) {
             fetchVouchers(); // Gọi lại fetchVouchers mỗi khi tổng tiền thay đổi
         }
-    }, [tongTienThanhToan]); // Lắng nghe sự thay đổi của tổng tiền (tongTienSanPham)
+    }, [tongTien]); // Lắng nghe sự thay đổi của tổng tiền (tongTienSanPham)
 
     // Hàm để hiển thị thông báo thiếu tiền
     const renderAdditionalAmountMessage = (voucher) => {
@@ -241,32 +328,32 @@ const ThanhToan = () => {
         return null;
     };
 
-const checkVoucherAvailability = async (voucherCode) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/dragonbee/kiem-tra-voucher/${voucherCode}`);
-      console.log(response.data.soLuong);
-      return response.data.soLuong > 0; // Kiểm tra số lượng voucher còn lại
-    } catch (error) {
-      console.error("Error checking voucher availability:", error);
-      return false;
-    }
-  };
-  
-  useEffect(() => {
-    const intervalId = setInterval(async () => {
-      if (selectedVoucherCode) {
-        const isAvailable = await checkVoucherAvailability(selectedVoucherCode);
-        if (!isAvailable) {
-          alert("Phiếu giảm giá đã hết, vui lòng chọn phiếu khác.");
-          setSelectedVoucherCode(''); // Xóa voucher đã chọn
-          setDiscountAmount(0); // Đặt giảm giá về 0
+    const checkVoucherAvailability = async (voucherCode) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/dragonbee/kiem-tra-voucher/${voucherCode}`);
+            console.log(response.data.soLuong);
+            return response.data.soLuong > 0; // Kiểm tra số lượng voucher còn lại
+        } catch (error) {
+            console.error("Error checking voucher availability:", error);
+            return false;
         }
-      }
-    }, 1000); // Kiểm tra mỗi giây
-  
-    // Cleanup interval khi component unmount hoặc khi mã voucher thay đổi
-    return () => clearInterval(intervalId);
-  }, [selectedVoucherCode]); // Lắng nghe sự thay đổi của mã voucher đã chọn  
+    };
+
+    useEffect(() => {
+        const intervalId = setInterval(async () => {
+            if (selectedVoucherCode) {
+                const isAvailable = await checkVoucherAvailability(selectedVoucherCode);
+                if (!isAvailable) {
+                    alert("Phiếu giảm giá đã hết, vui lòng chọn phiếu khác.");
+                    setSelectedVoucherCode(''); // Xóa voucher đã chọn
+                    setDiscountAmount(0); // Đặt giảm giá về 0
+                }
+            }
+        }, 1000); // Kiểm tra mỗi giây
+
+        // Cleanup interval khi component unmount hoặc khi mã voucher thay đổi
+        return () => clearInterval(intervalId);
+    }, [selectedVoucherCode]); // Lắng nghe sự thay đổi của mã voucher đã chọn  
 
     return (
         <Container sx={{ marginBottom: -8 }}>
@@ -312,10 +399,12 @@ const checkVoucherAvailability = async (voucherCode) => {
 
                         <Grid container spacing={2}>
                             <Grid item xs={6}>
-                                <TextField fullWidth label="Họ và tên" margin="normal" size="small" />
+                                <TextField fullWidth label="Họ và tên" margin="normal" size="small" value={tenNguoiNhan}
+                                    onChange={(e) => setTenNguoiNhan(e.target.value)} />
                             </Grid>
                             <Grid item xs={6}>
-                                <TextField fullWidth label="Số điện thoại" margin="normal" size="small" />
+                                <TextField fullWidth label="Số điện thoại" margin="normal" size="small" value={sdtNguoiNhan}
+                                    onChange={(e) => setSdtNguoiNhan(e.target.value)} />
                             </Grid>
                         </Grid>
 
@@ -358,12 +447,14 @@ const checkVoucherAvailability = async (voucherCode) => {
                                 </FormControl>
                             </Grid>
                             <Grid item xs={6}>
-                                <TextField fullWidth label="Địa chỉ cụ thể" margin="normal" size="small" />
+                                <TextField fullWidth label="Địa chỉ cụ thể" margin="normal" size="small" value={specificAddress}
+                                    onChange={(e) => setSpecificAddress(e.target.value)} />
                             </Grid>
                         </Grid>
 
 
-                        <TextField fullWidth label="Ghi chú" margin="normal" size='small' />
+                        <TextField fullWidth label="Ghi chú" margin="normal" size='small' value={ghiChu}
+                            onChange={(e) => setGhiChu(e.target.value)} />
 
                         <div>
                             <Typography variant="subtitle1" gutterBottom marginTop={1} fontWeight={'bold'}>
@@ -423,7 +514,7 @@ const checkVoucherAvailability = async (voucherCode) => {
                                 </Box>
                             </Box>
                         </div>
-                        <Button variant="contained" fullWidth sx={{ mt: 2 }}>HOÀN THÀNH ĐẶT HÀNG</Button>
+                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={xacNhanDatHang}>HOÀN THÀNH ĐẶT HÀNG</Button>
                     </Grid>
 
                     {/* Right side (40%) - Order summary */}
@@ -526,7 +617,7 @@ const checkVoucherAvailability = async (voucherCode) => {
                                 fontWeight: 'bold',
                                 color: 'red'
                             }}>
-                                Tổng tiền: {tongTienThanhToan?.toLocaleString()} VNĐ
+                                Tổng tiền: {tongTien?.toLocaleString()} VNĐ
                             </Typography>
                         </Box>
 
@@ -581,16 +672,16 @@ const checkVoucherAvailability = async (voucherCode) => {
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 1, marginTop: 1.5 }}>
                             <Typography>Phí vận chuyển</Typography>
-                            <Typography>0 đ</Typography>
+                            <Typography>{phiShip.toLocaleString()} đ</Typography>
                         </Box>
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
                             <Typography>Giảm giá</Typography>
-                            <Typography>0 đ</Typography>
+                            <Typography>{discountAmount.toLocaleString()} đ</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
                             <Typography>Tổng số tiền cần thanh toán</Typography>
-                            <Typography color="error">0 đ</Typography>
+                            <Typography color="error">{tongTienThanhToan.toLocaleString()} đ</Typography>
                         </Box>
 
                         <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
@@ -681,6 +772,7 @@ const checkVoucherAvailability = async (voucherCode) => {
                     </Box>
                 </DialogContent>
             </Dialog>
+            <ToastContainer />
         </Container>
     );
 

@@ -30,5 +30,15 @@ public class GioHangService {
         return listDanhSachSanPhamCart;
     }
 
+    //P
+    public List<SPCTDTO.SanPhamCart> getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang(List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCart) {
+        for (SPCTDTO.SanPhamCart sanPhamCart : listDanhSachSanPhamCart
+        ) {
+            SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepositoryP.findById(sanPhamCart.getIdSPCT()).get();
+            sanPhamCart.setQuantity(sanPhamChiTiet.getSoLuong() - sanPhamCart.getQuantity());
+        }
+        return listDanhSachSanPhamCart;
+    }
+
 
 }

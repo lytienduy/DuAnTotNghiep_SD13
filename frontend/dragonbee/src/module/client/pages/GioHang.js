@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     Container, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Typography
-    , TextField, IconButton, Checkbox, Breadcrumbs, Link
+    , TextField, IconButton, Checkbox, Breadcrumbs, Link, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -16,8 +16,18 @@ const GioHang = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
-    const [productsCapNhat, setProductsCapNhat] = useState([]);
+    const [productsCapNhatSoLuong, setProductsCapNhatSoLuong] = useState([]);
+    const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
+    const [dialogMessage, setDialogMessage] = useState("");
 
+    const handleDialogOpen = (message) => {
+        setDialogMessage(message);
+        setOpenDialogThongBaoHetHangHoacKDuSoLuong(true);
+    };
+
+    const handleDialogClose = () => {
+        setOpenDialogThongBaoHetHangHoacKDuSoLuong(false);
+    };
     //Thông báo Toast
     const showSuccessToast = (message) => {
         toast.success(message, {
@@ -58,22 +68,31 @@ const GioHang = () => {
 
     //Hàm cập nhật số lượng trong giỏ hàng
     const getListDanhSachCapNhatSoLuongSanPhamGioHang = async () => {
-        try { 
+        try {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
             const response = await axios.post(`http://localhost:8080/gioHang/getListDanhSachCapNhatSoLuongSanPhamGioHang`, cart, // Gửi mảng JSON
                 {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                });//Gọi api bằng axiosGet
-            setProductsCapNhat(response.data);
+                });//Gọi api bằng         
             for (const [index, item] of cart.entries()) {
                 if (response.data?.[index]?.quantity === 0) {
                     cart[index].quantity = 0;
-                    showErrorToast("Sản phẩm đã hết hàng bạn có thể tham khảo sản phẩm khác");
+                    handleDialogOpen("Sản phẩm đã hết hàng, bạn có thể tham khảo sản phẩm khác");
                 } else if (item?.quantity !== response.data?.[index]?.quantity) {
                     cart[index].quantity = response.data?.[index]?.quantity;
-                    showErrorToast("Sản phẩm không còn đủ số lượng bạn mong muốn");
+                    handleDialogOpen("Sản phẩm không còn đủ số lượng bạn mong muốn");
+                }
+            }
+            for (let i = 0; i < cart.length; ++i) {
+                if (cart[i]?.quantity === 0) {
+                    const updatedSelection = [...selectedProducts];
+                    if (updatedSelection.includes(i)) {
+                        const productIndex = updatedSelection.indexOf(i);
+                        updatedSelection.splice(productIndex, 1);
+                    }
+                    setSelectedProducts(updatedSelection);
                 }
             }
             for (let i = 0; i < cart.length; ++i) {
@@ -83,6 +102,26 @@ const GioHang = () => {
             }
             localStorage.setItem("cart", JSON.stringify(cart));
             layDuLieuCart();
+        } catch (error) {
+            showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
+        }
+    };
+    //Hàm cập nhật số lượng trong giỏ hàng
+    const getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang = async () => {
+        try {
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            const response = await axios.post(`http://localhost:8080/gioHang/getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang`, cart, // Gửi mảng JSON
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });//Gọi api bằng axiosGet
+            setProductsCapNhatSoLuong(response.data);
+            // for (const [index, item] of response.data.entries()) {
+            //     if (response.data?.[index]?.quantity === 0) {
+            //         showSuccessToast("Bạn đã mua tối đa sản phẩm thứ " + index);
+            //     }
+            // }
         } catch (error) {
             showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
         }
@@ -104,6 +143,7 @@ const GioHang = () => {
 
     useEffect(() => {
         layDuLieuCart();
+        getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         const interval = setInterval(() => {
             getListDanhSachCapNhatSoLuongSanPhamGioHang();
         }, 10000); // 60 giây
@@ -142,17 +182,20 @@ const GioHang = () => {
 
 
     const handleIncrement = (index) => {
-        
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
         // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
         if (index >= 0 && index < cart.length) {
             cart[index].quantity += 1;
-            
         }
+
         // Cập nhật lại giỏ hàng trong Local Storage
         localStorage.setItem("cart", JSON.stringify(cart));
         // Load lại giỏ hàng sau khi cập nhật
         layDuLieuCart();
+        getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
+        if (productsCapNhatSoLuong[index].quantity === 1) {//Fix lỗi chậm một nhịp  
+            showSuccessToast("Bạn đã mua tối đa sản phẩm thứ " + index);
+        }
     };
 
     const handleDecrement = (index) => {
@@ -166,6 +209,8 @@ const GioHang = () => {
         localStorage.setItem("cart", JSON.stringify(cart));
         // Load lại giỏ hàng sau khi cập nhật
         layDuLieuCart();
+        getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();//Phải ở sau khi cập nhật cart
+
     };
 
     const handleToggleSelect = (index) => {
@@ -196,15 +241,22 @@ const GioHang = () => {
 
     return (
         <Container>
+            <Dialog open={openDialogThongBaoHetHangHoacKDuSoLuong} onClose={handleDialogClose}>
+                <DialogTitle>Thông Báo</DialogTitle>
+                <DialogContent>{dialogMessage}</DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDialogClose} color="primary">Đóng</Button>
+                </DialogActions>
+            </Dialog>
             <Breadcrumbs aria-label="breadcrumb">
                 <Link color="inherit" href="http://localhost:3000/home" sx={{ fontSize: '14px', textDecoration: 'none' }}>
                     Trang chủ
                 </Link>
                 <Typography color="text.primary" sx={{ fontSize: '14px' }}>
-                    Giỏ hàng (21)
+                    Giỏ hàng 
                 </Typography>
             </Breadcrumbs>
-            <Typography variant="h6" sx={{ marginBottom: 2, marginTop: 3 }} gutterBottom>Giỏ hàng của bạn <span style={{ fontSize: '14px', color: 'gray' }}>(2 sản phẩm)</span></Typography>
+            <Typography variant="h6" sx={{ marginBottom: 2, marginTop: 3 }} gutterBottom>Giỏ hàng của bạn <span style={{ fontSize: '14px', color: 'gray' }}>({products.length} sản phẩm)</span></Typography>
             <Grid container spacing={2}>
                 {/* Phần hiển thị sản phẩm */}
                 <Grid item xs={9}>
@@ -230,7 +282,7 @@ const GioHang = () => {
 
                                 <TableBody>
                                     {products.map((product, index) => (
-                                        <TableRow key={index}>
+                                        <TableRow key={index} disabled={product.quantity === 0}>
                                             <TableCell padding="checkbox" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
                                                 <Checkbox
                                                     checked={selectedProducts.includes(index)}
@@ -296,7 +348,7 @@ const GioHang = () => {
                                                                     onClick={() => handleIncrement(index)}
                                                                     size="small"
                                                                     style={{ padding: '2px', marginRight: -10 }}
-                                                                    // disabled={product.quantity >= productsCapNhat?.[index]?.quantity}
+                                                                    disabled={productsCapNhatSoLuong?.[index]?.quantity === 0}
                                                                 >
                                                                     <AddIcon fontSize="small" />
                                                                 </IconButton>
@@ -332,6 +384,7 @@ const GioHang = () => {
                             fullWidth
                             sx={{ marginTop: 2 }}
                             onClick={handlePaymentClick}  // Attach the onClick handler to the button
+                            disabled={selectedProducts?.length === 0}
                         >
                             Tiến hành thanh toán
                         </Button>

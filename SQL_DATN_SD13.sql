@@ -408,11 +408,11 @@ VALUES
 -- Bảng mau_sac
 INSERT INTO mau_sac (ma, ten_mau_sac, ma_mau, mo_ta, trang_thai)
 VALUES
-('MS001', 'Đỏ', '#FF0000', 'Màu đỏ tươi', 'Hoạt động'),
-('MS002', 'Xanh dương', '#0000FF', 'Màu xanh dương mát mẻ', 'Hoạt động'),
-('MS003', 'Vàng', '#FFFF00', 'Màu vàng sáng', 'Hoạt động'),
-('MS004', 'Trắng', '#FFFFFF', 'Màu trắng tinh khiết', 'Hoạt động'),
-('MS005', 'Đen', '#000000', 'Màu đen huyền bí', 'Hoạt động');
+('MS001', 'Đỏ', '#FF0000', 'Màu đỏ tươi', N'Hoạt động'),
+('MS002', 'Xanh dương', '#0000FF', 'Màu xanh dương mát mẻ', N'Hoạt động'),
+('MS003', 'Vàng', '#FFFF00', 'Màu vàng sáng', N'Hoạt động'),
+('MS004', 'Trắng', '#FFFFFF', 'Màu trắng tinh khiết', N'Hoạt động'),
+('MS005', 'Đen', '#000000', 'Màu đen huyền bí', N'Hoạt động');
 
 -- Bảng danh_muc
 INSERT INTO danh_muc (ma, ten_danh_muc, mo_ta, trang_thai)
@@ -483,24 +483,30 @@ VALUES
 ('KD005', N'Quần Âu Xếp Ly', N'Kiểu quần âu có xếp ly', N'Hoạt động');
 
 -- Bảng san_pham_chi_tiet
-INSERT INTO san_pham_chi_tiet (ma, so_luong, mo_ta, trang_thai, gia, id_san_pham, id_mau_sac, id_chat_lieu, id_danh_muc, id_size, id_thuong_hieu, id_kieu_dang, id_kieu_dai_quan, id_xuat_xu, id_phong_cach, ngay_tao, nguoi_tao)
+INSERT INTO san_pham_chi_tiet (
+    ma, so_luong, mo_ta, trang_thai, gia, id_san_pham, id_mau_sac, 
+    id_chat_lieu, id_danh_muc, id_size, id_thuong_hieu, id_kieu_dang, 
+    id_kieu_dai_quan, id_xuat_xu, id_phong_cach, ngay_tao, ngay_sua, 
+    nguoi_tao, nguoi_sua
+) 
 VALUES 
-('SPCT1', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 2, 5, 3, 1, 5, 5, 5, 5, '2025-03-21 11:48:34.453', NULL, 'Admin', NULL),
-('SPCT2', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 2, 5, 3, 2, 5, 5, 5, 5, '2025-03-21 11:48:34.473', NULL, 'Admin', NULL),
-('SPCT3', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 2, 5, 3, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.483', NULL, 'Admin', NULL),
-('SPCT4', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 1, 5, 3, 1, 5, 5, 5, 5, '2025-03-21 11:48:34.493', NULL, 'Admin', NULL),
-('SPCT5', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 1, 5, 3, 2, 5, 5, 5, 5, '2025-03-21 11:48:34.500', NULL, 'Admin', NULL),
-('SPCT6', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 1, 5, 3, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.510', NULL, 'Admin', NULL),
-('SPCT7', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 3, 1, 2, 1, 5, 5, 5, 5, '2025-03-21 11:48:34.453', NULL, 'Admin', NULL),
-('SPCT8', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 3, 1, 2, 2, 5, 5, 5, 5, '2025-03-21 11:48:34.473', NULL, 'Admin', NULL),
-('SPCT9', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 3, 1, 2, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.483', NULL, 'Admin', NULL),
-('SPCT10', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 4, 1, 2, 1, 5, 5, 5, 5, '2025-03-21 11:48:34.493', NULL, 'Admin', NULL),
-('SPCT11', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 4, 1, 2, 2, 5, 5, 5, 5, '2025-03-21 11:48:34.500', NULL, 'Admin', NULL),
-('SPCT12', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 4, 1, 2, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.510', NULL, 'Admin', NULL),
-('SPCT13', 30, 'Không có mô tả', 'Hoạt động', 340000, 3, 3, 2, 1, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.483', NULL, 'Admin', NULL),
-('SPCT14', 30, 'Không có mô tả', 'Hoạt động', 340000, 3, 5, 2, 1, 1, 5, 5, 5, 5, '2025-03-21 11:48:34.493', NULL, 'Admin', NULL),
-('SPCT15', 30, 'Không có mô tả', 'Hoạt động', 340000, 3, 5, 2, 1, 2, 5, 5, 5, 5, '2025-03-21 11:48:34.500', NULL, 'Admin', NULL),
-('SPCT16', 30, 'Không có mô tả', 'Hoạt động', 340000, 3, 5, 2, 1, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.510', NULL, 'Admin', NULL);
+('SPCT1', 20, 'Không có mô tả', N'Hoạt động', 340000, 1, 2, 5, 3, 1, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.453', NULL, 'Admin', NULL),
+('SPCT2', 20, 'Không có mô tả', N'Hoạt động', 340000, 1, 2, 5, 3, 2, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.473', NULL, 'Admin', NULL),
+('SPCT3', 20, 'Không có mô tả', N'Hoạt động', 340000, 1, 2, 5, 3, 3, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.483', NULL, 'Admin', NULL),
+('SPCT4', 20, 'Không có mô tả', N'Hoạt động', 340000, 1, 1, 5, 3, 1, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.493', NULL, 'Admin', NULL),
+('SPCT5', 20, 'Không có mô tả', N'Hoạt động', 340000, 1, 1, 5, 3, 2, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.500', NULL, 'Admin', NULL),
+('SPCT6', 20, 'Không có mô tả', N'Hoạt động', 340000, 1, 1, 5, 3, 3, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.510', NULL, 'Admin', NULL),
+('SPCT7', 30, 'Không có mô tả', N'Hoạt động', 340000, 2, 3, 1, 2, 1, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.453', NULL, 'Admin', NULL),
+('SPCT8', 30, 'Không có mô tả', N'Hoạt động', 340000, 2, 3, 1, 2, 2, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.473', NULL, 'Admin', NULL),
+('SPCT9', 30, 'Không có mô tả', N'Hoạt động', 340000, 2, 3, 1, 2, 3, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.483', NULL, 'Admin', NULL),
+('SPCT10', 30, 'Không có mô tả', N'Hoạt động', 340000, 2, 4, 1, 2, 1, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.493', NULL, 'Admin', NULL),
+('SPCT11', 30, 'Không có mô tả', N'Hoạt động', 340000, 2, 4, 1, 2, 2, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.500', NULL, 'Admin', NULL),
+('SPCT12', 30, 'Không có mô tả', N'Hoạt động', 340000, 2, 4, 1, 2, 3, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.510', NULL, 'Admin', NULL),
+('SPCT13', 30, 'Không có mô tả', N'Hoạt động', 340000, 3, 3, 2, 1, 3, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.483', NULL, 'Admin', NULL),
+('SPCT14', 30, 'Không có mô tả', N'Hoạt động', 340000, 3, 5, 2, 1, 1, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.493', NULL, 'Admin', NULL),
+('SPCT15', 30, 'Không có mô tả', N'Hoạt động', 340000, 3, 5, 2, 1, 2, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.500', NULL, 'Admin', NULL),
+('SPCT16', 30, 'Không có mô tả', N'Hoạt động', 340000, 3, 5, 2, 1, 3, 1, 1, 1, 1, 1, '2025-03-21 11:48:34.510', NULL, 'Admin', NULL);
+
 
 
 -- Bảng anh_san_pham

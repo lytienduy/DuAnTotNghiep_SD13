@@ -91,7 +91,6 @@ const SanPham = () => {
       const response = await axios.get(`${apiUrl}?${params.toString()}`);//Gọi api bằng axiosGet
       console.log(`${apiUrl}?${params.toString()}`);
       setProducts(response.data);
-      showSuccessToast("ok")
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
       showErrorToast("Lỗi khi lấy dữ liệu sản phẩm để thêm vào giỏ hàng")
@@ -544,7 +543,7 @@ const SanPham = () => {
                                     display: "block",
                                     width: "100%", // Khi chọn, màu nhỏ đi 20%
                                     height: "100%",
-                                    backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                    backgroundColor: item.mauSac.maMau, // Giữ màu nền
                                     borderRadius: "12px", // Bo góc nhỏ hơn một chút
                                     transition: "all 0.2s ease-in-out",
                                   },
