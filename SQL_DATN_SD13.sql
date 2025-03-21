@@ -417,11 +417,9 @@ VALUES
 -- Bảng danh_muc
 INSERT INTO danh_muc (ma, ten_danh_muc, mo_ta, trang_thai)
 VALUES 
-('DM001', N'Quần Âu', N'Danh mục các loại quần âu', N'Hoạt động'),
-('DM002', N'Áo Sơ Mi', N'Danh mục áo sơ mi phối với quần âu', N'Hoạt động'),
-('DM003', N'Giày Tây', N'Danh mục giày tây cho nam', N'Hoạt động'),
-('DM004', N'Phụ Kiện Nam', N'Danh mục phụ kiện thời trang nam', N'Hoạt động'),
-('DM005', N'Thắt Lưng', N'Danh mục thắt lưng phối với quần âu', N'Hoạt động');
+('DM001', N'Business', N'Danh mục các loại quần âu', N'Hoạt động'),
+('DM002', N'Golf', N'Danh mục áo sơ mi phối với quần âu', N'Hoạt động'),
+('DM003', N'Casual', N'Danh mục giày tây cho nam', N'Hoạt động');
 
 -- Bảng size
 INSERT INTO size (ma, ten_size, mo_ta, trang_thai)
@@ -471,11 +469,9 @@ VALUES
 -- Bảng san_pham
 INSERT INTO san_pham (ma, ten_san_pham, mo_ta, trang_thai, ngay_tao, nguoi_tao)
 VALUES 
-('SP001', N'Quần Âu Nam Đen', N'Quần âu nam màu đen', N'Hoạt động', GETDATE(), 'Admin'),
-('SP002', N'Quần Âu Nam Xám', N'Quần âu nam màu xám', N'Hoạt động', GETDATE(), 'Admin'),
-('SP003', N'Quần Âu Nam Xanh', N'Quần âu nam màu xanh đậm', N'Hoạt động', GETDATE(), 'Admin'),
-('SP004', N'Quần Âu Nam Be', N'Quần âu nam màu be', N'Hoạt động', GETDATE(), 'Admin'),
-('SP005', N'Quần Âu Nam Nâu', N'Quần âu nam màu nâu', N'Hoạt động', GETDATE(), 'Admin');
+('SP001', N'Quần Âu Nam', N'Quần âu nam màu đen', N'Hoạt động', GETDATE(), 'Admin'),
+('SP002', N'Quần Âu Nữ', N'Quần âu nam màu xám', N'Hoạt động', GETDATE(), 'Admin'),
+('SP003', N'Quần Âu Unisex', N'Quần âu nam màu xanh đậm', N'Hoạt động', GETDATE(), 'Admin');
 
 -- Bảng kieu_dang
 INSERT INTO kieu_dang (ma, ten_kieu_dang, mo_ta, trang_thai)
@@ -489,20 +485,76 @@ VALUES
 -- Bảng san_pham_chi_tiet
 INSERT INTO san_pham_chi_tiet (ma, so_luong, mo_ta, trang_thai, gia, id_san_pham, id_mau_sac, id_chat_lieu, id_danh_muc, id_size, id_thuong_hieu, id_kieu_dang, id_kieu_dai_quan, id_xuat_xu, id_phong_cach, ngay_tao, nguoi_tao)
 VALUES 
-('SPCT001', 50, N'Quần âu nam đen size 30', N'Hoạt động', 500000, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, GETDATE(), 'Admin'),
-('SPCT002', 30, N'Quần âu nam xám size 32', N'Hoạt động', 550000, 2, 2, 3, 1, 3, 2, 1, 2, 2, 1, GETDATE(), 'Admin'),
-('SPCT003', 40, N'Quần âu nam xanh size 34', N'Hoạt động', 600000, 3, 3, 4, 1, 4, 3, 2, 3, 3, 1, GETDATE(), 'Admin'),
-('SPCT004', 25, N'Quần âu nam be size 28', N'Hoạt động', 520000, 4, 4, 2, 1, 1, 4, 3, 4, 4, 1, GETDATE(), 'Admin'),
-('SPCT005', 20, N'Quần âu nam nâu size 36', N'Hoạt động', 580000, 5, 5, 3, 1, 5, 5, 2, 5, 5, 1, GETDATE(), 'Admin');
+('SPCT1', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 2, 5, 3, 1, 5, 5, 5, 5, '2025-03-21 11:48:34.453', NULL, 'Admin', NULL),
+('SPCT2', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 2, 5, 3, 2, 5, 5, 5, 5, '2025-03-21 11:48:34.473', NULL, 'Admin', NULL),
+('SPCT3', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 2, 5, 3, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.483', NULL, 'Admin', NULL),
+('SPCT4', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 1, 5, 3, 1, 5, 5, 5, 5, '2025-03-21 11:48:34.493', NULL, 'Admin', NULL),
+('SPCT5', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 1, 5, 3, 2, 5, 5, 5, 5, '2025-03-21 11:48:34.500', NULL, 'Admin', NULL),
+('SPCT6', 20, 'Không có mô tả', 'Hoạt động', 340000, 1, 1, 5, 3, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.510', NULL, 'Admin', NULL),
+('SPCT7', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 3, 1, 2, 1, 5, 5, 5, 5, '2025-03-21 11:48:34.453', NULL, 'Admin', NULL),
+('SPCT8', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 3, 1, 2, 2, 5, 5, 5, 5, '2025-03-21 11:48:34.473', NULL, 'Admin', NULL),
+('SPCT9', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 3, 1, 2, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.483', NULL, 'Admin', NULL),
+('SPCT10', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 4, 1, 2, 1, 5, 5, 5, 5, '2025-03-21 11:48:34.493', NULL, 'Admin', NULL),
+('SPCT11', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 4, 1, 2, 2, 5, 5, 5, 5, '2025-03-21 11:48:34.500', NULL, 'Admin', NULL),
+('SPCT12', 30, 'Không có mô tả', 'Hoạt động', 340000, 2, 4, 1, 2, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.510', NULL, 'Admin', NULL),
+('SPCT13', 30, 'Không có mô tả', 'Hoạt động', 340000, 3, 3, 2, 1, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.483', NULL, 'Admin', NULL),
+('SPCT14', 30, 'Không có mô tả', 'Hoạt động', 340000, 3, 5, 2, 1, 1, 5, 5, 5, 5, '2025-03-21 11:48:34.493', NULL, 'Admin', NULL),
+('SPCT15', 30, 'Không có mô tả', 'Hoạt động', 340000, 3, 5, 2, 1, 2, 5, 5, 5, 5, '2025-03-21 11:48:34.500', NULL, 'Admin', NULL),
+('SPCT16', 30, 'Không có mô tả', 'Hoạt động', 340000, 3, 5, 2, 1, 3, 5, 5, 5, 5, '2025-03-21 11:48:34.510', NULL, 'Admin', NULL);
+
 
 -- Bảng anh_san_pham
 INSERT INTO anh_san_pham (ma, anh_url, mo_ta, trang_thai, id_san_pham_chi_tiet)
 VALUES 
-('IMG001', 'https://example.com/quandau_den.jpg', N'Ảnh quần âu nam màu đen', N'Hoạt động', 1),
-('IMG002', 'https://example.com/quandau_xam.jpg', N'Ảnh quần âu nam màu xám', N'Hoạt động', 2),
-('IMG003', 'https://example.com/quandau_xanh.jpg', N'Ảnh quần âu nam màu xanh đậm', N'Hoạt động', 3),
-('IMG004', 'https://example.com/quandau_be.jpg', N'Ảnh quần âu nam màu be', N'Hoạt động', 4),
-('IMG005', 'https://example.com/quandau_nau.jpg', N'Ảnh quần âu nam màu nâu', N'Hoạt động', 5);
+('IMG001', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 1),
+('IMG001', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 1),
+('IMG001', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 1),
+('IMG002', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 2),
+('IMG002', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 2),
+('IMG002', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 2),
+('IMG003', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 3),
+('IMG003', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 3),
+('IMG003', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 3),
+('IMG004', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 4),
+('IMG004', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 4),
+('IMG004', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 4),
+('IMG005', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 5),
+('IMG005', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 5),
+('IMG005', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 5),
+('IMG006', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 6),
+('IMG006', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 6),
+('IMG006', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 6),
+('IMG007', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 7),
+('IMG007', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 7),
+('IMG007', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 7),
+('IMG008', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 8),
+('IMG008', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 8),
+('IMG008', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 8),
+('IMG009', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 9),
+('IMG009', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 9),
+('IMG009', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 9),
+('IMG0010', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 10),
+('IMG0010', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 10),
+('IMG0010', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 10),
+('IMG0011', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 11),
+('IMG0011', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 11),
+('IMG0011', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 11),
+('IMG0012', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 12),
+('IMG0012', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 12),
+('IMG0012', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 12),
+('IMG0013', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 13),
+('IMG0013', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 13),
+('IMG0013', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 13),
+('IMG0014', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 14),
+('IMG0014', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 14),
+('IMG0014', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 14),
+('IMG0015', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 15),
+('IMG0015', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 15),
+('IMG0015', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 15),
+('IMG0016', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420990/anh/fmolphan2be63crukhkf.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 16),
+('IMG0016', 'https://res.cloudinary.com/dy095esr7/image/upload/v1742273669/anh/ejfga015hanzf0nb9np8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 16),
+('IMG0016', 'https://res.cloudinary.com/dy095esr7/image/upload/v1741420994/anh/ccvbqjizi03avoahu2w8.jpg', N'Ảnh quần âu Dragonbee', N'Hoạt động', 16);
+
 
 --Bảng vai trò
 INSERT INTO vai_tro (ma, ten_vai_tro, trang_thai, ngay_tao)
