@@ -6,6 +6,9 @@ import com.example.shopdragonbee.entity.ChatLieu;
 import com.example.shopdragonbee.repository.ChatLieuRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,8 +21,17 @@ public class ChatLieuService {
     private final ChatLieuRepository chatLieuRepository;
 
     // Lấy danh sách chất liệu
+
+    // Lấy danh sách chất liệu
     public List<ChatLieuDTO> getAllChatLieu() {
         return chatLieuRepository.getAllChatLieu();
+    }
+    // Lấy danh sách chất liệu phân trang và sắp xếp theo id giảm dần
+    public Page<ChatLieuDTO> getChatLieuPaginated(int page, int size) {
+        // Tạo Pageable để phân trang với số trang và kích thước trang
+        PageRequest pageRequest = PageRequest.of(page, size);
+        // Trả về danh sách phân trang
+        return chatLieuRepository.getAllChatLieuPaginated(pageRequest);
     }
 
     // Hàm tạo mã chất liệu mới
@@ -62,5 +74,10 @@ public class ChatLieuService {
     // show ds theo trạng thái
     public List<ChatLieuDTO> getChatLieuByTrangThai(String trangThai) {
         return chatLieuRepository.findByTrangThai(trangThai);
+    }
+
+    // Tìm kiếm và lọc chất liệu theo tên và trạng thái
+    public Page<ChatLieuDTO> searchChatLieu(String tenChatLieu, String trangThai, Pageable pageable) {
+        return chatLieuRepository.searchChatLieu(tenChatLieu, trangThai,pageable);
     }
 }

@@ -49,6 +49,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectAll, setSelectAll] = useState(false); // State để kiểm tra "Chọn tất cả"
+ 
   // lưu sản phẩm
   const [openColorModal, setOpenColorModal] = useState(false);
   const [openAddColorModal, setOpenAddColorModal] = useState(false);
@@ -431,7 +432,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       soLuong: detail.quantity || 0,
       gia: detail.price || 0,
       moTa: detail.moTa || "Không có mô tả",
-      trangThai: "",
+      trangThai: "Hoạt động",
       danhMucId: selectedCategory,
       thuongHieuId: selectedThuongHieu,
       phongCachId: selectedPhongCach,
@@ -516,7 +517,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       setLoading(false);
     }
   };
-  // Hàm chọn ảnh
+  
   const handleCloseModalAnh = () => {
     setOpenModalAnh(false); // Đóng modal
   };
@@ -544,7 +545,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
 
     setOpenModalAnh(false); // Đóng modal sau khi lưu ảnh
   };
-
+// Hàm chọn ảnh
   const handleSelectImage = (e, image) => {
     const checked = e.target.checked;
 
@@ -2392,11 +2393,11 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
                           (img) => img.public_id === image.public_id
                         )} // Chỉ check nếu ảnh đã được chọn
                         disabled={
-                          selectedImages.length >= 3 &&
+                          selectedImages.length >= 6 &&
                           !selectedImages.some(
                             (img) => img.public_id === image.public_id
                           )
-                        } // Giới hạn tối đa 3 ảnh
+                        } // Giới hạn tối đa 6 ảnh
                       />
                     </div>
                   </div>
@@ -2436,8 +2437,8 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
               )}
             </div>
 
-            {selectedImages.length > 3 && (
-              <p style={{ color: "red" }}>Bạn chỉ có thể chọn tối đa 3 ảnh.</p>
+            {selectedImages.length > 6 && (
+              <p style={{ color: "red" }}>Bạn chỉ có thể chọn tối đa 6 ảnh.</p>
             )}
 
             <div

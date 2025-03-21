@@ -2,14 +2,19 @@ package com.example.shopdragonbee.controller;
 
 import com.example.shopdragonbee.dto.ChatLieuDTO;
 import com.example.shopdragonbee.dto.PhongCachDTO;
+import com.example.shopdragonbee.dto.SanPhamDTO;
 import com.example.shopdragonbee.entity.ChatLieu;
 import com.example.shopdragonbee.service.ChatLieuService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/chatlieu")
@@ -18,10 +23,22 @@ import java.util.Map;
 public class ChatLieuController {
     private final ChatLieuService chatLieuService;
 
-    // API lấy danh sách chất liệu
-    @GetMapping
+
+    // lấy tất cả chất liệu
+    @GetMapping("/all")
     public ResponseEntity<List<ChatLieuDTO>> getAllChatLieu() {
         return ResponseEntity.ok(chatLieuService.getAllChatLieu());
+    }
+
+    // API lấy danh sách chất liệu
+    @GetMapping
+    public ResponseEntity<Page<ChatLieuDTO>> getAllChatLieu(
+            @RequestParam(defaultValue = "0") int page,  // Mặc định là trang 0
+            @RequestParam(defaultValue = "5") int size)  // Mặc định là 5 phần tử mỗi trang
+    {
+        // Gọi service để lấy dữ liệu phân trang
+        Page<ChatLieuDTO> result = chatLieuService.getChatLieuPaginated(page, size);
+        return ResponseEntity.ok(result);
     }
 
     // API thêm chất liệu mới
@@ -41,5 +58,19 @@ public class ChatLieuController {
     @GetMapping("/chat-lieu/hoat-dong")
     public List<ChatLieuDTO> getChatLieuByTrangThaiHoatDong() {
         return chatLieuService.getChatLieuByTrangThai("Hoạt động");
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<ChatLieuDTO>> searchChatLieu(
+            @RequestParam(required = false) String tenChatLieu,
+            @RequestParam(required = false, defaultValue = "") String trangThai,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+            Pageable pageable = PageRequest.of(page, size);
+
+        Page<ChatLieuDTO> result = chatLieuService.searchChatLieu(tenChatLieu, trangThai, pageable);
+
+        return ResponseEntity.ok(result);
+
     }
 }

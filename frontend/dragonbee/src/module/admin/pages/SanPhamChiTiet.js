@@ -5,6 +5,8 @@ import {
   ArrowBack,
   Visibility,
   VisibilityOff,
+  ChevronLeft,
+  ChevronRight,
   Edit,
   Add,
 } from "@mui/icons-material";
@@ -33,9 +35,12 @@ import {
   MenuItem,
   InputLabel,
   Select,
+  IconButton,
   FormControl,
   Slider,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
 
 const SanPhamChiTiet = () => {
   const { id } = useParams();
@@ -47,6 +52,7 @@ const SanPhamChiTiet = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarMessage1, setSnackbarMessage1] = useState(""); // Nội dung thông báo
   const [searchTerm, setSearchTerm] = useState("");
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectAll, setSelectAll] = useState(false);
   const [filters, setFilters] = useState({
     search: "",
@@ -252,7 +258,7 @@ const SanPhamChiTiet = () => {
   // đổ chất liệu
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/chatlieu")
+      .get("http://localhost:8080/api/chatlieu/all")
       .then((res) => {
         console.log("Chất Liệu API Response:", res.data); // Kiểm tra dữ liệu API
         setChatLieus(res.data);
@@ -365,12 +371,12 @@ const SanPhamChiTiet = () => {
   // Hàm xử lý thay đổi số lượng hoặc giá của từng sản phẩm
   const handleInputChange = (e, itemId, field) => {
     const value = e.target.value;
-  
+
     setChiTietList((prevList) =>
       prevList.map((item) => {
         if (item.id === itemId) {
           const updatedItem = { ...item, [field]: value };
-  
+
           // Kiểm tra nếu trường thay đổi là số lượng
           if (field === "soLuong") {
             if (value == 0) {
@@ -378,19 +384,44 @@ const SanPhamChiTiet = () => {
               updatedItem.trangThai = "Hết hàng";
             } else {
               // Nếu số lượng > 0, trạng thái sẽ trở lại trạng thái của sản phẩm cha hoặc trạng thái "Hoạt động"
-              updatedItem.trangThai = item.trangThai !== "Ngừng bán" ? "Hoạt động" : "Ngừng bán";
+              updatedItem.trangThai =
+                item.trangThai !== "Ngừng bán" ? "Hoạt động" : "Ngừng bán";
             }
           }
-  
+
           return updatedItem;
         }
         return item;
       })
     );
   };
-  
-  
-  
+
+  const renderPageNumbers = () => {
+    let pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+        pages.push(
+          <Button
+            key={i}
+            variant={i === page ? "contained" : "text"}
+            onClick={() => setPage(i)}
+            sx={{
+              minWidth: "36px",
+              height: "38px",
+              borderRadius: "55%",
+              mx: 0.5,
+              "&:hover": { backgroundColor: "#ddd" },
+            }}
+          >
+            {i}
+          </Button>
+        );
+      } else if (pages[pages.length - 1] !== "...") {
+        pages.push("...");
+      }
+    }
+    return pages;
+  };
 
   // Hàm để xử lý sự kiện khi thay đổi số lượng và giá chung
   const handleCommonInputChange = (e, type) => {
@@ -419,23 +450,21 @@ const SanPhamChiTiet = () => {
   };
   const handleEdit = async (id) => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/san-pham-chi-tiet/${id}`
-      );
-
+      const response = await fetch(`http://localhost:8080/api/san-pham-chi-tiet/${id}`);
+  
       if (!response.ok) {
         throw new Error(`Lỗi API: ${response.status} - ${response.statusText}`);
       }
-
+  
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error(`Phản hồi không phải JSON: ${contentType}`);
       }
-
+  
       const productDetails = await response.json();
-      console.log("Dữ liệu sản phẩm:", productDetails); // Kiểm tra dữ liệu trong console
-
-      setSelectedItem(productDetails);
+      console.log("Dữ liệu sản phẩm:", productDetails); // Kiểm tra dữ liệu API trả về
+  
+      setSelectedItem(productDetails); // Gán toàn bộ dữ liệu vào state
       setOpen(true);
     } catch (error) {
       console.error("Lỗi khi gọi API:", error);
@@ -443,35 +472,59 @@ const SanPhamChiTiet = () => {
       setOpenSnackbar(true);
     }
   };
-
+  
   const handleSave = async () => {
     console.log("Dữ liệu gửi lên API:", selectedItem); // Kiểm tra dữ liệu frontend
-  
+
     try {
       const response = await axios.put(
         `http://localhost:8080/api/san-pham-chi-tiet/${selectedItem.id}`,
         selectedItem
       );
-  
+
       console.log("Cập nhật thành công!");
       handleClose();
       setSnackbarMessage1("Cập nhật sản phẩm chi tiết thành công!");
       setOpenSnackbar(true);
-  
+
       // Cập nhật lại sản phẩm chi tiết trong state mà không cần reload trang
       setChiTietList((prevList) =>
         prevList.map((item) =>
           item.id === selectedItem.id ? { ...item, ...response.data } : item
         )
       );
-  
     } catch (error) {
       console.error("Lỗi khi cập nhật sản phẩm chi tiết:", error);
       setSnackbarMessage1("Lỗi khi cập nhật sản phẩm chi tiết!");
       setOpenSnackbar(true);
     }
   };
+  const handleAddImage = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSelectedItem((prev) => ({
+            ...prev,
+            anhUrls: [...prev.anhUrls, reader.result]
+          }));
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
   
+  const handleDeleteImage = (index) => {
+    setSelectedItem((prev) => ({
+      ...prev,
+      anhUrls: prev.anhUrls.filter((_, i) => i !== index)
+    }));
+  };
   
   const handleClose = () => {
     setOpen(false); // Chỉ đóng khi người dùng nhấn "Hủy"
@@ -517,33 +570,36 @@ const SanPhamChiTiet = () => {
     // Khởi tạo đối tượng updatedProducts chỉ chứa các trường thay đổi
     const updatedProducts = selectedItems.map((id) => {
       let updatedProduct = { id };
-  
+
       // Chỉ thêm soLuong nếu nó khác giá trị ban đầu
       if (commonQuantity !== 0) {
         updatedProduct.soLuong = commonQuantity;
       }
-  
+
       // Chỉ thêm gia nếu nó khác giá trị ban đầu
       if (commonPrice !== 0) {
         updatedProduct.gia = commonPrice;
       }
-  
+
       return updatedProduct;
     });
-  
+
     try {
-      const response = await fetch("http://localhost:8080/api/san-pham-chi-tiet/batch", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedProducts),
-      });
-  
+      const response = await fetch(
+        "http://localhost:8080/api/san-pham-chi-tiet/batch",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedProducts),
+        }
+      );
+
       if (response.ok) {
         setSnackbarMessageUpdate("Cập nhật số lượng và/hoặc giá thành công");
         setOpenSnackbarUpdate(true);
-        
+
         // Reload lại trang sau khi cập nhật thành công
         window.location.reload();
       } else {
@@ -555,8 +611,7 @@ const SanPhamChiTiet = () => {
       setOpenSnackbarUpdate(true);
     }
   };
-  
-  
+
   const handleCloseSnackbarUpate = () => {
     setOpenSnackbarUpdate(false);
   };
@@ -570,7 +625,11 @@ const SanPhamChiTiet = () => {
       >
         <Typography variant="h4">Chi Tiết Sản Phẩm</Typography>
       </Grid>
-      <Button color="black" sx={{ mr: 2 }} onClick={() => navigate("/admin/sanpham")}>
+      <Button
+        color="black"
+        sx={{ mr: 2 }}
+        onClick={() => navigate("/admin/sanpham")}
+      >
         <ArrowBack />
       </Button>
 
@@ -633,68 +692,69 @@ const SanPhamChiTiet = () => {
       </Paper>
       {/* Toggle Button */}
       <Paper sx={{ padding: 2, mb: 2 }}>
-  <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-    <TextField
-      label="Số Lượng Chung"
-      type="number"
-      value={commonQuantity}
-      onChange={(e) => handleCommonInputChange(e, "quantity")}
-      sx={{ width: "150px", height: "20px" }}
-    />
-    <TextField
-      label="Giá Chung"
-      type="number"
-      value={commonPrice}
-      onChange={(e) => handleCommonInputChange(e, "price")}
-      sx={{ width: "150px", height: "20px" }}
-    />
-  </div>
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}
+        >
+          <TextField
+            label="Số Lượng Chung"
+            type="number"
+            value={commonQuantity}
+            onChange={(e) => handleCommonInputChange(e, "quantity")}
+            sx={{ width: "150px", height: "20px" }}
+          />
+          <TextField
+            label="Giá Chung"
+            type="number"
+            value={commonPrice}
+            onChange={(e) => handleCommonInputChange(e, "price")}
+            sx={{ width: "150px", height: "20px" }}
+          />
+        </div>
 
-  {/* Sắp xếp các nút thẳng hàng và cách nhau */}
-  <Grid container justifyContent="flex-start" spacing={2} sx={{ mt: 2 }}>
-    <Grid item>
-      <Button
-        variant="contained"
-        onClick={() => setShowAllDetails(!showAllDetails)}
-        sx={{
-          backgroundColor: "lightblue",
-          "&:hover": { backgroundColor: "lightblue" },
-        }}
-        startIcon={showAllDetails ? <VisibilityOff /> : <Visibility />}
-      >
-        {showAllDetails ? "Ẩn chi tiết" : "Hiển thị toàn bộ"}
-      </Button>
-    </Grid>
+        {/* Sắp xếp các nút thẳng hàng và cách nhau */}
+        <Grid container justifyContent="flex-start" spacing={2} sx={{ mt: 2 }}>
+          <Grid item>
+            <Button
+              variant="contained"
+              onClick={() => setShowAllDetails(!showAllDetails)}
+              sx={{
+                backgroundColor: "lightblue",
+                "&:hover": { backgroundColor: "lightblue" },
+              }}
+              startIcon={showAllDetails ? <VisibilityOff /> : <Visibility />}
+            >
+              {showAllDetails ? "Ẩn chi tiết" : "Hiển thị toàn bộ"}
+            </Button>
+          </Grid>
 
-    <Grid item>
-      <Button
-        variant="contained"
-        color="primary"
-        sx={{ mb: 2 }}
-        onClick={handleUpdateProducts}
-      >
-        Sửa
-      </Button>
-    </Grid>
-  </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mb: 2 }}
+              onClick={handleUpdateProducts}
+            >
+              Sửa
+            </Button>
+          </Grid>
+        </Grid>
 
-  {/* Snackbar */}
-  <Snackbar
-    open={openSnackbarUpdate}
-    autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
-    onClose={handleCloseSnackbarUpate}
-    anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
-  >
-    <Alert
-      onClose={handleCloseSnackbarUpate}
-      severity="success"
-      sx={{ width: "100%" }}
-    >
-      {snackbarMessageUpdate}
-    </Alert>
-  </Snackbar>
-</Paper>
-
+        {/* Snackbar */}
+        <Snackbar
+          open={openSnackbarUpdate}
+          autoHideDuration={3000} // Thời gian tự động đóng sau 3 giây
+          onClose={handleCloseSnackbarUpate}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }} // Đặt vị trí thông báo
+        >
+          <Alert
+            onClose={handleCloseSnackbarUpate}
+            severity="success"
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessageUpdate}
+          </Alert>
+        </Snackbar>
+      </Paper>
 
       {loading ? (
         <CircularProgress />
@@ -759,6 +819,9 @@ const SanPhamChiTiet = () => {
                       <strong>Trạng Thái</strong>
                     </TableCell>
                     <TableCell>
+                      <strong>Ảnh</strong>
+                    </TableCell>
+                    <TableCell>
                       <strong>Hành Dộng</strong>
                     </TableCell>
                     <TableCell>Download QR</TableCell>
@@ -813,6 +876,7 @@ const SanPhamChiTiet = () => {
                             onChange={(e) =>
                               handleInputChange(e, item.id, "soLuong")
                             }
+                            style={{ width: "70px", padding: "4px" }} // 👈 ngắn hơn
                           />
                         </TableCell>
                         <TableCell>
@@ -822,12 +886,31 @@ const SanPhamChiTiet = () => {
                             onChange={(e) =>
                               handleInputChange(e, item.id, "gia")
                             }
+                            style={{ width: "90px", padding: "4px" }} // 👈 gọn gàng
                           />
                         </TableCell>
                         <TableCell>
-          {item.sanPhamTrangThai ||item.trangThai}
-          {/* Sử dụng trạng thái của sản phẩm cha nếu trạng thái của sản phẩm chi tiết không có */}
-        </TableCell>
+                          {item.trangThai || item.sanPhamTrangThai}
+                          {/* Sử dụng trạng thái của sản phẩm cha nếu trạng thái của sản phẩm chi tiết không có */}
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" gap={1}>
+                            {item.anhUrls?.slice(0, 3).map((url, i) => (
+                              <img
+                                key={i}
+                                src={url}
+                                alt={`Ảnh ${i + 1}`}
+                                style={{
+                                  width: 50,
+                                  height: 50,
+                                  objectFit: "cover",
+                                  borderRadius: 4,
+                                  border: "1px solid #ccc",
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        </TableCell>
                         <TableCell>
                           <Button
                             variant="contained"
@@ -855,7 +938,11 @@ const SanPhamChiTiet = () => {
             {/* Modal chỉnh sửa */}
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
               <DialogTitle>Chỉnh Sửa Sản Phẩm</DialogTitle>
+              <DialogTitle>
+Sản phẩm chi tiết-Mã: {selectedItem?.ma || "Chưa có mã"}
+</DialogTitle>
               <DialogContent>
+             
                 {selectedItem && (
                   <>
                     {/* Hàng 1: Danh Mục, Thương Hiệu, Phong Cách, Chất Liệu */}
@@ -1096,6 +1183,80 @@ const SanPhamChiTiet = () => {
                         />
                       </Grid>
                     </Grid>
+                    <Grid container spacing={2} sx={{ mt: 2 }}>
+                      {/* ảnh sản phẩm  */}
+                     
+  <Grid item xs={12}>
+  <Typography variant="h6">Ảnh Sản Phẩm Chi Tiết</Typography>
+  <Box
+    sx={{
+      display: "grid",
+      gridTemplateColumns: "repeat(5, 1fr)", // Tạo 5 cột mỗi hàng
+      gap: 2
+    }}
+  >
+    {selectedItem.anhUrls &&
+      selectedItem.anhUrls.map((url, index) => (
+        <Box
+          key={index}
+          sx={{
+            position: "relative",
+            width: "100px",
+            height: "100px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+            overflow: "hidden"
+          }}
+        >
+          <img
+            src={url}
+            alt={`Ảnh ${index + 1}`}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover"
+            }}
+          />
+          {/* Nút Xóa Ảnh */}
+          <IconButton
+            sx={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              color: "white",
+              "&:hover": { backgroundColor: "rgba(255,0,0,0.7)" }
+            }}
+            onClick={() => handleDeleteImage(index)}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      ))}
+
+    {/* Nút Chọn Ảnh nếu chưa đủ 5 ảnh trên hàng */}
+    {selectedItem.anhUrls && selectedItem.anhUrls.length % 5 !== 0 && (
+      <Box
+        sx={{
+          width: "100px",
+          height: "100px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "8px",
+          border: "1px dashed #ccc",
+          cursor: "pointer"
+        }}
+        onClick={handleAddImage}
+      >
+        <AddIcon />
+      </Box>
+    )}
+  </Box>
+</Grid>
+
+</Grid>
+
                   </>
                 )}
               </DialogContent>
@@ -1124,53 +1285,48 @@ const SanPhamChiTiet = () => {
           </div>
           <Box
             display="flex"
-            alignItems="center"
             justifyContent="space-between"
-            sx={{ mt: 2, p: 1, background: "#f1f1f1", borderRadius: "5px" }}
+            alignItems="center"
+            p={2}
+            mt={2}
           >
-            {/* Dropdown to select number of items per page */}
             <Box display="flex" alignItems="center">
-              <Typography variant="body2" sx={{ mr: 1 }}>
-                Xem
-              </Typography>
+              <Typography mr={2}>Xem</Typography>
               <Select
-                value={size}
-                onChange={(e) => {
-                  setSize(e.target.value);
-                  setPage(1); // Reset to first page
+                value={rowsPerPage}
+                onChange={(e) => setRowsPerPage(e.target.value)}
+                sx={{
+                  height: "32px", // Giảm chiều cao
+                  minWidth: "60px",
+                  borderRadius: "8px",
+                  "&.Mui-focused": {
+                    borderColor: "#1976D2", // Màu xanh dương khi chọn
+                    borderWidth: "2px",
+                  },
                 }}
-                size="small"
-                sx={{ width: 70, backgroundColor: "white" }}
               >
                 <MenuItem value={5}>5</MenuItem>
                 <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={20}>20</MenuItem>
+                <MenuItem value={25}>25</MenuItem>
               </Select>
-              <Typography variant="body2" sx={{ ml: 1 }}>
-                sản phẩm
-              </Typography>
-            </Box>
 
-            {/* Pagination controls */}
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={(event, value) => setPage(value)}
-              variant="outlined"
-              shape="rounded"
-              color="primary"
-              siblingCount={0} // Keep it compact
-              sx={{
-                "& .MuiPaginationItem-root": {
-                  backgroundColor: "white",
-                  border: "1px solid #ddd",
-                  "&.Mui-selected": {
-                    backgroundColor: "lightblue",
-                    color: "white",
-                  },
-                },
-              }}
-            />
+              <Typography ml={2}>Sản phẩm chi tiết</Typography>
+            </Box>
+            <Box display="flex" alignItems="center">
+              <IconButton
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              >
+                <ChevronLeft />
+              </IconButton>
+              {renderPageNumbers()}
+              <IconButton
+                onClick={() =>
+                  setPage((prev) => Math.min(prev + 1, totalPages))
+                }
+              >
+                <ChevronRight />
+              </IconButton>
+            </Box>
           </Box>
         </>
       )}

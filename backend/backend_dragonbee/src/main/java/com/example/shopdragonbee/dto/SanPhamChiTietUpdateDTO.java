@@ -20,5 +20,4 @@ public class SanPhamChiTietUpdateDTO {
     private Integer soLuong;
     private Double gia;
 
-
 }

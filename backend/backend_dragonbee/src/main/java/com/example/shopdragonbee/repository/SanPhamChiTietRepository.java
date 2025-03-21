@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet, Integer> {
 
@@ -51,6 +52,9 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet, 
 
     @Query("SELECT COALESCE(MAX(spct.id), 0) FROM SanPhamChiTiet spct")
     Integer getMaxId();
+
+    @Query("SELECT spct FROM SanPhamChiTiet spct LEFT JOIN FETCH spct.listAnh WHERE spct.id = :id")
+    Optional<SanPhamChiTiet> findByIdWithAnh(@Param("id") Integer id);
 
     SanPhamChiTiet findById(int id);
 

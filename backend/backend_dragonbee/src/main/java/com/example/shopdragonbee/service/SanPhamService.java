@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ public class SanPhamService {
     private final KieuDaiQuanRepository kieuDaiQuanRepository;
     private final MauSacRepository mauSacRepository;
     private final SizeRepository sizeRepository;
+    private final AnhSanPhamRepository anhSanPhamRepository;
 
     public List<SanPhamDTO> getAllSanPham() {
         return sanPhamRepository.getAll();
@@ -91,13 +93,34 @@ public class SanPhamService {
     // API lấy tất cả sản phẩm chi tiết có phân trang
     public Page<SanPhamChiTietRespone> getAllSanPhamChiTiet(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return sanPhamChiTietRepository.findAllSanPhamChiTiet(pageable);
+        Page<SanPhamChiTietRespone> resultPage = sanPhamChiTietRepository.findAllSanPhamChiTiet(pageable);
+        return addAnhUrlsToResponse(resultPage);
     }
 
-    // API lấy sản phẩm chi tiết theo ID sản phẩm cha có phân trang
     public Page<SanPhamChiTietRespone> getSanPhamChiTietBySanPhamId(Integer id, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return sanPhamChiTietRepository.findBySanPhamId(id, pageable);
+        Page<SanPhamChiTietRespone> resultPage = sanPhamChiTietRepository.findBySanPhamId(id, pageable);
+        return addAnhUrlsToResponse(resultPage);
+    }
+
+    private Page<SanPhamChiTietRespone> addAnhUrlsToResponse(Page<SanPhamChiTietRespone> page) {
+        List<Integer> ids = page.getContent().stream()
+                .map(SanPhamChiTietRespone::getId)
+                .toList();
+
+        if (ids.isEmpty()) return page;
+
+        List<Object[]> anhData = anhSanPhamRepository.findAnhSanPhamBySanPhamChiTietIds(ids);
+
+        Map<Integer, List<String>> anhMap = anhData.stream()
+                .collect(Collectors.groupingBy(
+                        row -> (Integer) row[0],
+                        Collectors.mapping(row -> (String) row[1], Collectors.toList())
+                ));
+
+        page.getContent().forEach(spct -> spct.setAnhUrls(anhMap.getOrDefault(spct.getId(), List.of())));
+
+        return page;
     }
     public Page<SanPhamDTO> searchSanPham(String tenSanPham, String trangThai, Pageable pageable) {
         return sanPhamRepository.searchSanPham(tenSanPham, trangThai, pageable);

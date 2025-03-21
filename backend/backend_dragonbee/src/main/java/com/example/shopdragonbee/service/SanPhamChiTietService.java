@@ -3,6 +3,7 @@ package com.example.shopdragonbee.service;
 import com.example.shopdragonbee.dto.SanPhamChiTietDTO;
 import com.example.shopdragonbee.dto.SanPhamChiTietUpdateDTO;
 import com.example.shopdragonbee.dto.UpdateSanphamChiTietDTO;
+import com.example.shopdragonbee.entity.AnhSanPham;
 import com.example.shopdragonbee.entity.SanPhamChiTiet;
 import com.example.shopdragonbee.repository.AnhSanPhamRepository;
 import com.example.shopdragonbee.repository.ChatLieuRepository;
@@ -49,31 +50,36 @@ public class SanPhamChiTietService {
     @Autowired
     private AnhSanPhamRepository anhSanPhamRepository;
     public SanPhamChiTietDTO getSanPhamChiTietById(Integer id) {
-        SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(id).orElseThrow();
+        SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findByIdWithAnh(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm chi tiết với ID: " + id));
         return convertToDTO(sanPhamChiTiet);
     }
+
 
     private SanPhamChiTietDTO convertToDTO(SanPhamChiTiet sanPhamChiTiet) {
         return SanPhamChiTietDTO.builder()
                 .id(sanPhamChiTiet.getId())
                 .ma(sanPhamChiTiet.getMa())
-                .sanPhamId(sanPhamChiTiet.getSanPham().getId()) // Nếu có mối quan hệ @ManyToOne
-                .danhMucId(sanPhamChiTiet.getDanhMuc().getId())
-                .thuongHieuId(sanPhamChiTiet.getThuongHieu().getId())
-                .phongCachId(sanPhamChiTiet.getPhongCach().getId())
-                .chatLieuId(sanPhamChiTiet.getChatLieu().getId())
-                .mauSacId(sanPhamChiTiet.getMauSac().getId())
-                .sizeId(sanPhamChiTiet.getSize().getId())
-                .kieuDangId(sanPhamChiTiet.getKieuDang().getId())
-                .kieuDaiQuanId(sanPhamChiTiet.getKieuDaiQuan().getId())
-                .xuatXuId(sanPhamChiTiet.getXuatXu().getId())
+                .sanPhamId(sanPhamChiTiet.getSanPham().getId())
+                .danhMucId(sanPhamChiTiet.getDanhMuc() != null ? sanPhamChiTiet.getDanhMuc().getId() : null)
+                .thuongHieuId(sanPhamChiTiet.getThuongHieu() != null ? sanPhamChiTiet.getThuongHieu().getId() : null)
+                .phongCachId(sanPhamChiTiet.getPhongCach() != null ? sanPhamChiTiet.getPhongCach().getId() : null)
+                .chatLieuId(sanPhamChiTiet.getChatLieu() != null ? sanPhamChiTiet.getChatLieu().getId() : null)
+                .mauSacId(sanPhamChiTiet.getMauSac() != null ? sanPhamChiTiet.getMauSac().getId() : null)
+                .sizeId(sanPhamChiTiet.getSize() != null ? sanPhamChiTiet.getSize().getId() : null)
+                .kieuDangId(sanPhamChiTiet.getKieuDang() != null ? sanPhamChiTiet.getKieuDang().getId() : null)
+                .kieuDaiQuanId(sanPhamChiTiet.getKieuDaiQuan() != null ? sanPhamChiTiet.getKieuDaiQuan().getId() : null)
+                .xuatXuId(sanPhamChiTiet.getXuatXu() != null ? sanPhamChiTiet.getXuatXu().getId() : null)
                 .soLuong(sanPhamChiTiet.getSoLuong())
                 .gia(sanPhamChiTiet.getGia())
                 .trangThai(sanPhamChiTiet.getTrangThai())
                 .moTa(sanPhamChiTiet.getMoTa())
-
+                .anhUrls(sanPhamChiTiet.getListAnh() != null
+                        ? sanPhamChiTiet.getListAnh().stream().map(AnhSanPham::getAnhUrl).toList()
+                        : null)
                 .build();
     }
+
 
     // update 1 sản phẩm chi tiết
     @Transactional
@@ -127,6 +133,8 @@ public class SanPhamChiTietService {
         // Đặt trạng thái dựa trên số lượng
         if (newSanPhamChiTiet.getSoLuong() == 0) {
             newSanPhamChiTiet.getSanPham().setTrangThai("Hết hàng");
+        }else {
+            newSanPhamChiTiet.getSanPham().setTrangThai("Hoạt động");
         }
         // Thiết lập thông tin ngày tạo và người tạo
         newSanPhamChiTiet.setNgayTao(LocalDateTime.now());
