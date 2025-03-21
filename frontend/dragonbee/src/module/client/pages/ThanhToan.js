@@ -51,7 +51,7 @@ const ThanhToan = () => {
     }, []);
 
     const tongTienThanhToan = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
-    
+
     const handleChange = (event) => {
         setSelectedPaymentMethod(event.target.value);
     };
@@ -139,35 +139,35 @@ const ThanhToan = () => {
                 return new Date(b.ngayTao) - new Date(a.ngayTao);
             });
 
-            //   // Tính toán giá trị giảm của tất cả các phiếu giảm giá
-            //   const validVouchers = sortedVouchers.filter(voucher => selectedOrder?.tongTienSanPham >= voucher.soTienToiThieu);
+            // Tính toán giá trị giảm của tất cả các phiếu giảm giá
+            const validVouchers = sortedVouchers.filter(voucher => tongTienThanhToan >= voucher.soTienToiThieu);
 
-            //   // Tìm voucher tốt nhất
-            //   let bestVoucher = null;
-            //   let bestDiscount = 0;
+            // Tìm voucher tốt nhất
+            let bestVoucher = null;
+            let bestDiscount = 0;
 
-            //   validVouchers.forEach(voucher => {
-            //     let discountAmount = 0;
-            //     if (voucher.loaiPhieuGiamGia === "Cố định") {
-            //       discountAmount = voucher.giaTriGiam;
-            //     } else if (voucher.loaiPhieuGiamGia === "Phần trăm") {
-            //       discountAmount = (selectedOrder?.tongTienSanPham || 0) * (voucher.giaTriGiam / 100);
-            //       if (voucher.soTienGiamToiDa) {
-            //         discountAmount = Math.min(discountAmount, voucher.soTienGiamToiDa);
-            //       }
-            //     }
+            validVouchers.forEach(voucher => {
+                let discountAmount = 0;
+                if (voucher.loaiPhieuGiamGia === "Cố định") {
+                    discountAmount = voucher.giaTriGiam;
+                } else if (voucher.loaiPhieuGiamGia === "Phần trăm") {
+                    discountAmount = (tongTienThanhToan || 0) * (voucher.giaTriGiam / 100);
+                    if (voucher.soTienGiamToiDa) {
+                        discountAmount = Math.min(discountAmount, voucher.soTienGiamToiDa);
+                    }
+                }
 
-            //     if (discountAmount > bestDiscount) {
-            //       bestDiscount = discountAmount;
-            //       bestVoucher = voucher;
-            //     }
-            //   });
+                if (discountAmount > bestDiscount) {
+                    bestDiscount = discountAmount;
+                    bestVoucher = voucher;
+                }
+            });
 
-            //   // Cập nhật voucher tốt nhất nếu có
-            //   if (bestVoucher) {
-            //     setSelectedVoucherCode(bestVoucher.ma);
-            //     setDiscountAmount(bestDiscount);
-            //   }
+            // Cập nhật voucher tốt nhất nếu có
+            if (bestVoucher) {
+                setSelectedVoucherCode(bestVoucher.ma);
+                setDiscountAmount(bestDiscount);
+            }
 
             // Cập nhật danh sách phiếu giảm giá
             setVouchers(sortedVouchers);
@@ -191,21 +191,82 @@ const ThanhToan = () => {
         const selectedVoucher = vouchers.find(v => v.ma === voucherCode);
         if (!selectedVoucher) return;
 
-        // let discountAmount = 0;
+        let discountAmount = 0;
 
-        // if (selectedVoucher.loaiPhieuGiamGia === "Cố định") {
-        //   discountAmount = selectedVoucher.giaTriGiam;
-        // } else if (selectedVoucher.loaiPhieuGiamGia === "Phần trăm") {
-        //   discountAmount = (selectedOrder?.tongTienSanPham || 0) * (selectedVoucher.giaTriGiam / 100);
-        //   if (selectedVoucher.soTienGiamToiDa) {
-        //     discountAmount = Math.min(discountAmount, selectedVoucher.soTienGiamToiDa);
-        //   }
-        // }
+        if (selectedVoucher.loaiPhieuGiamGia === "Cố định") {
+            discountAmount = selectedVoucher.giaTriGiam;
+        } else if (selectedVoucher.loaiPhieuGiamGia === "Phần trăm") {
+            discountAmount = (tongTienThanhToan || 0) * (selectedVoucher.giaTriGiam / 100);
+            if (selectedVoucher.soTienGiamToiDa) {
+                discountAmount = Math.min(discountAmount, selectedVoucher.soTienGiamToiDa);
+            }
+        }
 
         setSelectedVoucherCode(voucherCode);
         setDiscountAmount(discountAmount);
         handleCloseVoucherModal();
     };
+
+    // Cập nhật UI để làm mờ và hiển thị thông báo nếu không đủ điều kiện
+    const isVoucherValid = (voucher) => {
+        return tongTienThanhToan >= voucher.soTienToiThieu;
+    };
+
+    // Hàm để tính toán số tiền thiếu để áp dụng voucher
+    const calculateAmountToSpend = (voucher) => {
+        if (tongTienThanhToan < voucher.soTienToiThieu) {
+            return voucher.soTienToiThieu - tongTienThanhToan;
+        }
+        return 0;
+    };
+
+    // Hàm fetchVouchers đã được cập nhật trong trước đó, bạn không cần thay đổi hàm này
+
+    useEffect(() => {
+        if (tongTienThanhToan) {
+            fetchVouchers(); // Gọi lại fetchVouchers mỗi khi tổng tiền thay đổi
+        }
+    }, [tongTienThanhToan]); // Lắng nghe sự thay đổi của tổng tiền (tongTienSanPham)
+
+    // Hàm để hiển thị thông báo thiếu tiền
+    const renderAdditionalAmountMessage = (voucher) => {
+        const amountToSpend = calculateAmountToSpend(voucher);
+        if (amountToSpend > 0) {
+            return (
+                <Typography sx={{ color: 'red', marginTop: 1, fontSize: 12 }}>
+                    Bạn cần chi tiêu thêm {amountToSpend.toLocaleString()} VNĐ để áp dụng phiếu giảm giá này.
+                </Typography>
+            );
+        }
+        return null;
+    };
+
+const checkVoucherAvailability = async (voucherCode) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/dragonbee/kiem-tra-voucher/${voucherCode}`);
+      console.log(response.data.soLuong);
+      return response.data.soLuong > 0; // Kiểm tra số lượng voucher còn lại
+    } catch (error) {
+      console.error("Error checking voucher availability:", error);
+      return false;
+    }
+  };
+  
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      if (selectedVoucherCode) {
+        const isAvailable = await checkVoucherAvailability(selectedVoucherCode);
+        if (!isAvailable) {
+          alert("Phiếu giảm giá đã hết, vui lòng chọn phiếu khác.");
+          setSelectedVoucherCode(''); // Xóa voucher đã chọn
+          setDiscountAmount(0); // Đặt giảm giá về 0
+        }
+      }
+    }, 1000); // Kiểm tra mỗi giây
+  
+    // Cleanup interval khi component unmount hoặc khi mã voucher thay đổi
+    return () => clearInterval(intervalId);
+  }, [selectedVoucherCode]); // Lắng nghe sự thay đổi của mã voucher đã chọn  
 
     return (
         <Container sx={{ marginBottom: -8 }}>
@@ -494,7 +555,7 @@ const ThanhToan = () => {
                                                     }}
                                                     onClick={() => {
                                                         setSelectedVoucherCode(''); // Xóa mã voucher
-
+                                                        setDiscountAmount(0); // Đặt giảm giá về 0 để cập nhật lại tổng tiền
                                                     }}
                                                 />
                                             )}
@@ -580,6 +641,8 @@ const ThanhToan = () => {
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
+                                    opacity: isVoucherValid(voucher) ? 1 : 0.5,
+                                    pointerEvents: isVoucherValid(voucher) ? 'auto' : 'none',
                                 }}
                             >
                                 {/* Nội dung voucher */}
@@ -599,7 +662,7 @@ const ThanhToan = () => {
                                     <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>{voucher.trangThai}</Typography>
                                     <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>Số tiền tối thiểu: {voucher.soTienToiThieu}</Typography>
                                     <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>Số lượng: {voucher.soLuong}</Typography>
-
+                                    {renderAdditionalAmountMessage(voucher)} {/* Hiển thị thông báo nếu thiếu tiền */}
                                 </Box>
 
                                 {/* Nút sử dụng */}
@@ -608,7 +671,7 @@ const ThanhToan = () => {
                                         variant="contained"
                                         sx={{ backgroundColor: '#d32f2f' }}
                                         onClick={() => handleUseVoucher(voucher.ma)}
-
+                                        disabled={!isVoucherValid(voucher)} // Disable button nếu không đủ điều kiện
                                     >
                                         Sử dụng
                                     </Button>

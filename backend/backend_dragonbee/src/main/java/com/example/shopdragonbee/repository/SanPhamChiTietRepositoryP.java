@@ -19,6 +19,7 @@ public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet,
     //Tìm sản phẩm chi tiết của sản phẩm mới nhất
     SanPhamChiTiet findTopBySanPhamOrderByNgayTaoDesc(SanPham sanPham);
 
+
     @Query(value = " SELECT DISTINCT sp.* FROM san_pham sp " +
             " JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham " +
             " JOIN danh_muc dm ON spct.id_danh_muc = dm.id " +

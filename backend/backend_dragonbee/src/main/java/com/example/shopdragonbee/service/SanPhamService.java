@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.ProductOutOfStockDTO;
 import com.example.shopdragonbee.dto.SanPhamDTO;
 import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.*;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -101,20 +103,20 @@ public class SanPhamService {
         return sanPhamRepository.searchSanPham(tenSanPham, trangThai, pageable);
     }
 // chuyển đổi trạng thái
-    public String toggleProductStatus(Integer id) {
-        Optional<SanPham> optionalSanPham = sanPhamRepository.findById(id);
-        if (optionalSanPham.isPresent()) {
-            SanPham sanPham = optionalSanPham.get();
-            String oldStatus = sanPham.getTrangThai();
-            String newStatus = oldStatus.equals("Đang bán") ? "Ngừng bán" : "Đang bán"; // Chuyển đổi giữa "Đang bán" và "Ngừng bán"
+public String toggleProductStatus(Integer id) {
+    Optional<SanPham> optionalSanPham = sanPhamRepository.findById(id);
+    if (optionalSanPham.isPresent()) {
+        SanPham sanPham = optionalSanPham.get();
+        String oldStatus = sanPham.getTrangThai();
+        String newStatus = oldStatus.equals("Hoạt động") ? "Ngừng bán" : "Hoạt động"; // Chuyển đổi giữa "Đang bán" và "Ngừng bán"
 
-            sanPham.setTrangThai(newStatus); // Cập nhật trạng thái
-            sanPhamRepository.save(sanPham); // Lưu vào database
+        sanPham.setTrangThai(newStatus); // Cập nhật trạng thái
+        sanPhamRepository.save(sanPham); // Lưu vào database
 
-            return "Trạng thái đã chuyển từ " + oldStatus + " -> " + newStatus;
-        }
-        return "Không tìm thấy sản phẩm với ID: " + id;
+        return "Trạng thái đã chuyển từ " + oldStatus + " -> " + newStatus;
     }
+    return "Không tìm thấy sản phẩm với ID: " + id;
+}
     // add sản phẩm
     public SanPham addSanPham(SanPham sanPham) throws Exception {
         // Kiểm tra trùng tên sản phẩm
@@ -129,7 +131,7 @@ public class SanPhamService {
 
         // Thiết lập ngày tạo và trạng thái mặc định
         sanPham.setNgayTao(LocalDateTime.now());
-        sanPham.setTrangThai("Đang bán");
+        sanPham.setTrangThai("Hoạt động");
 
         return sanPhamRepository.save(sanPham);
     }
@@ -148,6 +150,7 @@ public class SanPhamService {
 
         return String.format("SP%03d", newNumber);
     }
+
 // add sản phẩm chi tiết
     public SanPhamChiTiet addSanPhamChiTiet(SanPhamChiTiet newSanPhamChiTiet) {
         // Tạo mã sản phẩm (ma)
@@ -174,6 +177,7 @@ public class SanPhamService {
         }
         return "SPCT" + (maxId + 1);  // Tạo mã sản phẩm chi tiết
     }
+
 
 
 }

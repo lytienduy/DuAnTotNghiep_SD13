@@ -2,7 +2,9 @@ package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.SanPhamChiTietDTO;
 import com.example.shopdragonbee.dto.SanPhamChiTietUpdateDTO;
+import com.example.shopdragonbee.dto.UpdateSanphamChiTietDTO;
 import com.example.shopdragonbee.entity.SanPhamChiTiet;
+import com.example.shopdragonbee.repository.AnhSanPhamRepository;
 import com.example.shopdragonbee.repository.ChatLieuRepository;
 import com.example.shopdragonbee.repository.DanhMucRepository;
 import com.example.shopdragonbee.repository.KieuDaiQuanRepository;
@@ -17,8 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class SanPhamChiTietService {
@@ -43,7 +46,8 @@ public class SanPhamChiTietService {
     private MauSacRepository mauSacRepository;
     @Autowired
     private SizeRepository sizeRepository;
-
+    @Autowired
+    private AnhSanPhamRepository anhSanPhamRepository;
     public SanPhamChiTietDTO getSanPhamChiTietById(Integer id) {
         SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(id).orElseThrow();
         return convertToDTO(sanPhamChiTiet);
@@ -77,73 +81,115 @@ public class SanPhamChiTietService {
         SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sản phẩm chi tiết không tồn tại"));
 
-        // Cập nhật danh mục, thương hiệu, phong cách, chất liệu, kiểu dáng, màu sắc, size, xuất xứ
-        sanPhamChiTiet.setDanhMuc(danhMucRepository.findById(request.getDanhMucId())
-                .orElseThrow(() -> new RuntimeException("Danh mục không tồn tại")));
+        // Lưu trạng thái ban đầu của sản phẩm chi tiết
+        String initialStatus = sanPhamChiTiet.getTrangThai();
 
-        sanPhamChiTiet.setThuongHieu(thuongHieuRepository.findById(request.getThuongHieuId())
-                .orElseThrow(() -> new RuntimeException("Thương hiệu không tồn tại")));
+        // Lấy trạng thái của sản phẩm cha (sản phẩm chính)
+        String trangThaiSanPham = sanPhamChiTiet.getSanPham().getTrangThai();
 
-        sanPhamChiTiet.setPhongCach(phongCachRepository.findById(request.getPhongCachId())
-                .orElseThrow(() -> new RuntimeException("Phong cách không tồn tại")));
-
-        sanPhamChiTiet.setChatLieu(chatLieuRepository.findById(request.getChatLieuId())
-                .orElseThrow(() -> new RuntimeException("Chất liệu không tồn tại")));
-
-        sanPhamChiTiet.setKieuDang(kieuDangRepository.findById(request.getKieuDangId())
-                .orElseThrow(() -> new RuntimeException("Kiểu dáng không tồn tại")));
-
-        sanPhamChiTiet.setKieuDaiQuan(kieuDaiQuanRepository.findById(request.getKieuDaiQuanId())
-                .orElseThrow(() -> new RuntimeException("Kiểu đai quần không tồn tại")));
-
-        sanPhamChiTiet.setXuatXu(xuatXuRepository.findById(request.getXuatXuId())
-                .orElseThrow(() -> new RuntimeException("Xuất xứ không tồn tại")));
-
-        sanPhamChiTiet.setMauSac(mauSacRepository.findById(request.getMauSacId())
-                .orElseThrow(() -> new RuntimeException("Màu sắc không tồn tại")));
-
-        sanPhamChiTiet.setSize(sizeRepository.findById(request.getSizeId())
-                .orElseThrow(() -> new RuntimeException("Size không tồn tại")));
-
-        // Cập nhật các trường khác
+        // Cập nhật số lượng
         sanPhamChiTiet.setSoLuong(request.getSoLuong());
-        sanPhamChiTiet.setTrangThai(request.getSoLuong() > 0 ? "Còn hàng" : "Hết hàng");
-        sanPhamChiTiet.setMoTa(request.getMoTa());
+
+        // Kiểm tra và cập nhật trạng thái của sản phẩm chi tiết
+        if (request.getSoLuong() == 0) {
+            sanPhamChiTiet.setTrangThai("Hết hàng");
+        } else {
+            // Nếu số lượng > 0, trạng thái sẽ quay lại trạng thái của sản phẩm cha hoặc giữ trạng thái ban đầu
+            if ("Ngừng bán".equals(initialStatus)) {
+                sanPhamChiTiet.setTrangThai("Ngừng bán");
+            } else {
+                sanPhamChiTiet.setTrangThai(trangThaiSanPham); // Trạng thái của sản phẩm cha
+            }
+        }
+
+        // Cập nhật mô tả và giá
         sanPhamChiTiet.setGia(request.getGia());
+        sanPhamChiTiet.setMoTa(request.getMoTa());
 
         // Lưu thay đổi vào database
         sanPhamChiTietRepository.save(sanPhamChiTiet);
 
-        // Trả về DTO đã cập nhật
         return convertToDTO(sanPhamChiTiet);
     }
 
-// tìm kiếm và bộ lọc
-public List<SanPhamChiTietDTO> searchSanPham(String tenSanPham, Integer danhMucId, Integer thuongHieuId, Integer
-        phongCachId, Integer chatLieuId, Integer kieuDangId, Integer kieuDaiQuanId,
-                                             Integer xuatXuId, Integer mauSacId, Integer sizeId, Double giaMin,
-                                             Double giaMax) {
-    List<SanPhamChiTiet> sanPhams = sanPhamChiTietRepository.searchSanPham(tenSanPham, danhMucId,
-            thuongHieuId, phongCachId, chatLieuId, kieuDangId, kieuDaiQuanId, xuatXuId, mauSacId,
-            sizeId, giaMin, giaMax);
-    return sanPhams.stream().map(sp -> new SanPhamChiTietDTO(
-            sp.getId(),
-            sp.getMa(),
-            sp.getSanPham().getId(),
-            sp.getDanhMuc().getId(),
-            sp.getThuongHieu().getId(),
-            sp.getPhongCach().getId(),
-            sp.getChatLieu().getId(),
-            sp.getMauSac().getId(),
-            sp.getSize().getId(),
-            sp.getKieuDang().getId(),
-            sp.getKieuDaiQuan().getId(),
-            sp.getXuatXu().getId(),
-            sp.getSoLuong(),
-            sp.getGia(),
-            sp.getTrangThai(),
-            sp.getMoTa()
-    )).collect(Collectors.toList());
-}
 
+
+
+
+
+    // add
+    // Cập nhật phương thức để thêm ảnh
+    public SanPhamChiTiet addSanPhamChiTiet(SanPhamChiTiet newSanPhamChiTiet) {
+        // Tạo mã sản phẩm (ma)
+        String newMa = generateProductCode();
+        newSanPhamChiTiet.setMa(newMa);
+
+        // Đặt trạng thái dựa trên số lượng
+        if (newSanPhamChiTiet.getSoLuong() == 0) {
+            newSanPhamChiTiet.getSanPham().setTrangThai("Hết hàng");
+        }
+        // Thiết lập thông tin ngày tạo và người tạo
+        newSanPhamChiTiet.setNgayTao(LocalDateTime.now());
+        newSanPhamChiTiet.setNguoiTao("Admin"); // Hoặc lấy thông tin người dùng hiện tại
+
+        // Lưu sản phẩm chi tiết vào DB
+        SanPhamChiTiet savedSanPhamChiTiet = sanPhamChiTietRepository.save(newSanPhamChiTiet);
+
+        return savedSanPhamChiTiet; // Trả về sản phẩm chi tiết đã được lưu
+    }
+
+    // Hàm tạo mã sản phẩm chi tiết
+    public String generateProductCode() {
+        Integer maxId = sanPhamChiTietRepository.getMaxId();
+        if (maxId == null || maxId < 0) {
+            maxId = 0;
+        }
+        return "SPCT" + (maxId + 1);  // Tạo mã sản phẩm chi tiết
+    }
+
+    // Hàm tạo mã ảnh
+    public String generateImageCode() {
+        Integer maxId = anhSanPhamRepository.getMaxId();
+        if (maxId == null || maxId < 0) {
+            maxId = 0;
+        }
+        return "IMG" + (maxId + 1);  // Tạo mã ảnh
+    }
+
+    // tìm kiếm
+    public List<SanPhamChiTiet> searchSanPhamChiTietByTen(String ten) {
+        return sanPhamChiTietRepository.searchByTenSanPham(ten);
+    }
+    // update số lượng và giá
+    // Cập nhật nhiều sản phẩm chi tiết
+    public List<SanPhamChiTiet> updateSanPhamChiTietBatch(List<UpdateSanphamChiTietDTO> updateDTOList) {
+        List<SanPhamChiTiet> updatedSanPhamChiTietList = new ArrayList<>();
+
+        for (UpdateSanphamChiTietDTO updateDTO : updateDTOList) {
+            // Tìm sản phẩm chi tiết dựa trên id
+            SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(updateDTO.getId()).orElse(null);
+
+            if (sanPhamChiTiet != null) {
+                // Cập nhật số lượng nếu có thay đổi
+                if (updateDTO.getSoLuong() != null) {
+                    sanPhamChiTiet.setSoLuong(updateDTO.getSoLuong());
+                }
+
+                // Cập nhật giá nếu có thay đổi
+                if (updateDTO.getGia() != null) {
+                    sanPhamChiTiet.setGia(updateDTO.getGia());
+                }
+
+                // Cập nhật ngày sửa
+                sanPhamChiTiet.setNgaySua(LocalDateTime.now()); // Cập nhật ngày sửa
+                sanPhamChiTiet.setNguoiSua("Tên Người Sửa"); // Thay thế "Tên Người Sửa" bằng người sửa thực tế (nếu có cơ chế xác thực)
+
+                // Lưu lại sản phẩm chi tiết đã cập nhật
+                SanPhamChiTiet updatedSanPhamChiTiet = sanPhamChiTietRepository.save(sanPhamChiTiet);
+                updatedSanPhamChiTietList.add(updatedSanPhamChiTiet);
+            }
+        }
+
+        return updatedSanPhamChiTietList;
+    }
 }

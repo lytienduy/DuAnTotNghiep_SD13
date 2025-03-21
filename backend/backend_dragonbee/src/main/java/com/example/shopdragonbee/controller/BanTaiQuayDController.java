@@ -172,4 +172,11 @@ public class BanTaiQuayDController {
                     .body("Có lỗi xảy ra khi thêm khách hàng hoặc tài khoản.");
         }
     }
+
+    // Endpoint để kiểm tra số lượng voucher còn lại
+    @GetMapping("/kiem-tra-voucher/{voucherCode}")
+    public PhieuGiamGiaDTO checkVoucherAvailability(@PathVariable String voucherCode) {
+        return phieuGiamGiaService.checkVoucherAvailability(voucherCode);
+    }
+
 }

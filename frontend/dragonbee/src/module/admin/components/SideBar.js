@@ -100,7 +100,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   minWidth: '40px',
                 }}
               >
-                <DashboardIcon />
+                <DashboardIcon sx={{marginLeft:'5px'}}/>
               </ListItemIcon></Tooltip>
             {isSidebarOpen && (
               <ListItemText
@@ -126,7 +126,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           >
             <Tooltip title="Bán tại quầy" placement="right" disableHoverListener={isSidebarOpen}>
               <ListItemIcon sx={{ color: isActive('/admin/banTaiQuay') ? '#fff' : 'inherit', minWidth: '40px', }}>
-                <StoreIcon />
+                <StoreIcon sx={{marginLeft:'5px'}}/>
               </ListItemIcon></Tooltip>
             {isSidebarOpen && <ListItemText primary="Tại Quầy" primaryTypographyProps={{ fontSize: '13.6px' }} />}
           </ListItemButton>
@@ -147,7 +147,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           >
             <Tooltip title="Hóa đơn" placement="right" disableHoverListener={isSidebarOpen}>
               <ListItemIcon sx={{ color: isActive('/admin/hoaDon') ? '#fff' : 'inherit', minWidth: '40px', }}>
-                <ReceiptIcon />
+                <ReceiptIcon sx={{marginLeft:'5px'}}/>
               </ListItemIcon></Tooltip>
             {isSidebarOpen && <ListItemText primary="Hóa Đơn" primaryTypographyProps={{ fontSize: '13.6px' }} />}
           </ListItemButton>
@@ -156,7 +156,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             < ListItemButton onClick={handleToggleProducts} sx={{ borderRadius: 2 }} component={Link}
             to="/admin/sanpham">
           <ListItemIcon sx={{ minWidth: '40px' }}>
-            <CategoryIcon />
+            <CategoryIcon sx={{marginLeft:'5px'}}/>
           </ListItemIcon>
           {isSidebarOpen && (
             <>
@@ -204,7 +204,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           }}>
           <Tooltip title="Khách Hàng" placement="right" disableHoverListener={isSidebarOpen}>
             <ListItemIcon sx={{ color: isActive('/admin/khachHang') ? '#fff' : 'inherit', minWidth: '40px', }}>
-              <PeopleIcon />
+              <PeopleIcon sx={{marginLeft:'5px'}}/>
             </ListItemIcon>
           </Tooltip>
           {isSidebarOpen && <ListItemText primary="Khách Hàng" primaryTypographyProps={{ fontSize: '13.6px' }} />}
@@ -225,7 +225,7 @@ const Sidebar = ({ isSidebarOpen }) => {
               color: isActive('/admin/nhanvien') ? '#fff' : 'inherit',
               minWidth: '40px',
             }}>
-              <PersonIcon />
+              <PersonIcon sx={{marginLeft:'5px'}}/>
             </ListItemIcon>
           </Tooltip>
           {isSidebarOpen && <ListItemText primary="Nhân Viên" primaryTypographyProps={{ fontSize: '13.6px' }} />}
@@ -252,7 +252,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                 minWidth: '40px',
               }}
             >
-              <DiscountIcon />
+              <DiscountIcon sx={{marginLeft:'5px'}}/>
             </ListItemIcon></Tooltip>
           {isSidebarOpen && (
             <ListItemText
@@ -265,7 +265,7 @@ const Sidebar = ({ isSidebarOpen }) => {
         <ListItemButton>
           <Tooltip title="Đăng xuất" placement="right" disableHoverListener={isSidebarOpen}>
             <ListItemIcon sx={{ minWidth: '40px', color: 'inherit' }}>
-              <LogoutIcon />
+              <LogoutIcon sx={{marginLeft:'5px'}}/>
             </ListItemIcon></Tooltip>
           {isSidebarOpen && <ListItemText primary="Đăng xuất" primaryTypographyProps={{ fontSize: '13.6px' }} />}
         </ListItemButton>
