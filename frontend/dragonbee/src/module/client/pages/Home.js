@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const banners = [
   "https://cdn.santino.com.vn/storage/upload/slide/2025/02/Cover%20fb_PC.webp",
@@ -18,6 +19,7 @@ const banners = [
 
 
 const Home = () => {
+  const navigate = useNavigate(); // Khai báo navigate
   const [currentBanner, setCurrentBanner] = useState(0);
   const [direction, setDirection] = useState(1); // Điều hướng trái/phải
   const [productDataBusiness, setProductDataBusiness] = useState([]);
@@ -289,7 +291,7 @@ const Home = () => {
                     Array.from({ length: Math.min(5, productDataBusiness.length) }).map((_, index) => {
                       const product = productDataBusiness[(startBusiness + index) % productDataBusiness?.length];
                       return (
-                        <Grid item key={product.id} xs={12} sm={4} md={2.4}>
+                        <Grid item key={product.id} xs={12} sm={4} md={2.4} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                           <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
                             <CardMedia
                               component="img"
@@ -473,7 +475,7 @@ const Home = () => {
                     Array.from({ length: Math.min(5, productDataGolf.length) }).map((_, index) => {
                       const product = productDataGolf[(startGolf + index) % productDataGolf?.length];
                       return (
-                        <Grid item key={product.id} xs={12} sm={4} md={2.4}>
+                        <Grid item key={product.id} xs={12} sm={4} md={2.4} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                           <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
                             <CardMedia
                               component="img"
@@ -654,7 +656,7 @@ const Home = () => {
                     Array.from({ length: Math.min(5, productDataCasual.length) }).map((_, index) => {
                       const product = productDataCasual[(startCasual + index) % productDataCasual?.length];
                       return (
-                        <Grid item key={product.id} xs={12} sm={4} md={2.4}>
+                        <Grid item key={product.id} xs={12} sm={4} md={2.4} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                           <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
                             <CardMedia
                               component="img"
@@ -818,7 +820,7 @@ const Home = () => {
           </Typography>
           <Grid container spacing={3} justifyContent="center">
             {productDataTopBanChay.map((product) => (
-              <Grid item xs={12} sm={6} md={4} key={product.id}>
+              <Grid item xs={12} sm={6} md={4} key={product.id} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                 <Card sx={{ position: 'relative', boxShadow: 3, borderRadius: 2 }}>
                   <CardMedia
                     component="img"

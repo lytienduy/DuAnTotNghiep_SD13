@@ -5,13 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="20fa4398-a540-4bcc-8ac6-98e36f4ff058" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/GioHangController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/GioHangService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/GioHangController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/GioHangController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/SanPhamChiTietClientController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/SanPhamChiTietClientController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/SPCTDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/SPCTDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/SanPhamChiTietClientService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/SanPhamChiTietClientService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ChiTietSanPham.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ChiTietSanPham.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/GioHangService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/GioHangService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,17 +55,6 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
-      <option name="arquillianRunConfiguration">
-        <value>
-          <option name="containerStateName" value="" />
-        </value>
-      </option>
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="ShopdragonbeeApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
       <module name="shopdragonbee" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.shopdragonbee.ShopdragonbeeApplication" />
@@ -113,7 +99,8 @@
       <workItem from="1742245671249" duration="23605000" />
       <workItem from="1742349979975" duration="4357000" />
       <workItem from="1742358319541" duration="36000" />
-      <workItem from="1742368262861" duration="12993000" />
+      <workItem from="1742368262861" duration="13760000" />
+      <workItem from="1742521651754" duration="3748000" />
     </task>
     <servers />
   </component>

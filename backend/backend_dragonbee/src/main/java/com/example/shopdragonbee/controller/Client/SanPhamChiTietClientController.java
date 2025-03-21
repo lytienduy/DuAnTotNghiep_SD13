@@ -19,7 +19,6 @@ public class SanPhamChiTietClientController {
     public SPCTDTO.SanPhamChiTietClient getListHienThiTrongSanPhamChiTiet(@PathVariable Integer idSanPham, @RequestBody List<SPCTDTO.SanPhamCart> danhSachSanPhamTrongGioHang) {
         return sanPhamChiTietService.getSanPhamChiTietClient(idSanPham,danhSachSanPhamTrongGioHang);
     }
-
 //    @GetMapping("/getListSanPhamChiTietTheoMau/{idSanPham}")
 //    public SPCTDTO.SanPhamChiTietClient getListHienThiTrongSanPhamChiTiet(@PathVariable Integer idSanPham,@RequestBody List<ProductDTO> products) {
 //        return sanPhamChiTietService.getListSizeDeUpdateKhiChonMau(idSanPham,products);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  AppBar, Toolbar, Typography, Button, Box, InputBase, IconButton,
+  AppBar, Toolbar, Typography, Button, Box, InputBase, IconButton, Badge
 } from "@mui/material";
 import { Search, ShoppingCart, Person } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -21,6 +21,8 @@ const Header = () => {
   const navigate = useNavigate();
   const [isSticky, setIsSticky] = useState(false);
   const location = useLocation();
+  const [soLuongTrongGioHang, setSoLuongTrongGioHang] = useState(0);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,6 +38,15 @@ const Header = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+  //Hàm lấy số lượng giỏ hàng
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      setSoLuongTrongGioHang(cart.length);
+    }, 1000); // 60 giây
+    return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
+  }, []);
+
   return (
     <Box >
       {/* Hotline & Hệ thống cửa hàng */}
@@ -127,7 +138,9 @@ const Header = () => {
 
             {/* Giỏ hàng & tài khoản */}
             <IconButton component="a" href="/gioHang">
-              <ShoppingCart />
+              <Badge badgeContent={soLuongTrongGioHang} color="error">
+                <ShoppingCart />
+              </Badge>
             </IconButton>
             <IconButton>
               <Person />
