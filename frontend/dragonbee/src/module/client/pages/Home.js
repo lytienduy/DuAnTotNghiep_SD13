@@ -368,7 +368,7 @@ const Home = () => {
                                           display: "block",
                                           width: "100%", // Khi chọn, màu nhỏ đi 20%
                                           height: "100%",
-                                          backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                          backgroundColor: item.mauSac.maMau, // Giữ màu nền
                                           borderRadius: "12px", // Bo góc nhỏ hơn một chút
                                           transition: "all 0.2s ease-in-out",
                                         },
@@ -553,7 +553,7 @@ const Home = () => {
                                           display: "block",
                                           width: "100%", // Khi chọn, màu nhỏ đi 20%
                                           height: "100%",
-                                          backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                          backgroundColor: item.mauSac.maMau, // Giữ màu nền
                                           borderRadius: "12px", // Bo góc nhỏ hơn một chút
                                           transition: "all 0.2s ease-in-out",
                                         },
@@ -736,7 +736,7 @@ const Home = () => {
                                           display: "block",
                                           width: "100%", // Khi chọn, màu nhỏ đi 20%
                                           height: "100%",
-                                          backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                          backgroundColor: item.mauSac.maMau, // Giữ màu nền
                                           borderRadius: "12px", // Bo góc nhỏ hơn một chút
                                           transition: "all 0.2s ease-in-out",
                                         },
@@ -888,7 +888,7 @@ const Home = () => {
                                 display: "block",
                                 width: "100%", // Khi chọn, màu nhỏ đi 20%
                                 height: "100%",
-                                backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                backgroundColor: item.mauSac.maMau, // Giữ màu nền
                                 borderRadius: "12px", // Bo góc nhỏ hơn một chút
                                 transition: "all 0.2s ease-in-out",
                               },

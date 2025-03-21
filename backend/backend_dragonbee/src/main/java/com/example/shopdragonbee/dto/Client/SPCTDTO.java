@@ -60,7 +60,7 @@ public class SPCTDTO {
         private String anhSPCT;
         private String tenSPCT;
         private String tenSize;
-        private Double gia;
+        private Float gia;
         private Integer quantity;
     }
 }

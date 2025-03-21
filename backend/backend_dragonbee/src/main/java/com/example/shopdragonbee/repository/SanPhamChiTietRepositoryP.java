@@ -1,6 +1,7 @@
 package com.example.shopdragonbee.repository;
 
 import com.example.shopdragonbee.entity.*;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -48,7 +49,7 @@ public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet,
             "AND hdct.sanPhamChiTiet.trangThai = :trangThai " +
             "GROUP BY hdct.sanPhamChiTiet.sanPham " +
             "ORDER BY SUM(hdct.soLuong) DESC")
-    List<SanPham> findTopSanPhamChiTietBanChay(@Param("trangThai") String trangThai,@Param("startDate") LocalDateTime startDate,
+    Page<SanPham> findTopSanPhamChiTietBanChay(@Param("trangThai") String trangThai, @Param("startDate") LocalDateTime startDate,
                                                @Param("endDate") LocalDateTime endDate, Pageable pageable);
 
 }

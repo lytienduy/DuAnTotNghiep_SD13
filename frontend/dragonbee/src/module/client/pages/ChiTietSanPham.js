@@ -128,7 +128,6 @@ const ChiTietSanPham = () => {
                     },
                 });//Gọi api bằng axiosGet
             setProduct(response.data);
-            showSuccessToast("Thành công")
         } catch (error) {
             showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
         }
@@ -344,7 +343,7 @@ const ChiTietSanPham = () => {
                                             display: "block",
                                             width: selectedColorReuse?.mauSac?.id === item.mauSac.id ? "80%" : "100%", // Khi chọn, màu nhỏ đi 20%
                                             height: selectedColorReuse?.mauSac?.id === item.mauSac.id ? "80%" : "100%",
-                                            backgroundColor: item.mauSac.ma, // Giữ màu nền
+                                            backgroundColor: item.mauSac.maMau, // Giữ màu nền
                                             borderRadius: "12px", // Bo góc nhỏ hơn một chút
                                             transition: "all 0.2s ease-in-out",
                                         },
