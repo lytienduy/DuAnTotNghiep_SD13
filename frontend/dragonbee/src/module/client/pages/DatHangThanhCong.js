@@ -31,20 +31,52 @@ const DatHangThanhCong = () => {
                         flexDirection="column"
                         alignItems="center"
                         justifyContent="center"
-                        sx={{ textAlign: 'center', padding:1 }}
+                        sx={{ textAlign: 'center', padding: 1 }}
                     >
                         {/* Icon */}
-                        <CheckCircleIcon color="success" fontSize="large" sx={{ fontSize: 80, marginBottom: 2 }} />
+                        <CheckCircleIcon fontSize="large" sx={{ fontSize: 100, marginBottom: 2, color: '#59d25f' }} />
 
                         {/* Main Title */}
                         <Typography variant="h4" fontWeight="bold">
-                            Đơn hàng đã nhận
+                            Đặt hàng thành công!
                         </Typography>
 
-                        {/* Thank You Message */}
-                        <Typography variant="body1" color="text.secondary" sx={{ marginTop: 2 }}>
-                            Cảm ơn bạn. Đơn hàng của bạn đã được nhận.
-                        </Typography>
+                        <Divider sx={{ marginTop: 3, marginBottom: 2 }} />
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                    Thông tin giao hàng
+                                </Typography>
+                                <Typography variant="body1">
+                                    Thi Huong Giang Nguyen
+                                </Typography>
+                                <Typography variant="body1">
+                                    09618221111
+                                </Typography>
+                                <Typography variant="body1">
+                                    khuchThiHuong@gmail.com
+                                </Typography>
+                                <Typography variant="body1">
+                                    40 To Vinh Dien, Quận Ba Đình, VN
+                                </Typography>
+                                <Typography variant="body1" sx={{ fontWeight: 'bold', marginTop:3 }}>
+                                    Phương thức thanh toán
+                                </Typography>
+                                <Typography variant="body1">
+                                    Thanh toán khi giao hàng (COD)
+                                </Typography>
+                            </Grid>
+{/* 
+                            <Grid item xs={6}>
+                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                    Phương thức thanh toán
+                                </Typography>
+                                <Typography variant="body2">
+                                    Thanh toán khi giao hàng (COD)
+                                </Typography>
+                            </Grid> */}
+                        </Grid>
+
                     </Box>
 
                     <Divider sx={{ marginTop: 3, marginBottom: 2 }} />

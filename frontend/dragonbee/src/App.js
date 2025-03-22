@@ -44,6 +44,7 @@ import ChiTietSanPham from './module/client/pages/ChiTietSanPham';
 import GioHang from './module/client/pages/GioHang';
 import ThanhToan from './module/client/pages/ThanhToan';
 import DatHangThanhCong from './module/client/pages/DatHangThanhCong';
+import DonMua from './module/client/pages/DonMua';
 // Thêm các trang Client khác ở đây...
 
 const theme = createTheme({
@@ -151,6 +152,7 @@ const MainLayout = () => {
             <Route path="/gioHang" element={<GioHang />} />
             <Route path="/thanhToan" element={<ThanhToan />} />
             <Route path="/datHangThanhCong" element={<DatHangThanhCong />} />
+            <Route path="/donMua" element={<DonMua />} />
             {/* Thêm các route Client khác... */}
           </Routes>
         </Box>
