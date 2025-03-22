@@ -179,18 +179,29 @@ const HoaDon = () => {
   };
 
   // List trạng thái hóa đơn
-  const tabLabels = [
-    "TẤT CẢ",
-    "CHỜ THÊM SẢN PHẨM",
-    "CHỜ XÁC NHẬN",
-    "ĐÃ XÁC NHẬN",
-    "CHỜ GIAO HÀNG",
-    "ĐANG VẬN CHUYỂN",
-    "ĐÃ GIAO HÀNG", "CHỜ THANH TOÁN",
-    "ĐÃ THANH TOÁN",
-    "HOÀN THÀNH",
-    "ĐÃ HỦY",
-  ];
+  const tabLabels = typeFilter === "Online" ?
+    [
+      "TẤT CẢ",
+      "CHỜ XÁC NHẬN",
+      "ĐÃ XÁC NHẬN",
+      "CHỜ GIAO HÀNG",
+      "ĐANG VẬN CHUYỂN",
+      "ĐÃ GIAO HÀNG", "CHỜ THANH TOÁN",
+      "ĐÃ THANH TOÁN",
+      "HOÀN THÀNH",
+      "ĐÃ HỦY"
+    ] : [
+      "TẤT CẢ",
+      "CHỜ THÊM SẢN PHẨM",
+      "CHỜ XÁC NHẬN",
+      "ĐÃ XÁC NHẬN",
+      "CHỜ GIAO HÀNG",
+      "ĐANG VẬN CHUYỂN",
+      "ĐÃ GIAO HÀNG", "CHỜ THANH TOÁN",
+      "ĐÃ THANH TOÁN",
+      "HOÀN THÀNH",
+      "ĐÃ HỦY"
+    ];
 
 
   //Dùng để chuyển trang

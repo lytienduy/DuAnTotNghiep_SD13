@@ -45,14 +45,25 @@ public class HoaDonService {
     public List<Integer> laySoLuongHoaDonTrangThaiVaHoaDon(String timKiem, String tuNgay, String denNgay, String loaiDon, String trangThai) {
         // Các trạng thái cần đếm
         String[] trangThais;
-        if ("all".equalsIgnoreCase(loaiDon) || "Online".equalsIgnoreCase(loaiDon)) {
+//        if ("all".equalsIgnoreCase(loaiDon) || "Online".equalsIgnoreCase(loaiDon)) {
+//            trangThais = new String[]{
+//                    "Chờ thêm sản phẩm","Chờ xác nhận", "Đã xác nhận", "Chờ giao hàng", "Đang vận chuyển",
+//                    "Đã giao hàng", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành", "Đã hủy"
+//            };
+//        } else {
+//            trangThais = new String[]{
+//                    "Chờ thanh toán", "Đã thanh toán", "Hoàn thành", "Đã hủy"
+//            };
+//        }
+        if ("Online".equalsIgnoreCase(loaiDon)) {
             trangThais = new String[]{
                     "Chờ xác nhận", "Đã xác nhận", "Chờ giao hàng", "Đang vận chuyển",
                     "Đã giao hàng", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành", "Đã hủy"
             };
         } else {
             trangThais = new String[]{
-                    "Chờ thanh toán", "Đã thanh toán", "Hoàn thành", "Đã hủy"
+                    "Chờ thêm sản phẩm", "Chờ xác nhận", "Đã xác nhận", "Chờ giao hàng", "Đang vận chuyển",
+                    "Đã giao hàng", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành", "Đã hủy"
             };
         }
 

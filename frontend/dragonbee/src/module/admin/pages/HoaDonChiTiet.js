@@ -1000,7 +1000,7 @@ const HoaDonChiTiet = () => {
           </Dialog>
         </Stack>
 
-        <Button disabled={isCanceled || isComplete} variant="outlined" color="error" startIcon={<Delete />} sx={{ borderRadius: 3, px: 3 }} onClick={() => handleOpenLyDo()}>
+        <Button disabled={isCanceled || isComplete || (hoaDon.trangThai != "Chờ xác nhận" && hoaDon.trangThai != "Đã xác nhận" && hoaDon.trangThai != "Chờ giao hàng")} variant="outlined" color="error" startIcon={<Delete />} sx={{ borderRadius: 3, px: 3 }} onClick={() => handleOpenLyDo()}>
           Hủy hóa đơn
         </Button>
         <Dialog open={openLyDo} onClose={() => setOpenLyDo(false)}>

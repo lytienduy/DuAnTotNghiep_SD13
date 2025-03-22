@@ -145,7 +145,7 @@ const BanTaiQuay = () => {
   const [scannedData, setScannedData] = useState(null);
   const [qrScanner, setQrScanner] = useState(null);
   const [nhuCauInHoaDon, setNhuCauInHoaDon] = useState(false);
-
+  const tongTienPhaiTra = (selectedOrder?.tongTienSanPham ?? 0) + Number(discount || 0) - Number(discountAmount || 0);
 
 
   // Hàm mở và đóng modal voucher
@@ -305,7 +305,7 @@ const BanTaiQuay = () => {
       return false;
     }
   };
-  
+
   useEffect(() => {
     const intervalId = setInterval(async () => {
       // Kiểm tra nếu có voucher đã chọn, đơn hàng chưa thanh toán và đơn hàng đã được chọn (selectedOrder)
@@ -313,14 +313,14 @@ const BanTaiQuay = () => {
         const isAvailable = await checkVoucherAvailability(selectedVoucherCode);
         if (!isAvailable) {
           alert("Phiếu giảm giá đã hết, vui lòng chọn phiếu khác.");
-          
+
           // Reset lại voucher đã chọn
-          setSelectedVoucherCode(''); 
+          setSelectedVoucherCode('');
           setDiscountAmount(0); // Đặt giảm giá về 0
         }
       }
     }, 1000); // Kiểm tra mỗi 3 giây
-  
+
     // Cleanup interval khi component unmount hoặc khi mã voucher thay đổi
     return () => clearInterval(intervalId);
   }, [selectedVoucherCode, selectedOrder?.isPaid, selectedOrder?.id]);  // Thêm selectedOrder vào dependency để theo dõi sự thay đổi
@@ -584,7 +584,7 @@ const BanTaiQuay = () => {
     setNewWard(event.target.value);
   };
 
-  
+
   //Tỉnh thành huyện xã của thêm khách hàng
   // Cập nhật giá trị khi chọn thành phố
   const handleCityChangeKH = (event) => {
@@ -619,115 +619,115 @@ const BanTaiQuay = () => {
   const handleSwitchChange = (event) => {
     setShowLeftPanel(event.target.checked);
   };
-// Thêm mới địa chỉ cho khách hàng được chọn
-const handleSaveAddress = () => {
-  const detailedAddress = document.getElementById('detailed-address').value.trim();
-  const description = document.getElementById('description').value.trim();
-  const [soNha, duong] = detailedAddress.split(',');
+  // Thêm mới địa chỉ cho khách hàng được chọn
+  const handleSaveAddress = () => {
+    const detailedAddress = document.getElementById('detailed-address').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const [soNha, duong] = detailedAddress.split(',');
 
-  const newAddress = {
-    khachHang: { id: selectedCustomerId },
-    soNha: soNha.trim(),
-    duong: duong.trim(),
-    xa: newWard,
-    huyen: newDistrict,
-    thanhPho: newCity,
-    moTa: description || '',
-    trangThai: 'Hoạt động',
-    macDinh: false,
+    const newAddress = {
+      khachHang: { id: selectedCustomerId },
+      soNha: soNha.trim(),
+      duong: duong.trim(),
+      xa: newWard,
+      huyen: newDistrict,
+      thanhPho: newCity,
+      moTa: description || '',
+      trangThai: 'Hoạt động',
+      macDinh: false,
+    };
+
+    // Gọi API để thêm địa chỉ mới
+    axios.post('http://localhost:8080/dragonbee/them-dia-chi', newAddress)
+      .then(response => {
+        // Sau khi thêm địa chỉ, gọi lại API để lấy danh sách địa chỉ mới nhất từ server
+        axios.get(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`)
+          .then(response => {
+            // Cập nhật lại danh sách địa chỉ từ response
+            setAddresses(response.data);
+
+            // Lấy địa chỉ mới nhất (ở cuối danh sách) để tự động chọn
+            const lastAddress = response.data[response.data.length - 1];
+            handleSelectAddress(lastAddress);  // Chọn địa chỉ cuối cùng trong danh sách
+
+            // Đóng modal thêm địa chỉ sau khi lưu thành công
+            setOpenChonDC(false);  // Đóng modal thêm địa chỉ
+
+            alert('Thêm địa chỉ thành công!');
+            setNewCity('');  // Reset thành phố
+            setNewDistrict('');  // Reset quận/huyện
+            setNewWard('');  // Reset xã/phường
+          })
+          .catch(error => {
+            console.error('Lỗi khi lấy danh sách địa chỉ:', error);
+            alert('Có lỗi khi lấy danh sách địa chỉ.');
+          });
+      })
+      .catch(error => {
+        console.error('Có lỗi khi thêm địa chỉ:', error);
+        alert('Có lỗi khi thêm địa chỉ.');
+      });
   };
 
-  // Gọi API để thêm địa chỉ mới
-  axios.post('http://localhost:8080/dragonbee/them-dia-chi', newAddress)
-    .then(response => {
-      // Sau khi thêm địa chỉ, gọi lại API để lấy danh sách địa chỉ mới nhất từ server
-      axios.get(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`)
-        .then(response => {
-          // Cập nhật lại danh sách địa chỉ từ response
-          setAddresses(response.data);
+  // Hàm submit khi thêm khách hàng mới
+  const handleSubmitAddNewKH = async (e) => {
+    e.preventDefault();
 
-          // Lấy địa chỉ mới nhất (ở cuối danh sách) để tự động chọn
-          const lastAddress = response.data[response.data.length - 1];
-          handleSelectAddress(lastAddress);  // Chọn địa chỉ cuối cùng trong danh sách
+    // Tách "Số nhà, Đường" thành hai trường 'soNha' và 'duong' ngăn cách bởi dấu phẩy
+    const [soNha, duong] = address.split(',');
 
-          // Đóng modal thêm địa chỉ sau khi lưu thành công
-          setOpenChonDC(false);  // Đóng modal thêm địa chỉ
+    // Tạo đối tượng dữ liệu để gửi lên API
+    const customerData = {
+      tenKhachHang: name,
+      ngaySinh: dob,
+      gioiTinh: gender,
+      sdt: phone,
+      email: email,
+      diaChi: {
+        soNha: soNha.trim(),
+        duong: duong ? duong.trim() : '',
+        xa: wardKH,
+        huyen: districtKH,
+        thanhPho: cityKH,
+        moTa: ''
+      }
+    };
 
-          alert('Thêm địa chỉ thành công!');
-          setNewCity('');  // Reset thành phố
-          setNewDistrict('');  // Reset quận/huyện
-          setNewWard('');  // Reset xã/phường
-        })
-        .catch(error => {
-          console.error('Lỗi khi lấy danh sách địa chỉ:', error);
-          alert('Có lỗi khi lấy danh sách địa chỉ.');
-        });
-    })
-    .catch(error => {
-      console.error('Có lỗi khi thêm địa chỉ:', error);
-      alert('Có lỗi khi thêm địa chỉ.');
-    });
-};
+    try {
+      // Gửi dữ liệu đến API để thêm khách hàng mới
+      const response = await axios.post('http://localhost:8080/dragonbee/them-khach-hang', customerData);
+      alert('Thêm khách hàng thành công');
+      fetchDefaultCustomers();
+      // Sau khi thêm thành công, gọi hàm để lấy thông tin khách hàng mới nhất
+      fetchNewestCustomer();
 
-// Hàm submit khi thêm khách hàng mới
-const handleSubmitAddNewKH = async (e) => {
-  e.preventDefault();
-
-  // Tách "Số nhà, Đường" thành hai trường 'soNha' và 'duong' ngăn cách bởi dấu phẩy
-  const [soNha, duong] = address.split(',');
-
-  // Tạo đối tượng dữ liệu để gửi lên API
-  const customerData = {
-    tenKhachHang: name,
-    ngaySinh: dob,
-    gioiTinh: gender,
-    sdt: phone,
-    email: email,
-    diaChi: {
-      soNha: soNha.trim(),
-      duong: duong ? duong.trim() : '',
-      xa: wardKH,
-      huyen: districtKH,
-      thanhPho: cityKH,
-      moTa: ''
+      // Đóng pop-up hoặc modal
+      setOpenKH(false);
+      setOpen(false);
+    } catch (error) {
+      console.error('Có lỗi xảy ra khi thêm khách hàng:', error);
+      alert('Có lỗi xảy ra khi thêm khách hàng!');
     }
   };
 
-  try {
-    // Gửi dữ liệu đến API để thêm khách hàng mới
-    const response = await axios.post('http://localhost:8080/dragonbee/them-khach-hang', customerData);
-    alert('Thêm khách hàng thành công');
-    fetchDefaultCustomers();
-    // Sau khi thêm thành công, gọi hàm để lấy thông tin khách hàng mới nhất
-    fetchNewestCustomer();
+  // Hàm tìm kiếm khách hàng mới nhất
+  const fetchNewestCustomer = async () => {
+    try {
+      // Lấy thông tin khách hàng mới nhất từ API
+      const response = await axios.get('http://localhost:8080/dragonbee/tim-kiem-khach-hang?keyword=');
 
-    // Đóng pop-up hoặc modal
-    setOpenKH(false);
-    setOpen(false);
-  } catch (error) {
-    console.error('Có lỗi xảy ra khi thêm khách hàng:', error);
-    alert('Có lỗi xảy ra khi thêm khách hàng!');
-  }
-};
+      // Lấy khách hàng mới nhất từ kết quả
+      const newestCustomer = response.data[response.data.length - 1];
 
-// Hàm tìm kiếm khách hàng mới nhất
-const fetchNewestCustomer = async () => {
-try {
-  // Lấy thông tin khách hàng mới nhất từ API
-  const response = await axios.get('http://localhost:8080/dragonbee/tim-kiem-khach-hang?keyword=');
-  
-  // Lấy khách hàng mới nhất từ kết quả
-  const newestCustomer = response.data[response.data.length - 1];
+      // Tự động chọn khách hàng mới nhất
+      handleSelectCustomer(newestCustomer);
 
-  // Tự động chọn khách hàng mới nhất
-  handleSelectCustomer(newestCustomer);
-
-  // Đảm bảo Popper vẫn hiển thị khách hàng mới nhất
-  setOpenKH(true);
-} catch (error) {
-  console.error('Lỗi khi gọi API tìm kiếm khách hàng:', error);
-}
-};
+      // Đảm bảo Popper vẫn hiển thị khách hàng mới nhất
+      setOpenKH(true);
+    } catch (error) {
+      console.error('Lỗi khi gọi API tìm kiếm khách hàng:', error);
+    }
+  };
 
 
 
@@ -1312,7 +1312,7 @@ try {
         .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
         .join(" "); // Ghép chuỗi với dấu cách
       const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/xacNhanDatHang`, {
-        idHoaDon: selectedOrder.id, idKhachHang: selectedCustomerId, pgg: selectedVoucherCode, giaoHang: showLeftPanel, tenNguoiNhan: recipientName, sdtNguoiNhan: recipientPhone, diaChiNhanHang: addressParts, tongTienPhaiTra: selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount), phiShip: discount
+        idHoaDon: selectedOrder.id, idKhachHang: selectedCustomerId, pgg: selectedVoucherCode, giaoHang: showLeftPanel, tenNguoiNhan: recipientName, sdtNguoiNhan: recipientPhone, diaChiNhanHang: addressParts, tongTienPhaiTra: tongTienPhaiTra, phiShip: discount
       })
       if (response.data !== null) {
         showSuccessToast("Đặt hàng thành công");
@@ -1355,7 +1355,7 @@ try {
     // Tìm khách hàng dựa vào ID đã chọn
     const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
     if (!selectedCustomer) return; // Nếu không tìm thấy khách hàng thì thoát
-  
+
     setRecipientName(selectedCustomer.tenKhachHang);
     setRecipientPhone(selectedCustomer.sdt);
     setCity(address.thanhPho);  // Cập nhật thành phố
@@ -1363,7 +1363,7 @@ try {
     setWard(address.xa);  // Cập nhật xã/phường
     setSpecificAddress(`${address.soNha}, ${address.duong}`);  // Cập nhật địa chỉ cụ thể
     setDescription(address.moTa || "");  // Cập nhật mô tả
-  
+
     // Cập nhật lại danh sách quận/huyện và xã/phường dựa trên thành phố và huyện
     const city = cities.find(city => city.Name === address.thanhPho);
     if (city) {
@@ -1378,7 +1378,7 @@ try {
       setDistricts([]);  // Nếu không tìm thấy thành phố, reset danh sách quận/huyện
       setWards([]);  // Reset xã/phường
     }
-  
+
     setOpenDC(false);  // Đóng modal sau khi chọn
   };
 
@@ -1785,7 +1785,7 @@ try {
                     <Box>
                       <Typography component="span" variant="body1" sx={{ mr: 2 }}>Tổng tiền:</Typography>
                       <Typography component="span" fontSize={20} sx={{ fontWeight: 'bold', color: 'red', marginRight: 3 }}>
-                        {selectedOrder?.tongTienSanPham?.toLocaleString()} VNĐ
+                        {tongTienPhaiTra?.toLocaleString()} VNĐ
                       </Typography>
                     </Box>
                   </Box>
@@ -2128,7 +2128,7 @@ try {
                       <Typography variant="body1" sx={{ marginTop: '16px' }} style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
                         Số tiền thanh toán:
                         <span style={{ color: 'red' }}>
-                          {((selectedOrder?.tongTienSanPham ?? 0) + Number(discount || 0) - Number(discountAmount || 0)).toLocaleString()} VNĐ
+                          {tongTienPhaiTra?.toLocaleString()} VNĐ
                         </span>
                       </Typography>
                       <Typography
@@ -2168,16 +2168,16 @@ try {
                       </Typography>
                       <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
                         Tiền thiếu: <span style={{ color: 'red' }}>
-                          {tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)) < 0
-                            ? Math.abs(tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0))).toLocaleString()
+                          {tongTienKhachDaThanhToan - tongTienPhaiTra < 0
+                            ? Math.abs(tongTienKhachDaThanhToan - tongTienPhaiTra).toLocaleString()
                             : "0"}
                           <span style={{ color: 'red' }}> VNĐ</span>
                         </span>
                       </Typography>
                       <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
                         Tiền thừa trả khách: <span style={{ color: 'red' }}>
-                          {tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)) > 0
-                            ? (tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0))).toLocaleString()
+                          {tongTienKhachDaThanhToan - tongTienPhaiTra > 0
+                            ? (tongTienKhachDaThanhToan - tongTienPhaiTra).toLocaleString()
                             : "0"}
                           <span style={{ color: 'red' }}> VNĐ</span>
                         </span>
@@ -2197,7 +2197,7 @@ try {
                       <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }}
                         disabled={
                           selectedOrder.listDanhSachSanPham?.length === 0 ||
-                          (!showLeftPanel && tongTienKhachDaThanhToan < (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)))
+                          (!showLeftPanel && tongTienKhachDaThanhToan < tongTienPhaiTra)
                         }
                         onClick={() => { setOpenConfirmXacNhanDatHang(true) }}
                       >
@@ -2250,7 +2250,7 @@ try {
           {/* Tổng tiền hàng */}
           <Grid container justifyContent="space-between" sx={{ mb: 2 }}>
             <Typography variant="h6">Tổng tiền hàng</Typography>
-            <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{(selectedOrder?.tongTienSanPham + + Number(discount || 0)).toLocaleString()} VNĐ</Typography>
+            <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{tongTienPhaiTra?.toLocaleString()} VNĐ</Typography>
           </Grid>
 
 
