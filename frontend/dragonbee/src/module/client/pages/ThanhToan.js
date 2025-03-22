@@ -33,6 +33,7 @@ const ThanhToan = () => {
     const [ghiChu, setGhiChu] = useState('');
     const [tenNguoiNhan, setTenNguoiNhan] = useState('');
     const [sdtNguoiNhan, setSdtNguoiNhan] = useState('');
+    const [emailNguoiNhan, setEmailNguoiNhan] = useState('');
 
 
     //khai báo phiếu giảm giá
@@ -128,7 +129,7 @@ const ThanhToan = () => {
                 const updatedCart = cart.filter((_, index) => !selectedProducts.includes(index));
                 localStorage.setItem("cart", JSON.stringify(updatedCart));
                 showSuccessToast("Đặt hàng thành công. Cảm ơn quý khách");
-                navigate('/home', { state: { selectedProducts } });             
+                navigate('/datHangThanhCong', { state: { selectedProducts } });             
             }
             else {
                 showErrorToast(response.data);
@@ -356,11 +357,11 @@ const ThanhToan = () => {
     }, [selectedVoucherCode]); // Lắng nghe sự thay đổi của mã voucher đã chọn  
 
     return (
-        <Container sx={{ marginBottom: -8 }}>
+        <Container sx={{ marginBottom: 0 }}>
             <Box sx={{ display: 'flex', height: '100vh' }}>
                 <Grid container sx={{ flex: 1 }}>
                     {/* Left side (60%) - Customer information */}
-                    <Grid item xs={7} sx={{ padding: 2, paddingRight: '60px' }}>
+                    <Grid item xs={7} sx={{ padding: 2, paddingRight: '60px'}}>
                         <Typography variant="h4" sx={{ fontWeight: 'bold', marginBottom: '16px' }}>
                             THÔNG TIN
                         </Typography>
@@ -405,6 +406,13 @@ const ThanhToan = () => {
                             <Grid item xs={6}>
                                 <TextField fullWidth label="Số điện thoại" margin="normal" size="small" value={sdtNguoiNhan}
                                     onChange={(e) => setSdtNguoiNhan(e.target.value)} />
+                            </Grid>
+                        </Grid>
+
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Email" margin="normal" size="small" value={emailNguoiNhan}
+                                    onChange={(e) => setEmailNguoiNhan(e.target.value)} />
                             </Grid>
                         </Grid>
 
