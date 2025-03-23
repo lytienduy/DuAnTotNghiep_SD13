@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  AppBar, Toolbar, Typography, Button, Box, InputBase, IconButton, Badge
+  AppBar, Toolbar, Typography, Button, Box, InputBase, IconButton, Badge, MenuItem, Menu
 } from "@mui/material";
 import { Search, ShoppingCart, Person } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -22,7 +22,22 @@ const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
   const location = useLocation();
   const [soLuongTrongGioHang, setSoLuongTrongGioHang] = useState(0);
+  const [anchorEl, setAnchorEl] = useState(null);
 
+  const goToDonMua = () => {
+    navigate('/donMua');
+    handleClose(); // Close the menu after navigation
+  };
+
+  // Open the menu when clicking the icon
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // Close the menu
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -142,9 +157,37 @@ const Header = () => {
                 <ShoppingCart />
               </Badge>
             </IconButton>
-            <IconButton>
-              <Person />
-            </IconButton>
+            <div>
+              {/* Person Icon */}
+              <IconButton onClick={handleClick}>
+                <Person />
+              </IconButton>
+
+              {/* Menu with 3 items */}
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+                MenuListProps={{
+                  onMouseLeave: handleClose, // Close menu when mouse leaves
+                }}
+                PaperProps={{
+                  sx: {
+                    width: '200px', // Adjust width as needed
+                  },
+                }}
+              >
+                <MenuItem onClick={handleClose}>
+                  <Typography color="textSecondary">Tài khoản của tôi</Typography>
+                </MenuItem>
+                <MenuItem onClick={goToDonMua}>
+                  <Typography color="textSecondary">Đơn mua</Typography>
+                </MenuItem>
+                <MenuItem onClick={handleClose}>
+                  <Typography color="textSecondary">Đăng xuất</Typography>
+                </MenuItem>
+              </Menu>
+            </div>
           </Box>
         </Toolbar>
       </AppBar>
