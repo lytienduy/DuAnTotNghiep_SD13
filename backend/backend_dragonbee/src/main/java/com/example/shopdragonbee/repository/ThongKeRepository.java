@@ -29,51 +29,63 @@ public class ThongKeRepository {
     // Xây dựng câu truy vấn doanh thu theo thời gian
     private String buildRevenueQuery(String period) {
         String dateCondition = getDateCondition(period);
-        return "SELECT COALESCE(SUM(tong_tien), 0) FROM hoa_don WHERE "
-                + dateCondition + " AND trang_thai = 'Hoàn thành'";
+        return "SELECT COALESCE(SUM(hd.tong_tien), 0) " +
+                "FROM hoa_don hd " +
+                "WHERE hd.trang_thai = 'Hoàn thành' AND " + dateCondition;
     }
+
 
 
     // Xây dựng câu truy vấn số lượng sản phẩm bán được
     private String buildProductsSoldQuery(String period) {
         String dateCondition = getDateCondition(period);
-        return "SELECT COALESCE(SUM(so_luong), 0) FROM hoa_don_chi_tiet WHERE " + dateCondition;
+        String query = "SELECT COALESCE(SUM(hdct.so_luong), 0) AS tong_san_pham_ban " +
+                "FROM hoa_don_chi_tiet hdct " +
+                "JOIN hoa_don hd ON hdct.id_hoa_don = hd.id " +
+                "WHERE hd.trang_thai = 'Hoàn thành' AND " + dateCondition;
+
+        System.out.println("Generated Query: " + query); // Debug SQL
+        return query;
     }
-
-
-
 
     // Xây dựng câu truy vấn số đơn hàng hoàn thành
     private String buildCompletedOrdersQuery(String period) {
         String dateCondition = getDateCondition(period);
-        return "SELECT COUNT(*) FROM hoa_don WHERE trang_thai = 'Hoàn thành' AND " + dateCondition;
+        return "SELECT COUNT(*) " +
+                "FROM hoa_don hd " +
+                "WHERE hd.trang_thai = 'Hoàn thành' AND " + dateCondition;
     }
+
 
     // Xây dựng câu truy vấn số đơn hàng đã hủy
     private String buildCancelledOrdersQuery(String period) {
         String dateCondition = getDateCondition(period);
-        return "SELECT COUNT(*) FROM hoa_don WHERE trang_thai = N'Đã hủy' AND " + dateCondition;
+        return "SELECT COUNT(*) " +
+                "FROM hoa_don hd " +
+                "WHERE hd.trang_thai = N'Đã hủy' AND " + dateCondition;
     }
+
 
 
     // Xây dựng điều kiện theo thời gian
     private String getDateCondition(String period) {
         switch (period) {
             case "TODAY":
-                return "ngay_tao >= CAST(GETDATE() AS DATE) AND ngay_tao < DATEADD(DAY, 1, CAST(GETDATE() AS DATE))";
+                return "hd.ngay_tao >= CAST(GETDATE() AS DATE) AND hd.ngay_tao < DATEADD(DAY, 1, CAST(GETDATE() AS DATE))";
             case "WEEK":
-                return "ngay_tao >= DATEADD(DAY, - (DATEPART(WEEKDAY, GETDATE()) + @@DATEFIRST - 2) % 7, CAST(GETDATE() AS DATE)) " +
-                        "AND ngay_tao < DATEADD(DAY, 7 - (DATEPART(WEEKDAY, GETDATE()) + @@DATEFIRST - 2) % 7, CAST(GETDATE() AS DATE))";
+                return "hd.ngay_tao >= DATEADD(DAY, - (DATEPART(WEEKDAY, GETDATE()) + @@DATEFIRST - 2) % 7, CAST(GETDATE() AS DATE)) " +
+                        "AND hd.ngay_tao < DATEADD(DAY, 7 - (DATEPART(WEEKDAY, GETDATE()) + @@DATEFIRST - 2) % 7, CAST(GETDATE() AS DATE))";
             case "MONTH":
-                return "ngay_tao >= DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1) " +
-                        "AND ngay_tao < DATEADD(MONTH, 1, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))";
+                return "hd.ngay_tao >= DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1) " +
+                        "AND hd.ngay_tao < DATEADD(MONTH, 1, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))";
             case "YEAR":
-                return "ngay_tao >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1) " +
-                        "AND ngay_tao < DATEADD(YEAR, 1, DATEFROMPARTS(YEAR(GETDATE()), 1, 1))";
+                return "hd.ngay_tao >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1) " +
+                        "AND hd.ngay_tao < DATEADD(YEAR, 1, DATEFROMPARTS(YEAR(GETDATE()), 1, 1))";
             default:
                 throw new IllegalArgumentException("Invalid period: " + period);
         }
     }
+
 
 
     public Object[] findCustomRevenue(String startDate, String endDate) {

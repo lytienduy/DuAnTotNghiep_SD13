@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from "react";
 import {
-  AppBar, Toolbar, Typography, Button, Box, InputBase, IconButton,
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  InputBase,
+  IconButton,
 } from "@mui/material";
 import { Search, ShoppingCart, Person } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
-import { styled } from '@mui/system';
+import { styled } from "@mui/system";
+
 
 const CustomTypography = styled(Typography)({
   fontFamily: '"Dancing Script", cursive', // Thêm font vào
-  fontSize: '4rem', // Điều chỉnh kích thước chữ
+  fontSize: "4rem", // Điều chỉnh kích thước chữ
   fontWeight: 700, // Chỉnh độ đậm chữ
-  letterSpacing: '0.05em', // Điều chỉnh độ rộng của các chữ
-  color: '#1976D2', // Chọn màu giống màu trong hình
-  textTransform: 'none', // Không biến đổi thành chữ hoa toàn bộ
+  letterSpacing: "0.05em", // Điều chỉnh độ rộng của các chữ
+  color: "#1976D2", // Chọn màu giống màu trong hình
+  textTransform: "none", // Không biến đổi thành chữ hoa toàn bộ
   lineHeight: 1.2, // Điều chỉnh khoảng cách giữa các dòng
 });
-
 
 const Header = () => {
   const navigate = useNavigate();
@@ -24,7 +30,8 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 150) { // Khi cuộn xuống hơn 150px
+      if (window.scrollY > 150) {
+        // Khi cuộn xuống hơn 150px
         setIsSticky(true);
       } else {
         setIsSticky(false);
@@ -37,7 +44,7 @@ const Header = () => {
     };
   }, []);
   return (
-    <Box >
+    <Box>
       {/* Hotline & Hệ thống cửa hàng */}
       <Box
         sx={{
@@ -61,7 +68,8 @@ const Header = () => {
             animation: "marquee 10s linear infinite",
           }}
         >
-          Chào mừng bạn đến với shop quần Âu <span style={{ color: "#1976D2" }}>n</span>
+          Chào mừng bạn đến với shop quần Âu{" "}
+          <span style={{ color: "#1976D2" }}>n</span>
           <b>DragonBee</b>
         </Typography>
 
@@ -77,8 +85,19 @@ const Header = () => {
       </Box>
 
       {/* Header chính */}
-      <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: "1px solid #ddd" }}>
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <AppBar
+        position="static"
+        color="transparent"
+        elevation={0}
+        sx={{ borderBottom: "1px solid #ddd" }}
+      >
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           {/* Hotline & Hệ thống cửa hàng */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Typography variant="body2">
@@ -89,17 +108,32 @@ const Header = () => {
 
           {/* Logo */}
           <Box sx={{ textAlign: "center", mt: 2, marginLeft: 17 }}>
-            <CustomTypography >DRAGONBEE</CustomTypography>
-
+            <CustomTypography>DRAGONBEE</CustomTypography>
 
             {/* Chữ phía dưới đặt sát hơn */}
-            <Typography sx={{ fontWeight: "bold", fontSize: 12, color: "#555", marginBottom: 2, marginLeft: 35, marginTop: -1.5 }}>
+            <Typography
+              sx={{
+                fontWeight: "bold",
+                fontSize: 12,
+                color: "#555",
+                marginBottom: 2,
+                marginLeft: 35,
+                marginTop: -1.5,
+              }}
+            >
               Quần Âu chính hãng
             </Typography>
           </Box>
 
           {/* Thanh tìm kiếm và icon */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, size: "small" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              size: "small",
+            }}
+          >
             {/* Thanh tìm kiếm (nhỏ hơn) */}
             <Box
               sx={{
@@ -117,11 +151,12 @@ const Header = () => {
                 placeholder="Tìm kiếm"
                 sx={{
                   flexGrow: 1,
-                  fontSize: "14px", // Giảm kích thước chữ 
+                  fontSize: "14px", // Giảm kích thước chữ
                 }}
               />
               <IconButton sx={{ p: 0.5 }}>
-                <Search sx={{ fontSize: "18px" }} /> {/* Giảm kích thước icon */}
+                <Search sx={{ fontSize: "18px" }} />{" "}
+                {/* Giảm kích thước icon */}
               </IconButton>
             </Box>
 
@@ -129,7 +164,7 @@ const Header = () => {
             <IconButton>
               <ShoppingCart />
             </IconButton>
-            <IconButton>
+            <IconButton onClick={() => navigate("/login-client")}>
               <Person />
             </IconButton>
           </Box>
@@ -176,15 +211,14 @@ const Header = () => {
                 bottom: -2, // Điều chỉnh khoảng cách với chữ
                 width: "100%",
                 height: "2px", // Độ dày của đường gạch chân
-                backgroundColor: location.pathname === item.path ? "#1976D2" : "transparent",
+                backgroundColor:
+                  location.pathname === item.path ? "#1976D2" : "transparent",
               },
             }}
           >
             {item.label}
           </Button>
-
         ))}
-
       </Box>
     </Box>
   );

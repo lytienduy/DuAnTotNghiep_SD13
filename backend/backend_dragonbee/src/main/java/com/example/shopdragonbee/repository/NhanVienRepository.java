@@ -24,11 +24,19 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, Integer> {
             "(:keyword IS NULL OR LOWER(n.sdt) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<NhanVien> searchNhanVien(@Param("keyword") String keyword);
 
-    @Query("SELECT n FROM NhanVien n WHERE n.trangThai = :trangThai")
-    List<NhanVien> findByTrangThai(@Param("trangThai") String trangThai);
+    @Query("""
+    SELECT n FROM NhanVien n 
+    WHERE (:trangThai IS NULL OR n.trangThai = :trangThai)
+      AND (:gioiTinh IS NULL OR n.gioiTinh = :gioiTinh)
+    """)
+    List<NhanVien> findByTrangThaiAndGioiTinh(
+            @Param("trangThai") String trangThai,
+            @Param("gioiTinh") String gioiTinh
+    );
 
-    @Query("SELECT n FROM NhanVien n WHERE n.gioiTinh = :gioiTinh")
-    List<NhanVien> findByGioiTinh(@Param("gioiTinh") String gioiTinh);
+
+
+
 
     @Query("SELECT n FROM NhanVien n WHERE YEAR(CURRENT_DATE) - YEAR(n.ngaySinh) BETWEEN :minAge AND :maxAge")
     List<NhanVien> findByAgeRange(@Param("minAge") int minAge, @Param("maxAge") int maxAge);

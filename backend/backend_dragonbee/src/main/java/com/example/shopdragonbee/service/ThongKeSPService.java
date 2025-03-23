@@ -2,6 +2,7 @@ package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.ProductOutOfStockDTO;
 import com.example.shopdragonbee.repository.ThongKeSPCTRepository;
+import com.example.shopdragonbee.respone.SanPhamCTResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +63,11 @@ public class ThongKeSPService {
         response.put("totalPages", totalPages);
 
         return response;
+    }
+
+
+    public List<Object[]> getTop2SanPhamSapHetHang() {
+        return repository.findTop2SanPhamSapHetHang();
     }
 
 }

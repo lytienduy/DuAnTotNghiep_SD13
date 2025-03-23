@@ -31,6 +31,125 @@ import {
   MonetizationOn,
 } from "@mui/icons-material";
 import axios from "axios";
+import * as XLSX from "xlsx";
+
+const exportToExcel = async () => {
+  try {
+    const apiEndpoints = [
+      "http://localhost:8080/api/thong-ke/today",
+      "http://localhost:8080/api/thong-ke/week",
+      "http://localhost:8080/api/thong-ke/month",
+      "http://localhost:8080/api/thong-ke/year",
+      "http://localhost:8080/api/products/low-stock",
+      "http://localhost:8080/api/top-products/today",
+      "http://localhost:8080/api/top-products/week",
+      "http://localhost:8080/api/top-products/month",
+      "http://localhost:8080/api/top-products/year",
+      "http://localhost:8080/api/order-status/today",
+      "http://localhost:8080/api/order-status/week",
+      "http://localhost:8080/api/order-status/month",
+      "http://localhost:8080/api/order-status/year",
+    ];
+
+    const responses = await Promise.all(
+      apiEndpoints.map((url) => axios.get(url).catch((error) => error))
+    );
+    const invalidResponses = responses.filter(
+      (res) => res instanceof Error || res.status !== 200
+    );
+
+    if (invalidResponses.length > 0) {
+      console.error("Các API không hợp lệ:", invalidResponses);
+      alert("Xuất Excel thất bại! Kiểm tra lại API hoặc tham số gửi lên.");
+      return;
+    }
+
+    const [
+      todayRes,
+      weekRes,
+      monthRes,
+      yearRes,
+      lowStockRes,
+      topProductsToday,
+      topProductsWeek,
+      topProductsMonth,
+      topProductsYear,
+      orderStatusToday,
+      orderStatusWeek,
+      orderStatusMonth,
+      orderStatusYear,
+    ] = responses.map((res) => res.data);
+
+    const wb = XLSX.utils.book_new();
+
+    // Bảng Doanh Thu
+    const revenueData = [
+      { Thời_gian: "Hôm nay", Doanh_thu: todayRes.totalRevenue },
+      { Thời_gian: "Tuần này", Doanh_thu: weekRes.totalRevenue },
+      { Thời_gian: "Tháng này", Doanh_thu: monthRes.totalRevenue },
+      { Thời_gian: "Năm này", Doanh_thu: yearRes.totalRevenue },
+    ];
+    const revenueSheet = XLSX.utils.json_to_sheet(revenueData);
+    XLSX.utils.book_append_sheet(wb, revenueSheet, "Bảng Doanh Thu");
+
+    // Bảng Sản Phẩm Bán Chạy
+    const topProductsData = [
+      ...topProductsToday.map((p) => ({
+        Thời_gian: "Hôm nay",
+        Sản_phẩm: p.tenSanPham,
+        Giá_bán: p.giaBan,
+        Số_lượng_bán: p.soLuongBan,
+      })),
+      ...topProductsWeek.map((p) => ({
+        Thời_gian: "Tuần này",
+        Sản_phẩm: p.tenSanPham,
+        Giá_bán: p.giaBan,
+        Số_lượng_bán: p.soLuongBan,
+      })),
+      ...topProductsMonth.map((p) => ({
+        Thời_gian: "Tháng này",
+        Sản_phẩm: p.tenSanPham,
+        Giá_bán: p.giaBan,
+        Số_lượng_bán: p.soLuongBan,
+      })),
+      ...topProductsYear.map((p) => ({
+        Thời_gian: "Năm này",
+        Sản_phẩm: p.tenSanPham,
+        Giá_bán: p.giaBan,
+        Số_lượng_bán: p.soLuongBan,
+      })),
+    ];
+    const topProductsSheet = XLSX.utils.json_to_sheet(topProductsData);
+    XLSX.utils.book_append_sheet(wb, topProductsSheet, "Sản Phẩm Bán Chạy");
+
+    // Bảng Sản Phẩm Sắp Hết Hàng
+    const lowStockData = lowStockRes.map((p) => ({
+      Mã: p.maSanPham,
+      Tên_sản_phẩm: p.tenSanPham,
+      Giá_bán: p.giaBan,
+      Số_lượng_còn_lại: p.soLuongTon,
+    }));
+    const lowStockSheet = XLSX.utils.json_to_sheet(lowStockData);
+    XLSX.utils.book_append_sheet(wb, lowStockSheet, "Sản Phẩm Sắp Hết Hàng");
+
+    // Bảng Trạng Thái Đơn Hàng
+    const orderStatusData = [
+      { Thời_gian: "Hôm nay", Trạng_thái: JSON.stringify(orderStatusToday) },
+      { Thời_gian: "Tuần này", Trạng_thái: JSON.stringify(orderStatusWeek) },
+      { Thời_gian: "Tháng này", Trạng_thái: JSON.stringify(orderStatusMonth) },
+      { Thời_gian: "Năm này", Trạng_thái: JSON.stringify(orderStatusYear) },
+    ];
+    const orderStatusSheet = XLSX.utils.json_to_sheet(orderStatusData);
+    XLSX.utils.book_append_sheet(wb, orderStatusSheet, "Trạng Thái Đơn Hàng");
+
+    XLSX.writeFile(wb, "ThongKe_TongHop.xlsx");
+    alert("Xuất Excel thành công!");
+  } catch (error) {
+    console.error("Xuất Excel thất bại:", error);
+    alert("Xuất Excel thất bại! Lỗi không xác định.");
+  }
+};
+
 
 const RevenueCard = ({
   label,
@@ -253,27 +372,26 @@ const ThongKe = () => {
           </Grid>
         ))}
       </Grid>
-      <Box sx={{mt: 3}}>
-      {selectedFilter === "Tùy chỉnh" && (
-        <Grid item>
-          <RevenueCard
-            label="Tùy chỉnh"
-            icon={<CalendarToday color="primary" />}
-            value={
-              customRevenue !== null
-                ? `${new Intl.NumberFormat("vi-VN").format(
-                    customRevenue.totalRevenue || 0
-                  )} VNĐ`
-                : "Chưa có dữ liệu"
-            }
-            productsSold={customRevenue?.totalProductsSold || 0}
-            successfulOrders={customRevenue?.totalCompletedOrders || 0}
-            canceledOrders={customRevenue?.totalCancelledOrders || 0}
-          />
-        </Grid>
-      )}
+      <Box sx={{ mt: 3 }}>
+        {selectedFilter === "Tùy chỉnh" && (
+          <Grid item>
+            <RevenueCard
+              label="Tùy chỉnh"
+              icon={<CalendarToday color="primary" />}
+              value={
+                customRevenue !== null
+                  ? `${new Intl.NumberFormat("vi-VN").format(
+                      customRevenue.totalRevenue || 0
+                    )} VNĐ`
+                  : "Chưa có dữ liệu"
+              }
+              productsSold={customRevenue?.totalProductsSold || 0}
+              successfulOrders={customRevenue?.totalCompletedOrders || 0}
+              canceledOrders={customRevenue?.totalCancelledOrders || 0}
+            />
+          </Grid>
+        )}
       </Box>
-      
 
       {/* Bộ lọc */}
       <Box mt={4} p={2} sx={{ backgroundColor: "#FFFFFFFF", borderRadius: 2 }}>
@@ -335,8 +453,9 @@ const ThongKe = () => {
             variant="outlined"
             color="success"
             sx={{ borderRadius: 1, fontWeight: "bold", minWidth: 120 }}
+            onClick={exportToExcel}
           >
-            EXPORT TO EXCEL
+            XUẤT EXCEL
           </Button>
         </Box>
 
@@ -377,7 +496,7 @@ const ThongKe = () => {
                             <TableCell>
                               <img
                                 src={product.imageUrls}
-                                alt={product.description}
+                                alt="Ảnh"
                                 style={{
                                   width: 50,
                                   height: 50,
@@ -446,7 +565,21 @@ const ThongKe = () => {
 
               <Grid item xs={12} md={5}>
                 {/* Hiển thị biểu đồ tròn theo filter */}
-                <OrderStatusPieChart filter={convertFilter(selectedFilter)} />
+                <OrderStatusPieChart
+                  filter={
+                    selectedFilter === "Ngày"
+                      ? "today"
+                      : selectedFilter === "Tuần"
+                      ? "week"
+                      : selectedFilter === "Tháng"
+                      ? "month"
+                      : selectedFilter === "Năm"
+                      ? "year"
+                      : "custom"
+                  }
+                  customStartDate={customStartDate}
+                  customEndDate={customEndDate}
+                />
               </Grid>
             </Grid>
           </Grid>

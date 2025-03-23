@@ -45,7 +45,7 @@ const Header = ({ toggleSidebar }) => {
           </IconButton>
 
           {/* User Avatar */}
-          <IconButton onClick={() => navigate("/login")} sx={{ padding: 0 }}>
+          <IconButton onClick={() => navigate("/login1")} sx={{ padding: 0 }}>
             <Paper
             elevation={3}
             sx={{

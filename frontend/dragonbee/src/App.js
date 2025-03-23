@@ -40,6 +40,7 @@ import ClientHeader from './module/client/components/Header';
 // Import Client Pages
 import Home from './module/client/pages/Home';
 import SanPhamClient from './module/client/pages/SanPham';
+
 // Thêm các trang Client khác ở đây...
 
 const theme = createTheme({
@@ -143,6 +144,7 @@ const MainLayout = () => {
             {/* Client Routes */}
             <Route path="/home" element={<Home />} />
             <Route path="/sanPham" element={<SanPhamClient />} />
+          
             {/* Thêm các route Client khác... */}
           </Routes>
         </Box>

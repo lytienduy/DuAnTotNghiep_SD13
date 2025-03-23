@@ -115,7 +115,7 @@ const OutOfStockProducts = () => {
                 <TableRow>
                   <TableCell>#</TableCell>
                   <TableCell>Ảnh sản phẩm</TableCell>
-                  <TableCell>Mô tả sản phẩm</TableCell>
+                  <TableCell>Tên sản phẩm</TableCell>
                   <TableCell>Số lượng tồn</TableCell>
                   <TableCell>Giá bán</TableCell>
                 </TableRow>
