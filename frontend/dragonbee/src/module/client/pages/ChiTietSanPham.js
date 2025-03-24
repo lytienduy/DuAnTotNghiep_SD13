@@ -17,7 +17,7 @@ import { useParams } from "react-router-dom"; // Import đúng
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
-
+import { useNavigate } from "react-router-dom";
 
 const productData = [
     {
@@ -65,6 +65,8 @@ const productData = [
 ];
 
 const ChiTietSanPham = () => {
+      const navigate = useNavigate(); // Khai báo navigate
+    
     const { id } = useParams(); // Lấy id từ URL
     const thumbnailRefs = useRef([]);
     const [product, setProduct] = useState({});
@@ -164,10 +166,6 @@ const ChiTietSanPham = () => {
         setQuantity(quantity + 1);
         //Kiểm tra lại số lượng đang chậm một nhịp
         if (quantity + 1 >= selectedSizeReuse.soLuong) {
-            // setTimeout(() => {
-            //     setQuantity(selectedSizeReuse.soLuong);
-            //     showErrorToast("Rất tiếc bạn đã mua tối đa số lượng sản phẩm")
-            // }, 100);
             showSuccessToast("Số lượng sản phẩm này đã tối đa")
         };
     }
@@ -419,7 +417,7 @@ const ChiTietSanPham = () => {
                 {/* Quần âu Nam */}
                 <Container sx={{ py: 4 }}>
                     <Typography variant="h6" sx={{ mb: 4, textAlign: 'left', fontWeight: 'bold' }}>
-                        Sản phẩm cùng danh mục
+                        Sản phẩm tương tự
                     </Typography>
 
                     <Box sx={{ position: 'relative', overflow: 'hidden' }}>
@@ -441,13 +439,13 @@ const ChiTietSanPham = () => {
                                     {Array.from({ length: 5 }).map((_, index) => {
                                         const product = productData[(start + index) % productData.length];
                                         return (
-                                            <Grid item key={product.id} xs={12} sm={4} md={2.4}>
+                                            <Grid item key={product.id} xs={12} sm={4} md={2.4} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                                                 <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
                                                     <CardMedia
                                                         component="img"
                                                         height="250"
-                                                        image={product.img1}
-                                                        alt={product.title}
+                                                        image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[0]}
+                                                        alt={product?.ten}
                                                         sx={{
                                                             transition: 'opacity 0.3s ease',
                                                             '&:hover': { opacity: 0 },
@@ -455,23 +453,29 @@ const ChiTietSanPham = () => {
                                                             borderTopRightRadius: 2,
                                                         }}
                                                     />
-                                                    <CardMedia
-                                                        component="img"
-                                                        height="250"
-                                                        image={product.img2}
-                                                        alt={product.title}
-                                                        sx={{
-                                                            position: 'absolute',
-                                                            top: 0,
-                                                            left: 0,
-                                                            opacity: 0,
-                                                            transition: 'opacity 0.3s ease',
-                                                            '&:hover': { opacity: 1 },
-                                                            borderTopLeftRadius: 2,
-                                                            borderTopRightRadius: 2,
-                                                        }}
-                                                    />
-                                                    <CardContent
+
+                                                    {/* Chỉ hiển thị ảnh thứ hai nếu tồn tại */}
+                                                    {product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1] && (
+                                                        <CardMedia
+                                                            component="img"
+                                                            height="250"
+                                                            image={product?.listHinhAnhAndMauSacAndSize[0]?.listAnh?.[1]}
+                                                            alt={product.ten}
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                top: 0,
+                                                                left: 0,
+                                                                width: '100%',
+                                                                // height: '100%',
+                                                                opacity: 0,
+                                                                transition: 'opacity 0.3s ease',
+                                                                '&:hover': { opacity: 1 },
+                                                                borderTopLeftRadius: 2,
+                                                                borderTopRightRadius: 2,
+                                                            }}
+                                                        />
+                                                    )}
+                                                    <CardContent CardContent
                                                         sx={{
                                                             display: 'flex',
                                                             flexDirection: 'column',
@@ -486,13 +490,84 @@ const ChiTietSanPham = () => {
                                                                 WebkitLineClamp: 2,
                                                                 WebkitBoxOrient: 'vertical',
                                                                 overflow: 'hidden',
+                                                                fontWeight: 'bold'
                                                             }}
                                                         >
-                                                            {product.title}
+                                                            {product.ten}
                                                         </Typography>
-                                                        <Typography variant="body2" color="text.secondary" fontWeight="bold" sx={{ mb: -2 }}>
-                                                            {product.price}
-                                                        </Typography>
+                                                        <Box sx={{ mt: 1, display: 'flex', gap: 1, mb: 2 }}>
+                                                            {product?.listHinhAnhAndMauSacAndSize?.length > 0 ? (
+                                                                product.listHinhAnhAndMauSacAndSize.map(item => (
+                                                                    <IconButton
+                                                                        sx={{
+                                                                            width: 32, // Kích thước tổng thể
+                                                                            height: 22,
+                                                                            borderRadius: "16px", // Bo góc bầu dục
+                                                                            position: "relative",
+                                                                            backgroundColor: "transparent", // Tránh hover làm mất màu
+                                                                            marginRight: "7px",
+                                                                            // Viền xanh khi được chọn
+                                                                            border: "none",
+                                                                            padding: 0,
+
+                                                                            "&::after": {
+                                                                                content: '""',
+                                                                                display: "block",
+                                                                                width: "100%", // Khi chọn, màu nhỏ đi 20%
+                                                                                height: "100%",
+                                                                                backgroundColor: item.mauSac.maMau, // Giữ màu nền
+                                                                                borderRadius: "12px", // Bo góc nhỏ hơn một chút
+                                                                                transition: "all 0.2s ease-in-out",
+                                                                            },
+                                                                        }}
+
+                                                                    />
+                                                                ))
+                                                            ) : (
+                                                                <Typography variant="body2" color="text.secondary">Không có màu nào hết</Typography>
+                                                            )}
+                                                        </Box>
+                                                        <Box
+                                                            sx={{
+                                                                display: 'flex',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                            }}
+                                                        >
+                                                            <Box
+                                                                sx={{
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'flex-start', // Để chữ 'đ' nằm cao hơn
+                                                                    gap: '2px', // Khoảng cách giữa giá và chữ 'đ'
+                                                                }}
+                                                            >
+                                                                <Typography
+                                                                    variant="body2"
+                                                                    color="text.secondary"
+                                                                    fontWeight="bold"
+                                                                    sx={{
+                                                                        textAlign: 'center',
+                                                                        fontSize: '16px',
+                                                                    }}
+                                                                >
+                                                                    {product.gia?.toLocaleString()}
+                                                                </Typography>
+
+                                                                <Typography
+                                                                    variant="body2"
+                                                                    color="text.secondary"
+                                                                    fontWeight="bold"
+                                                                    sx={{
+                                                                        fontSize: '12px',
+                                                                        lineHeight: '1', // Giúp chữ 'đ' không bị lệch nhiều so với giá
+                                                                        transform: 'translateY(-2px)', // Nhích lên trên một chút
+                                                                    }}
+                                                                >
+                                                                    đ
+                                                                </Typography>
+                                                            </Box>
+                                                        </Box>
+
                                                     </CardContent>
                                                 </Card>
                                             </Grid>
