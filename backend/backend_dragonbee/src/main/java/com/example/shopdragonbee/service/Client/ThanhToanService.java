@@ -34,10 +34,10 @@ public class ThanhToanService {
     public Boolean addSanPhamVaoGioHang(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia) {
         try {
             SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get();
-            HoaDonChiTiet kiemTraHDCTDaCoChua = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGia(
+            HoaDonChiTiet kiemTraHDCTDaCoChua = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGiaAndTrangThai(
                     hoaDonRepository.findById(idHoaDon).get(),
                     sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get(),
-                    donGia);
+                    donGia,"Hoạt động");
 
             if (kiemTraHDCTDaCoChua == null) {
                 HoaDonChiTiet hoaDonChiTiet = new HoaDonChiTiet();

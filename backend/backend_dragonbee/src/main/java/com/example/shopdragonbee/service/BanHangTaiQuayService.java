@@ -154,10 +154,11 @@ public class BanHangTaiQuayService {
     public Boolean xoaSanPham(Integer id, Integer idHoaDon) {
         try {
             HoaDonChiTiet hoaDonChiTiet = hoaDonChiTietRepository.findById(id).get();
+            hoaDonChiTiet.setTrangThai("Không hoạt động");
             SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(hoaDonChiTiet.getSanPhamChiTiet().getId()).get();
             sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() + hoaDonChiTiet.getSoLuong());
             sanPhamChiTietRepository.save(sanPhamChiTiet);
-            hoaDonChiTietRepository.delete(hoaDonChiTiet);
+            hoaDonChiTietRepository.save(hoaDonChiTiet);
             HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
             if (hoaDon.getListHoaDonChiTiet().isEmpty() || hoaDon.getListHoaDonChiTiet() == null) {
                 hoaDon.setTrangThai("Chờ thêm sản phẩm");
@@ -302,7 +303,7 @@ public class BanHangTaiQuayService {
     public Boolean addSanPhamVaoGioHang(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia) {
         try {
             SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(idSanPhamChiTiet).get();
-            HoaDonChiTiet kiemTraHDCTDaCoChua = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGia(hoaDonRepository.findById(idHoaDon).get(), sanPhamChiTietRepository.findById(idSanPhamChiTiet).get(), donGia);
+            HoaDonChiTiet kiemTraHDCTDaCoChua = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGiaAndTrangThai(hoaDonRepository.findById(idHoaDon).get(), sanPhamChiTietRepository.findById(idSanPhamChiTiet).get(), donGia,"Hoạt động");
 
             if (kiemTraHDCTDaCoChua == null) {
                 HoaDonChiTiet hoaDonChiTiet = new HoaDonChiTiet();
@@ -313,6 +314,7 @@ public class BanHangTaiQuayService {
                 hoaDonChiTiet.setSoLuong(soLuong);
                 hoaDonChiTiet.setDonGia(donGia);
                 hoaDonChiTiet.setNgayTao(LocalDateTime.now());
+                hoaDonChiTiet.setTrangThai("Hoạt động");
                 hoaDonChiTietRepository.save(hoaDonChiTiet);//lưu hóa đơn chi tiết
                 sanPhamChiTietRepository.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
             } else {

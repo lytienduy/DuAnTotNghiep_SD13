@@ -523,7 +523,7 @@ const ThanhToan = () => {
                                 </Box>
                             </Box>
                         </div>
-                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={() => { setOpenConfirmDatHang(true) }}>HOÀN THÀNH ĐẶT HÀNG</Button>
+                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={() => { setOpenConfirmDatHang(true) }} disabled={products?.length === 0}>HOÀN THÀNH ĐẶT HÀNG</Button>
                     </Grid>
 
                     {/* Right side (40%) - Order summary */}

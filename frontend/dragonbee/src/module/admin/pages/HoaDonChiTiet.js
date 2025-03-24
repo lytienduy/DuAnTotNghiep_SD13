@@ -94,7 +94,7 @@ const HoaDonChiTiet = () => {
   //Hàm gọi api lấy hóa đơn
   const fetchHoaDon = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/hoa-don/${id}`);
+      const response = await axios.get(`http://localhost:8080/hoa-don-chi-tiet/${id}`);
       setTempValues({});
       setHoaDon(response.data); // Dữ liệu được lấy từ response.data
     } catch (err) {
@@ -1067,7 +1067,7 @@ const HoaDonChiTiet = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {hoaDon.listLichSuHoaDon.map((lshd, index) => (
+                  {hoaDon?.listLichSuHoaDon?.map((lshd, index) => (
                     <TableRow key={index}
                       sx={{
                         backgroundColor:
@@ -1235,8 +1235,8 @@ const HoaDonChiTiet = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {hoaDon.listThanhToanHoaDon.length > 0 ? (
-              hoaDon.listThanhToanHoaDon.map((payment, index) => (
+            {hoaDon?.listThanhToanHoaDon?.length > 0 ? (
+              hoaDon?.listThanhToanHoaDon?.map((payment, index) => (
                 <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
                   <TableCell align="center">{index + 1}</TableCell>
                   <TableCell align="center">{payment.phuongThuc}</TableCell>
@@ -1297,8 +1297,7 @@ const HoaDonChiTiet = () => {
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Đơn giá</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số tiền</TableCell>
-              {hoaDon.trangThai === "Chờ xác nhận" &&
-                <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>}
+              {(hoaDon.trangThai === "Chờ xác nhận") && <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -1315,7 +1314,13 @@ const HoaDonChiTiet = () => {
                 const images = product.hinhAnh || [];
                 const currentIndex = imageIndexes[product.id] ?? 0;
                 return (
-                  <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                  <TableRow
+                    key={index}
+                    sx={{
+                      backgroundColor: product.trangThai !== "Hoạt động" ? "#FFEBEE" : "inherit", // Màu đỏ nhạt nếu không hoạt động
+                      "&:hover": { backgroundColor: product.trangThai !== "Hoạt động" ? "#FFCDD2" : "#f5f5f5" } // Màu hover khác nhau
+                    }}
+                  >
                     <TableCell align="center">{index + 1}</TableCell>
                     <TableCell align="center">
                       {images.length > 0 && (
@@ -1341,7 +1346,7 @@ const HoaDonChiTiet = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Box display="flex" justifyContent="center" alignItems="center">
-                        {hoaDon.trangThai === "Chờ xác nhận" ? (
+                        {hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động" ? (
                           <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
 
                             <IconButton
@@ -1422,13 +1427,13 @@ const HoaDonChiTiet = () => {
                     </TableCell>
                     <TableCell align="center">{product.donGia?.toLocaleString()} VNĐ</TableCell>
                     <TableCell align="center">{product.soTien?.toLocaleString()} VNĐ</TableCell>
-                    {hoaDon.trangThai === "Chờ xác nhận" &&
-                      <TableCell align="center" onClick={() => { setSelectedProductId(product.id); setOpenConfirmModal(true) }} >
-                        <IconButton color="error">
+                    <TableCell align="center">
+                      {(hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động") &&
+                        <IconButton color="error" onClick={() => { setSelectedProductId(product.id); setOpenConfirmModal(true) }}>
                           <DeleteIcon />
                         </IconButton>
-                      </TableCell>
-                    }
+                      }
+                    </TableCell>
                   </TableRow>
                 );
               })

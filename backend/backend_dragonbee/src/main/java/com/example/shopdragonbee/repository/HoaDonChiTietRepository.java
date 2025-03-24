@@ -16,7 +16,7 @@ import java.util.List;
 @Repository
 public interface HoaDonChiTietRepository extends JpaRepository<HoaDonChiTiet, Integer> {
 
-    HoaDonChiTiet getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGia(HoaDon hoaDon, SanPhamChiTiet sanPhamChiTiet, Double donGia);
+    HoaDonChiTiet getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGiaAndTrangThai(HoaDon hoaDon, SanPhamChiTiet sanPhamChiTiet, Double donGia,String trangThai);
 
 //    @Query("SELECT hdct.sanPhamChiTiet.sanPham FROM HoaDonChiTiet hdct " +
 //            "WHERE hdct.hoaDon.trangThai = 'Hoàn thành' " +

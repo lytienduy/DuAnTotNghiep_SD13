@@ -73,7 +73,7 @@ public class HoaDonChiTietResponseDTO {
         private Double donGia;
         private Integer soLuong;
         private Double soTien;
-
+        private String trangThai;
     }
 
     @Getter

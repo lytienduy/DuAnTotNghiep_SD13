@@ -44,7 +44,7 @@ public class BanHangTaiQuayController {
 
     //Thêm hóa đơn tại quầy
     @GetMapping("/addHoaDonTaiQuay")
-    public HoaDon addHoaDonTaiQuayVaChoThanhToan() {
+    public HoaDon addHoaDonTaiQuay() {
         return banHangTaiQuayService.taoHoaDon();
     }
 
@@ -52,6 +52,20 @@ public class BanHangTaiQuayController {
     @GetMapping("/layHoaDonTaiQuay")
     public List<HoaDonChiTietResponseDTO.HoaDonChiTietDTO> layHoaDonTaiQuay() {
         return hoaDonService.getHoaDonChiTietTaiQuay();
+    }
+
+    @PostMapping("/addSanPhamVaoGioHang")
+    public Boolean addSanPhamVaoGioHang(@RequestBody Map<String, String> body) {
+        String idHoaDon = body.get("idHoaDon");
+        String idSanPhamChiTiet = body.get("idSanPhamChiTiet");
+        String soLuong = body.get("soLuong");
+        String donGia = body.get("donGia");
+
+        return banHangTaiQuayService.addSanPhamVaoGioHang(
+                java.lang.Integer.parseInt(idHoaDon)
+                , java.lang.Integer.parseInt(idSanPhamChiTiet),
+                java.lang.Integer.parseInt(soLuong),
+                Double.parseDouble(donGia));
     }
 
     //Tăng số lượng 1
@@ -100,19 +114,6 @@ public class BanHangTaiQuayController {
         return banHangTaiQuayService.getToanBoListBoLoc();
     }
 
-    @PostMapping("/addSanPhamVaoGioHang")
-    public Boolean addSanPhamVaoGioHang(@RequestBody Map<String, String> body) {
-        String idHoaDon = body.get("idHoaDon");
-        String idSanPhamChiTiet = body.get("idSanPhamChiTiet");
-        String soLuong = body.get("soLuong");
-        String donGia = body.get("donGia");
-
-        return banHangTaiQuayService.addSanPhamVaoGioHang(
-                java.lang.Integer.parseInt(idHoaDon)
-                , java.lang.Integer.parseInt(idSanPhamChiTiet),
-                java.lang.Integer.parseInt(soLuong),
-                Double.parseDouble(donGia));
-    }
 
     @PostMapping("/thanhToanHoaDon")
     public Boolean thanhToanHoaDon(@RequestBody Map<String, String> body) {
