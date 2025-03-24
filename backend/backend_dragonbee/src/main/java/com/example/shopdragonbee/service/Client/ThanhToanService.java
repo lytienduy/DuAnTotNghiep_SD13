@@ -31,7 +31,7 @@ public class ThanhToanService {
 
     //Add sản phẩm vào giỏ hàng
     @Transactional
-    public Boolean addSanPhamVaoGioHang(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Float donGia) {
+    public Boolean addSanPhamVaoGioHang(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia) {
         try {
             SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get();
             HoaDonChiTiet kiemTraHDCTDaCoChua = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGia(
@@ -72,6 +72,7 @@ public class ThanhToanService {
             String pgg,
             String tenNguoiNhan,
             String sdtNguoiNhan,
+            String emailNguoiNhan,
             String diaChiNhanHang,
             Float tongTienPhaiTra,
             Float phiShip,
@@ -97,6 +98,7 @@ public class ThanhToanService {
             }
             hoaDon.setTenNguoiNhan(tenNguoiNhan);
             hoaDon.setSdt(sdtNguoiNhan);
+            hoaDon.setEmailNguoiNhan(emailNguoiNhan);
             hoaDon.setDiaChiNhanHang(diaChiNhanHang);
             hoaDon.setPhiShip(phiShip);
             hoaDon.setTongTien(tongTienPhaiTra);

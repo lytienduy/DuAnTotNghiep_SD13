@@ -56,11 +56,11 @@ public class SPCTDTO {
     @AllArgsConstructor
     @Builder
     public static class SanPhamCart {
-            private Integer idSPCT;
+        private Integer idSPCT;
         private String anhSPCT;
         private String tenSPCT;
         private String tenSize;
-        private Float gia;
+        private Double gia;
         private Integer quantity;
     }
 }

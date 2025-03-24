@@ -3,7 +3,7 @@ import axios from 'axios';
 import {
     Box, Grid, TextField, Typography, Button, FormControlLabel, Radio, InputAdornment,
     Container, Breadcrumbs, Link, MenuItem, Select, InputLabel, FormControl, Input, Dialog,
-    DialogTitle, IconButton, DialogContent
+    DialogTitle, IconButton, DialogContent,DialogActions,DialogContentText
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
@@ -50,9 +50,9 @@ const ThanhToan = () => {
     const [products, setProducts] = useState([]);
     const location = useLocation();
     const selectedProducts = location.state?.selectedProducts || []; // Tránh undefined
-
     const tongTien = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
     const tongTienThanhToan = tongTien - discountAmount + phiShip;
+    const [openConfirmDatHang, setOpenConfirmDatHang] = useState(false);
 
 
     //Thông báo Toast
@@ -117,6 +117,7 @@ const ThanhToan = () => {
                 pgg: selectedVoucherCode,
                 tenNguoiNhan: tenNguoiNhan,
                 sdtNguoiNhan: sdtNguoiNhan,
+                emailNguoiNhan: emailNguoiNhan,
                 diaChiNhanHang: addressParts,
                 tongTienPhaiTra: tongTienThanhToan,
                 phiShip: phiShip,
@@ -129,7 +130,7 @@ const ThanhToan = () => {
                 const updatedCart = cart.filter((_, index) => !selectedProducts.includes(index));
                 localStorage.setItem("cart", JSON.stringify(updatedCart));
                 showSuccessToast("Đặt hàng thành công. Cảm ơn quý khách");
-                navigate('/datHangThanhCong', { state: { selectedProducts } });             
+                navigate('/datHangThanhCong', { state: { selectedProducts } });
             }
             else {
                 showErrorToast(response.data);
@@ -361,7 +362,7 @@ const ThanhToan = () => {
             <Box sx={{ display: 'flex', height: '100vh' }}>
                 <Grid container sx={{ flex: 1 }}>
                     {/* Left side (60%) - Customer information */}
-                    <Grid item xs={7} sx={{ padding: 2, paddingRight: '60px'}}>
+                    <Grid item xs={7} sx={{ padding: 2, paddingRight: '60px' }}>
                         <Typography variant="h4" sx={{ fontWeight: 'bold', marginBottom: '16px' }}>
                             THÔNG TIN
                         </Typography>
@@ -522,7 +523,7 @@ const ThanhToan = () => {
                                 </Box>
                             </Box>
                         </div>
-                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={xacNhanDatHang}>HOÀN THÀNH ĐẶT HÀNG</Button>
+                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={() => { setOpenConfirmDatHang(true) }}>HOÀN THÀNH ĐẶT HÀNG</Button>
                     </Grid>
 
                     {/* Right side (40%) - Order summary */}
@@ -779,6 +780,21 @@ const ThanhToan = () => {
                         ))}
                     </Box>
                 </DialogContent>
+            </Dialog>
+            {/* Modal confirm xác nhận đặt hàng */}
+            <Dialog open={openConfirmDatHang} onClose={() => setOpenConfirmDatHang(false)}>
+                <DialogTitle>Xác nhận đơn hàng</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>Bạn có chắc chắn muốn xác nhận đặt hàng không?</DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenConfirmDatHang(false)} color="secondary">
+                        Hủy
+                    </Button>
+                    <Button onClick={xacNhanDatHang} color="primary" variant="contained">
+                        Xác nhận
+                    </Button>
+                </DialogActions>
             </Dialog>
             <ToastContainer />
         </Container>

@@ -70,9 +70,9 @@ public class HoaDonChiTietResponseDTO {
         private String tenMauSize;
         private Integer idSanPhamChiTiet;
         private String maSanPhamChiTiet;
-        private Float donGia;
+        private Double donGia;
         private Integer soLuong;
-        private Float soTien;
+        private Double soTien;
 
     }
 

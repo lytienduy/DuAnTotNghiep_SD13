@@ -2250,7 +2250,7 @@ const BanTaiQuay = () => {
           {/* Tổng tiền hàng */}
           <Grid container justifyContent="space-between" sx={{ mb: 2 }}>
             <Typography variant="h6">Tổng tiền hàng</Typography>
-            <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{tongTienSanPham?.toLocaleString()} VNĐ</Typography>
+            <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{selectedOrder?.tongTienSanPham?.toLocaleString()} VNĐ</Typography>
           </Grid>
 
 

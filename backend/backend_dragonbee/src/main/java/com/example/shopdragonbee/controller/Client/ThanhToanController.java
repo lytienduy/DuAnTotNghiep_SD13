@@ -22,6 +22,7 @@ public class ThanhToanController {
                 request.getTenNguoiNhan(),
                 request.getSdtNguoiNhan(),
                 request.getDiaChiNhanHang(),
+                request.getEmailNguoiNhan(),
                 Float.parseFloat(request.getTongTienPhaiTra()),
                 Float.parseFloat(request.getPhiShip()),
                 request.getGhiChu(),

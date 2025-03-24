@@ -26,6 +26,10 @@ public class GioHangService {
                     sanPhamCart.setQuantity(sanPhamChiTiet.getSoLuong());
                 }
             }
+            //Cập nhật giá
+            if (sanPhamChiTiet.getGia() != sanPhamCart.getGia()) {
+                sanPhamCart.setGia(sanPhamChiTiet.getGia());
+            }
         }
         return listDanhSachSanPhamCart;
     }

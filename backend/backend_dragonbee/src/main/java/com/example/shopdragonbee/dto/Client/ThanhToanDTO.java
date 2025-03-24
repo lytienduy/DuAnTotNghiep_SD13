@@ -12,6 +12,7 @@ public class ThanhToanDTO {
     private String pgg; // Mã giảm giá
     private String tenNguoiNhan;
     private String sdtNguoiNhan;
+    private String emailNguoiNhan;
     private String diaChiNhanHang;
     private String tongTienPhaiTra;
     private String phiShip;

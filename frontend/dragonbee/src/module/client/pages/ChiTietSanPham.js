@@ -398,7 +398,7 @@ const ChiTietSanPham = () => {
                             <Typography variant="subtitle1">Số lượng</Typography>
                             <IconButton onClick={() => setQuantity(Math.max(1, quantity - 1))}><RemoveIcon /></IconButton>
                             <Typography variant="body1" mx={2}>{quantity}</Typography>
-                            <IconButton onClick={() => tangSoLuong()} disabled={quantity >= selectedSizeReuse?.soLuong}><AddIcon /></IconButton>
+                            <IconButton onClick={() => tangSoLuong()} disabled={quantity >= (selectedSizeReuse?.soLuong ?? 0)}><AddIcon /></IconButton>
                         </Box>
 
                         {/* Nút thao tác */}

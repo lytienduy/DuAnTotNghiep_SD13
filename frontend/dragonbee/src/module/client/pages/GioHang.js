@@ -80,9 +80,14 @@ const GioHang = () => {
                 if (response.data?.[index]?.quantity === 0) {
                     cart[index].quantity = 0;
                     handleDialogOpen("Sản phẩm đã hết hàng, bạn có thể tham khảo sản phẩm khác");
+
                 } else if (item?.quantity !== response.data?.[index]?.quantity) {
                     cart[index].quantity = response.data?.[index]?.quantity;
                     handleDialogOpen("Sản phẩm không còn đủ số lượng bạn mong muốn");
+                    continue;
+                }
+                if (item.gia !== response.data?.[index]?.gia) {
+                    cart[index].gia = response.data?.[index]?.gia;
                 }
             }
             for (let i = 0; i < cart.length; ++i) {
@@ -253,7 +258,7 @@ const GioHang = () => {
                     Trang chủ
                 </Link>
                 <Typography color="text.primary" sx={{ fontSize: '14px' }}>
-                    Giỏ hàng 
+                    Giỏ hàng
                 </Typography>
             </Breadcrumbs>
             <Typography variant="h6" sx={{ marginBottom: 2, marginTop: 3 }} gutterBottom>Giỏ hàng của bạn <span style={{ fontSize: '14px', color: 'gray' }}>({products.length} sản phẩm)</span></Typography>

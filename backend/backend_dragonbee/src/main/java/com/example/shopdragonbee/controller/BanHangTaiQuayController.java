@@ -111,7 +111,7 @@ public class BanHangTaiQuayController {
                 java.lang.Integer.parseInt(idHoaDon)
                 , java.lang.Integer.parseInt(idSanPhamChiTiet),
                 java.lang.Integer.parseInt(soLuong),
-                java.lang.Float.parseFloat(donGia));
+                Double.parseDouble(donGia));
     }
 
     @PostMapping("/thanhToanHoaDon")
