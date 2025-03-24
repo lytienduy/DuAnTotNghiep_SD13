@@ -1,6 +1,8 @@
 import React from 'react';
-import { Container, Typography, Grid, Card, CardContent, CardMedia, Divider, Box } from '@mui/material';
+import { Container, Typography, Grid, Card, CardContent, CardMedia, Divider, Box, IconButton } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from 'react-router-dom';
 
 const products = [
     {
@@ -22,10 +24,25 @@ const products = [
 ];
 
 const DatHangThanhCong = () => {
+
+    const navigate = useNavigate();
+
+    const handleBackHome = () => {
+        navigate("/home"); // Điều hướng về trang phiếu giảm giá
+    };
+
     return (
         <Container >
             <Card sx={{ padding: 2, marginTop: 4 }}>
                 <CardContent>
+                    <Box display="flex" alignItems="center" mb={3}>
+                        <IconButton onClick={handleBackHome} >
+                            <ArrowBackIcon sx={{ marginLeft: -3, marginTop: -3.5 }} />
+                        </IconButton>
+                        <Typography sx={{ fontWeight: "bold", marginTop: -3.5,color:'grey',fontSize:20 }}>
+                            Quay lại trang chủ
+                        </Typography>
+                    </Box>
                     <Box
                         display="flex"
                         flexDirection="column"
@@ -59,14 +76,14 @@ const DatHangThanhCong = () => {
                                 <Typography variant="body1">
                                     40 To Vinh Dien, Quận Ba Đình, VN
                                 </Typography>
-                                <Typography variant="body1" sx={{ fontWeight: 'bold', marginTop:3 }}>
+                                <Typography variant="body1" sx={{ fontWeight: 'bold', marginTop: 3 }}>
                                     Phương thức thanh toán
                                 </Typography>
                                 <Typography variant="body1">
                                     Thanh toán khi giao hàng (COD)
                                 </Typography>
                             </Grid>
-{/* 
+                            {/* 
                             <Grid item xs={6}>
                                 <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                                     Phương thức thanh toán

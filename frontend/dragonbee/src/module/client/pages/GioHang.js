@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     Container, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Typography
-    , TextField, IconButton, Checkbox, Breadcrumbs, Link, Dialog, DialogTitle, DialogContent, DialogActions
+    , TextField, IconButton, Checkbox, Breadcrumbs, Link, Dialog, DialogTitle, DialogContent, DialogActions,
+    Box, Select, MenuItem, Divider, FormControl
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -11,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const GioHang = () => {
     const navigate = useNavigate();
@@ -244,6 +247,10 @@ const GioHang = () => {
         return sum + product.gia * product?.quantity;
     }, 0);
 
+    const handleBackHome = () => {
+        navigate("/home"); // Điều hướng về trang phiếu giảm giá
+    };
+
     return (
         <Container>
             <Dialog open={openDialogThongBaoHetHangHoacKDuSoLuong} onClose={handleDialogClose}>
@@ -261,7 +268,12 @@ const GioHang = () => {
                     Giỏ hàng
                 </Typography>
             </Breadcrumbs>
-            <Typography variant="h6" sx={{ marginBottom: 2, marginTop: 3 }} gutterBottom>Giỏ hàng của bạn <span style={{ fontSize: '14px', color: 'gray' }}>({products.length} sản phẩm)</span></Typography>
+            <Box display="flex" alignItems="center">
+                <IconButton onClick={handleBackHome} sx={{ marginRight: 2 }}>
+                    <ArrowBackIcon />
+                </IconButton>
+                <Typography variant="h6" sx={{ marginBottom: 2, marginTop: 2 }} gutterBottom>Giỏ hàng của bạn <span style={{ fontSize: '14px', color: 'gray' }}>({products.length} sản phẩm)</span></Typography>
+            </Box>
             <Grid container spacing={2}>
                 {/* Phần hiển thị sản phẩm */}
                 <Grid item xs={9}>
@@ -277,100 +289,183 @@ const GioHang = () => {
                                                 color="primary"
                                             />
                                         </TableCell>
-                                        <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px', whiteSpace: 'nowrap' }}>Sản phẩm</TableCell>
-                                        <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px', whiteSpace: 'nowrap', width: '100px' }}>Giá</TableCell>
-                                        <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px', whiteSpace: 'nowrap' }}>Số lượng</TableCell>
-                                        <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px', whiteSpace: 'nowrap', width: '120px' }}>Thành tiền</TableCell>
-                                        <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '20px', whiteSpace: 'nowrap' }}>Hành động</TableCell>
+                                        <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>Sản phẩm</TableCell>
+                                        <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px', whiteSpace: 'nowrap', width: '100px', fontWeight: 'bold' }}>Giá</TableCell>
+                                        <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>Số lượng</TableCell>
+                                        <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px', whiteSpace: 'nowrap', width: '120px', fontWeight: 'bold' }}>Thành tiền</TableCell>
+                                        <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '20px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>Hành động</TableCell>
                                     </TableRow>
                                 </TableHead>
 
                                 <TableBody>
-                                    {products.map((product, index) => (
-                                        <TableRow key={index} disabled={product.quantity === 0}>
-                                            <TableCell padding="checkbox" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                <Checkbox
-                                                    checked={selectedProducts.includes(index)}
-                                                    onChange={() => handleToggleSelect(index)}
-                                                    color="primary"
-                                                />
-                                            </TableCell>
-                                            <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                <Grid container spacing={2} alignItems="center" sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                                                    <Grid item>
-                                                        <img src={product.anhSPCT} alt={product.tenSPCT} width={80} height={80} />
-                                                    </Grid>
-                                                    <Grid item xs={8}>
-                                                        <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>{product.tenSPCT}</Typography>
-                                                    </Grid>
-                                                </Grid>
-                                            </TableCell>
-                                            <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                {product?.gia?.toLocaleString()} VNĐ
-                                            </TableCell>
-                                            <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <TextField
-                                                        type="text"
-                                                        value={product?.quantity}
-                                                        onChange={(e) => {
-                                                            const inputValue = e.target.value;
-                                                            // Kiểm tra xem giá trị có phải là số nguyên và nằm trong khoảng từ 1 đến 999 không
-                                                            if (/^[1-9]\d{0,2}$/.test(inputValue)) {
-                                                                const newValue = Math.max(1, Math.min(parseInt(inputValue), 999)); // Đảm bảo giá trị trong khoảng từ 1 đến 999
-                                                                handleChangeQuantity(index, newValue);
-                                                            }
-                                                        }}
-                                                        inputProps={{ min: 1 }}
-                                                        sx={{
-                                                            width: '105px',  // Điều chỉnh chiều rộng của TextField
-                                                            textAlign: 'center',
-                                                            padding: '0',
-                                                            border: 'none',
-                                                            outline: 'none',
-                                                            fontSize: '18px',
-                                                            overflow: 'hidden',
-                                                            textOverflow: 'ellipsis',
-                                                            whiteSpace: 'nowrap',
-                                                            '& input': {
-                                                                textAlign: 'center',
-                                                                padding: '5px 10px',
-                                                            },
-                                                        }}
-                                                        InputProps={{
-                                                            startAdornment: (
-                                                                <IconButton
-                                                                    onClick={() => handleDecrement(index)}
-                                                                    size="small"
-                                                                    style={{ padding: '2px', marginLeft: -10 }}
-
-                                                                >
-                                                                    <RemoveIcon fontSize="small" />
-                                                                </IconButton>
-                                                            ),
-                                                            endAdornment: (
-                                                                <IconButton
-                                                                    onClick={() => handleIncrement(index)}
-                                                                    size="small"
-                                                                    style={{ padding: '2px', marginRight: -10 }}
-                                                                    disabled={productsCapNhatSoLuong?.[index]?.quantity === 0}
-                                                                >
-                                                                    <AddIcon fontSize="small" />
-                                                                </IconButton>
-                                                            ),
-                                                        }}
+                                    {products.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={5} sx={{ textAlign: 'center' }}>
+                                                <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5, marginLeft: 25 }}>
+                                                    <img
+                                                        src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg" // Placeholder image
+                                                        alt="No data"
+                                                        style={{ width: '150px', height: 'auto' }}
                                                     />
-                                                </div>
-                                            </TableCell>
-                                            <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                {(product.gia * product?.quantity).toLocaleString()} VNĐ
-                                            </TableCell>
-                                            <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                <DeleteIcon color="error" onClick={() => handleRemoveProduct(index)} />
+                                                    <Typography variant="h6" sx={{ marginTop: '-40px' }}>Không có sản phẩm nào</Typography>
+                                                </Box>
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    ) : (
+                                        products.map((product, index) => (
+                                            <TableRow key={index} disabled={product.quantity === 0}>
+                                                <TableCell padding="checkbox" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
+                                                    <Checkbox
+                                                        checked={selectedProducts.includes(index)}
+                                                        onChange={() => handleToggleSelect(index)}
+                                                        color="primary"
+                                                    />
+                                                </TableCell>
+                                                <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
+                                                    <Grid container spacing={2} alignItems="center" sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                                                        <Grid item>
+                                                            <img src={product.anhSPCT} alt={product.tenSPCT} width={80} height={80} />
+                                                        </Grid>
+                                                        <Grid item xs={8}>
+                                                            <Typography variant="body2" sx={{ wordBreak: 'break-word', fontWeight: 'bold' }}>{product.tenSPCT}</Typography>
+                                                            <Grid container spacing={2} sx={{ marginTop: -1, alignItems: 'center' }}>
+                                                                <Grid item>
+                                                                    <Select
+                                                                        defaultValue="Xám 84 Melange"
+                                                                        displayEmpty
+                                                                        sx={{
+                                                                            fontSize: '0.675rem',
+                                                                            border: 'none', // Loại bỏ khung viền
+                                                                            outline: 'none', // Loại bỏ viền khi được chọn
+                                                                            boxShadow: 'none', // Loại bỏ bóng đổ nếu có
+                                                                            '& .MuiSelect-select': {
+                                                                                padding: '0px', // Giảm khoảng cách padding nếu cần
+                                                                            },
+                                                                            '& fieldset': {
+                                                                                border: 'none', // Loại bỏ border của fieldset nếu có
+                                                                            },
+                                                                            '& .MuiSelect-icon': {
+                                                                                color: 'black',  // Đặt màu đen cho mũi tên
+                                                                            },
+                                                                        }}
+                                                                        IconComponent={(props) => <ArrowDropDownIcon {...props} />}  // Sử dụng biểu tượng mũi tên mặc định của Material-UI
+                                                                    >
+                                                                        <MenuItem value="Xám 84">Xám 84</MenuItem>
+                                                                        <MenuItem value="Đỏ 09">Đỏ 09</MenuItem>
+                                                                        {/* Bạn có thể thêm nhiều tùy chọn màu sắc khác ở đây */}
+                                                                    </Select>
+                                                                </Grid>
+
+                                                                <Grid item sx={{ marginLeft: -2 }}>
+                                                                    <Divider
+                                                                        orientation="vertical"
+                                                                        flexItem
+                                                                        sx={{
+                                                                            height: 15,
+                                                                            borderColor: 'black',  // Chắc chắn rằng thanh chia cột sẽ có màu đen
+                                                                            borderWidth: 2,  // Đổi độ dày thanh chia cột
+                                                                        }}
+                                                                    />
+                                                                </Grid>
+                                                                <Grid item>
+                                                                    <Select
+                                                                        defaultValue="Xám 84 Melange"
+                                                                        displayEmpty
+                                                                        sx={{
+                                                                            fontSize: '0.675rem',
+                                                                            border: 'none', // Loại bỏ khung viền
+                                                                            outline: 'none', // Loại bỏ viền khi được chọn
+                                                                            boxShadow: 'none', // Loại bỏ bóng đổ nếu có
+                                                                            '& .MuiSelect-select': {
+                                                                                padding: '0px', // Giảm khoảng cách padding nếu cần
+                                                                            },
+                                                                            '& fieldset': {
+                                                                                border: 'none', // Loại bỏ border của fieldset nếu có
+                                                                            },
+                                                                            '& .MuiSelect-icon': {
+                                                                                color: 'black',  // Đặt màu đen cho mũi tên
+                                                                            },
+                                                                        }}
+                                                                        IconComponent={(props) => <ArrowDropDownIcon {...props} />}  // Sử dụng biểu tượng mũi tên mặc định của Material-UI
+                                                                    >
+                                                                        <MenuItem value="29">29</MenuItem>
+                                                                        <MenuItem value="30">30</MenuItem>
+                                                                        <MenuItem value="31">31</MenuItem>
+                                                                        {/* Bạn có thể thêm nhiều tùy chọn màu sắc khác ở đây */}
+                                                                    </Select>
+                                                                </Grid>
+
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Grid>
+                                                </TableCell>
+                                                <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
+                                                    {product?.gia?.toLocaleString()} VNĐ
+                                                </TableCell>
+                                                <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <TextField
+                                                            type="text"
+                                                            value={product?.quantity}
+                                                            onChange={(e) => {
+                                                                const inputValue = e.target.value;
+                                                                // Kiểm tra xem giá trị có phải là số nguyên và nằm trong khoảng từ 1 đến 999 không
+                                                                if (/^[1-9]\d{0,2}$/.test(inputValue)) {
+                                                                    const newValue = Math.max(1, Math.min(parseInt(inputValue), 999)); // Đảm bảo giá trị trong khoảng từ 1 đến 999
+                                                                    handleChangeQuantity(index, newValue);
+                                                                }
+                                                            }}
+                                                            inputProps={{ min: 1 }}
+                                                            sx={{
+                                                                width: '105px',  // Điều chỉnh chiều rộng của TextField
+                                                                textAlign: 'center',
+                                                                padding: '0',
+                                                                border: 'none',
+                                                                outline: 'none',
+                                                                fontSize: '18px',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                whiteSpace: 'nowrap',
+                                                                '& input': {
+                                                                    textAlign: 'center',
+                                                                    padding: '5px 10px',
+                                                                },
+                                                            }}
+                                                            InputProps={{
+                                                                startAdornment: (
+                                                                    <IconButton
+                                                                        onClick={() => handleDecrement(index)}
+                                                                        size="small"
+                                                                        style={{ padding: '2px', marginLeft: -10 }}
+                                                                    >
+                                                                        <RemoveIcon fontSize="small" />
+                                                                    </IconButton>
+                                                                ),
+                                                                endAdornment: (
+                                                                    <IconButton
+                                                                        onClick={() => handleIncrement(index)}
+                                                                        size="small"
+                                                                        style={{ padding: '2px', marginRight: -10 }}
+                                                                        disabled={productsCapNhatSoLuong?.[index]?.quantity === 0}
+                                                                    >
+                                                                        <AddIcon fontSize="small" />
+                                                                    </IconButton>
+                                                                ),
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
+                                                    {(product.gia * product?.quantity).toLocaleString()} VNĐ
+                                                </TableCell>
+                                                <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
+                                                    <DeleteIcon color="error" onClick={() => handleRemoveProduct(index)} />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
                                 </TableBody>
+
                             </Table>
                         </TableContainer>
                     </Paper>
