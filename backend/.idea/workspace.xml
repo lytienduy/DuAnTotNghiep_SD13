@@ -5,8 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3285daf9-171e-44be-80b7-eb3a6babbbd3" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/config/VNPAYConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/PaymentController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/PaymentService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/util/VNPayUtil.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/SPCTDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/SPCTDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/resources/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ChiTietSanPham.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ChiTietSanPham.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/GioHang.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/GioHang.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ThanhToan.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ThanhToan.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,13 +54,15 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
+    <configuration default="true" type="ArquillianTestNG" factoryName="" nameIsGenerated="true">
       <option name="arquillianRunConfiguration">
         <value>
           <option name="containerStateName" value="" />
         </value>
       </option>
-      <option name="TEST_OBJECT" value="class" />
+      <option name="TEST_OBJECT" value="CLASS" />
+      <properties />
+      <listeners />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -75,7 +85,8 @@
       <updated>1742529902611</updated>
       <workItem from="1742529903809" duration="15215000" />
       <workItem from="1742710857986" duration="1260000" />
-      <workItem from="1742781025760" duration="11154000" />
+      <workItem from="1742781025760" duration="13243000" />
+      <workItem from="1742870975183" duration="19545000" />
     </task>
     <servers />
   </component>

@@ -3,15 +3,14 @@ import axios from 'axios';
 import {
     Box, Grid, TextField, Typography, Button, FormControlLabel, Radio, InputAdornment,
     Container, Breadcrumbs, Link, MenuItem, Select, InputLabel, FormControl, Input, Dialog,
-    DialogTitle, IconButton, DialogContent,DialogActions,DialogContentText
+    DialogTitle, IconButton, DialogContent, DialogActions, DialogContentText
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams, useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
-import { useNavigate } from 'react-router-dom';
 
 const PayNowImage = 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR-1.png'; // PayNow image URL
 const CODImage = 'https://drive.gianhangvn.com/image/thanh-toan-khi-nhan-hang-2135165j32025.jpg';
@@ -53,8 +52,8 @@ const ThanhToan = () => {
     const tongTien = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
     const tongTienThanhToan = tongTien - discountAmount + phiShip;
     const [openConfirmDatHang, setOpenConfirmDatHang] = useState(false);
-
-
+    const [searchParams] = useSearchParams();
+    const vnp_ResponseCode = searchParams.get("vnp_ResponseCode");
     //Thông báo Toast
     const showSuccessToast = (message) => {
         toast.success(message, {
@@ -92,28 +91,18 @@ const ThanhToan = () => {
             }
         });
     };
-    //Lấy dữ liệu cart
-    const layDuLieuCart = () => {
-        const cart = JSON.parse(localStorage.getItem("cart")) || [];
-        const filteredCart = cart.filter((_, index) => selectedProducts.includes(index));
-        setProducts(filteredCart);
-    };
 
+    //VNPAY
     useEffect(() => {
-        layDuLieuCart();
-    }, []);
-
-    const xacNhanDatHang = async () => {
-        try {
-            if (selectedPaymentMethod === "") {
-                showErrorToast("Bạn chưa chọn phương thức thanh toán");
-                return;
-            }
+        if (!vnp_ResponseCode) {
+            return;
+        }
+        if (vnp_ResponseCode === "00") {
             // if (!errorChuyen && !errorDua) {
             const addressParts = [specificAddress, ward, district, city]
                 .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
                 .join(" "); // Ghép chuỗi với dấu cách
-            const response = await axios.post(`http://localhost:8080/thanhToanClient/xacNhanDatHangKhongDangNhap`, {
+            const response = axios.post(`http://localhost:8080/thanhToanClient/xacNhanDatHangKhongDangNhap`, {
                 pgg: selectedVoucherCode,
                 tenNguoiNhan: tenNguoiNhan,
                 sdtNguoiNhan: sdtNguoiNhan,
@@ -135,11 +124,48 @@ const ThanhToan = () => {
             else {
                 showErrorToast(response.data);
             }
+        } else {
+            showErrorToast("Có lỗi không mong muốn xảy ra. Vui lòng load lại trang2");
+        }
+    }, [vnp_ResponseCode, navigate]);
+
+    //Lấy dữ liệu cart
+    const layDuLieuCart = () => {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const filteredCart = cart.filter((_, index) => selectedProducts.includes(index));
+        setProducts(filteredCart);
+    };
+
+    useEffect(() => {
+        layDuLieuCart();
+    }, []);
+
+    const khiAnNutXacNhanDatHang = () => {
+        if (selectedPaymentMethod === "") {
+            showErrorToast("Bạn chưa chọn phương thức thanh toán");
+            return;
+        }
+        setOpenConfirmDatHang(true);
+    }
+
+    const xacNhanDatHang = async () => {
+        try {
+            if (!selectedPaymentMethod) {
+                showErrorToast("Bạn chưa chọn phương thức thanh toán");
+                return;
+            }
+            // Gọi API tạo thanh toán
+            // const response = await axios.get(`http://localhost:8080/payment/vn-pay?amount=${tongTienThanhToan}&bankCode=NCB`);
+            const response = await axios.get(`http://localhost:8080/payment/vn-pay?amount=${tongTienThanhToan}`);
+
+            // Chuyển hướng sang trang thanh toán VNPay 
+            window.location.href = response.data;
+
         } catch (err) {
-            console.log(err)
+            console.error("Lỗi khi tạo thanh toán:", err);
             showErrorToast("Có lỗi không mong muốn xảy ra. Vui lòng load lại trang");
         }
-    }
+    };
 
     const handleChange = (event) => {
         setSelectedPaymentMethod(event.target.value);
@@ -523,7 +549,7 @@ const ThanhToan = () => {
                                 </Box>
                             </Box>
                         </div>
-                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={() => { setOpenConfirmDatHang(true) }} disabled={products?.length === 0}>HOÀN THÀNH ĐẶT HÀNG</Button>
+                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={khiAnNutXacNhanDatHang} disabled={products?.length === 0}>HOÀN THÀNH ĐẶT HÀNG</Button>
                     </Grid>
 
                     {/* Right side (40%) - Order summary */}
