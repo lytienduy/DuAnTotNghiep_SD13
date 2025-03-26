@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
     Box, Grid, Typography, Button, Card, CardContent, CardMedia, Container,
     Tabs, Tab, Breadcrumbs, Link,
@@ -12,53 +13,21 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 const DonMua = () => {
     const location = useLocation();
     const isActive = location.pathname === '/donMua'; // Kiểm tra nếu đường dẫn là /donMua
-    const orders = [
-        {
-            id: 1,
-            maHD: 'HD920112111',
-            status: 'Chờ xác nhận',
-            products: [
-                {
-                    id: 1,
-                    name: 'Giày Thể Thao Nam Nike Nike Dbreak-Type',
-                    color: 'Đen',
-                    quantity: 1,
-                    price: 2000000,
-                    size: 40,
-                    danhMuc: 'Casual',
-                    image: 'https://product.hstatic.net/200000887901/product/img_3922.1_c94dbbc31a064475916e5b9042fd8fdb.jpg',
-                },
-                {
-                    id: 2,
-                    name: 'Giày Chạy Nam Adidas Ultraboost Cc_1 Dna FZ2545',
-                    color: 'Đen',
-                    quantity: 1,
-                    price: 2500000,
-                    size: 42,
-                    danhMuc: 'Business',
-                    image: 'https://product.hstatic.net/200000887901/product/am-aristino-regular-fit-atr0180z__17__e21deeca2c71449e88005c10efea4ecb_b98dacd36e16476aaf01effbcf884885.jpg',
-                },
-            ],
-        },
-        {
-            id: 2,
-            maHD: 'HD0122112111',
-            status: 'Vận chuyển',
-            products: [
-                {
-                    id: 3,
-                    name: 'Giày Thể Thao Nam Adidas Boost',
-                    color: 'Trắng',
-                    quantity: 2,
-                    price: 4000000,
-                    size: 42,
-                    danhMuc: 'Golf',
-                    image: 'https://product.hstatic.net/200000887901/product/img_3922.1_c94dbbc31a064475916e5b9042fd8fdb.jpg',
-                },
-            ],
-        },
-    ];
+    const [tabValue, setTabValue] = useState(0);
+    const [orders, setOrders] = useState([]);
+    const userKH = JSON.parse(localStorage.getItem("userKH"));
 
+    // List trạng thái hóa đơn
+    const tabLabels =
+        [
+            "Chờ xác nhận",
+            "Đã xác nhận",
+            "Chờ giao hàng",
+            "Đang vận chuyển",
+            "Đã giao hàng",
+            "Hoàn thành",
+            "Đã hủy"
+        ];
 
     const getTotalPrice = (products) => {
         return products.reduce((total, product) => total + product.price * product.quantity, 0);
@@ -69,12 +38,24 @@ const DonMua = () => {
         const lastName = nameParts[nameParts.length - 1]; // lấy phần tên sau cùng
         return lastName.charAt(0).toUpperCase(); // lấy chữ cái đầu tiên và chuyển thành chữ hoa
     };
-
-    const [value, setValue] = React.useState(0);
-    const handleTabChange = (event, newValue) => {
-        setValue(newValue);
+    const getHoaDons = async () => {
+        try {  
+            console.log(tabLabels[tabValue]+" - "+userKH?.khachHang?.id || 0);        
+            const response = await axios.get(`http://localhost:8080/donMua/getDonMuaTheoTrangThaiVaKhachHang`, null, {
+                params: {
+                    trangThai: tabLabels[tabValue],
+                    idKhachHang: userKH?.khachHang?.id || 0 // Nếu userKH không có, gửi 0 thay vì undefined
+                }
+            });
+           setOrders(response.data);
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu:", error);
+        }
     };
-
+    //Khi tabValue thay đổi giá trị
+    useEffect(() => {
+        getHoaDons();
+    }, [tabValue]);
     return (
         <Container >
             <Breadcrumbs aria-label="breadcrumb">
@@ -85,7 +66,7 @@ const DonMua = () => {
                     Đơn mua
                 </Typography>
             </Breadcrumbs>
-            <Box sx={{ padding: 0, marginTop:3 }}>
+            <Box sx={{ padding: 0, marginTop: 3 }}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={2.5}>
                         <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 0 }}>
@@ -116,7 +97,7 @@ const DonMua = () => {
                             </Box>
                         </Box>
 
-                        <Box sx={{ marginTop: 2 , marginLeft:-2}}>
+                        <Box sx={{ marginTop: 2, marginLeft: -2 }}>
                             <Button
                                 variant="text"
                                 sx={{
@@ -151,21 +132,18 @@ const DonMua = () => {
                     <Grid item xs={12} sm={9.5}>
                         {/* Tab Header */}
                         <Tabs
-                            value={value}
-                            onChange={handleTabChange}
+                            value={tabValue}
+                            onChange={(e, newValue) => setTabValue(newValue)}//Bắt buộc có 2 tham số 
                             indicatorColor="primary"
                             textColor="primary"
                             aria-label="order status tabs"
                         >
-                            <Tab label="Tất cả" />
-                            <Tab label="Chờ xác nhận" />
-                            <Tab label="Chờ vận chuyển" />
-                            <Tab label="Vận chuyển" />
-                            <Tab label="Hoàn thành" />
-                            <Tab label="Đã hủy" />
+                            {tabLabels.map((label, index) => {
+                                <Tab key={index} label={{ label }} />
+                            })}
                         </Tabs>
 
-                        {orders.map((order) => (
+                        {orders?.map((order) => (
                             <Box
                                 key={order.id}
                                 sx={{
@@ -177,19 +155,19 @@ const DonMua = () => {
                                     backgroundColor: '#fff', // Màu nền của khung
                                 }}
                             >
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom:1 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: 1 }}>
                                     {/* Mã hóa đơn bên trái */}
                                     <Typography sx={{ fontWeight: 'bold', fontSize: 18 }}>
-                                        Mã đơn: {order.maHD}
+                                        Mã đơn: {order.maHoaDon}
                                     </Typography>
 
                                     {/* Trạng thái bên phải */}
                                     <Typography sx={{ fontWeight: 'bold', fontSize: 18, color: '#1976D2' }}>
-                                        Trạng thái: {order.status}
+                                        Trạng thái: {order.trangThai}
                                     </Typography>
                                 </Box>
 
-                                {order.products.map((product, index) => (
+                                {order?.sanPhams?.map((product, index) => (
                                     <Card
                                         sx={{
                                             marginTop: 0,
@@ -208,31 +186,29 @@ const DonMua = () => {
                                                             height: 70,
                                                             objectFit: 'cover',
                                                         }}
-                                                        image={product.image}
-                                                        alt={product.name}
+                                                        image={product.hinhAnh}
+                                                        alt={product.tenSanPham}
                                                     />
                                                 </Grid>
 
                                                 <Grid item xs={9}>
                                                     <Typography variant="body1" component="div">
-                                                        <strong>{product.name}</strong>
+                                                        <strong>{product.tenSanPham}</strong>
                                                     </Typography>
                                                     <Grid container spacing={2} sx={{ marginTop: 0 }}>
                                                         <Grid item>
-                                                            <Typography variant="body2">Màu sắc: {product.color}</Typography>
+                                                            <Typography variant="body2">Màu sắc: {product.mauSac}</Typography>
                                                         </Grid>
                                                         <Grid item>
-                                                            <Typography variant="body2">Số lượng: {product.quantity}</Typography>
+                                                            <Typography variant="body2">Số lượng: {product.soLuong}</Typography>
                                                         </Grid>
                                                         <Grid item>
                                                             <Typography variant="body2">Kích thước: {product.size}</Typography>
                                                         </Grid>
-                                                        <Grid item>
-                                                            <Typography variant="body2">Danh mục: {product.danhMuc}</Typography>
-                                                        </Grid>
+
                                                         <Grid item>
                                                             <Typography variant="body2">
-                                                                Giá: {product.price.toLocaleString()} VNĐ
+                                                                Giá: {(product.gia * product.soLuong).toLocaleString()} VNĐ
                                                             </Typography>
                                                         </Grid>
                                                     </Grid>

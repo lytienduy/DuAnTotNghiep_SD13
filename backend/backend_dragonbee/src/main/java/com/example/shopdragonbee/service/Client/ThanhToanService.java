@@ -19,6 +19,7 @@ import java.util.List;
 public class ThanhToanService {
     @Autowired
     HoaDonRepository hoaDonRepository;
+
     @Autowired
     HoaDonChiTietRepository hoaDonChiTietRepository;
     @Autowired
@@ -48,6 +49,7 @@ public class ThanhToanService {
                 hoaDonChiTiet.setSoLuong(soLuong);
                 hoaDonChiTiet.setDonGia(donGia);
                 hoaDonChiTiet.setNgayTao(LocalDateTime.now());
+                hoaDonChiTiet.setTrangThai("Hoạt động");
                 hoaDonChiTietRepository.save(hoaDonChiTiet);//lưu hóa đơn chi tiết
                 sanPhamChiTietRepositoryP.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
             } else {
@@ -78,7 +80,8 @@ public class ThanhToanService {
             Float tongTienPhaiTra,
             Float phiShip,
             String ghiChu,
-            List<SPCTDTO.SanPhamCart> danhSachThanhToan) {
+            List<SPCTDTO.SanPhamCart> danhSachThanhToan,
+            String idKhachHang) {
         try {
             //Tạo hóa đơn
             HoaDon hoaDon = hoaDonRepository.findHoaDonByMa(maHoaDon);
@@ -106,6 +109,9 @@ public class ThanhToanService {
             hoaDon.setDiaChiNhanHang(diaChiNhanHang);
             hoaDon.setPhiShip(phiShip);
             hoaDon.setTongTien(tongTienPhaiTra);
+            if (idKhachHang != null) {
+                hoaDon.setKhachHang(khachHangRepository.findById(Integer.parseInt(idKhachHang)).get());
+            }
             hoaDon.setGhiChu(ghiChu);
             HoaDon hoaDonVuaTao = hoaDonRepository.save(hoaDon);//Tạo hóa đơn
             //Kiểm tra số lượng sản phẩm và tạo các hóa đơn chi tiết

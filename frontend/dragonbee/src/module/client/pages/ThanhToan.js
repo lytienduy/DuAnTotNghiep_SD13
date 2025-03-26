@@ -52,6 +52,8 @@ const ThanhToan = () => {
     const tongTien = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
     const tongTienThanhToan = tongTien - discountAmount + phiShip;
     const [openConfirmDatHang, setOpenConfirmDatHang] = useState(false);
+    const userKH = JSON.parse(localStorage.getItem("userKH"));
+
     //Thông báo Toast
     const showSuccessToast = (message) => {
         toast.success(message, {
@@ -115,7 +117,7 @@ const ThanhToan = () => {
         const addressParts = [specificAddress, ward, district, city]
             .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
             .join(" "); // Ghép chuỗi với dấu cách
-        const response = await axios.post(`http://localhost:8080/thanhToanClient/xacNhanDatHangKhongDangNhap`, {
+        const response = await axios.post(`http://localhost:8080/thanhToanClient/xacNhanDatHang`, {
             maHoaDon: maHoaDon,
             pgg: selectedVoucherCode,
             tenNguoiNhan: tenNguoiNhan,
@@ -125,7 +127,8 @@ const ThanhToan = () => {
             tongTienPhaiTra: tongTienThanhToan,
             phiShip: phiShip,
             ghiChu: ghiChu,
-            danhSachThanhToan: products //đây là mảng json
+            danhSachThanhToan: products, //đây là mảng json
+            idKhachHang: userKH?.khachHang?.id
         })
         if (response.data === "OK") {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -168,7 +171,6 @@ const ThanhToan = () => {
                 const checkClosed = setInterval(async () => {
                     if (paymentWindow?.closed) {
                         clearInterval(checkClosed);
-                        new Promise(resolve => setTimeout(resolve, 3000)); // Đợi 5 giây sau khi tab đóng
                         checkPaymentStatus(maHoaDon); // Kiểm tra trạng thái thanh toán
                     }
                 }, 1000);
