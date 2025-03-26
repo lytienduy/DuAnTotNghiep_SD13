@@ -45,6 +45,8 @@ import GioHang from './module/client/pages/GioHang';
 import ThanhToan from './module/client/pages/ThanhToan';
 import DatHangThanhCong from './module/client/pages/DatHangThanhCong';
 import DonMua from './module/client/pages/DonMua';
+import Login from './module/auth/Login';
+import PrivateRoute from './module/auth/PrivateRoute';
 // Thêm các trang Client khác ở đây...
 
 const theme = createTheme({
@@ -82,68 +84,70 @@ const MainLayout = () => {
   };
 
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const isLoginRoute = location.pathname === "/login";
 
   return (
     <Box sx={{ display: 'flex' }}>
       {/* Sidebar */}
-      {isAdminRoute && <AdminSidebar isSidebarOpen={isSidebarOpen} />}
+      {!isLoginRoute && isAdminRoute && <AdminSidebar isSidebarOpen={isSidebarOpen} />}
 
       <Box sx={{ flexGrow: 1, backgroundColor: '#f9f9f9', minHeight: '100vh' }}>
         {/* Header */}
 
-        {isAdminRoute ? (
+        {!isLoginRoute && (isAdminRoute ? (
           <AdminHeader toggleSidebar={toggleSidebar} />
         ) : (
           <ClientHeader />
-        )}
+        ))}
 
         {/* Routing */}
-        <Box sx={{ padding: 3, backgroundColor: '#f3f3f3',  flexGrow: 1 }}>
+        <Box sx={{ padding: 3, backgroundColor: '#f3f3f3', flexGrow: 1 }}>
           <Routes>
             {/* Admin Routes */}
-            <Route path="/" element={<NavigateToThongKe />} />
-            <Route path="/admin/thongKe" element={<ThongKe />} />
-            <Route path="/admin/banTaiQuay" element={<BanTaiQuay />} />
-            <Route path="/admin/hoaDon" element={<HoaDon />} />
-            <Route path="/admin/hoaDon/:id" element={<HoaDonChiTiet />} />
-            <Route path='/admin/phieu-giam-gia' element={<PhieuGiamGia />} />
-            <Route path="/admin/phieu-giam-gia/them-moi" element={<ThemPhieuGiamGia />} />
-            <Route path="/admin/phieu-giam-gia/chinh-sua/:ma" element={<DetailPhieuGiamGia />} />
-            <Route path="/admin/nhanvien" element={<NhanVien />} />
-            <Route path="/admin/nhanvien/tao-moi" element={<TaoMoiNhanVien />} />
-            <Route path="/admin/nhanvien/chinh-sua/:id" element={<NhanVienEdit />} />
-            <Route path="/admin/khachHang" element={<KhachHang />} />
-            <Route path="/admin/khachHang/detail/:id" element={<ThongTinKhachHang />} />
-            <Route path="/admin/khachHang/add/" element={<ThongTinKhachHang />} />
+            <Route path="/" element={<PrivateRoute element={<NavigateToThongKe />} />} />
+            <Route path="/admin/thongKe" element={<PrivateRoute element={<ThongKe />} />} />
+            <Route path="/admin/banTaiQuay" element={<PrivateRoute element={<BanTaiQuay />} />} />
+            <Route path="/admin/hoaDon" element={<PrivateRoute element={<HoaDon />} />} />
+            <Route path="/admin/hoaDon/:id" element={<PrivateRoute element={<HoaDonChiTiet />} />} />
+            <Route path='/admin/phieu-giam-gia' element={<PrivateRoute element={<PhieuGiamGia />} />} />
+            <Route path="/admin/phieu-giam-gia/them-moi" element={<PrivateRoute element={<ThemPhieuGiamGia />} />} />
+            <Route path="/admin/phieu-giam-gia/chinh-sua/:ma" element={<PrivateRoute element={<DetailPhieuGiamGia />} />} />
+            <Route path="/admin/nhanvien" element={<PrivateRoute element={<NhanVien />} />} />
+            <Route path="/admin/nhanvien/tao-moi" element={<PrivateRoute element={<TaoMoiNhanVien />} />} />
+            <Route path="/admin/nhanvien/chinh-sua/:id" element={<PrivateRoute element={<NhanVienEdit />} />} />
+            <Route path="/admin/khachHang" element={<PrivateRoute element={<KhachHang />} />} />
+            <Route path="/admin/khachHang/detail/:id" element={<PrivateRoute element={<ThongTinKhachHang />} />} />
+            <Route path="/admin/khachHang/add/" element={<PrivateRoute element={<ThongTinKhachHang />} />} />
             {/* sản phẩm */}
-            <Route path="/admin/sanpham" element={<SanPham />} />
+            <Route path="/admin/sanpham" element={<PrivateRoute element={<SanPham />} />} />
             {/* chất liệu */}
-            <Route path="/admin/chatlieu" element={<ChatLieu />} />
+            <Route path="/admin/chatlieu" element={<PrivateRoute element={<ChatLieu />} />} />
             {/* màu sác */}
-            <Route path="/admin/mausac" element={<MauSac />} />
+            <Route path="/admin/mausac" element={<PrivateRoute element={<MauSac />} />} />
             {/* Phong cách */}
-            <Route path="/admin/phongcach" element={<PhongCach />} />
+            <Route path="/admin/phongcach" element={<PrivateRoute element={<PhongCach />} />} />
             {/* Size */}
-            <Route path="/admin/size" element={<Size />} />
+            <Route path="/admin/size" element={<PrivateRoute element={<Size />} />} />
             {/* kiểu dáng */}
-            <Route path="/admin/kieudang" element={<KieuDang />} />
+            <Route path="/admin/kieudang" element={<PrivateRoute element={<KieuDang />} />} />
             {/* kiểu đai quần */}
-            <Route path="/admin/kieudaiquan" element={<KieuDaiQuan />} />
+            <Route path="/admin/kieudaiquan" element={<PrivateRoute element={<KieuDaiQuan />} />} />
             {/* Xuất sứ */}
-            <Route path="/admin/xuatsu" element={<XuatSu />} />
+            <Route path="/admin/xuatsu" element={<PrivateRoute element={<XuatSu />} />} />
             {/* Danh Muc */}
-            <Route path="/admin/danhmuc" element={<DanhMuc />} />
+            <Route path="/admin/danhmuc" element={<PrivateRoute element={<DanhMuc />} />} />
             {/* Thuong Hieu */}
-            <Route path="/admin/thuonghieu" element={<ThuongHieu />} />
+            <Route path="/admin/thuonghieu" element={<PrivateRoute element={<ThuongHieu />} />} />
             {/* chi tiết sản phẩm */}
-            <Route path="/admin/sanpham/:id" element={<SanPhamChiTiet />} />
+            <Route path="/admin/sanpham/:id" element={<PrivateRoute element={<SanPhamChiTiet />} />} />
             {/* ADD San Pham */}
-            <Route path="/admin/sanpham/addProduct" element={<AddProduct />} />
+            <Route path="/admin/sanpham/addProduct" element={<PrivateRoute element={<AddProduct />} />} />
             {/* Add Chất liệu */}
-            <Route path="/admin/chatlieu/addChatLieu" element={<AddChatLieu />} />
+            <Route path="/admin/chatlieu/addChatLieu" element={<PrivateRoute element={<AddChatLieu />} />} />
             {/* Thêm các route Admin khác... */}
 
-
+            {/* Login Route */}
+            <Route path="/login" element={<Login />} />
 
             {/* Client Routes */}
             <Route path="/home" element={<Home />} />
@@ -157,7 +161,7 @@ const MainLayout = () => {
           </Routes>
         </Box>
         {/* Footer */}
-        {!isAdminRoute && <ClientFooter />}
+        {!isLoginRoute && !isAdminRoute && <ClientFooter />}
       </Box>
     </Box>
   );

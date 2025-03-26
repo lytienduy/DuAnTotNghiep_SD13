@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(exclude = {"vaiTro", "nhanVien", "khachHang"})
 public class TaiKhoan {
 
     @Id
@@ -41,4 +42,12 @@ public class TaiKhoan {
 
     @Column(name = "nguoi_sua")
     private String nguoiSua;
+
+    // Thêm mối quan hệ với NhanVien
+    @OneToOne(mappedBy = "taiKhoan", fetch = FetchType.EAGER)
+    private NhanVien nhanVien;
+
+    // Thêm mối quan hệ với KhachHang
+    @OneToOne(mappedBy = "taiKhoan", fetch = FetchType.EAGER)
+    private KhachHang khachHang;
 }

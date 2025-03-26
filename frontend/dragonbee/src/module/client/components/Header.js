@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  AppBar, Toolbar, Typography, Button, Box, InputBase, IconButton, Badge, MenuItem, Menu
+  AppBar, Toolbar, Typography, Button, Box, InputBase, IconButton, Badge, MenuItem, Menu,Avatar
 } from "@mui/material";
 import { Search, ShoppingCart, Person } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -61,6 +61,36 @@ const Header = () => {
     }, 1000); // 60 giây
     return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
   }, []);
+
+  // Check if the user is logged in by checking localStorage
+  const userKH = JSON.parse(localStorage.getItem('userKH'));
+
+  // Navigate to the login page or any other page
+  const goToLogin = () => {
+    navigate('/login');
+    handleClose();
+  };
+
+  // Navigate to registration page
+  const goToRegister = () => {
+    navigate('/register');
+    handleClose();
+  };
+  // Logout functionality
+  const handleLogout = () => {
+    localStorage.removeItem('userKH');
+    localStorage.removeItem('tokenKH');
+    navigate('/home');
+    handleClose();
+  };
+
+  // Get first and last name initials
+  const getNameInitials = (name) => {
+    const nameArray = name.split(' ');
+    const firstInitial = nameArray[0]?.charAt(0).toUpperCase(); // First character of first name
+    const lastInitial = nameArray[nameArray.length - 1]?.charAt(0).toUpperCase(); // First character of last name
+    return firstInitial + lastInitial;
+  };
 
   return (
     <Box >
@@ -160,10 +190,27 @@ const Header = () => {
             <div>
               {/* Person Icon */}
               <IconButton onClick={handleClick}>
-                <Person />
+                {userKH ? (
+                  // Display initials if user is logged in
+                  <Avatar
+                    sx={{
+                      bgcolor: '#1976D2', // Gray background
+                      color: 'white', // White text
+                      width: 40,
+                      height: 40,
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {getNameInitials(userKH?.khachHang?.tenKhachHang)}
+                  </Avatar>
+                ) : (
+                  // Display person icon if not logged in
+                  <Person />
+                )}
               </IconButton>
 
-              {/* Menu with 3 items */}
+              {/* Menu with dynamic items */}
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -177,15 +224,30 @@ const Header = () => {
                   },
                 }}
               >
-                <MenuItem onClick={handleClose}>
-                  <Typography color="textSecondary">Tài khoản của tôi</Typography>
-                </MenuItem>
-                <MenuItem onClick={goToDonMua}>
-                  <Typography color="textSecondary">Đơn mua</Typography>
-                </MenuItem>
-                <MenuItem onClick={handleClose}>
-                  <Typography color="textSecondary">Đăng xuất</Typography>
-                </MenuItem>
+                {userKH ? (
+
+                  <>
+                    <MenuItem onClick={handleClose}>
+                      <Typography color="textSecondary">Tài khoản của tôi</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={goToDonMua}>
+                      <Typography color="textSecondary">Đơn mua</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={handleLogout}>
+                      <Typography color="textSecondary">Đăng xuất</Typography>
+                    </MenuItem>
+                  </>
+                ) : (
+                  // If not logged in, show Login and Register options
+                  <>
+                    <MenuItem onClick={goToLogin}>
+                      <Typography color="textSecondary">Đăng nhập</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={goToRegister}>
+                      <Typography color="textSecondary">Đăng ký</Typography>
+                    </MenuItem>
+                  </>
+                )}
               </Menu>
             </div>
           </Box>

@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -60,8 +61,9 @@ public class NhanVien {
     @Column(name = "nguoi_sua", length = 50)
     private String nguoiSua;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "id_tai_khoan", nullable = false)
+    @JsonIgnore
     private TaiKhoan taiKhoan;
 
     @PrePersist

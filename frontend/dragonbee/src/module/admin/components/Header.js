@@ -1,4 +1,4 @@
-import React, { } from "react";
+import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, IconButton, Avatar, Paper, Box } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -8,7 +8,15 @@ import { useNavigate } from "react-router-dom"; // Thêm để điều hướng
 
 const Header = ({ toggleSidebar }) => {
   const navigate = useNavigate(); // Hook để điều hướng
+  const [userData, setUserData] = useState(null);
 
+  useEffect(() => {
+    // Lấy thông tin người dùng từ localStorage khi trang Header được render
+    const user = localStorage.getItem('userData');
+    if (user) {
+      setUserData(JSON.parse(user));
+    }
+  }, []);
 
   return (
     <AppBar
@@ -22,8 +30,8 @@ const Header = ({ toggleSidebar }) => {
       }}
     >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-         {/* Icon Menu */}
-         <IconButton edge="start" color="inherit" sx={{ marginRight: 2, color: "black" }} onClick={toggleSidebar}>
+        {/* Icon Menu */}
+        <IconButton edge="start" color="inherit" sx={{ marginRight: 2, color: "black" }} onClick={toggleSidebar}>
           <MenuIcon />
         </IconButton>
 
@@ -45,24 +53,51 @@ const Header = ({ toggleSidebar }) => {
           </IconButton>
 
           {/* User Avatar */}
-          <IconButton onClick={() => navigate("/login")} sx={{ padding: 0 }}>
-            <Paper
-            elevation={3}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              padding: "8px 12px",
-              borderRadius: "50px",
-              marginRight: 2,
-            }}
-            >
-            <Avatar sx={{ bgcolor: "#90caf9", width: 30, height: 30, marginRight: 1 }}>
-              <PersonIcon />
-            </Avatar>
-            <SettingsIcon sx={{ color: "#6a5acd" }} />
-            </Paper>
-          </IconButton>
-          
+          {userData && (
+            <IconButton sx={{ padding: 0 }}>
+              <Paper
+                elevation={3}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "8px 12px",
+                  borderRadius: "50px",
+                  marginRight: 2,
+                }}
+              >
+                <span style={{fontSize:'15px'}}><span>Xin chào!</span> {userData.nhanVien?.tenNhanVien}</span>
+                <div
+                  style={{
+                    width: 30,
+                    height: 30,
+                    marginLeft: 8,
+                    borderRadius: "50%",
+                    overflow: "hidden",  // Giúp ảnh luôn được cắt tròn
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  {/* Hiển thị ảnh nếu có, nếu không có ảnh thì để một thẻ trống hoặc mặc định */}
+                  {userData.nhanVien?.anh ? (
+                    <img
+                      src={userData.nhanVien.anh}
+                      alt="User Avatar"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover", // Giúp ảnh không bị méo và lấp đầy vùng chứa
+                      }}
+                    />
+                  ) : (
+                    <PersonIcon /> // Nếu không có ảnh, hiển thị icon mặc định (hoặc bạn có thể để trống)
+                  )}
+                </div>
+                
+              </Paper>
+            </IconButton>
+          )}
+
         </Box>
       </Toolbar>
     </AppBar>
