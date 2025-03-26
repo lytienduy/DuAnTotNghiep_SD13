@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AnhSanPhamService {
@@ -43,6 +44,23 @@ public class AnhSanPhamService {
         // Trả về danh sách ảnh mới vừa thêm vào (savedAnhs)
         return savedAnhs;
     }
+    //xóa
+    public boolean deleteAnhSanPham(Integer id) {
+        Optional<AnhSanPham> anhSanPham = anhSanPhamRepository.findById(id);
+        if (anhSanPham.isPresent()) {
+            anhSanPhamRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 
+    // tạo mã
+    private static int counter = 1; // Bắt đầu từ MA001
+
+    // Phương thức tạo mã ảnh tự động
+    public static String generateAnhCode() {
+        // Đảm bảo rằng mã luôn có 3 chữ số (có thể thay đổi theo yêu cầu)
+        return "MA" + String.format("%03d", counter++);
+    }
 
 }

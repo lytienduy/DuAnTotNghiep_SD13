@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.AnhSanPhamDTO;
 import com.example.shopdragonbee.dto.SanPhamChiTietDTO;
 import com.example.shopdragonbee.dto.SanPhamChiTietUpdateDTO;
 import com.example.shopdragonbee.dto.UpdateSanphamChiTietDTO;
@@ -23,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SanPhamChiTietService {
@@ -56,72 +59,159 @@ public class SanPhamChiTietService {
     }
 
 
-    private SanPhamChiTietDTO convertToDTO(SanPhamChiTiet sanPhamChiTiet) {
+    private SanPhamChiTietDTO convertToDTO(SanPhamChiTiet entity) {
         return SanPhamChiTietDTO.builder()
-                .id(sanPhamChiTiet.getId())
-                .ma(sanPhamChiTiet.getMa())
-                .sanPhamId(sanPhamChiTiet.getSanPham().getId())
-                .danhMucId(sanPhamChiTiet.getDanhMuc() != null ? sanPhamChiTiet.getDanhMuc().getId() : null)
-                .thuongHieuId(sanPhamChiTiet.getThuongHieu() != null ? sanPhamChiTiet.getThuongHieu().getId() : null)
-                .phongCachId(sanPhamChiTiet.getPhongCach() != null ? sanPhamChiTiet.getPhongCach().getId() : null)
-                .chatLieuId(sanPhamChiTiet.getChatLieu() != null ? sanPhamChiTiet.getChatLieu().getId() : null)
-                .mauSacId(sanPhamChiTiet.getMauSac() != null ? sanPhamChiTiet.getMauSac().getId() : null)
-                .sizeId(sanPhamChiTiet.getSize() != null ? sanPhamChiTiet.getSize().getId() : null)
-                .kieuDangId(sanPhamChiTiet.getKieuDang() != null ? sanPhamChiTiet.getKieuDang().getId() : null)
-                .kieuDaiQuanId(sanPhamChiTiet.getKieuDaiQuan() != null ? sanPhamChiTiet.getKieuDaiQuan().getId() : null)
-                .xuatXuId(sanPhamChiTiet.getXuatXu() != null ? sanPhamChiTiet.getXuatXu().getId() : null)
-                .soLuong(sanPhamChiTiet.getSoLuong())
-                .gia(sanPhamChiTiet.getGia())
-                .trangThai(sanPhamChiTiet.getTrangThai())
-                .moTa(sanPhamChiTiet.getMoTa())
-                .anhUrls(sanPhamChiTiet.getListAnh() != null
-                        ? sanPhamChiTiet.getListAnh().stream().map(AnhSanPham::getAnhUrl).toList()
-                        : null)
+                .id(entity.getId())
+                .ma(entity.getMa())
+                .sanPhamId(entity.getSanPham() != null ? entity.getSanPham().getId() : null)
+                .danhMucId(entity.getDanhMuc() != null ? entity.getDanhMuc().getId() : null)
+                .thuongHieuId(entity.getThuongHieu() != null ? entity.getThuongHieu().getId() : null)
+                .phongCachId(entity.getPhongCach() != null ? entity.getPhongCach().getId() : null)
+                .chatLieuId(entity.getChatLieu() != null ? entity.getChatLieu().getId() : null)
+                .mauSacId(entity.getMauSac() != null ? entity.getMauSac().getId() : null)
+                .sizeId(entity.getSize() != null ? entity.getSize().getId() : null)
+                .kieuDangId(entity.getKieuDang() != null ? entity.getKieuDang().getId() : null)
+                .kieuDaiQuanId(entity.getKieuDaiQuan() != null ? entity.getKieuDaiQuan().getId() : null)
+                .xuatXuId(entity.getXuatXu() != null ? entity.getXuatXu().getId() : null)
+                .soLuong(entity.getSoLuong())
+                .gia(entity.getGia())
+                .trangThai(entity.getTrangThai())
+                .moTa(entity.getMoTa())
+
+                // Lấy danh sách URL để hiển thị ảnh
+                .anhUrls(
+                        entity.getListAnh().stream()
+                                .map(AnhSanPham::getAnhUrl)
+                                .collect(Collectors.toList())
+                )
+
+                // Lấy danh sách ảnh đầy đủ để phục vụ xóa ảnh (URL → ID)
+                .anhSanPhams(
+                        entity.getListAnh().stream()
+                                .map(anh -> AnhSanPhamDTO.builder()
+                                        .id(anh.getId())
+                                        .anhUrl(anh.getAnhUrl())
+                                        .sanPhamChiTietId(entity.getId())
+                                        .build())
+                                .collect(Collectors.toList())
+                )
+
                 .build();
     }
 
 
+
     // update 1 sản phẩm chi tiết
     @Transactional
-    public SanPhamChiTietDTO updateSanPhamChiTiet(Integer id, SanPhamChiTietUpdateDTO request) {
+    public SanPhamChiTiet updateSanPhamChiTiet(Integer id, SanPhamChiTietUpdateDTO sanPhamChiTietUpdateDTO) {
+        // Tìm sản phẩm chi tiết
         SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sản phẩm chi tiết không tồn tại"));
 
-        // Lưu trạng thái ban đầu của sản phẩm chi tiết
-        String initialStatus = sanPhamChiTiet.getTrangThai();
+        // Cập nhật các trường thông tin từ DTO
+        if (sanPhamChiTietUpdateDTO.getDanhMucId() != null) {
+            sanPhamChiTiet.setDanhMuc(danhMucRepository.findById(sanPhamChiTietUpdateDTO.getDanhMucId()).orElse(null));
+        }
+        if (sanPhamChiTietUpdateDTO.getThuongHieuId() != null) {
+            sanPhamChiTiet.setThuongHieu(thuongHieuRepository.findById(sanPhamChiTietUpdateDTO.getThuongHieuId()).orElse(null));
+        }
+        if (sanPhamChiTietUpdateDTO.getPhongCachId() != null) {
+            sanPhamChiTiet.setPhongCach(phongCachRepository.findById(sanPhamChiTietUpdateDTO.getPhongCachId()).orElse(null));
+        }
+        if (sanPhamChiTietUpdateDTO.getChatLieuId() != null) {
+            sanPhamChiTiet.setChatLieu(chatLieuRepository.findById(sanPhamChiTietUpdateDTO.getChatLieuId()).orElse(null));
+        }
+        if (sanPhamChiTietUpdateDTO.getKieuDangId() != null) {
+            sanPhamChiTiet.setKieuDang(kieuDangRepository.findById(sanPhamChiTietUpdateDTO.getKieuDangId()).orElse(null));
+        }
+        if (sanPhamChiTietUpdateDTO.getKieuDaiQuanId() != null) {
+            sanPhamChiTiet.setKieuDaiQuan(kieuDaiQuanRepository.findById(sanPhamChiTietUpdateDTO.getKieuDaiQuanId()).orElse(null));
+        }
+        if (sanPhamChiTietUpdateDTO.getXuatXuId() != null) {
+            sanPhamChiTiet.setXuatXu(xuatXuRepository.findById(sanPhamChiTietUpdateDTO.getXuatXuId()).orElse(null));
+        }
 
-        // Lấy trạng thái của sản phẩm cha (sản phẩm chính)
-        String trangThaiSanPham = sanPhamChiTiet.getSanPham().getTrangThai();
+        // Cập nhật các thông tin khác
+        sanPhamChiTiet.setMoTa(sanPhamChiTietUpdateDTO.getMoTa());
+        if (sanPhamChiTietUpdateDTO.getMauSacId() != null) {
+            sanPhamChiTiet.setMauSac(mauSacRepository.findById(sanPhamChiTietUpdateDTO.getMauSacId()).orElse(null));
+        }
+        if (sanPhamChiTietUpdateDTO.getSizeId() != null) {
+            sanPhamChiTiet.setSize(sizeRepository.findById(sanPhamChiTietUpdateDTO.getSizeId()).orElse(null));
+        }
 
-        // Cập nhật số lượng
-        sanPhamChiTiet.setSoLuong(request.getSoLuong());
+        sanPhamChiTiet.setSoLuong(sanPhamChiTietUpdateDTO.getSoLuong());
+        sanPhamChiTiet.setGia(sanPhamChiTietUpdateDTO.getGia());
 
-        // Kiểm tra và cập nhật trạng thái của sản phẩm chi tiết
-        if (request.getSoLuong() == 0) {
+        // Cập nhật trạng thái sản phẩm chi tiết
+        if (sanPhamChiTiet.getSoLuong() == 0) {
             sanPhamChiTiet.setTrangThai("Hết hàng");
         } else {
-            // Nếu số lượng > 0, trạng thái sẽ quay lại trạng thái của sản phẩm cha hoặc giữ trạng thái ban đầu
-            if ("Ngừng bán".equals(initialStatus)) {
-                sanPhamChiTiet.setTrangThai("Ngừng bán");
+            // Kiểm tra nếu sanPhamChiTiet.getSanPham() không bị null
+            if (sanPhamChiTiet.getSanPham() != null) {
+                sanPhamChiTiet.setTrangThai(sanPhamChiTiet.getSanPham().getTrangThai());
             } else {
-                sanPhamChiTiet.setTrangThai(trangThaiSanPham); // Trạng thái của sản phẩm cha
+                sanPhamChiTiet.setTrangThai("Chưa xác định");
             }
         }
 
-        // Cập nhật mô tả và giá
-        sanPhamChiTiet.setGia(request.getGia());
-        sanPhamChiTiet.setMoTa(request.getMoTa());
+        // Cập nhật ảnh cho sản phẩm chi tiết
+        updateAnhSanPham(sanPhamChiTiet, sanPhamChiTietUpdateDTO.getAnhUrlsToAdd(), sanPhamChiTietUpdateDTO.getAnhIdsToDelete());
 
-        // Lưu thay đổi vào database
-        sanPhamChiTietRepository.save(sanPhamChiTiet);
+        // Lưu sản phẩm chi tiết vào DB
+        return sanPhamChiTietRepository.save(sanPhamChiTiet);
+    }
 
-        return convertToDTO(sanPhamChiTiet);
+    private String generateAnhMa() {
+        List<String> lastAnhMas = anhSanPhamRepository.findAllByOrderByMaDesc();
+
+        int newMa = 1;
+
+        Optional<String> lastValidMa = lastAnhMas.stream()
+                .filter(ma -> ma.startsWith("MA"))
+                .findFirst();
+
+        if (lastValidMa.isPresent()) {
+            try {
+                String numberPart = lastValidMa.get().substring(2); // ví dụ "001"
+                newMa = Integer.parseInt(numberPart) + 1;
+            } catch (NumberFormatException e) {
+                // Nếu lỡ có mã MAabc → bỏ qua
+                newMa = 1;
+            }
+        }
+
+        return String.format("MA%03d", newMa);
     }
 
 
+    private void updateAnhSanPham(SanPhamChiTiet sanPhamChiTiet, List<String> anhUrlsToAdd, List<Integer> anhIdsToDelete) {
+        // Xóa các ảnh theo danh sách ID cần xóa
+        if (anhIdsToDelete != null && !anhIdsToDelete.isEmpty()) {
+            for (Integer anhId : anhIdsToDelete) {
+                anhSanPhamRepository.findById(anhId).ifPresent(anhSanPham -> {
+                    if (anhSanPham.getSanPhamChiTiet().equals(sanPhamChiTiet)) {
+                        anhSanPhamRepository.delete(anhSanPham);
+                    }
+                });
+            }
+        }
 
+        // Thêm các ảnh mới vào sản phẩm chi tiết
+        if (anhUrlsToAdd != null && !anhUrlsToAdd.isEmpty()) {
+            for (String anhUrl : anhUrlsToAdd) {
+                AnhSanPham anhSanPham = new AnhSanPham();
+                anhSanPham.setAnhUrl(anhUrl);
+                anhSanPham.setSanPhamChiTiet(sanPhamChiTiet);
 
+                // Sinh mã ảnh tự động theo định dạng "MA001", "MA002", v.v.
+                String maAnh = generateAnhMa();
+                anhSanPham.setMa(maAnh);  // Gán giá trị cho trường ma
 
+                anhSanPhamRepository.save(anhSanPham);
+            }
+        }
+    }
 
     // add
     // Cập nhật phương thức để thêm ảnh

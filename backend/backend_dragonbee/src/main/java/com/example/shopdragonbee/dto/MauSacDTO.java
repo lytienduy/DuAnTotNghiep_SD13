@@ -15,4 +15,9 @@ public class MauSacDTO {
     private String maMau;
     private String moTa;
     private String trangThai;
+
+    public MauSacDTO(Integer id, String tenMauSac) {
+        this.id = id;
+        this.tenMauSac = tenMauSac;
+    }
 }

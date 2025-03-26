@@ -2,8 +2,6 @@ package com.example.shopdragonbee.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-
 
 @Entity
 @Table(name = "danh_muc")
@@ -13,7 +11,6 @@ import org.springframework.data.annotation.Id;
 @Builder
 public class DanhMuc {
 
-    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

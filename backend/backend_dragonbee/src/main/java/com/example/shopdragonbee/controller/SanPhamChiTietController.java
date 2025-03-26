@@ -35,24 +35,14 @@ public class SanPhamChiTietController {
         return ResponseEntity.ok(sanPhamChiTietDTO);
     }
 
+
     // update 1 sản phẩm chi tiết
-    @PutMapping("/{id}")
-    public ResponseEntity<SanPhamChiTietDTO> updateSanPhamChiTiet(@PathVariable Integer id,
-                                                                  @RequestBody SanPhamChiTietUpdateDTO request) {
-        try {
-            System.out.println("Dữ liệu nhận từ frontend: " + request); // Kiểm tra dữ liệu từ frontend
-            // Gọi service để cập nhật sản phẩm chi tiết
-            SanPhamChiTietDTO updatedProduct = sanPhamChiTietService.updateSanPhamChiTiet(id, request);
-
-            // Trả về phản hồi thành công kèm theo DTO đã được cập nhật
-            return ResponseEntity.ok(updatedProduct);
-
-        } catch (RuntimeException e) {
-            // Xử lý lỗi nếu có vấn đề trong quá trình cập nhật
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new SanPhamChiTietDTO()); // Hoặc có thể trả về thông báo lỗi chi tiết
-        }
+    @PutMapping("/update/{id}")
+    public ResponseEntity<SanPhamChiTiet> updateSanPhamChiTiet(@PathVariable Integer id, @RequestBody SanPhamChiTietUpdateDTO sanPhamChiTietUpdateDTO) {
+        SanPhamChiTiet updatedSanPhamChiTiet = sanPhamChiTietService.updateSanPhamChiTiet(id, sanPhamChiTietUpdateDTO);
+        return ResponseEntity.ok(updatedSanPhamChiTiet);
     }
+
 
     //add
     // API thêm sản phẩm chi tiết và ảnh

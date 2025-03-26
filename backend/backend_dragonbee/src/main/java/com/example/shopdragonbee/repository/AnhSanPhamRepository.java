@@ -20,4 +20,7 @@ public interface AnhSanPhamRepository extends JpaRepository<AnhSanPham,Integer> 
             "FROM AnhSanPham asp " +
             "WHERE asp.sanPhamChiTiet.id IN :ids")
     List<Object[]> findAnhSanPhamBySanPhamChiTietIds(@Param("ids") List<Integer> ids);
+
+    @Query("SELECT a.ma FROM AnhSanPham a ORDER BY a.ma DESC")
+    List<String> findAllByOrderByMaDesc();
 }

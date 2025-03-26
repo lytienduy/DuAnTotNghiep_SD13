@@ -53,15 +53,14 @@ public class SanPhamController {
         return sanPhamService.getAllSanPhamChiTiet(page, size);
     }
 
-    // API lấy sản phẩm chi tiết theo ID sản phẩm cha có phân trang
     @GetMapping("/by-san-pham/{id}")
     public Page<SanPhamChiTietRespone> getSanPhamChiTietBySanPhamId(
             @PathVariable Integer id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        System.out.println("sanPhamId: " + id);  // Log sanPhamId để kiểm tra
         return sanPhamService.getSanPhamChiTietBySanPhamId(id, page, size);
     }
+
 
 
 
