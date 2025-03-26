@@ -31,13 +31,13 @@ public class ThanhToanService {
 
     //Add sản phẩm vào giỏ hàng
     @Transactional
-    public Boolean addSanPhamVaoGioHang(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia) {
+    public Boolean addSanPhamVaoHoaDonChiTiet(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia) {
         try {
             SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get();
             HoaDonChiTiet kiemTraHDCTDaCoChua = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGiaAndTrangThai(
                     hoaDonRepository.findById(idHoaDon).get(),
                     sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get(),
-                    donGia,"Hoạt động");
+                    donGia, "Hoạt động");
 
             if (kiemTraHDCTDaCoChua == null) {
                 HoaDonChiTiet hoaDonChiTiet = new HoaDonChiTiet();
@@ -69,6 +69,7 @@ public class ThanhToanService {
 
     @Transactional
     public String xacNhanDatHangKhongDangNhap(
+            String maHoaDon,
             String pgg,
             String tenNguoiNhan,
             String sdtNguoiNhan,
@@ -80,8 +81,11 @@ public class ThanhToanService {
             List<SPCTDTO.SanPhamCart> danhSachThanhToan) {
         try {
             //Tạo hóa đơn
-            HoaDon hoaDon = new HoaDon();
-            hoaDon.setMa("HD" + (System.currentTimeMillis() % 100000));//Set mã
+            HoaDon hoaDon = hoaDonRepository.findHoaDonByMa(maHoaDon);
+            if (hoaDon == null) {
+                hoaDon = new HoaDon();
+                hoaDon.setMa("HD" + (System.currentTimeMillis() % 100000));//Set mã
+            }
             hoaDon.setLoaiDon("Online");//Set loại
             hoaDon.setTrangThai("Chờ xác nhận");//Set trạng thái
             hoaDon.setNgayTao(LocalDateTime.now());//Set ngày tạo
@@ -112,7 +116,7 @@ public class ThanhToanService {
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                     return "Có sản phẩm không đủ số lượng";
                 } else {
-                    addSanPhamVaoGioHang(hoaDonVuaTao.getId(), sanPhamCart.getIdSPCT(), sanPhamCart.getQuantity(), sanPhamCart.getGia());
+                    addSanPhamVaoHoaDonChiTiet(hoaDonVuaTao.getId(), sanPhamCart.getIdSPCT(), sanPhamCart.getQuantity(), sanPhamCart.getGia());
                 }
             }
             return "OK";
@@ -121,4 +125,6 @@ public class ThanhToanService {
             return "Đã có lỗi không mong muốn xảy ra";
         }
     }
+
+
 }

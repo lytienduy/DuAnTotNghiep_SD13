@@ -9,6 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ThanhToanDTO {
+    private String maHoaDon;
     private String pgg; // Mã giảm giá
     private String tenNguoiNhan;
     private String sdtNguoiNhan;

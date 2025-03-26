@@ -52,8 +52,6 @@ const ThanhToan = () => {
     const tongTien = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
     const tongTienThanhToan = tongTien - discountAmount + phiShip;
     const [openConfirmDatHang, setOpenConfirmDatHang] = useState(false);
-    const [searchParams] = useSearchParams();
-    const vnp_ResponseCode = searchParams.get("vnp_ResponseCode");
     //Thông báo Toast
     const showSuccessToast = (message) => {
         toast.success(message, {
@@ -92,42 +90,6 @@ const ThanhToan = () => {
         });
     };
 
-    //VNPAY
-    useEffect(() => {
-        if (!vnp_ResponseCode) {
-            return;
-        }
-        if (vnp_ResponseCode === "00") {
-            // if (!errorChuyen && !errorDua) {
-            const addressParts = [specificAddress, ward, district, city]
-                .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
-                .join(" "); // Ghép chuỗi với dấu cách
-            const response = axios.post(`http://localhost:8080/thanhToanClient/xacNhanDatHangKhongDangNhap`, {
-                pgg: selectedVoucherCode,
-                tenNguoiNhan: tenNguoiNhan,
-                sdtNguoiNhan: sdtNguoiNhan,
-                emailNguoiNhan: emailNguoiNhan,
-                diaChiNhanHang: addressParts,
-                tongTienPhaiTra: tongTienThanhToan,
-                phiShip: phiShip,
-                ghiChu: ghiChu,
-                danhSachThanhToan: products //đây là mảng json
-            })
-            if (response.data === "OK") {
-                const cart = JSON.parse(localStorage.getItem("cart")) || [];
-                // Loại bỏ các phần tử có index nằm trong selectedProducts
-                const updatedCart = cart.filter((_, index) => !selectedProducts.includes(index));
-                localStorage.setItem("cart", JSON.stringify(updatedCart));
-                showSuccessToast("Đặt hàng thành công. Cảm ơn quý khách");
-                navigate('/datHangThanhCong', { state: { selectedProducts } });
-            }
-            else {
-                showErrorToast(response.data);
-            }
-        } else {
-            showErrorToast("Có lỗi không mong muốn xảy ra. Vui lòng load lại trang2");
-        }
-    }, [vnp_ResponseCode, navigate]);
 
     //Lấy dữ liệu cart
     const layDuLieuCart = () => {
@@ -148,19 +110,69 @@ const ThanhToan = () => {
         setOpenConfirmDatHang(true);
     }
 
+    //Hàm lưu hóa đơn
+    const luuHoaDon = async (maHoaDon = "") => {
+        const addressParts = [specificAddress, ward, district, city]
+            .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
+            .join(" "); // Ghép chuỗi với dấu cách
+        const response = await axios.post(`http://localhost:8080/thanhToanClient/xacNhanDatHangKhongDangNhap`, {
+            maHoaDon: maHoaDon,
+            pgg: selectedVoucherCode,
+            tenNguoiNhan: tenNguoiNhan,
+            sdtNguoiNhan: sdtNguoiNhan,
+            emailNguoiNhan: emailNguoiNhan,
+            diaChiNhanHang: addressParts,
+            tongTienPhaiTra: tongTienThanhToan,
+            phiShip: phiShip,
+            ghiChu: ghiChu,
+            danhSachThanhToan: products //đây là mảng json
+        })
+        if (response.data === "OK") {
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            // Loại bỏ các phần tử có index nằm trong selectedProducts
+            const updatedCart = cart.filter((_, index) => !selectedProducts.includes(index));
+            localStorage.setItem("cart", JSON.stringify(updatedCart));
+            showSuccessToast("Đặt hàng thành công. Cảm ơn quý khách");
+            navigate('/datHangThanhCong', { state: { selectedProducts } });
+        }
+        else {
+            showErrorToast(response.data);
+        }
+    }
+
+    // ✅ Hàm kiểm tra trạng thái hóa đơn
+    const checkPaymentStatus = async (maHoaDon) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/payment/check-status?maHoaDon=${maHoaDon}`);
+            if (response.data === "Đã thanh toán") {
+                luuHoaDon(maHoaDon);
+            } else {
+                showErrorToast("Bạn chưa hoàn tất thanh toán!");
+            }
+        } catch (err) {
+            console.error("Lỗi khi kiểm tra thanh toán:", err);
+        }
+    };
+
     const xacNhanDatHang = async () => {
         try {
-            if (!selectedPaymentMethod) {
-                showErrorToast("Bạn chưa chọn phương thức thanh toán");
-                return;
+            setOpenConfirmDatHang(false);
+            if (selectedPaymentMethod === "COD") {
+                luuHoaDon();
+            } else if (selectedPaymentMethod === "PayNow") {
+                const maHoaDon = "HD" + (Date.now() % 100000);
+                const response = await axios.get(`http://localhost:8080/payment/vn-pay?maHoaDon=${maHoaDon}&amount=${tongTienThanhToan}`);
+                const paymentWindow = window.open(response.data, "_blank"); // Mở VNPay ở tab mới
+
+                // 👀 Kiểm tra nếu tab VNPay bị đóng
+                const checkClosed = setInterval(async () => {
+                    if (paymentWindow?.closed) {
+                        clearInterval(checkClosed);
+                        new Promise(resolve => setTimeout(resolve, 3000)); // Đợi 5 giây sau khi tab đóng
+                        checkPaymentStatus(maHoaDon); // Kiểm tra trạng thái thanh toán
+                    }
+                }, 1000);
             }
-            // Gọi API tạo thanh toán
-            // const response = await axios.get(`http://localhost:8080/payment/vn-pay?amount=${tongTienThanhToan}&bankCode=NCB`);
-            const response = await axios.get(`http://localhost:8080/payment/vn-pay?amount=${tongTienThanhToan}`);
-
-            // Chuyển hướng sang trang thanh toán VNPay 
-            window.location.href = response.data;
-
         } catch (err) {
             console.error("Lỗi khi tạo thanh toán:", err);
             showErrorToast("Có lỗi không mong muốn xảy ra. Vui lòng load lại trang");
@@ -170,6 +182,7 @@ const ThanhToan = () => {
     const handleChange = (event) => {
         setSelectedPaymentMethod(event.target.value);
     };
+
     // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
     useEffect(() => {
         axios.get("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json")

@@ -214,4 +214,6 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
 
     List<HoaDon> getHoaDonByTrangThaiInAndLoaiDonOrderByNgayTaoAsc(List<String> trangThaitrangThai, String loaiDon);
 
+    HoaDon findHoaDonByMa(String ma);
+
 }
