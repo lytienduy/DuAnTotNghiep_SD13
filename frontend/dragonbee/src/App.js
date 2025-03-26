@@ -47,6 +47,7 @@ import DatHangThanhCong from './module/client/pages/DatHangThanhCong';
 import DonMua from './module/client/pages/DonMua';
 import Login from './module/auth/Login';
 import PrivateRoute from './module/auth/PrivateRoute';
+import PaymentResult from "./module/client/pages/PaymentResult";
 // Thêm các trang Client khác ở đây...
 
 const theme = createTheme({
@@ -157,6 +158,7 @@ const MainLayout = () => {
             <Route path="/thanhToan" element={<ThanhToan />} />
             <Route path="/datHangThanhCong" element={<DatHangThanhCong />} />
             <Route path="/donMua" element={<DonMua />} />
+            <Route path="/payment-result" element={<PaymentResult />} />
             {/* Thêm các route Client khác... */}
           </Routes>
         </Box>

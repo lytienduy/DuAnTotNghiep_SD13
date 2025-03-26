@@ -208,10 +208,15 @@ const GioHang = () => {
 
     const handleDecrement = (index) => {
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
         // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
         if (index >= 0 && index < cart.length) {
-            cart[index].quantity = Math.max(cart[index]?.quantity - 1, 1);
+            if (cart[index]?.quantity - 1 <= 0) {
+                cart.splice(index, 1); // Xóa 1 phần tử tại vị trí `index`
+                setSelectedProducts(prevSelected => prevSelected.filter(i => i !== index)); // Xóa sản phẩm khỏi danh sách chọn nếu bị xóa
+                showSuccessToast("Đã xóa sản phẩm khỏi giỏ hàng");
+            } else {
+                cart[index].quantity = cart[index]?.quantity - 1;
+            }
         }
         // Cập nhật lại giỏ hàng trong Local Storage
         localStorage.setItem("cart", JSON.stringify(cart));
@@ -328,7 +333,7 @@ const GioHang = () => {
                                                         </Grid>
                                                         <Grid item xs={8}>
                                                             <Typography variant="body2" sx={{ wordBreak: 'break-word', fontWeight: 'bold' }}>{product.tenSPCT}</Typography>
-                                                            <Grid container spacing={2} sx={{ marginTop: -1, alignItems: 'center' }}>
+                                                            {/* <Grid container spacing={2} sx={{ marginTop: -1, alignItems: 'center' }}>
                                                                 <Grid item>
                                                                     <Select
                                                                         defaultValue="Xám 84 Melange"
@@ -350,9 +355,9 @@ const GioHang = () => {
                                                                         }}
                                                                         IconComponent={(props) => <ArrowDropDownIcon {...props} />}  // Sử dụng biểu tượng mũi tên mặc định của Material-UI
                                                                     >
-                                                                        <MenuItem value="Xám 84">Xám 84</MenuItem>
-                                                                        <MenuItem value="Đỏ 09">Đỏ 09</MenuItem>
-                                                                        {/* Bạn có thể thêm nhiều tùy chọn màu sắc khác ở đây */}
+                                                                        <MenuItem value="Xám 84" selected>Xám 84</MenuItem>
+
+                                                                        
                                                                     </Select>
                                                                 </Grid>
 
@@ -388,11 +393,19 @@ const GioHang = () => {
                                                                         }}
                                                                         IconComponent={(props) => <ArrowDropDownIcon {...props} />}  // Sử dụng biểu tượng mũi tên mặc định của Material-UI
                                                                     >
-                                                                        <MenuItem value="29">29</MenuItem>
-                                                                        <MenuItem value="30">30</MenuItem>
-                                                                        <MenuItem value="31">31</MenuItem>
-                                                                        {/* Bạn có thể thêm nhiều tùy chọn màu sắc khác ở đây */}
+                                                                        <MenuItem selected></MenuItem>
+                                                                        
                                                                     </Select>
+                                                                </Grid>
+
+                                                            </Grid> */}
+                                                            <Grid container spacing={2} sx={{ marginTop: 0 }}>
+                                                                <Grid item>
+                                                                    <Typography variant="body2">Màu sắc: {product.mauSac.tenMauSac}</Typography>
+                                                                </Grid>
+
+                                                                <Grid item>
+                                                                    <Typography variant="body2">Kích thước: {product.size.tenSize}</Typography>
                                                                 </Grid>
 
                                                             </Grid>
@@ -459,7 +472,7 @@ const GioHang = () => {
                                                     {(product.gia * product?.quantity).toLocaleString()} VNĐ
                                                 </TableCell>
                                                 <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                    <DeleteIcon color="error" onClick={() => handleRemoveProduct(index)} />
+                                                    <DeleteIcon color="error" sx={{ cursor: 'pointer' }} onClick={() => handleRemoveProduct(index)} />
                                                 </TableCell>
                                             </TableRow>
                                         ))

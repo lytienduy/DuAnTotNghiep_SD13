@@ -59,6 +59,7 @@ public class SPCTDTO {
         private Integer idSPCT;
         private String anhSPCT;
         private String tenSPCT;
+        private String tenMauSac;
         private String tenSize;
         private Double gia;
         private Integer quantity;

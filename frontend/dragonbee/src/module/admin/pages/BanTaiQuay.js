@@ -1299,7 +1299,7 @@ const BanTaiQuay = () => {
         printWindow.print();
       }, 500);
       // }
-    } catch (error) {
+    } catch (error) { 
       showErrorToast("Lỗi khi tải hóa đơn, vui lòng thử lại!");
       console.error("Lỗi khi lấy dữ liệu hóa đơn:", error);
     }

@@ -3,15 +3,14 @@ import axios from 'axios';
 import {
     Box, Grid, TextField, Typography, Button, FormControlLabel, Radio, InputAdornment,
     Container, Breadcrumbs, Link, MenuItem, Select, InputLabel, FormControl, Input, Dialog,
-    DialogTitle, IconButton, DialogContent,DialogActions,DialogContentText
+    DialogTitle, IconButton, DialogContent, DialogActions, DialogContentText
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams, useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
-import { useNavigate } from 'react-router-dom';
 
 const PayNowImage = 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR-1.png'; // PayNow image URL
 const CODImage = 'https://drive.gianhangvn.com/image/thanh-toan-khi-nhan-hang-2135165j32025.jpg';
@@ -53,8 +52,6 @@ const ThanhToan = () => {
     const tongTien = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
     const tongTienThanhToan = tongTien - discountAmount + phiShip;
     const [openConfirmDatHang, setOpenConfirmDatHang] = useState(false);
-
-
     //Thông báo Toast
     const showSuccessToast = (message) => {
         toast.success(message, {
@@ -92,6 +89,8 @@ const ThanhToan = () => {
             }
         });
     };
+
+
     //Lấy dữ liệu cart
     const layDuLieuCart = () => {
         const cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -103,47 +102,87 @@ const ThanhToan = () => {
         layDuLieuCart();
     }, []);
 
-    const xacNhanDatHang = async () => {
-        try {
-            if (selectedPaymentMethod === "") {
-                showErrorToast("Bạn chưa chọn phương thức thanh toán");
-                return;
-            }
-            // if (!errorChuyen && !errorDua) {
-            const addressParts = [specificAddress, ward, district, city]
-                .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
-                .join(" "); // Ghép chuỗi với dấu cách
-            const response = await axios.post(`http://localhost:8080/thanhToanClient/xacNhanDatHangKhongDangNhap`, {
-                pgg: selectedVoucherCode,
-                tenNguoiNhan: tenNguoiNhan,
-                sdtNguoiNhan: sdtNguoiNhan,
-                emailNguoiNhan: emailNguoiNhan,
-                diaChiNhanHang: addressParts,
-                tongTienPhaiTra: tongTienThanhToan,
-                phiShip: phiShip,
-                ghiChu: ghiChu,
-                danhSachThanhToan: products //đây là mảng json
-            })
-            if (response.data === "OK") {
-                const cart = JSON.parse(localStorage.getItem("cart")) || [];
-                // Loại bỏ các phần tử có index nằm trong selectedProducts
-                const updatedCart = cart.filter((_, index) => !selectedProducts.includes(index));
-                localStorage.setItem("cart", JSON.stringify(updatedCart));
-                showSuccessToast("Đặt hàng thành công. Cảm ơn quý khách");
-                navigate('/datHangThanhCong', { state: { selectedProducts } });
-            }
-            else {
-                showErrorToast(response.data);
-            }
-        } catch (err) {
-            console.log(err)
-            showErrorToast("Có lỗi không mong muốn xảy ra. Vui lòng load lại trang");
+    const khiAnNutXacNhanDatHang = () => {
+        if (selectedPaymentMethod === "") {
+            showErrorToast("Bạn chưa chọn phương thức thanh toán");
+            return;
+        }
+        setOpenConfirmDatHang(true);
+    }
+
+    //Hàm lưu hóa đơn
+    const luuHoaDon = async (maHoaDon = "") => {
+        const addressParts = [specificAddress, ward, district, city]
+            .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
+            .join(" "); // Ghép chuỗi với dấu cách
+        const response = await axios.post(`http://localhost:8080/thanhToanClient/xacNhanDatHangKhongDangNhap`, {
+            maHoaDon: maHoaDon,
+            pgg: selectedVoucherCode,
+            tenNguoiNhan: tenNguoiNhan,
+            sdtNguoiNhan: sdtNguoiNhan,
+            emailNguoiNhan: emailNguoiNhan,
+            diaChiNhanHang: addressParts,
+            tongTienPhaiTra: tongTienThanhToan,
+            phiShip: phiShip,
+            ghiChu: ghiChu,
+            danhSachThanhToan: products //đây là mảng json
+        })
+        if (response.data === "OK") {
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            // Loại bỏ các phần tử có index nằm trong selectedProducts
+            const updatedCart = cart.filter((_, index) => !selectedProducts.includes(index));
+            localStorage.setItem("cart", JSON.stringify(updatedCart));
+            showSuccessToast("Đặt hàng thành công. Cảm ơn quý khách");
+            navigate('/datHangThanhCong', { state: { selectedProducts } });
+        }
+        else {
+            showErrorToast(response.data);
         }
     }
+
+    // ✅ Hàm kiểm tra trạng thái hóa đơn
+    const checkPaymentStatus = async (maHoaDon) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/payment/check-status?maHoaDon=${maHoaDon}`);
+            if (response.data === "Đã thanh toán") {
+                luuHoaDon(maHoaDon);
+            } else {
+                showErrorToast("Bạn chưa hoàn tất thanh toán!");
+            }
+        } catch (err) {
+            console.error("Lỗi khi kiểm tra thanh toán:", err);
+        }
+    };
+
+    const xacNhanDatHang = async () => {
+        try {
+            setOpenConfirmDatHang(false);
+            if (selectedPaymentMethod === "COD") {
+                luuHoaDon();
+            } else if (selectedPaymentMethod === "PayNow") {
+                const maHoaDon = "HD" + (Date.now() % 100000);
+                const response = await axios.get(`http://localhost:8080/payment/vn-pay?maHoaDon=${maHoaDon}&amount=${tongTienThanhToan}`);
+                const paymentWindow = window.open(response.data, "_blank"); // Mở VNPay ở tab mới
+
+                // 👀 Kiểm tra nếu tab VNPay bị đóng
+                const checkClosed = setInterval(async () => {
+                    if (paymentWindow?.closed) {
+                        clearInterval(checkClosed);
+                        new Promise(resolve => setTimeout(resolve, 3000)); // Đợi 5 giây sau khi tab đóng
+                        checkPaymentStatus(maHoaDon); // Kiểm tra trạng thái thanh toán
+                    }
+                }, 1000);
+            }
+        } catch (err) {
+            console.error("Lỗi khi tạo thanh toán:", err);
+            showErrorToast("Có lỗi không mong muốn xảy ra. Vui lòng load lại trang");
+        }
+    };
 
     const handleChange = (event) => {
         setSelectedPaymentMethod(event.target.value);
     };
+
     // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
     useEffect(() => {
         axios.get("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json")
@@ -523,7 +562,7 @@ const ThanhToan = () => {
                                 </Box>
                             </Box>
                         </div>
-                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={() => { setOpenConfirmDatHang(true) }} disabled={products?.length === 0}>HOÀN THÀNH ĐẶT HÀNG</Button>
+                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={khiAnNutXacNhanDatHang} disabled={products?.length === 0}>HOÀN THÀNH ĐẶT HÀNG</Button>
                     </Grid>
 
                     {/* Right side (40%) - Order summary */}

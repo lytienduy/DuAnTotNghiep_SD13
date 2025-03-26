@@ -18,6 +18,7 @@ public class ThanhToanController {
     @PostMapping("/xacNhanDatHangKhongDangNhap")
     public String xacNhanDatHangKhongDangNhap(@RequestBody ThanhToanDTO request) {
         return thanhToanService.xacNhanDatHangKhongDangNhap(
+                request.getMaHoaDon(),
                 request.getPgg(),
                 request.getTenNguoiNhan(),
                 request.getSdtNguoiNhan(),
@@ -29,4 +30,6 @@ public class ThanhToanController {
                 request.getDanhSachThanhToan()
         );
     }
+
+
 }

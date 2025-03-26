@@ -17,7 +17,7 @@ import { useParams } from "react-router-dom"; // Import đúng
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
-
+import { useNavigate } from "react-router-dom";
 
 const productData = [
     {
@@ -65,6 +65,7 @@ const productData = [
 ];
 
 const ChiTietSanPham = () => {
+    const navigate = useNavigate(); // Khai báo navigate
     const { id } = useParams(); // Lấy id từ URL
     const thumbnailRefs = useRef([]);
     const [product, setProduct] = useState({});
@@ -77,9 +78,9 @@ const ChiTietSanPham = () => {
     // Mở bảng chọn size
     const handleOpenSizeGuide = () => setOpenSizeGuide(true);
     const handleCloseSizeGuide = () => setOpenSizeGuide(false);
-    var selectedSizeReuse = product?.listHinhAnhAndMauSacAndSize?.[selectedColor]?.listSize?.[selectedSize];
-    var selectedColorReuse = product?.listHinhAnhAndMauSacAndSize?.[selectedColor];
 
+    var selectedColorReuse = product?.listHinhAnhAndMauSacAndSize?.[selectedColor];
+    var selectedSizeReuse = selectedColorReuse?.listSize?.[selectedSize];
     //Thông báo Toast
     const showSuccessToast = (message) => {
         toast.success(message, {
@@ -164,10 +165,6 @@ const ChiTietSanPham = () => {
         setQuantity(quantity + 1);
         //Kiểm tra lại số lượng đang chậm một nhịp
         if (quantity + 1 >= selectedSizeReuse.soLuong) {
-            // setTimeout(() => {
-            //     setQuantity(selectedSizeReuse.soLuong);
-            //     showErrorToast("Rất tiếc bạn đã mua tối đa số lượng sản phẩm")
-            // }, 100);
             showSuccessToast("Số lượng sản phẩm này đã tối đa")
         };
     }
@@ -190,7 +187,8 @@ const ChiTietSanPham = () => {
                         idSPCT: selectedSizeReuse?.idSPCT,
                         anhSPCT: selectedColorReuse?.listAnh === null ? null : selectedColorReuse?.listAnh[0],
                         tenSPCT: selectedSizeReuse.tenSPCT,
-                        tenSize: selectedSizeReuse.tenSize,
+                        mauSac: selectedColorReuse.mauSac,
+                        size: selectedSizeReuse,
                         gia: product.gia,
                         quantity: quantity
                     });
@@ -419,7 +417,7 @@ const ChiTietSanPham = () => {
                 {/* Quần âu Nam */}
                 <Container sx={{ py: 4 }}>
                     <Typography variant="h6" sx={{ mb: 4, textAlign: 'left', fontWeight: 'bold' }}>
-                        Sản phẩm cùng danh mục
+                        Sản phẩm tương tự
                     </Typography>
 
                     <Box sx={{ position: 'relative', overflow: 'hidden' }}>
