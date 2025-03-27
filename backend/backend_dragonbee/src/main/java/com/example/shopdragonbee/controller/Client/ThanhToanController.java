@@ -15,7 +15,7 @@ public class ThanhToanController {
     @Autowired
     ThanhToanService thanhToanService;
 
-    @PostMapping("/xacNhanDatHangKhongDangNhap")
+    @PostMapping("/xacNhanDatHang")
     public String xacNhanDatHangKhongDangNhap(@RequestBody ThanhToanDTO request) {
         return thanhToanService.xacNhanDatHangKhongDangNhap(
                 request.getMaHoaDon(),
@@ -27,7 +27,8 @@ public class ThanhToanController {
                 Float.parseFloat(request.getTongTienPhaiTra()),
                 Float.parseFloat(request.getPhiShip()),
                 request.getGhiChu(),
-                request.getDanhSachThanhToan()
+                request.getDanhSachThanhToan(),
+                request.getIdKhachHang()
         );
     }
 

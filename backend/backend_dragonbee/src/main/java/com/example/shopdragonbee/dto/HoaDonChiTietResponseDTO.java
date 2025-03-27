@@ -88,6 +88,4 @@ public class HoaDonChiTietResponseDTO {
         private LocalDateTime ngay;
         private String nguoiTao;
     }
-
-
 }

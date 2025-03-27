@@ -306,12 +306,11 @@ const Home = () => {
                                 fontSize: '10px',
                                 fontWeight: 'bold',
                                 borderRadius: '8px 0 8px 0', // Bo góc như hình mẫu
-                                zIndex: 2,
+                                zIndex: 2,  
                               }}
                             >
                               NEW
                             </Typography>
-
                             <CardMedia
                               component="img"
                               height="250"

@@ -39,7 +39,7 @@ const DatHangThanhCong = () => {
                         <IconButton onClick={handleBackHome} >
                             <ArrowBackIcon sx={{ marginLeft: -3, marginTop: -3.5 }} />
                         </IconButton>
-                        <Typography sx={{ fontWeight: "bold", marginTop: -3.5,color:'grey',fontSize:20 }}>
+                        <Typography sx={{ fontWeight: "bold", marginTop: -3.5, color: 'grey', fontSize: 20 }}>
                             Quay lại trang chủ
                         </Typography>
                     </Box>
@@ -59,7 +59,7 @@ const DatHangThanhCong = () => {
                         </Typography>
 
                         <Divider sx={{ marginTop: 3, marginBottom: 2 }} />
-                        <Grid container spacing={2}>
+                        {/* <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                                     Thông tin giao hàng
@@ -83,7 +83,7 @@ const DatHangThanhCong = () => {
                                     Thanh toán khi giao hàng (COD)
                                 </Typography>
                             </Grid>
-                            {/* 
+                           
                             <Grid item xs={6}>
                                 <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                                     Phương thức thanh toán
@@ -91,12 +91,12 @@ const DatHangThanhCong = () => {
                                 <Typography variant="body2">
                                     Thanh toán khi giao hàng (COD)
                                 </Typography>
-                            </Grid> */}
-                        </Grid>
+                            </Grid>
+                        </Grid> */}
 
                     </Box>
 
-                    <Divider sx={{ marginTop: 3, marginBottom: 2 }} />
+                    {/* <Divider sx={{ marginTop: 3, marginBottom: 2 }} />
 
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
@@ -168,7 +168,7 @@ const DatHangThanhCong = () => {
                                 </Grid>
                             </CardContent>
                         </Card>
-                    ))}
+                    ))} */}
                 </CardContent>
             </Card>
         </Container>

@@ -401,11 +401,11 @@ const GioHang = () => {
                                                             </Grid> */}
                                                             <Grid container spacing={2} sx={{ marginTop: 0 }}>
                                                                 <Grid item>
-                                                                    <Typography variant="body2">Màu sắc: {product.mauSac.tenMauSac}</Typography>
+                                                                    <Typography variant="body2">Màu sắc: {product?.mauSac?.tenMauSac}</Typography>
                                                                 </Grid>
 
                                                                 <Grid item>
-                                                                    <Typography variant="body2">Kích thước: {product.size.tenSize}</Typography>
+                                                                    <Typography variant="body2">Kích thước: {product?.size?.tenSize}</Typography>
                                                                 </Grid>
 
                                                             </Grid>

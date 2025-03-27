@@ -56,7 +56,7 @@ public class PaymentController {
                 thanhToanHoaDon.setMa("TTHD" + (System.currentTimeMillis() % 100000));
                 thanhToanHoaDon.setHoaDon(hoaDonRepository.findHoaDonByMa(vnp_TxnRef));
                 thanhToanHoaDon.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(3).get());
-                thanhToanHoaDon.setSoTienThanhToan(Float.parseFloat(vnp_Amount));
+                thanhToanHoaDon.setSoTienThanhToan(Float.parseFloat(vnp_Amount) / 100);
                 thanhToanHoaDon.setNgayTao(LocalDateTime.now());
                 thanhToanHoaDonRepository.save(thanhToanHoaDon);
                 return hoaDon.getId();

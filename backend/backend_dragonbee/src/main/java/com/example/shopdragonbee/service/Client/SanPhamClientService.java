@@ -13,6 +13,9 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -121,6 +124,7 @@ public class SanPhamClientService {
                 listMauSacAndSizeCuaSp.add(mauSacAndHinhAnhAndSize);
             }
             tongQuanSanPhamCTClient.setListHinhAnhAndMauSacAndSize(listMauSacAndSizeCuaSp);
+            tongQuanSanPhamCTClient.setIsNew(ChronoUnit.DAYS.between(sanPham.getNgayTao(), LocalDateTime.now()) <= 30);
             listTraVe.add(tongQuanSanPhamCTClient);
         }
         return listTraVe;

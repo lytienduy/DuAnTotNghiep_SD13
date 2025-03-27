@@ -19,4 +19,5 @@ public class ThanhToanDTO {
     private String phiShip;
     private String ghiChu;
     private List<SPCTDTO.SanPhamCart> danhSachThanhToan; // Mảng JSON
+    private String idKhachHang;
 }

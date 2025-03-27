@@ -1,67 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
     Box, Grid, Typography, Button, Card, CardContent, CardMedia, Container,
-    Tabs, Tab, Breadcrumbs, Link,TableRow,TableCell
+    Tabs, Tab, Breadcrumbs, Link, Dialog, DialogTitle, DialogContent, DialogActions, TextField,TableRow,TableCell
 } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const DonMua = () => {
     const location = useLocation();
+    const navigate = useNavigate(); // Khai báo navigate
     const isActive = location.pathname === '/donMua'; // Kiểm tra nếu đường dẫn là /donMua
-    const orders = [
-        {
-            id: 1,
-            maHD: 'HD920112111',
-            status: 'Chờ xác nhận',
-            products: [
-                {
-                    id: 1,
-                    name: 'Giày Thể Thao Nam Nike Nike Dbreak-Type',
-                    color: 'Đen',
-                    quantity: 1,
-                    price: 2000000,
-                    size: 40,
-                    danhMuc: 'Casual',
-                    image: 'https://product.hstatic.net/200000887901/product/img_3922.1_c94dbbc31a064475916e5b9042fd8fdb.jpg',
-                },
-                {
-                    id: 2,
-                    name: 'Giày Chạy Nam Adidas Ultraboost Cc_1 Dna FZ2545',
-                    color: 'Đen',
-                    quantity: 1,
-                    price: 2500000,
-                    size: 42,
-                    danhMuc: 'Business',
-                    image: 'https://product.hstatic.net/200000887901/product/am-aristino-regular-fit-atr0180z__17__e21deeca2c71449e88005c10efea4ecb_b98dacd36e16476aaf01effbcf884885.jpg',
-                },
-            ],
-        },
-        {
-            id: 2,
-            maHD: 'HD0122112111',
-            status: 'Vận chuyển',
-            products: [
-                {
-                    id: 3,
-                    name: 'Giày Thể Thao Nam Adidas Boost',
-                    color: 'Trắng',
-                    quantity: 2,
-                    price: 4000000,
-                    size: 42,
-                    danhMuc: 'Golf',
-                    image: 'https://product.hstatic.net/200000887901/product/img_3922.1_c94dbbc31a064475916e5b9042fd8fdb.jpg',
-                },
-            ],
-        },
-    ];
+    const [tabValue, setTabValue] = useState(0);
+    const [orders, setOrders] = useState([]);
+    const [openLyDo, setOpenLyDo] = useState(false);  // Biến lưu giá trị mở modal nhập lý do khi thực hiện chức năng hủy hóa đơn
+    const [openConfirm, setOpenConfirm] = useState(false); // Mở modal xác nhận
+    const [ghiChuTrangThai, setGhiChuTrangThai] = useState("");
+    const [error, setError] = useState(false);//Biến báo lỗi
+    const [idHoaDonCanThaoTac, setIdHoaDonCanThaoTac] = useState(null);//Biến báo lỗi
+    const userKH = JSON.parse(localStorage.getItem("userKH"));
 
 
-    const getTotalPrice = (products) => {
-        return products.reduce((total, product) => total + product.price * product.quantity, 0);
+    //Thông báo thành công
+    const showSuccessToast = (message) => {
+        toast.success(message, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            style: {
+                backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+                color: "white", // Chữ trắng nổi bật
+                fontSize: "14px", // Nhỏ hơn một chút
+                fontWeight: "500",
+                borderRadius: "8px",
+            }
+        });
+    };
+    const showErrorToast = (message) => {
+        toast.error(message, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            style: {
+                backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+                color: "white", // Chữ trắng nổi bật
+                fontSize: "14px", // Nhỏ hơn một chút
+                fontWeight: "500",
+                borderRadius: "8px",
+            }
+        });
+    };
+
+    // List trạng thái hóa đơn
+    const tabLabels =
+        [
+            "Chờ xác nhận",
+            "Chờ giao hàng",
+            "Đang vận chuyển",
+            "Đã giao hàng",
+            "Hoàn thành",
+            "Đã hủy"
+        ];
+
+    const getTotalPrice = (sanPhams) => {
+        return sanPhams?.reduce((total, product) => total + product.gia * product.soLuong, 0);
     };
 
     const getLastNameInitial = (fullName) => {
@@ -69,12 +85,64 @@ const DonMua = () => {
         const lastName = nameParts[nameParts.length - 1]; // lấy phần tên sau cùng
         return lastName.charAt(0).toUpperCase(); // lấy chữ cái đầu tiên và chuyển thành chữ hoa
     };
+    const getHoaDons = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/donMua/getDonMuaTheoTrangThaiVaKhachHang`, {
+                params: {
+                    trangThai: tabLabels[tabValue],
+                    idKhachHang: userKH?.khachHang?.id || 0 // Nếu userKH không có, gửi 0 thay vì undefined
+                }
+            });
+            setOrders(response.data);
 
-    const [value, setValue] = React.useState(0);
-    const handleTabChange = (event, newValue) => {
-        setValue(newValue);
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu:", error);
+        }
     };
-
+    //Khi tabValue thay đổi giá trị
+    useEffect(() => {
+        getHoaDons();
+    }, [tabValue]);
+    //Hàm kiểm tra check nhạp lý do chưa để mở confirm khi thực hiện chức năng hủy hóa đơn
+    const handleNextConfirm = () => {
+        if (!ghiChuTrangThai.trim()) { //Check nếu nhập lý do hủy hóa đơn
+            setError(true);
+        } else {
+            setError(false);
+            setOpenLyDo(false);
+            setOpenConfirm(true);
+        }
+    };
+    //Hàm mở modal nhập lý do hủy hóa đơn khi thực hiện chức năng hủy hóa đơn
+    const handleOpenLyDo = (id) => {
+        setIdHoaDonCanThaoTac(id);
+        setOpenLyDo(true);
+    };
+    //Hàm thực hiện chức năng hủy hóa đơn gọi api
+    const handleHuyHoaDon = async () => {
+        try {
+            if (idHoaDonCanThaoTac === null) {
+                showErrorToast("Chúng tôi không nhận được id hóa đơn cần thao tác");
+                return;
+            }
+            const response = await axios.post(`http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${idHoaDonCanThaoTac}`, {
+                lyDo: ghiChuTrangThai,
+                trangThai: "Đã hủy",
+                hanhDong: "Hủy"
+            });
+            if (response.data) {
+                setOpenConfirm(false);
+                setGhiChuTrangThai("");
+                getHoaDons();
+                showSuccessToast("Hủy hóa đơn thành công")
+            } else {
+                showErrorToast("Hủy hóa đơn đã có lỗi xảy ra");
+            }
+        } catch (error) {
+            showErrorToast("Hủy hóa đơn đã có lỗi xảy ra");
+            console.error(error);
+        }
+    };
     return (
         <Container >
             <Breadcrumbs aria-label="breadcrumb">
@@ -151,30 +219,37 @@ const DonMua = () => {
                     <Grid item xs={12} sm={9.5}>
                         {/* Tab Header */}
                         <Tabs
-                            value={value}
-                            onChange={handleTabChange}
+                            value={tabValue}
+                            onChange={(e, newValue) => setTabValue(newValue)} // Bắt buộc có 2 tham số
                             indicatorColor="primary"
                             textColor="primary"
                             aria-label="order status tabs"
+                            variant="scrollable"
+                            scrollButtons={false} // Ẩn mũi tên cuộn
+                            allowScrollButtonsMobile={false} // Ngăn xuất hiện trên mobile
+                            sx={{
+                                width: "100%",
+                                minHeight: 48,
+                                overflow: "visible", // Giữ tab không bị tụt vào trong
+                            }}
                         >
-                            <Tab label="Tất cả" />
-                            <Tab label="Chờ xác nhận" />
-                            <Tab label="Chờ vận chuyển" />
-                            <Tab label="Vận chuyển" />
-                            <Tab label="Hoàn thành" />
-                            <Tab label="Đã hủy" />
-                        </Tabs>
+                            {tabLabels.map((label, index) => (
+                                <Tab key={index} label={label} />
+                            ))}
 
+                        </Tabs>
                         {orders.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} sx={{ textAlign: 'center' }}>
-                                    <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5, marginLeft: -2,width:745,backgroundColor:'#fff' }}>
+                                    <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5, marginLeft: -2, width: 830, backgroundColor: '#fff' }}>
                                         <img
                                             src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg"
                                             alt="No data"
                                             style={{ width: '150px', height: 'auto' }}
                                         />
-                                        <Typography variant="h6" sx={{ marginTop: '-40px',paddingBottom:10 }}>Không có hóa đơn nào</Typography>
+                                        <Typography variant="h6" sx={{ marginTop: '-40px', paddingBottom: 10 }}>
+                                            Không có hóa đơn nào
+                                        </Typography>
                                     </Box>
                                 </TableCell>
                             </TableRow>
@@ -193,57 +268,48 @@ const DonMua = () => {
                                 >
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: 1 }}>
                                         <Typography sx={{ fontWeight: 'bold', fontSize: 18 }}>
-                                            Mã đơn: {order.maHD}
+                                            Mã đơn: {order.maHoaDon}
                                         </Typography>
                                         <Typography sx={{ fontWeight: 'bold', fontSize: 18, color: '#1976D2' }}>
-                                            Trạng thái: {order.status}
+                                            Trạng thái: {order.trangThai}
                                         </Typography>
                                     </Box>
-
-                                    {order.products.map((product, index) => (
+                                    {order?.sanPhams?.map((product, index) => (
                                         <Card
+                                            key={index}
                                             sx={{
                                                 marginTop: 0,
                                                 borderRadius: 0,
                                                 border: 'none',
                                             }}
-                                            key={index}
                                         >
                                             <CardContent>
                                                 <Grid container spacing={2}>
                                                     <Grid item xs={2}>
                                                         <CardMedia
                                                             component="img"
-                                                            sx={{
-                                                                width: 70,
-                                                                height: 70,
-                                                                objectFit: 'cover',
-                                                            }}
-                                                            image={product.image}
-                                                            alt={product.name}
+                                                            sx={{ width: 70, height: 70, objectFit: 'cover' }}
+                                                            image={product.hinhAnh}
+                                                            alt={product.tenSanPham}
                                                         />
                                                     </Grid>
-
                                                     <Grid item xs={9}>
                                                         <Typography variant="body1" component="div">
-                                                            <strong>{product.name}</strong>
+                                                            <strong>{product.tenSanPham}</strong>
                                                         </Typography>
                                                         <Grid container spacing={2} sx={{ marginTop: 0 }}>
                                                             <Grid item>
-                                                                <Typography variant="body2">Màu sắc: {product.color}</Typography>
+                                                                <Typography variant="body2">Màu sắc: {product.mauSac}</Typography>
                                                             </Grid>
                                                             <Grid item>
-                                                                <Typography variant="body2">Số lượng: {product.quantity}</Typography>
+                                                                <Typography variant="body2">Số lượng: {product.soLuong}</Typography>
                                                             </Grid>
                                                             <Grid item>
                                                                 <Typography variant="body2">Kích thước: {product.size}</Typography>
                                                             </Grid>
                                                             <Grid item>
-                                                                <Typography variant="body2">Danh mục: {product.danhMuc}</Typography>
-                                                            </Grid>
-                                                            <Grid item>
                                                                 <Typography variant="body2">
-                                                                    Giá: {product.price.toLocaleString()} VNĐ
+                                                                    Giá: {(product.gia * product.soLuong)?.toLocaleString()} VNĐ
                                                                 </Typography>
                                                             </Grid>
                                                         </Grid>
@@ -255,26 +321,65 @@ const DonMua = () => {
 
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
                                         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                            Thành tiền: {getTotalPrice(order.products).toLocaleString()} VNĐ
+                                            Thành tiền: {getTotalPrice(order.sanPhams)?.toLocaleString()} VNĐ
                                         </Typography>
-
                                         <Box>
-                                            <Button variant="contained" sx={{ marginRight: 2 }}>
-                                                Hủy đơn
-                                            </Button>
-                                            <Button variant="outlined" sx={{ color: 'black' }}>
+                                            {order?.trangThai === "Chờ xác nhận" &&
+                                                <Button variant="contained" sx={{ marginRight: 2 }} onClick={() => handleOpenLyDo(order?.id)}>
+                                                    Hủy đơn
+                                                </Button>
+                                            }
+                                            <Button variant="outlined" sx={{ color: 'black' }} onClick={() => navigate(`/donMuaChiTiet/${order?.id}`)}>
                                                 <ShoppingCartIcon sx={{ marginRight: 1 }} />
                                                 Xem đơn hàng
                                             </Button>
                                         </Box>
                                     </Box>
                                 </Box>
-                            ))
-                        )}
-
+                            )))}
                     </Grid>
                 </Grid>
             </Box>
+            <Dialog open={openLyDo} onClose={() => setOpenLyDo(false)}>
+                <DialogTitle>Nhập lý do hủy hóa đơn</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={3}
+                        label="Lý do hủy"
+                        variant="outlined"
+                        value={ghiChuTrangThai}
+                        onChange={(e) => { setGhiChuTrangThai(e.target.value); setError(false) }}
+                        error={error} // Hiển thị lỗi nếu có
+                        helperText={error ? "Bạn chưa nhập lý do!" : ""} // Nội dung lỗi
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => { setOpenLyDo(false); setIdHoaDonCanThaoTac(null) }} color="primary">
+                        Hủy bỏ
+                    </Button>
+                    <Button onClick={handleNextConfirm} color="error" variant="contained">
+                        Tiếp tục
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+                <DialogTitle>Xác nhận hủy hóa đơn</DialogTitle>
+                <DialogContent>
+                    <p><b>Lý do hủy:</b> {ghiChuTrangThai}</p>
+                    <p>Bạn có chắc chắn muốn hủy hóa đơn này không?</p>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => { setOpenConfirm(false); setIdHoaDonCanThaoTac(null) }} color="primary">
+                        Quay lại
+                    </Button>
+                    <Button onClick={handleHuyHoaDon} color="error" variant="contained">
+                        Xác nhận hủy
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <ToastContainer />
         </Container>
     );
 };
