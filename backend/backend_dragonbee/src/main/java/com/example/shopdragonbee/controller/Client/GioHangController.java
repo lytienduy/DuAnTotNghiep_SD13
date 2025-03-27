@@ -26,4 +26,9 @@ public class GioHangController {
         return gioHangService.getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang(danhSachSanPhamTrongGioHang);
     }
 
+    @PostMapping("/addVaoGioHang")
+    public Boolean addVaoGioHang(@RequestParam String idSanPhamChiTiet, @RequestParam String soLuong, @RequestParam String gia, @RequestParam String idKhachHang) {
+        return gioHangService.addVaoGioHang(
+                Integer.parseInt(idSanPhamChiTiet), Integer.parseInt(soLuong), Double.parseDouble(gia), Integer.parseInt(idKhachHang));
+    }
 }

@@ -2,15 +2,12 @@ package com.example.shopdragonbee.service.Client;
 
 import com.example.shopdragonbee.dto.Client.HomeDTO;
 import com.example.shopdragonbee.dto.Client.SPCTDTO;
-import com.example.shopdragonbee.entity.AnhSanPham;
-import com.example.shopdragonbee.entity.MauSac;
-import com.example.shopdragonbee.entity.SanPham;
-import com.example.shopdragonbee.entity.SanPhamChiTiet;
-import com.example.shopdragonbee.repository.SanPhamChiTietRepositoryP;
-import com.example.shopdragonbee.repository.SanPhamRepositoryP;
+import com.example.shopdragonbee.entity.*;
+import com.example.shopdragonbee.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,29 +83,6 @@ public class SanPhamChiTietClientService {
         tongQuanSanPhamCTClient.setListHinhAnhAndMauSacAndSize(listMauSacAndSizeCuaSp);
         return tongQuanSanPhamCTClient;
     }
-//    public List<SPCTDTO.SizeCuaPhong> getListSizeDeUpdateKhiChonMau(Integer idSanPham) {
-//            //
-//            SanPham sp = sanPhamRepositoryP.findById(idSanPham).get();
-//            List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThai(sp, mauSac, "Hoạt động");
-//            for (SanPhamChiTiet sanPhamChiTiet : listSPCT
-//            ) {
-//                if (index == 0) {
-//                    tongQuanSanPhamCTClient.setTen(sp.getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
-//                    tongQuanSanPhamCTClient.setMoTa(sanPhamChiTiet.getMoTa());
-//                    tongQuanSanPhamCTClient.setGia(sanPhamChiTiet.getGia());
-//                    tongQuanSanPhamCTClient.setKieuDang(sanPhamChiTiet.getKieuDang());
-//                    tongQuanSanPhamCTClient.setChatLieu(sanPhamChiTiet.getChatLieu());
-//                }
-//                if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
-//                    mauSacAndHinhAnhAndSize.setListAnh(listURLAnhSanPham(sanPhamChiTiet.getListAnh()));
-//                    break;
-//                }
-//                ++index;
-//            }
-//            mauSacAndHinhAnhAndSize.setListSize(listSPCT.stream().map(this::convertSangListSizeCuaPhong).collect(Collectors.toList()));
-//            listMauSacAndSizeCuaSp.add(mauSacAndHinhAnhAndSize);
-//
-//        tongQuanSanPhamCTClient.setListHinhAnhAndMauSacAndSize(listMauSacAndSizeCuaSp);
-//        return tongQuanSanPhamCTClient;
-//    }
+
+
 }

@@ -5,6 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3285daf9-171e-44be-80b7-eb3a6babbbd3" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/GioHangChiTietRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/GioHangRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/GioHangController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/GioHangController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/SanPhamChiTietClientController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/SanPhamChiTietClientController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/ThanhToanController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/ThanhToanController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/GioHangService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/GioHangService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/SanPhamChiTietClientService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/SanPhamChiTietClientService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ChiTietSanPham.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ChiTietSanPham.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/DonMua.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/DonMua.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -41,6 +50,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.example.shopdragonbee.repository" />
       <recent name="com.example.shopdragonbee.service" />
       <recent name="com.example.shopdragonbee.controller" />
     </key>
@@ -79,7 +89,7 @@
       <workItem from="1742870975183" duration="20082000" />
       <workItem from="1742953132750" duration="22696000" />
       <workItem from="1742994762058" duration="1317000" />
-      <workItem from="1743040846919" duration="2843000" />
+      <workItem from="1743040846919" duration="10886000" />
     </task>
     <servers />
   </component>
