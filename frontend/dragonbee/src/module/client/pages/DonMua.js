@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     Box, Grid, Typography, Button, Card, CardContent, CardMedia, Container,
-    Tabs, Tab, Breadcrumbs, Link, Dialog, DialogTitle, DialogContent, DialogActions, TextField
+    Tabs, Tab, Breadcrumbs, Link, Dialog, DialogTitle, DialogContent, DialogActions, TextField,TableRow,TableCell
 } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
@@ -86,7 +86,7 @@ const DonMua = () => {
         return lastName.charAt(0).toUpperCase(); // lấy chữ cái đầu tiên và chuyển thành chữ hoa
     };
     const getHoaDons = async () => {
-        try {      
+        try {
             const response = await axios.get(`http://localhost:8080/donMua/getDonMuaTheoTrangThaiVaKhachHang`, {
                 params: {
                     trangThai: tabLabels[tabValue],
@@ -238,103 +238,105 @@ const DonMua = () => {
                             ))}
 
                         </Tabs>
-
-                        {orders?.map((order) => (
-                            <Box
-                                key={order.id}
-                                sx={{
-                                    border: '1px solid #e0e0e0', // Đường viền xung quanh khung
-                                    borderRadius: 2,
-                                    padding: 2, // Padding bên trong khung
-                                    boxShadow: 2, // Tạo hiệu ứng bóng cho khung
-                                    marginTop: 3, // Khoảng cách từ trên xuống
-                                    backgroundColor: '#fff', // Màu nền của khung
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: 1 }}>
-                                    {/* Mã hóa đơn bên trái */}
-                                    <Typography sx={{ fontWeight: 'bold', fontSize: 18 }}>
-                                        Mã đơn: {order.maHoaDon}
-                                    </Typography>
-
-                                    {/* Trạng thái bên phải */}
-                                    <Typography sx={{ fontWeight: 'bold', fontSize: 18, color: '#1976D2' }}>
-                                        Trạng thái: {order.trangThai}
-                                    </Typography>
-                                </Box>
-
-                                {order?.sanPhams?.map((product, index) => (
-                                    <Card
-                                        sx={{
-                                            marginTop: 0,
-                                            borderRadius: 0, // Bỏ bo góc tròn
-                                            border: 'none',
-                                        }}
-                                        key={index}
-                                    >
-                                        <CardContent>
-                                            <Grid container spacing={2}>
-                                                <Grid item xs={2}>
-                                                    <CardMedia
-                                                        component="img"
-                                                        sx={{
-                                                            width: 70,
-                                                            height: 70,
-                                                            objectFit: 'cover',
-                                                        }}
-                                                        image={product.hinhAnh}
-                                                        alt={product.tenSanPham}
-                                                    />
-                                                </Grid>
-
-                                                <Grid item xs={9}>
-                                                    <Typography variant="body1" component="div">
-                                                        <strong>{product.tenSanPham}</strong>
-                                                    </Typography>
-                                                    <Grid container spacing={2} sx={{ marginTop: 0 }}>
-                                                        <Grid item>
-                                                            <Typography variant="body2">Màu sắc: {product.mauSac}</Typography>
-                                                        </Grid>
-                                                        <Grid item>
-                                                            <Typography variant="body2">Số lượng: {product.soLuong}</Typography>
-                                                        </Grid>
-                                                        <Grid item>
-                                                            <Typography variant="body2">Kích thước: {product.size}</Typography>
-                                                        </Grid>
-
-                                                        <Grid item>
-                                                            <Typography variant="body2">
-                                                                Giá: {(product.gia * product.soLuong)?.toLocaleString()} VNĐ
-                                                            </Typography>
+                        {orders.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={5} sx={{ textAlign: 'center' }}>
+                                    <Box sx={{ textAlign: 'center', position: 'relative', marginBottom: 5, marginLeft: -2, width: 830, backgroundColor: '#fff' }}>
+                                        <img
+                                            src="https://img.freepik.com/premium-vector/result-not-found_878233-777.jpg"
+                                            alt="No data"
+                                            style={{ width: '150px', height: 'auto' }}
+                                        />
+                                        <Typography variant="h6" sx={{ marginTop: '-40px', paddingBottom: 10 }}>
+                                            Không có hóa đơn nào
+                                        </Typography>
+                                    </Box>
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            orders.map((order) => (
+                                <Box
+                                    key={order.id}
+                                    sx={{
+                                        border: '1px solid #e0e0e0',
+                                        borderRadius: 2,
+                                        padding: 2,
+                                        boxShadow: 2,
+                                        marginTop: 3,
+                                        backgroundColor: '#fff',
+                                    }}
+                                >
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: 1 }}>
+                                        <Typography sx={{ fontWeight: 'bold', fontSize: 18 }}>
+                                            Mã đơn: {order.maHoaDon}
+                                        </Typography>
+                                        <Typography sx={{ fontWeight: 'bold', fontSize: 18, color: '#1976D2' }}>
+                                            Trạng thái: {order.trangThai}
+                                        </Typography>
+                                    </Box>
+                                    {order?.sanPhams?.map((product, index) => (
+                                        <Card
+                                            key={index}
+                                            sx={{
+                                                marginTop: 0,
+                                                borderRadius: 0,
+                                                border: 'none',
+                                            }}
+                                        >
+                                            <CardContent>
+                                                <Grid container spacing={2}>
+                                                    <Grid item xs={2}>
+                                                        <CardMedia
+                                                            component="img"
+                                                            sx={{ width: 70, height: 70, objectFit: 'cover' }}
+                                                            image={product.hinhAnh}
+                                                            alt={product.tenSanPham}
+                                                        />
+                                                    </Grid>
+                                                    <Grid item xs={9}>
+                                                        <Typography variant="body1" component="div">
+                                                            <strong>{product.tenSanPham}</strong>
+                                                        </Typography>
+                                                        <Grid container spacing={2} sx={{ marginTop: 0 }}>
+                                                            <Grid item>
+                                                                <Typography variant="body2">Màu sắc: {product.mauSac}</Typography>
+                                                            </Grid>
+                                                            <Grid item>
+                                                                <Typography variant="body2">Số lượng: {product.soLuong}</Typography>
+                                                            </Grid>
+                                                            <Grid item>
+                                                                <Typography variant="body2">Kích thước: {product.size}</Typography>
+                                                            </Grid>
+                                                            <Grid item>
+                                                                <Typography variant="body2">
+                                                                    Giá: {(product.gia * product.soLuong)?.toLocaleString()} VNĐ
+                                                                </Typography>
+                                                            </Grid>
                                                         </Grid>
                                                     </Grid>
                                                 </Grid>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
 
-                                            </Grid>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                        Thành tiền: {getTotalPrice(order.sanPhams)?.toLocaleString()} VNĐ
-                                    </Typography>
-
-                                    <Box>
-                                        {order?.trangThai === "Chờ xác nhận" &&
-                                            <Button variant="contained" sx={{ marginRight: 2 }} onClick={() => handleOpenLyDo(order?.id)}>
-                                                Hủy đơn
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+                                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                            Thành tiền: {getTotalPrice(order.sanPhams)?.toLocaleString()} VNĐ
+                                        </Typography>
+                                        <Box>
+                                            {order?.trangThai === "Chờ xác nhận" &&
+                                                <Button variant="contained" sx={{ marginRight: 2 }} onClick={() => handleOpenLyDo(order?.id)}>
+                                                    Hủy đơn
+                                                </Button>
+                                            }
+                                            <Button variant="outlined" sx={{ color: 'black' }} onClick={() => navigate(`/donMuaChiTiet/${order?.id}`)}>
+                                                <ShoppingCartIcon sx={{ marginRight: 1 }} />
+                                                Xem đơn hàng
                                             </Button>
-                                        }
-
-                                        <Button variant="outlined" sx={{ color: 'black' }}onClick={() => navigate(`/donMuaChiTiet/${order?.id}`)}>
-                                            <ShoppingCartIcon sx={{ marginRight: 1 }}  />
-                                            Xem đơn hàng
-                                        </Button>
+                                        </Box>
                                     </Box>
                                 </Box>
-                            </Box>
-                        ))}
+                            )))}
                     </Grid>
                 </Grid>
             </Box>
