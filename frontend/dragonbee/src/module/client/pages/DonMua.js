@@ -2,26 +2,71 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     Box, Grid, Typography, Button, Card, CardContent, CardMedia, Container,
-    Tabs, Tab, Breadcrumbs, Link,
+    Tabs, Tab, Breadcrumbs, Link, Dialog, DialogTitle, DialogContent, DialogActions, TextField
 } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 
 const DonMua = () => {
     const location = useLocation();
     const isActive = location.pathname === '/donMua'; // Kiểm tra nếu đường dẫn là /donMua
     const [tabValue, setTabValue] = useState(0);
     const [orders, setOrders] = useState([]);
+    const [openLyDo, setOpenLyDo] = useState(false);  // Biến lưu giá trị mở modal nhập lý do khi thực hiện chức năng hủy hóa đơn
+    const [openConfirm, setOpenConfirm] = useState(false); // Mở modal xác nhận
+    const [ghiChuTrangThai, setGhiChuTrangThai] = useState("");
+    const [error, setError] = useState(false);//Biến báo lỗi
+    const [idHoaDonCanThaoTac, setIdHoaDonCanThaoTac] = useState(null);//Biến báo lỗi
     const userKH = JSON.parse(localStorage.getItem("userKH"));
+
+
+    //Thông báo thành công
+    const showSuccessToast = (message) => {
+        toast.success(message, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            style: {
+                backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+                color: "white", // Chữ trắng nổi bật
+                fontSize: "14px", // Nhỏ hơn một chút
+                fontWeight: "500",
+                borderRadius: "8px",
+            }
+        });
+    };
+    const showErrorToast = (message) => {
+        toast.error(message, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            style: {
+                backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+                color: "white", // Chữ trắng nổi bật
+                fontSize: "14px", // Nhỏ hơn một chút
+                fontWeight: "500",
+                borderRadius: "8px",
+            }
+        });
+    };
 
     // List trạng thái hóa đơn
     const tabLabels =
         [
             "Chờ xác nhận",
-            "Đã xác nhận",
             "Chờ giao hàng",
             "Đang vận chuyển",
             "Đã giao hàng",
@@ -29,8 +74,8 @@ const DonMua = () => {
             "Đã hủy"
         ];
 
-    const getTotalPrice = (products) => {
-        return products.reduce((total, product) => total + product.price * product.quantity, 0);
+    const getTotalPrice = (sanPhams) => {
+        return sanPhams?.reduce((total, product) => total + product.gia * product.soLuong, 0);
     };
 
     const getLastNameInitial = (fullName) => {
@@ -39,15 +84,17 @@ const DonMua = () => {
         return lastName.charAt(0).toUpperCase(); // lấy chữ cái đầu tiên và chuyển thành chữ hoa
     };
     const getHoaDons = async () => {
-        try {  
-            console.log(tabLabels[tabValue]+" - "+userKH?.khachHang?.id || 0);        
-            const response = await axios.get(`http://localhost:8080/donMua/getDonMuaTheoTrangThaiVaKhachHang`, null, {
+        try {
+            console.log(tabLabels[tabValue] + " - " + userKH?.khachHang?.id || 0);
+            const response = await axios.get(`http://localhost:8080/donMua/getDonMuaTheoTrangThaiVaKhachHang`, {
                 params: {
                     trangThai: tabLabels[tabValue],
                     idKhachHang: userKH?.khachHang?.id || 0 // Nếu userKH không có, gửi 0 thay vì undefined
                 }
             });
-           setOrders(response.data);
+            console.log(response.data)
+            setOrders(response.data);
+
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu:", error);
         }
@@ -56,6 +103,46 @@ const DonMua = () => {
     useEffect(() => {
         getHoaDons();
     }, [tabValue]);
+    //Hàm kiểm tra check nhạp lý do chưa để mở confirm khi thực hiện chức năng hủy hóa đơn
+    const handleNextConfirm = () => {
+        if (!ghiChuTrangThai.trim()) { //Check nếu nhập lý do hủy hóa đơn
+            setError(true);
+        } else {
+            setError(false);
+            setOpenLyDo(false);
+            setOpenConfirm(true);
+        }
+    };
+    //Hàm mở modal nhập lý do hủy hóa đơn khi thực hiện chức năng hủy hóa đơn
+    const handleOpenLyDo = (id) => {
+        setIdHoaDonCanThaoTac(id);
+        setOpenLyDo(true);
+    };
+    //Hàm thực hiện chức năng hủy hóa đơn gọi api
+    const handleHuyHoaDon = async () => {
+        try {
+            if (idHoaDonCanThaoTac === null) {
+                showErrorToast("Chúng tôi không nhận được id hóa đơn cần thao tác");
+                return;
+            }
+            const response = await axios.post(`http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${idHoaDonCanThaoTac}`, {
+                lyDo: ghiChuTrangThai,
+                trangThai: "Đã hủy",
+                hanhDong: "Hủy"
+            });
+            if (response.data) {
+                setOpenConfirm(false);
+                setGhiChuTrangThai("");
+                getHoaDons();
+                showSuccessToast("Hủy hóa đơn thành công")
+            } else {
+                showErrorToast("Hủy hóa đơn đã có lỗi xảy ra");
+            }
+        } catch (error) {
+            showErrorToast("Hủy hóa đơn đã có lỗi xảy ra");
+            console.error(error);
+        }
+    };
     return (
         <Container >
             <Breadcrumbs aria-label="breadcrumb">
@@ -133,14 +220,23 @@ const DonMua = () => {
                         {/* Tab Header */}
                         <Tabs
                             value={tabValue}
-                            onChange={(e, newValue) => setTabValue(newValue)}//Bắt buộc có 2 tham số 
+                            onChange={(e, newValue) => setTabValue(newValue)} // Bắt buộc có 2 tham số
                             indicatorColor="primary"
                             textColor="primary"
                             aria-label="order status tabs"
+                            variant="scrollable"
+                            scrollButtons={false} // Ẩn mũi tên cuộn
+                            allowScrollButtonsMobile={false} // Ngăn xuất hiện trên mobile
+                            sx={{
+                                width: "100%",
+                                minHeight: 48,
+                                overflow: "visible", // Giữ tab không bị tụt vào trong
+                            }}
                         >
-                            {tabLabels.map((label, index) => {
-                                <Tab key={index} label={{ label }} />
-                            })}
+                            {tabLabels.map((label, index) => (
+                                <Tab key={index} label={label} />
+                            ))}
+
                         </Tabs>
 
                         {orders?.map((order) => (
@@ -208,7 +304,7 @@ const DonMua = () => {
 
                                                         <Grid item>
                                                             <Typography variant="body2">
-                                                                Giá: {(product.gia * product.soLuong).toLocaleString()} VNĐ
+                                                                Giá: {(product.gia * product.soLuong)?.toLocaleString()} VNĐ
                                                             </Typography>
                                                         </Grid>
                                                     </Grid>
@@ -221,13 +317,16 @@ const DonMua = () => {
 
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
                                     <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                        Thành tiền: {getTotalPrice(order.products).toLocaleString()} VNĐ
+                                        Thành tiền: {getTotalPrice(order.sanPhams)?.toLocaleString()} VNĐ
                                     </Typography>
 
                                     <Box>
-                                        <Button variant="contained" sx={{ marginRight: 2 }}>
-                                            Hủy đơn
-                                        </Button>
+                                        {order?.trangThai === "Chờ xác nhận" &&
+                                            <Button variant="contained" sx={{ marginRight: 2 }} onClick={() => handleOpenLyDo(order?.id)}>
+                                                Hủy đơn
+                                            </Button>
+                                        }
+
                                         <Button variant="outlined" sx={{ color: 'black' }}>
                                             <ShoppingCartIcon sx={{ marginRight: 1 }} />
                                             Xem đơn hàng
@@ -239,6 +338,46 @@ const DonMua = () => {
                     </Grid>
                 </Grid>
             </Box>
+            <Dialog open={openLyDo} onClose={() => setOpenLyDo(false)}>
+                <DialogTitle>Nhập lý do hủy hóa đơn</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={3}
+                        label="Lý do hủy"
+                        variant="outlined"
+                        value={ghiChuTrangThai}
+                        onChange={(e) => { setGhiChuTrangThai(e.target.value); setError(false) }}
+                        error={error} // Hiển thị lỗi nếu có
+                        helperText={error ? "Bạn chưa nhập lý do!" : ""} // Nội dung lỗi
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => { setOpenLyDo(false); setIdHoaDonCanThaoTac(null) }} color="primary">
+                        Hủy bỏ
+                    </Button>
+                    <Button onClick={handleNextConfirm} color="error" variant="contained">
+                        Tiếp tục
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+                <DialogTitle>Xác nhận hủy hóa đơn</DialogTitle>
+                <DialogContent>
+                    <p><b>Lý do hủy:</b> {ghiChuTrangThai}</p>
+                    <p>Bạn có chắc chắn muốn hủy hóa đơn này không?</p>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => { setOpenConfirm(false); setIdHoaDonCanThaoTac(null) }} color="primary">
+                        Quay lại
+                    </Button>
+                    <Button onClick={handleHuyHoaDon} color="error" variant="contained">
+                        Xác nhận hủy
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <ToastContainer />
         </Container>
     );
 };
