@@ -11,9 +11,11 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const DonMua = () => {
     const location = useLocation();
+    const navigate = useNavigate(); // Khai báo navigate
     const isActive = location.pathname === '/donMua'; // Kiểm tra nếu đường dẫn là /donMua
     const [tabValue, setTabValue] = useState(0);
     const [orders, setOrders] = useState([]);
@@ -84,15 +86,13 @@ const DonMua = () => {
         return lastName.charAt(0).toUpperCase(); // lấy chữ cái đầu tiên và chuyển thành chữ hoa
     };
     const getHoaDons = async () => {
-        try {
-            console.log(tabLabels[tabValue] + " - " + userKH?.khachHang?.id || 0);
+        try {      
             const response = await axios.get(`http://localhost:8080/donMua/getDonMuaTheoTrangThaiVaKhachHang`, {
                 params: {
                     trangThai: tabLabels[tabValue],
                     idKhachHang: userKH?.khachHang?.id || 0 // Nếu userKH không có, gửi 0 thay vì undefined
                 }
             });
-            console.log(response.data)
             setOrders(response.data);
 
         } catch (error) {
@@ -327,8 +327,8 @@ const DonMua = () => {
                                             </Button>
                                         }
 
-                                        <Button variant="outlined" sx={{ color: 'black' }}>
-                                            <ShoppingCartIcon sx={{ marginRight: 1 }} />
+                                        <Button variant="outlined" sx={{ color: 'black' }}onClick={() => navigate(`/donMuaChiTiet/${order?.id}`)}>
+                                            <ShoppingCartIcon sx={{ marginRight: 1 }}  />
                                             Xem đơn hàng
                                         </Button>
                                     </Box>

@@ -24,6 +24,7 @@ public class SanPhamDTO {
         private String ten;
         private List<SanPhamDTO.MauSacAndHinhAnhAndSize> listHinhAnhAndMauSacAndSize;
         private Double gia;
+        private Boolean isNew;
 //        private String trangThai;
     }
     @Getter

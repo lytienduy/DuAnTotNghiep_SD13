@@ -15,7 +15,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { Remove as RemoveIcon } from "@mui/icons-material";
 import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import soldOutImg from '../../../img/sold-out.png';
 import inactiveImg from '../../../img/inactive.png';
