@@ -22,6 +22,7 @@ const GioHang = () => {
     const [productsCapNhatSoLuong, setProductsCapNhatSoLuong] = useState([]);
     const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
     const [dialogMessage, setDialogMessage] = useState("");
+    const userKH = JSON.parse(localStorage.getItem("userKH"));
 
     const handleDialogOpen = (message) => {
         setDialogMessage(message);
@@ -73,28 +74,42 @@ const GioHang = () => {
     const getListDanhSachCapNhatSoLuongSanPhamGioHang = async () => {
         try {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const response = await axios.post(`http://localhost:8080/gioHang/getListDanhSachCapNhatSoLuongSanPhamGioHang`, cart, // Gửi mảng JSON
+            const response = await axios.post(`http://localhost:8080/gioHang/getListDanhSachCapNhatSoLuongSanPhamGioHang`,
+                {
+                    cart: cart,
+                    idKhachHang: userKH?.khachHang?.id || null
+                }, // Gửi mảng JSON, // Gửi mảng JSON
                 {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                });//Gọi api bằng         
-            for (const [index, item] of cart.entries()) {
+                });//Gọi api bằng        
+
+            for (const [index, item] of response.data.entries()) {
                 if (response.data?.[index]?.quantity === 0) {
-                    cart[index].quantity = 0;
+                    if (cart[index]) {
+                        cart[index].quantity = 0;
+                    }
                     handleDialogOpen("Sản phẩm đã hết hàng, bạn có thể tham khảo sản phẩm khác");
 
                 } else if (item?.quantity !== response.data?.[index]?.quantity) {
-                    cart[index].quantity = response.data?.[index]?.quantity;
+                    if (cart[index]) {
+                        cart[index].quantity = response.data?.[index]?.quantity;
+                    }
                     handleDialogOpen("Sản phẩm không còn đủ số lượng bạn mong muốn");
                     continue;
                 }
+
                 if (item.gia !== response.data?.[index]?.gia) {
-                    cart[index].gia = response.data?.[index]?.gia;
+                    if (cart[index]) {
+                        cart[index].gia = response.data?.[index]?.gia;
+                    }
                 }
             }
+
+            //Xóa khỏi selectedProduct để thanh toán
             for (let i = 0; i < cart.length; ++i) {
-                if (cart[i]?.quantity === 0) {
+                if (response.data[i]?.quantity === 0) {
                     const updatedSelection = [...selectedProducts];
                     if (updatedSelection.includes(i)) {
                         const productIndex = updatedSelection.indexOf(i);
@@ -103,6 +118,7 @@ const GioHang = () => {
                     setSelectedProducts(updatedSelection);
                 }
             }
+            //XÓa sản phẩm khỏi giỏ hàng local
             for (let i = 0; i < cart.length; ++i) {
                 if (cart[i]?.quantity === 0) {
                     cart.splice(i, 1); // Xóa sản phẩm đã hết hàng
@@ -110,6 +126,7 @@ const GioHang = () => {
             }
             localStorage.setItem("cart", JSON.stringify(cart));
             layDuLieuCart();
+
         } catch (error) {
             showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
         }
@@ -118,12 +135,17 @@ const GioHang = () => {
     const getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang = async () => {
         try {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const response = await axios.post(`http://localhost:8080/gioHang/getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang`, cart, // Gửi mảng JSON
+
+            const response = await axios.post(`http://localhost:8080/gioHang/getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang`,
+                {
+                    cart: cart,
+                    idKhachHang: userKH?.khachHang?.id || null
+                }, // Gửi mảng JSON
                 {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                });//Gọi api bằng axiosGet
+                });
             setProductsCapNhatSoLuong(response.data);
             // for (const [index, item] of response.data.entries()) {
             //     if (response.data?.[index]?.quantity === 0) {
@@ -144,9 +166,19 @@ const GioHang = () => {
         }
     };
 
-    const layDuLieuCart = (index) => {
-        const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-        setProducts(storedCart);
+    const layDuLieuCart = async () => {
+        if (userKH?.khachHang?.id) {
+            const response = await axios.post(`http://localhost:8080/gioHang/layDuLieuCartVaXoaSanPhamSoLuong0`, null,
+                {
+                    params: {
+                        idKhachHang: userKH?.khachHang?.id
+                    }
+                });//Gọi api bằng  
+            setProducts(response.data);
+        } else {
+            const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+            setProducts(storedCart);
+        }
     };
 
     useEffect(() => {
@@ -154,12 +186,12 @@ const GioHang = () => {
         getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         const interval = setInterval(() => {
             getListDanhSachCapNhatSoLuongSanPhamGioHang();
-        }, 10000); // 60 giây
+        }, 5000); // 60 giây
 
         return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
     }, []);
 
-    const handleRemoveProduct = (index) => {
+    const handleRemoveProduct = async (index, idspct) => {
         //Cập nhật lại products
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
         // Lọc bỏ sản phẩm có id trùng với productId
@@ -168,6 +200,16 @@ const GioHang = () => {
         }
         // Cập nhật lại giỏ hàng trong Local Storage   
         localStorage.setItem("cart", JSON.stringify(cart));
+        if (userKH?.khachHang?.id) {
+            const response = await axios.post(`http://localhost:8080/gioHang/xoaSanPhamKhoiGioHangCoDangNhap`, null,
+                {
+                    params: {
+                        idSanPhamChiTiet: idspct,
+                        idKhachHang: userKH?.khachHang?.id
+                    }
+                });//Gọi api bằng  
+        }
+        //Lấy dữ liệu mới
         layDuLieuCart();
         setSelectedProducts(prevSelected => prevSelected.filter(i => i !== index)); // Xóa sản phẩm khỏi danh sách chọn nếu bị xóa    
     };
@@ -189,7 +231,7 @@ const GioHang = () => {
     };
 
 
-    const handleIncrement = (index) => {
+    const handleIncrement = async (index, idspct) => {
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
         // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
         if (index >= 0 && index < cart.length) {
@@ -198,15 +240,27 @@ const GioHang = () => {
 
         // Cập nhật lại giỏ hàng trong Local Storage
         localStorage.setItem("cart", JSON.stringify(cart));
+        if (userKH?.khachHang?.id) {
+            const response = await axios.post(`http://localhost:8080/gioHang/tangSoLuongSanPhamCoDangNhap`, null,
+                {
+                    params: {
+                        idSanPhamChiTiet: idspct,
+                        idKhachHang: userKH?.khachHang?.id
+                    }
+                });//Gọi api bằng  
+        }
+        //Lấy dữ liệu mới
         // Load lại giỏ hàng sau khi cập nhật
         layDuLieuCart();
+
         getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
+        //Nên cho hàm check nào vào getListDanhSach luôn check vs respone
         if (productsCapNhatSoLuong[index].quantity === 1) {//Fix lỗi chậm một nhịp  
             showSuccessToast("Bạn đã mua tối đa sản phẩm thứ " + index);
         }
     };
 
-    const handleDecrement = (index) => {
+    const handleDecrement = async (index, idspct) => {
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
         // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
         if (index >= 0 && index < cart.length) {
@@ -220,10 +274,19 @@ const GioHang = () => {
         }
         // Cập nhật lại giỏ hàng trong Local Storage
         localStorage.setItem("cart", JSON.stringify(cart));
+        if (userKH?.khachHang?.id) {
+            const response = await axios.post(`http://localhost:8080/gioHang/giamSoLuongSanPhamCoDangNhap`, null,
+                {
+                    params: {
+                        idSanPhamChiTiet: idspct,
+                        idKhachHang: userKH?.khachHang?.id
+                    }
+                });//Gọi api bằng  
+        }
+        //Lấy dữ liệu mới
         // Load lại giỏ hàng sau khi cập nhật
         layDuLieuCart();
         getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();//Phải ở sau khi cập nhật cart
-
     };
 
     const handleToggleSelect = (index) => {
@@ -333,72 +396,6 @@ const GioHang = () => {
                                                         </Grid>
                                                         <Grid item xs={8}>
                                                             <Typography variant="body2" sx={{ wordBreak: 'break-word', fontWeight: 'bold' }}>{product.tenSPCT}</Typography>
-                                                            {/* <Grid container spacing={2} sx={{ marginTop: -1, alignItems: 'center' }}>
-                                                                <Grid item>
-                                                                    <Select
-                                                                        defaultValue="Xám 84 Melange"
-                                                                        displayEmpty
-                                                                        sx={{
-                                                                            fontSize: '0.675rem',
-                                                                            border: 'none', // Loại bỏ khung viền
-                                                                            outline: 'none', // Loại bỏ viền khi được chọn
-                                                                            boxShadow: 'none', // Loại bỏ bóng đổ nếu có
-                                                                            '& .MuiSelect-select': {
-                                                                                padding: '0px', // Giảm khoảng cách padding nếu cần
-                                                                            },
-                                                                            '& fieldset': {
-                                                                                border: 'none', // Loại bỏ border của fieldset nếu có
-                                                                            },
-                                                                            '& .MuiSelect-icon': {
-                                                                                color: 'black',  // Đặt màu đen cho mũi tên
-                                                                            },
-                                                                        }}
-                                                                        IconComponent={(props) => <ArrowDropDownIcon {...props} />}  // Sử dụng biểu tượng mũi tên mặc định của Material-UI
-                                                                    >
-                                                                        <MenuItem value="Xám 84" selected>Xám 84</MenuItem>
-
-                                                                        
-                                                                    </Select>
-                                                                </Grid>
-
-                                                                <Grid item sx={{ marginLeft: -2 }}>
-                                                                    <Divider
-                                                                        orientation="vertical"
-                                                                        flexItem
-                                                                        sx={{
-                                                                            height: 15,
-                                                                            borderColor: 'black',  // Chắc chắn rằng thanh chia cột sẽ có màu đen
-                                                                            borderWidth: 2,  // Đổi độ dày thanh chia cột
-                                                                        }}
-                                                                    />
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    <Select
-                                                                        defaultValue="Xám 84 Melange"
-                                                                        displayEmpty
-                                                                        sx={{
-                                                                            fontSize: '0.675rem',
-                                                                            border: 'none', // Loại bỏ khung viền
-                                                                            outline: 'none', // Loại bỏ viền khi được chọn
-                                                                            boxShadow: 'none', // Loại bỏ bóng đổ nếu có
-                                                                            '& .MuiSelect-select': {
-                                                                                padding: '0px', // Giảm khoảng cách padding nếu cần
-                                                                            },
-                                                                            '& fieldset': {
-                                                                                border: 'none', // Loại bỏ border của fieldset nếu có
-                                                                            },
-                                                                            '& .MuiSelect-icon': {
-                                                                                color: 'black',  // Đặt màu đen cho mũi tên
-                                                                            },
-                                                                        }}
-                                                                        IconComponent={(props) => <ArrowDropDownIcon {...props} />}  // Sử dụng biểu tượng mũi tên mặc định của Material-UI
-                                                                    >
-                                                                        <MenuItem selected></MenuItem>
-                                                                        
-                                                                    </Select>
-                                                                </Grid>
-
-                                                            </Grid> */}
                                                             <Grid container spacing={2} sx={{ marginTop: 0 }}>
                                                                 <Grid item>
                                                                     <Typography variant="body2">Màu sắc: {product?.mauSac?.tenMauSac}</Typography>
@@ -447,7 +444,7 @@ const GioHang = () => {
                                                             InputProps={{
                                                                 startAdornment: (
                                                                     <IconButton
-                                                                        onClick={() => handleDecrement(index)}
+                                                                        onClick={() => handleDecrement(index, product.idSPCT)}
                                                                         size="small"
                                                                         style={{ padding: '2px', marginLeft: -10 }}
                                                                     >
@@ -456,7 +453,7 @@ const GioHang = () => {
                                                                 ),
                                                                 endAdornment: (
                                                                     <IconButton
-                                                                        onClick={() => handleIncrement(index)}
+                                                                        onClick={() => handleIncrement(index, product.idSPCT)}
                                                                         size="small"
                                                                         style={{ padding: '2px', marginRight: -10 }}
                                                                         disabled={productsCapNhatSoLuong?.[index]?.quantity === 0}
@@ -472,7 +469,7 @@ const GioHang = () => {
                                                     {(product.gia * product?.quantity).toLocaleString()} VNĐ
                                                 </TableCell>
                                                 <TableCell align="center" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
-                                                    <DeleteIcon color="error" sx={{ cursor: 'pointer' }} onClick={() => handleRemoveProduct(index)} />
+                                                    <DeleteIcon color="error" sx={{ cursor: 'pointer' }} onClick={() => handleRemoveProduct(index, product.idSPCT)} />
                                                 </TableCell>
                                             </TableRow>
                                         ))

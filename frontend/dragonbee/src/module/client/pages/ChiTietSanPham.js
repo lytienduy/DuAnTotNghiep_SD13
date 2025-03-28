@@ -178,7 +178,7 @@ const ChiTietSanPham = () => {
         try {
             if (userKH?.khachHang?.id) {
                 console.log("Chạy api");
-                const response = await axios.post(`http://localhost:8080/gioHang/addVaoGioHang`, null, {
+                const response = await axios.post(`http://localhost:8080/gioHang/addVaoGioHangCoDangNhap`, null, {
                     params: {
                         idSanPhamChiTiet: selectedSizeReuse.idSPCT,
                         soLuong: quantity,

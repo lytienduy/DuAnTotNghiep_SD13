@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,7 +30,36 @@ public class GioHangService {
 
 
     //P
-    public List<SPCTDTO.SanPhamCart> getListDanhSachCapNhatSoLuongSanPhamGioHang(List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCart) {
+    public List<SPCTDTO.SanPhamCart> getListDanhSachCapNhatSoLuongSanPhamGioHang(Integer idKhachHang, List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCart) {
+        //Nếu có khách hàng
+        if (idKhachHang != null) {
+            List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCartKhachHang = new ArrayList<>();
+            List<GioHangChiTiet> listGioHangChiTiet = gioHangChiTietRepository.findByGioHangOrderByNgayTaoDesc(gioHangRepository.getGioHangByKhachHang(khachHangRepository.findById(idKhachHang).get()));
+            for (GioHangChiTiet gioHangChiTiet : listGioHangChiTiet
+            ) {
+                SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
+                SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
+                sanPhamCart.setIdSPCT(sanPhamCart.getIdSPCT());
+                if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
+                    sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
+                }
+                sanPhamCart.setTenSPCT(sanPhamChiTiet.getSanPham().getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
+                sanPhamCart.setTenMauSac(sanPhamChiTiet.getMauSac().getTenMauSac());
+                sanPhamCart.setTenSize(sanPhamChiTiet.getSize().getTenSize());
+                sanPhamCart.setGia(sanPhamChiTiet.getGia());
+                sanPhamCart.setQuantity(gioHangChiTiet.getSoLuong());
+                if (sanPhamChiTiet.getSoLuong() - gioHangChiTiet.getSoLuong() <= 0) {
+                    if (sanPhamChiTiet.getSoLuong() <= 0) {
+                        sanPhamCart.setQuantity(0);
+                    } else {
+                        sanPhamCart.setQuantity(sanPhamChiTiet.getSoLuong());
+                    }
+                }
+                listDanhSachSanPhamCartKhachHang.add(sanPhamCart);
+            }
+            return listDanhSachSanPhamCartKhachHang;
+        }
+        //Nếu không có khách hàng mà phụ thuộc vào listDanhSachSanPhamCart
         for (SPCTDTO.SanPhamCart sanPhamCart : listDanhSachSanPhamCart
         ) {
             SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepositoryP.findById(sanPhamCart.getIdSPCT()).get();
@@ -48,8 +78,61 @@ public class GioHangService {
         return listDanhSachSanPhamCart;
     }
 
+    public List<SPCTDTO.SanPhamCart> layDuLieuCartVaXoaSanPhamSoLuong0(Integer idKhachHang) {
+        try {
+            List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCartKhachHang = new ArrayList<>();
+            List<GioHangChiTiet> listGioHangChiTiet = gioHangChiTietRepository.findByGioHangOrderByNgayTaoDesc(gioHangRepository.getGioHangByKhachHang(khachHangRepository.findById(idKhachHang).get()));
+            for (GioHangChiTiet gioHangChiTiet : listGioHangChiTiet
+            ) {
+                if (gioHangChiTiet.getSoLuong() <= 0) {
+                    gioHangChiTietRepository.delete(gioHangChiTiet);
+                } else {
+                    SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
+                    SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
+                    sanPhamCart.setIdSPCT(sanPhamCart.getIdSPCT());
+                    if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
+                        sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
+                    }
+                    sanPhamCart.setTenSPCT(sanPhamChiTiet.getSanPham().getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
+                    sanPhamCart.setTenMauSac(sanPhamChiTiet.getMauSac().getTenMauSac());
+                    sanPhamCart.setTenSize(sanPhamChiTiet.getSize().getTenSize());
+                    sanPhamCart.setGia(sanPhamChiTiet.getGia());
+                    sanPhamCart.setQuantity(gioHangChiTiet.getSoLuong());
+                    listDanhSachSanPhamCartKhachHang.add(sanPhamCart);
+                }
+            }
+            return listDanhSachSanPhamCartKhachHang;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     //P
-    public List<SPCTDTO.SanPhamCart> getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang(List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCart) {
+    public List<SPCTDTO.SanPhamCart> getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang(Integer idKhachHang, List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCart) {
+        //Nếu co đăng nhập
+        if (idKhachHang != null) {
+            List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCartKhachHang = new ArrayList<>();
+            List<GioHangChiTiet> listGioHangChiTiet = gioHangChiTietRepository.findByGioHangOrderByNgayTaoDesc(gioHangRepository.getGioHangByKhachHang(khachHangRepository.findById(idKhachHang).get()));
+            for (GioHangChiTiet gioHangChiTiet : listGioHangChiTiet
+            ) {
+                SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
+                SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
+                sanPhamCart.setIdSPCT(sanPhamCart.getIdSPCT());
+                if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
+                    sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
+                }
+                sanPhamCart.setTenSPCT(sanPhamChiTiet.getSanPham().getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
+                sanPhamCart.setTenMauSac(sanPhamChiTiet.getMauSac().getTenMauSac());
+                sanPhamCart.setTenSize(sanPhamChiTiet.getSize().getTenSize());
+                sanPhamCart.setGia(sanPhamChiTiet.getGia());
+                sanPhamCart.setQuantity(sanPhamChiTiet.getSoLuong() - gioHangChiTiet.getSoLuong());
+                listDanhSachSanPhamCartKhachHang.add(sanPhamCart);
+            }
+            return listDanhSachSanPhamCartKhachHang;
+        }
+
+        //Nếu không có đăng nhập
         for (SPCTDTO.SanPhamCart sanPhamCart : listDanhSachSanPhamCart
         ) {
             SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepositoryP.findById(sanPhamCart.getIdSPCT()).get();
@@ -58,7 +141,7 @@ public class GioHangService {
         return listDanhSachSanPhamCart;
     }
 
-    public Boolean addVaoGioHang(Integer idSanPhamChiTiet, Integer soLuong, Double gia, Integer idKhachHang) {
+    public Boolean addVaoGioHangCoDangNhap(Integer idSanPhamChiTiet, Integer soLuong, Double gia, Integer idKhachHang) {
         try {
             KhachHang khachHang = khachHangRepository.findById(idKhachHang).get();
             //Kiểm tra khách hàng đã có giỏ hàng chưa
@@ -93,5 +176,44 @@ public class GioHangService {
             return false;
         }
     }
+
+    public Boolean xoaSanPhamKhoiGioHangCoDangNhap(Integer idSanPhamChiTiet, Integer idKhachHang) {
+        GioHangChiTiet gioHangChiTiet = gioHangChiTietRepository.findBySanPhamChiTietAndGioHang(
+                sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get(), gioHangRepository.getGioHangByKhachHang(khachHangRepository.findById(idKhachHang).get())
+        );
+        if (gioHangChiTiet != null) {
+            gioHangChiTietRepository.delete(gioHangChiTiet);
+            return true;
+        }
+        return false;
+
+    }
+
+    public Boolean tangSoLuongSanPhamCoDangNhap(Integer idSanPhamChiTiet, Integer idKhachHang) {
+        GioHangChiTiet gioHangChiTiet = gioHangChiTietRepository.findBySanPhamChiTietAndGioHang(
+                sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get(), gioHangRepository.getGioHangByKhachHang(khachHangRepository.findById(idKhachHang).get())
+        );
+        if (gioHangChiTiet != null) {
+            gioHangChiTiet.setSoLuong(gioHangChiTiet.getSoLuong() + 1);
+            gioHangChiTietRepository.save(gioHangChiTiet);
+            return true;
+        }
+        return false;
+
+    }
+
+    public Boolean giamSoLuongSanPhamCoDangNhap(Integer idSanPhamChiTiet, Integer idKhachHang) {
+        GioHangChiTiet gioHangChiTiet = gioHangChiTietRepository.findBySanPhamChiTietAndGioHang(
+                sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get(), gioHangRepository.getGioHangByKhachHang(khachHangRepository.findById(idKhachHang).get())
+        );
+        if (gioHangChiTiet != null) {
+            gioHangChiTiet.setSoLuong(gioHangChiTiet.getSoLuong() - 1);
+            gioHangChiTietRepository.save(gioHangChiTiet);
+            return true;
+        }
+        return false;
+
+    }
+
 
 }
