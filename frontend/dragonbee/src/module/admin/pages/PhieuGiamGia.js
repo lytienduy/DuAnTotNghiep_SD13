@@ -77,11 +77,11 @@ const DiscountCoupons = () => {
       }
     };
 
-    // Kiểm tra nếu có thông báo từ `navigate`
-    if (location.state?.successMessage) {
-      setMessage(location.state.successMessage);
-      setOpenSnackbar(true);
-    }
+    // // Kiểm tra nếu có thông báo từ `navigate`
+    // if (location.state?.successMessage) {
+    //   setMessage(location.state.successMessage);
+    //   setOpenSnackbar(true);
+    // }
 
     fetchCoupons();
   }, [page, rowsPerPage, ma, tuNgay, denNgay, kieuGiamGia, trangThai, location.state]);
@@ -132,7 +132,19 @@ const DiscountCoupons = () => {
     setPage(0);  // Quay lại trang đầu tiên khi thay đổi số lượng dòng
   };
 
+  useEffect(() => {
+    if (location.state && location.state.successMessage) {
+      setMessage(location.state.successMessage);
+      setOpenSnackbar(true);
 
+      // Reset state to prevent showing message again after reload
+      setTimeout(() => {
+        setOpenSnackbar(false);
+        setMessage("");  // Clear the message after the Snackbar closes
+      }, 3000); // Snackbar duration
+    }
+  }, [location]);
+  
   return (
     <Box >
       {/* Dialog xác nhận */}
