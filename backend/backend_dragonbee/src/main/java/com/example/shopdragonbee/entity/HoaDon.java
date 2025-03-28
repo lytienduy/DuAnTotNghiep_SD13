@@ -1,11 +1,13 @@
 package com.example.shopdragonbee.entity;
 
+import com.example.shopdragonbee.listener.HoaDonListener;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
+@EntityListeners(HoaDonListener.class)
 @Table(name = "hoa_don")
 @Data
 @NoArgsConstructor

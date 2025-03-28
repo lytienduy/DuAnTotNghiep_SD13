@@ -141,7 +141,7 @@ public ResponseEntity<?> themMoiNhanVien(
 //    }
 
 
-    private static final String UPLOAD_DIR = "D:/uploads/";
+    private static final String UPLOAD_DIR = "E:/uploads/";
 
     // Cập nhật nhân viên
     @PutMapping("/{id}")
