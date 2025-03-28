@@ -128,7 +128,7 @@ const ThanhToan = () => {
             phiShip: phiShip,
             ghiChu: ghiChu,
             danhSachThanhToan: products, //đây là mảng json
-            idKhachHang: userKH?.khachHang?.id
+            idKhachHang: userKH?.khachHang?.id || null
         })
         if (response.data === "OK") {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];

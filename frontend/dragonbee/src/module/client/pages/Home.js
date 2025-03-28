@@ -294,7 +294,7 @@ const Home = () => {
                         <Grid item key={product.id} xs={12} sm={4} md={2.4} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                           <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
                             {/* Label "NEW" */}
-                            <Typography
+                            {product?.isNew === true && <Typography
                               variant="caption"
                               sx={{
                                 position: 'absolute',
@@ -306,11 +306,13 @@ const Home = () => {
                                 fontSize: '10px',
                                 fontWeight: 'bold',
                                 borderRadius: '8px 0 8px 0', // Bo góc như hình mẫu
-                                zIndex: 2,  
+                                zIndex: 2,
                               }}
                             >
                               NEW
                             </Typography>
+                            }
+
                             <CardMedia
                               component="img"
                               height="250"
@@ -495,6 +497,25 @@ const Home = () => {
                       return (
                         <Grid item key={product.id} xs={12} sm={4} md={2.4} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                           <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
+                            {/* Label "NEW" */}
+                            {product?.isNew === true && <Typography
+                              variant="caption"
+                              sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                backgroundColor: 'black',
+                                color: 'white',
+                                padding: '2px 10px',
+                                fontSize: '10px',
+                                fontWeight: 'bold',
+                                borderRadius: '8px 0 8px 0', // Bo góc như hình mẫu
+                                zIndex: 2,
+                              }}
+                            >
+                              NEW
+                            </Typography>
+                            }
                             <CardMedia
                               component="img"
                               height="250"
@@ -678,6 +699,25 @@ const Home = () => {
                       return (
                         <Grid item key={product.id} xs={12} sm={4} md={2.4} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                           <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
+                            {/* Label "NEW" */}
+                            {product?.isNew === true && <Typography
+                              variant="caption"
+                              sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                backgroundColor: 'black',
+                                color: 'white',
+                                padding: '2px 10px',
+                                fontSize: '10px',
+                                fontWeight: 'bold',
+                                borderRadius: '8px 0 8px 0', // Bo góc như hình mẫu
+                                zIndex: 2,
+                              }}
+                            >
+                              NEW
+                            </Typography>
+                            }
                             <CardMedia
                               component="img"
                               height="250"
@@ -844,6 +884,25 @@ const Home = () => {
             {productDataTopBanChay.map((product) => (
               <Grid item xs={12} sm={6} md={4} key={product.id} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                 <Card sx={{ position: 'relative', boxShadow: 3, borderRadius: 2 }}>
+                  {/* Label "NEW" */}
+                  {product?.isNew === true && <Typography
+                    variant="caption"
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      backgroundColor: 'black',
+                      color: 'white',
+                      padding: '2px 10px',
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      borderRadius: '8px 0 8px 0', // Bo góc như hình mẫu
+                      zIndex: 2,
+                    }}
+                  >
+                    NEW
+                  </Typography>
+                  }
                   <CardMedia
                     component="img"
                     height="350"

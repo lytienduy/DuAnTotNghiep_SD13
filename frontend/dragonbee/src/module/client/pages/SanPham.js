@@ -466,10 +466,28 @@ const SanPham = () => {
           </Box>
           <Box>
             <Grid container spacing={3}>
-              {products.length > 0 ? (
+              {products?.length > 0 ? (
                 products.map((product) => (
                   <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}> {/* Cập nhật lg={3} để có 4 sản phẩm mỗi dòng */}
                     <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
+                      {product?.isNew === true && <Typography
+                        variant="caption"
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          backgroundColor: 'black',
+                          color: 'white',
+                          padding: '2px 10px',
+                          fontSize: '10px',
+                          fontWeight: 'bold',
+                          borderRadius: '8px 0 8px 0', // Bo góc như hình mẫu
+                          zIndex: 2,
+                        }}
+                      >
+                        NEW
+                      </Typography>
+                      }
                       <CardMedia
                         component="img"
                         height="250"

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import axios from 'axios';
 import {
-  AppBar, Toolbar, Typography, Button, Box, InputBase, IconButton, Badge, MenuItem, Menu,Avatar
+  AppBar, Toolbar, Typography, Button, Box, InputBase, IconButton, Badge, MenuItem, Menu, Avatar
 } from "@mui/material";
 import { Search, ShoppingCart, Person } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -23,6 +24,8 @@ const Header = () => {
   const location = useLocation();
   const [soLuongTrongGioHang, setSoLuongTrongGioHang] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
+  // Check if the user is logged in by checking localStorage
+  const userKH = JSON.parse(localStorage.getItem('userKH'));
 
   const goToDonMua = () => {
     navigate('/donMua');
@@ -55,15 +58,24 @@ const Header = () => {
   }, []);
   //Hàm lấy số lượng giỏ hàng
   useEffect(() => {
-    const interval = setInterval(() => {
-      const cart = JSON.parse(localStorage.getItem("cart")) || [];
-      setSoLuongTrongGioHang(cart.length);
+    const interval = setInterval(async () => {
+      if (userKH?.khachHang?.id) {
+        const response = await axios.post(`http://localhost:8080/gioHang/layDuLieuCartVaXoaSanPhamSoLuong0`, null,
+          {
+            params: {
+              idKhachHang: userKH?.khachHang?.id
+            }
+          });//Gọi api bằng  
+        setSoLuongTrongGioHang(response.data?.length);
+      } else {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        setSoLuongTrongGioHang(cart.length);
+      }
     }, 1000); // 60 giây
     return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
   }, []);
 
-  // Check if the user is logged in by checking localStorage
-  const userKH = JSON.parse(localStorage.getItem('userKH'));
+
 
   // Navigate to the login page or any other page
   const goToLogin = () => {

@@ -29,20 +29,23 @@ public class ThanhToanService {
     KhachHangRepository khachHangRepository;
     @Autowired
     PhieuGiamGiaRepository phieuGiamGiaRepository;
+    @Autowired
+    GioHangChiTietRepository gioHangChiTietRepository;
+    @Autowired
+    GioHangRepository gioHangRepository;
 
     @Autowired
     private MailService mailService;
 
     //Add sản phẩm vào giỏ hàng
     @Transactional
-    public Boolean addSanPhamVaoHoaDonChiTiet(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia) {
+    public Boolean addSanPhamVaoHoaDonChiTiet(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia, String idKhachHang) {
         try {
             SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get();
             HoaDonChiTiet kiemTraHDCTDaCoChua = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGiaAndTrangThai(
                     hoaDonRepository.findById(idHoaDon).get(),
                     sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get(),
                     donGia, "Hoạt động");
-
             if (kiemTraHDCTDaCoChua == null) {
                 HoaDonChiTiet hoaDonChiTiet = new HoaDonChiTiet();
                 hoaDonChiTiet.setMa("HDCT" + (System.currentTimeMillis() % 100000));
@@ -62,6 +65,11 @@ public class ThanhToanService {
                 kiemTraHDCTDaCoChua.setNgaySua(LocalDateTime.now());
                 hoaDonChiTietRepository.save(kiemTraHDCTDaCoChua);//lưu hóa đơn chi tiết
                 sanPhamChiTietRepositoryP.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
+            }
+            if (idKhachHang != null) {
+                gioHangChiTietRepository.delete(gioHangChiTietRepository.findBySanPhamChiTietAndGioHang(
+                        sanPhamChiTiet, gioHangRepository.getGioHangByKhachHang(khachHangRepository.findById(Integer.parseInt(idKhachHang)).get())
+                ));
             }
 //            HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
 //            hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
@@ -125,7 +133,7 @@ public class ThanhToanService {
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                     return "Có sản phẩm không đủ số lượng";
                 } else {
-                    addSanPhamVaoHoaDonChiTiet(hoaDonVuaTao.getId(), sanPhamCart.getIdSPCT(), sanPhamCart.getQuantity(), sanPhamCart.getGia());
+                    addSanPhamVaoHoaDonChiTiet(hoaDonVuaTao.getId(), sanPhamCart.getIdSPCT(), sanPhamCart.getQuantity(), sanPhamCart.getGia(), idKhachHang);
                 }
             }
 

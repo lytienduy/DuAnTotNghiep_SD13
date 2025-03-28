@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,6 +87,8 @@ public class HomeService {
                 listCacBienTheMauSacCuaSP.add(mauSacAndHinhAnhAndSize);
             }
             tongQuanSanPhamCTClient.setListHinhAnhAndMauSacAndSize(listCacBienTheMauSacCuaSP);
+            tongQuanSanPhamCTClient.setIsNew(ChronoUnit.DAYS.between(sanPham.getNgayTao(), LocalDateTime.now()) <= 30);
+            //Kiểm trâ nếu không có biến thể nào
             if (tongQuanSanPhamCTClient.getListHinhAnhAndMauSacAndSize().size() > 0) {
                 listTraVe.add(tongQuanSanPhamCTClient);
             }
@@ -129,6 +132,7 @@ public class HomeService {
                 listMauSacAndSizeCuaSp.add(mauSacAndHinhAnhAndSize);
             }
             tongQuanSanPhamCTClient.setListHinhAnhAndMauSacAndSize(listMauSacAndSizeCuaSp);
+            tongQuanSanPhamCTClient.setIsNew(ChronoUnit.DAYS.between(sanPham.getNgayTao(), LocalDateTime.now()) <= 30);
             if (tongQuanSanPhamCTClient.getListHinhAnhAndMauSacAndSize().size() > 0) {
                 listTraVe.add(tongQuanSanPhamCTClient);
             }

@@ -75,6 +75,9 @@ const ChiTietSanPham = () => {
     const [selectedIDSize, setSelectedIDSize] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    //Khách hàng đăng nhập
+    const userKH = JSON.parse(localStorage.getItem("userKH"));
+
     // Mở bảng chọn size
     const handleOpenSizeGuide = () => setOpenSizeGuide(true);
     const handleCloseSizeGuide = () => setOpenSizeGuide(false);
@@ -170,10 +173,25 @@ const ChiTietSanPham = () => {
     }
 
 
-    const addVaoGioHang = () => {
+    const addVaoGioHang = async () => {
         if (selectedSize === -1) { showErrorToast("Bạn chưa chọn size sản phẩm"); return; }
-        else {
-            try {
+        try {
+            if (userKH?.khachHang?.id) {
+                console.log("Chạy api");
+                const response = await axios.post(`http://localhost:8080/gioHang/addVaoGioHangCoDangNhap`, null, {
+                    params: {
+                        idSanPhamChiTiet: selectedSizeReuse.idSPCT,
+                        soLuong: quantity,
+                        gia: product.gia,
+                        idKhachHang: userKH?.khachHang?.id
+                    }
+                });
+                if (response.data) {
+                    showSuccessToast("Đã thêm vào giỏ hàng");
+                } else {
+                    showErrorToast("Thêm vào giỏ hàng thất bại. Đã có lỗi xảy ra vui lòng thử lại2");
+                }
+            } else {
                 // Lấy giỏ hàng từ Local Storage (Nếu chưa có, thì set là mảng rỗng [])
                 const cart = JSON.parse(localStorage.getItem("cart")) || [];
                 // Kiểm tra xem sản phẩm đã có trong giỏ chưa
@@ -193,15 +211,15 @@ const ChiTietSanPham = () => {
                         quantity: quantity
                     });
                 }
-
                 // Lưu lại vào Local Storage
                 localStorage.setItem("cart", JSON.stringify(cart));
-                setQuantity(1);
                 showSuccessToast("Đã thêm vào giỏ hàng");
-            } catch (error) {
-                showErrorToast("Thêm vào giỏ hàng thất bại. Đã có lỗi xảy ra vui lòng thử lại");
             }
+            setQuantity(1);
+        } catch (error) {
+            showErrorToast("Thêm vào giỏ hàng thất bại. Đã có lỗi xảy ra vui lòng thử lại");
         }
+
     };
 
     const handleNextImage = () => {

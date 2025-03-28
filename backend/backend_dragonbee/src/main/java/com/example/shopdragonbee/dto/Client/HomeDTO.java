@@ -24,6 +24,7 @@ public class HomeDTO {
         private String ten;
         private List<HomeDTO.MauSacAndHinhAnhAndSize> listHinhAnhAndMauSacAndSize;
         private Double gia;
+        private Boolean isNew;
 //        private String trangThai;
     }
     @Getter

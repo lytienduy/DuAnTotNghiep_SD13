@@ -2,7 +2,8 @@ import React, {useRef, useEffect, useState } from "react";
 import axios from "axios"; // Import axios
 import {
   Box, Table, TableBody,
-  TableCell, TableContainer, TableHead, TableRow, Typography, Button, Paper, Grid, Divider, IconButton, TextField,Chip
+  TableCell, TableContainer, TableHead, TableRow, Typography, Button, Paper, Grid, Divider, IconButton, TextField,Chip,
+  Container
 
 } from "@mui/material";
 
@@ -133,6 +134,7 @@ const HoaDonChiTietClient = () => {
   const currentStep = hoaDon ? steps.indexOf(hoaDon.trangThai) : -1; //Biến lưu index trạng thái hiện tại của hóa đơn trong steps
   const isCanceled = hoaDon?.trangThai === "Đã hủy";//Biến true false có phải hóa đơn trạng thái Hủy không
   return (
+    <Container>
     <div>
       <Box display="flex" alignItems="center" mb={3}>
         <IconButton onClick={() => navigate(`/donMua`)} sx={{ marginRight: 2 }}>
@@ -449,6 +451,7 @@ const HoaDonChiTietClient = () => {
       </Box>
       <ToastContainer /> {/* Quan trọng để hiển thị toast */}
     </div>
+    </Container>
   );
 };
 
