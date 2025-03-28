@@ -39,7 +39,7 @@ public class GioHangService {
             ) {
                 SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
                 SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
-                sanPhamCart.setIdSPCT(sanPhamCart.getIdSPCT());
+                sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
                 if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                     sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
                 }
@@ -51,10 +51,15 @@ public class GioHangService {
                 if (sanPhamChiTiet.getSoLuong() - gioHangChiTiet.getSoLuong() <= 0) {
                     if (sanPhamChiTiet.getSoLuong() <= 0) {
                         sanPhamCart.setQuantity(0);
+                        //Lưu số lượng
+                        gioHangChiTiet.setSoLuong(0);
                     } else {
                         sanPhamCart.setQuantity(sanPhamChiTiet.getSoLuong());
+                        gioHangChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong());
                     }
                 }
+                //save sản phẩm cart
+                gioHangChiTietRepository.save(gioHangChiTiet);
                 listDanhSachSanPhamCartKhachHang.add(sanPhamCart);
             }
             return listDanhSachSanPhamCartKhachHang;
@@ -89,7 +94,7 @@ public class GioHangService {
                 } else {
                     SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
                     SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
-                    sanPhamCart.setIdSPCT(sanPhamCart.getIdSPCT());
+                    sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
                     if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                         sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
                     }
@@ -118,7 +123,7 @@ public class GioHangService {
             ) {
                 SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
                 SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
-                sanPhamCart.setIdSPCT(sanPhamCart.getIdSPCT());
+                sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
                 if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                     sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
                 }

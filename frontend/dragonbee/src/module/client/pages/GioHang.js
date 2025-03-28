@@ -83,32 +83,28 @@ const GioHang = () => {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                });//Gọi api bằng        
-
-            for (const [index, item] of response.data.entries()) {
+                });
+            //check so với item trong cart local       
+            for (const [index, item] of cart.entries()) {
                 if (response.data?.[index]?.quantity === 0) {
                     if (cart[index]) {
                         cart[index].quantity = 0;
                     }
                     handleDialogOpen("Sản phẩm đã hết hàng, bạn có thể tham khảo sản phẩm khác");
-
                 } else if (item?.quantity !== response.data?.[index]?.quantity) {
                     if (cart[index]) {
                         cart[index].quantity = response.data?.[index]?.quantity;
                     }
                     handleDialogOpen("Sản phẩm không còn đủ số lượng bạn mong muốn");
-                    continue;
                 }
-
                 if (item.gia !== response.data?.[index]?.gia) {
                     if (cart[index]) {
                         cart[index].gia = response.data?.[index]?.gia;
                     }
                 }
             }
-
             //Xóa khỏi selectedProduct để thanh toán
-            for (let i = 0; i < cart.length; ++i) {
+            for (let i = 0; i < response.data.length; ++i) {
                 if (response.data[i]?.quantity === 0) {
                     const updatedSelection = [...selectedProducts];
                     if (updatedSelection.includes(i)) {
@@ -126,7 +122,6 @@ const GioHang = () => {
             }
             localStorage.setItem("cart", JSON.stringify(cart));
             layDuLieuCart();
-
         } catch (error) {
             showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
         }
@@ -168,12 +163,14 @@ const GioHang = () => {
 
     const layDuLieuCart = async () => {
         if (userKH?.khachHang?.id) {
+            console.log("id khách hàng: " + userKH?.khachHang?.id)
             const response = await axios.post(`http://localhost:8080/gioHang/layDuLieuCartVaXoaSanPhamSoLuong0`, null,
                 {
                     params: {
                         idKhachHang: userKH?.khachHang?.id
                     }
                 });//Gọi api bằng  
+            localStorage.setItem("cart", JSON.stringify(response.data));//set vào local
             setProducts(response.data);
         } else {
             const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -232,6 +229,7 @@ const GioHang = () => {
 
 
     const handleIncrement = async (index, idspct) => {
+        console.log("idspct là:" + idspct);
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
         // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
         if (index >= 0 && index < cart.length) {
@@ -252,7 +250,6 @@ const GioHang = () => {
         //Lấy dữ liệu mới
         // Load lại giỏ hàng sau khi cập nhật
         layDuLieuCart();
-
         getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         //Nên cho hàm check nào vào getListDanhSach luôn check vs respone
         if (productsCapNhatSoLuong[index].quantity === 1) {//Fix lỗi chậm một nhịp  
@@ -398,11 +395,11 @@ const GioHang = () => {
                                                             <Typography variant="body2" sx={{ wordBreak: 'break-word', fontWeight: 'bold' }}>{product.tenSPCT}</Typography>
                                                             <Grid container spacing={2} sx={{ marginTop: 0 }}>
                                                                 <Grid item>
-                                                                    <Typography variant="body2">Màu sắc: {product?.mauSac?.tenMauSac}</Typography>
+                                                                    <Typography variant="body2">Màu sắc: {product?.tenMauSac}</Typography>
                                                                 </Grid>
 
                                                                 <Grid item>
-                                                                    <Typography variant="body2">Kích thước: {product?.size?.tenSize}</Typography>
+                                                                    <Typography variant="body2">Kích thước: {product?.tenSize}</Typography>
                                                                 </Grid>
 
                                                             </Grid>
@@ -444,7 +441,7 @@ const GioHang = () => {
                                                             InputProps={{
                                                                 startAdornment: (
                                                                     <IconButton
-                                                                        onClick={() => handleDecrement(index, product.idSPCT)}
+                                                                        onClick={() => handleDecrement(index, product?.idSPCT)}
                                                                         size="small"
                                                                         style={{ padding: '2px', marginLeft: -10 }}
                                                                     >
@@ -453,7 +450,7 @@ const GioHang = () => {
                                                                 ),
                                                                 endAdornment: (
                                                                     <IconButton
-                                                                        onClick={() => handleIncrement(index, product.idSPCT)}
+                                                                        onClick={() => { console.log("product.idSPCT trước khi truyền:", product?.idSPCT); handleIncrement(index, product?.idSPCT) }}
                                                                         size="small"
                                                                         style={{ padding: '2px', marginRight: -10 }}
                                                                         disabled={productsCapNhatSoLuong?.[index]?.quantity === 0}
