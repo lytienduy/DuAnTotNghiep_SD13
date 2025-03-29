@@ -87,7 +87,7 @@ public class ThongKeRepository {
     }
 
 
-
+    // Tùy chỉnh
     public Object[] findCustomRevenue(String startDate, String endDate) {
         String sql = """
         SELECT 

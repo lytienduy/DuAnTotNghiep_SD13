@@ -29,7 +29,7 @@ public interface RevenueGrowthRepository extends JpaRepository<HoaDonChiTiet, In
     """, nativeQuery = true)
     Object getDayGrowth();
 
-    // 2. Doanh thu và tốc độ tăng trưởng doanh thu tuần
+//    // 2. Doanh thu và tốc độ tăng trưởng doanh thu tuần
     @Query(value = """
        SELECT\s
                newRev AS weekRevenue,
@@ -51,7 +51,7 @@ public interface RevenueGrowthRepository extends JpaRepository<HoaDonChiTiet, In
                       AND trang_thai = 'Hoàn thành'
                    ) AS oldRev
            ) t
-           
+
     """, nativeQuery = true)
     Object getWeekGrowth();
 

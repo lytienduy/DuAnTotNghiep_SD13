@@ -442,10 +442,10 @@ const NhanVien = () => {
       <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
         {/* Import Excel */}
         <Button variant="contained" color="primary">
-          Import Excel
+          Nhập Excel
         </Button>
         <Button variant="contained" color="primary" onClick={exportToExcel}>
-          Export Excel
+          Xuất Excel
         </Button>
         <Button
           variant="outlined"
