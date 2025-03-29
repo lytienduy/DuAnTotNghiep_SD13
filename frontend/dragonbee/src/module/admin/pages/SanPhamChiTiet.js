@@ -52,7 +52,6 @@ const SanPhamChiTiet = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false); // Mở đóng Snackbar
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarMessage1, setSnackbarMessage1] = useState(""); // Nội dung thông báo
-  const [searchTerm, setSearchTerm] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectAll, setSelectAll] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
@@ -60,6 +59,8 @@ const SanPhamChiTiet = () => {
   const [openModalAnh, setOpenModalAnh] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [productDetails, setProductDetails] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredList, setFilteredList] = useState([]);
   const [filters, setFilters] = useState({
     search: "",
     trangThai: "",
@@ -180,7 +181,7 @@ const SanPhamChiTiet = () => {
         setLoading(false);
       }
     };
-    console.log("danh sách:",chiTietList);
+    console.log("danh sách:", chiTietList);
     fetchData();
   }, [id, page, itemsPerPage, showAllDetails]); // Gọi lại khi id, page, itemsPerPage, showAllDetails thay đổi
 
@@ -455,104 +456,99 @@ const SanPhamChiTiet = () => {
     }
   };
   const handleEdit = async (id) => {
-  try {
-    const response = await fetch(
-      `http://localhost:8080/api/san-pham-chi-tiet/${id}`
-    );
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/san-pham-chi-tiet/${id}`
+      );
 
-    if (!response.ok) {
-      throw new Error(`Lỗi API: ${response.status} - ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(`Lỗi API: ${response.status} - ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error(`Phản hồi không phải JSON: ${contentType}`);
+      }
+
+      const productDetails = await response.json();
+      console.log("Dữ liệu sản phẩm:", productDetails);
+
+      setSelectedItem({
+        ...productDetails,
+        anhUrlsOriginal: productDetails.anhUrls || [],
+        anhSanPhams: productDetails.anhSanPhams || [], // cần API trả về trường này
+      });
+
+      setOpen(true);
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+      setSnackbarMessage("Không thể lấy dữ liệu sản phẩm!");
+      setOpenSnackbar(true);
     }
-
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      throw new Error(`Phản hồi không phải JSON: ${contentType}`);
-    }
-
-    const productDetails = await response.json();
-    console.log("Dữ liệu sản phẩm:", productDetails);
-
-    setSelectedItem({
-      ...productDetails,
-      anhUrlsOriginal: productDetails.anhUrls || [],
-      anhSanPhams: productDetails.anhSanPhams || [], // cần API trả về trường này
-    });
-
-    setOpen(true);
-  } catch (error) {
-    console.error("Lỗi khi gọi API:", error);
-    setSnackbarMessage("Không thể lấy dữ liệu sản phẩm!");
-    setOpenSnackbar(true);
-  }
-};
-
-
-const handleSave = async () => {
-  const anhUrlsCurrent = selectedItem.anhUrls || [];
-  const anhUrlsOriginal = selectedItem.anhUrlsOriginal || [];
-  const anhSanPhamList = selectedItem.anhSanPhams || [];
-
-  // Ảnh mới được thêm
-  const anhUrlsToAdd = anhUrlsCurrent.filter(
-    (url) => !anhUrlsOriginal.includes(url)
-  );
-
-  // Ảnh bị xóa
-  const anhUrlsToDelete = anhUrlsOriginal.filter(
-    (url) => !anhUrlsCurrent.includes(url)
-  );
-
-  // Lấy danh sách ID ảnh cần xóa (nếu có danh sách ảnh đầy đủ trong selectedItem)
-  const anhIdsToDelete = anhSanPhamList
-    .filter(
-      (anh) =>
-        anhUrlsToDelete.includes(anh.anhUrl) &&
-        anh.sanPhamChiTietId === selectedItem.id
-    )
-    .map((anh) => anh.id);
-
-  const payload = {
-    ...selectedItem,
-    anhUrlsToAdd,
-    anhIdsToDelete,
   };
 
-  console.log("Payload gửi lên:", payload);
+  const handleSave = async () => {
+    const anhUrlsCurrent = selectedItem.anhUrls || [];
+    const anhUrlsOriginal = selectedItem.anhUrlsOriginal || [];
+    const anhSanPhamList = selectedItem.anhSanPhams || [];
 
-  try {
-    // Gọi API cập nhật
-    await axios.put(
-      `http://localhost:8080/api/san-pham-chi-tiet/update/${selectedItem.id}`,
-      payload
+    // Ảnh mới được thêm
+    const anhUrlsToAdd = anhUrlsCurrent.filter(
+      (url) => !anhUrlsOriginal.includes(url)
     );
 
-    // Gọi API lấy lại chi tiết sản phẩm vừa cập nhật
-    const detailResponse = await axios.get(
-      `http://localhost:8080/api/san-pham-chi-tiet/${selectedItem.id}`
+    // Ảnh bị xóa
+    const anhUrlsToDelete = anhUrlsOriginal.filter(
+      (url) => !anhUrlsCurrent.includes(url)
     );
 
-    const updatedDetail = detailResponse.data;
-
-    // Cập nhật danh sách sản phẩm chi tiết
-    setChiTietList((prevList) =>
-      prevList.map((item) =>
-        item.id === selectedItem.id ? { ...item, ...updatedDetail } : item
+    // Lấy danh sách ID ảnh cần xóa (nếu có danh sách ảnh đầy đủ trong selectedItem)
+    const anhIdsToDelete = anhSanPhamList
+      .filter(
+        (anh) =>
+          anhUrlsToDelete.includes(anh.anhUrl) &&
+          anh.sanPhamChiTietId === selectedItem.id
       )
-    );
+      .map((anh) => anh.id);
 
-    handleClose();
-    setSnackbarMessage1("Cập nhật sản phẩm chi tiết thành công!");
-    setOpenSnackbar(true);
-  } catch (error) {
-    console.error("Lỗi cập nhật:", error);
-    setSnackbarMessage1("Cập nhật sản phẩm chi tiết thất bại!");
-    setOpenSnackbar(true);
-  }
-};
+    const payload = {
+      ...selectedItem,
+      anhUrlsToAdd,
+      anhIdsToDelete,
+    };
 
-  
-  
-  
+    console.log("Payload gửi lên:", payload);
+
+    try {
+      // Gọi API cập nhật
+      await axios.put(
+        `http://localhost:8080/api/san-pham-chi-tiet/update/${selectedItem.id}`,
+        payload
+      );
+
+      // Gọi API lấy lại chi tiết sản phẩm vừa cập nhật
+      const detailResponse = await axios.get(
+        `http://localhost:8080/api/san-pham-chi-tiet/${selectedItem.id}`
+      );
+
+      const updatedDetail = detailResponse.data;
+
+      // Cập nhật danh sách sản phẩm chi tiết
+      setChiTietList((prevList) =>
+        prevList.map((item) =>
+          item.id === selectedItem.id ? { ...item, ...updatedDetail } : item
+        )
+      );
+
+      handleClose();
+      setSnackbarMessage1("Cập nhật sản phẩm chi tiết thành công!");
+      setOpenSnackbar(true);
+    } catch (error) {
+      console.error("Lỗi cập nhật:", error);
+      setSnackbarMessage1("Cập nhật sản phẩm chi tiết thất bại!");
+      setOpenSnackbar(true);
+    }
+  };
 
   const handleDeleteImage = (index) => {
     const updatedAnhUrls = selectedItem.anhUrls.filter((_, i) => i !== index);
@@ -637,39 +633,52 @@ const handleSave = async () => {
   };
   // tìm kiếm
   // Gọi API khi tìm kiếm
+  const handleSearch = () => {
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
+    // Tìm kiếm trong toàn bộ danh sách sản phẩm chi tiết
+    const filtered = chiTietList.filter((item) =>
+      item.tenSanPham.toLowerCase().includes(lowercasedSearchTerm)
+    );
+    setFilteredList(filtered);
+ 
+  };
+  
   useEffect(() => {
-    const fetchSanPhamChiTiet = async (ten) => {
-      if (ten && ten.length > 0) {
-        try {
-          const response = await axios.get(
-            `http://localhost:8080/api/san-pham-chi-tiet/search?ten=${ten}`
-          );
-          console.log("Dữ liệu từ API:", response.data); // Kiểm tra dữ liệu trả về
-          setChiTietList(response.data);
-        } catch (error) {
-          console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        if (!showAllDetails) {
+          // Nếu không hiển thị toàn bộ sản phẩm, lấy theo ID sản phẩm cha
+          await fetchSanPhamChiTietById(id);
+        } else {
+          // Nếu hiển thị toàn bộ, lấy tất cả sản phẩm chi tiết
+          await fetchAllSanPhamChiTiet();
         }
-      } else {
-        setChiTietList([]); // Nếu không có từ khóa, không hiển thị sản phẩm
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
+        setChiTietList([]);
+      } finally {
+        setLoading(false);
       }
     };
-
-    fetchSanPhamChiTiet(searchTerm);
-  }, [searchTerm]); // Chạy lại khi `searchTerm` thay đổi
-
-  // Hàm kiểm tra tồn tại trước khi áp dụng toLowerCase
-  const handleSearchFilter = (searchTerm, item) => {
-    // Kiểm tra nếu `searchTerm` và `item.tenSanPham` là chuỗi hợp lệ trước khi gọi `toLowerCase()`
-    const searchText = searchTerm ? searchTerm.toLowerCase() : ""; // Nếu `searchTerm` không hợp lệ, dùng chuỗi rỗng
-    const productName = item.tenSanPham ? item.tenSanPham.toLowerCase() : ""; // Nếu `item.tenSanPham` không hợp lệ, dùng chuỗi rỗng
-
-    return productName.includes(searchText); // So sánh chuỗi sản phẩm với từ khóa tìm kiếm
-  };
-
-  // Sử dụng filteredList thay vì chiTietList trong bảng
-  const filteredList = chiTietList.filter((item) =>
-    handleSearchFilter(searchTerm, item)
+    fetchData();
+  }, [id, page, itemsPerPage, showAllDetails]); // Gọi lại khi id, page, itemsPerPage, showAllDetails thay đổi
+  
+  // useEffect để gọi hàm tìm kiếm mỗi khi searchTerm thay đổi
+  useEffect(() => {
+    if (searchTerm) {
+      handleSearch();
+    } else {
+      setFilteredList(chiTietList); // Nếu không có tìm kiếm, hiển thị toàn bộ sản phẩm
+    }
+  }, [searchTerm, chiTietList]); // Thay đổi khi tìm kiếm hoặc danh sách sản phẩm chi tiết thay đổi
+  
+  // Phân trang các kết quả tìm kiếm
+  const paginatedList = filteredList.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
   );
+  
 
   // cập nhật số lượng và giá
   const handleUpdateProducts = async () => {
@@ -750,7 +759,7 @@ const handleSave = async () => {
               fullWidth
               margin="normal"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)} // Cập nhật từ khóa tìm kiếm
+        onChange={(e) => setSearchTerm(e.target.value)}
             />
           </Grid>
 
@@ -934,94 +943,121 @@ const handleSave = async () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-  {chiTietList.length === 0 ? (
-    <TableRow>
-      <TableCell colSpan={17} align="center">
-        Không có dữ liệu phù hợp
-      </TableCell>
-    </TableRow>
-  ) : (
-    chiTietList.map((item, index) => (
-      <TableRow key={item.id}>
-        <TableCell>
-          <input
-            type="checkbox"
-            checked={selectedItems.includes(item.id)}
-            onChange={() => handleCheckboxChange(item.id)}
-          />
-        </TableCell>
-        <TableCell>{index + 1}</TableCell>
-        <TableCell>{item.ma}</TableCell>
-        <TableCell>{item.tenSanPham || "Chưa có tên sản phẩm"}</TableCell>
-        <TableCell>{item.danhMuc?.tenDanhMuc || "Chưa có danh mục"}</TableCell>
-<TableCell>{item.thuongHieu?.tenThuongHieu || "Chưa có thương hiệu"}</TableCell>
-<TableCell>{item.phongCach?.tenPhongCach || "Chưa có phong cách"}</TableCell>
-<TableCell>{item.chatLieu?.tenChatLieu || "Chưa có chất liệu"}</TableCell>
-<TableCell>{item.mauSac?.tenMauSac || "Chưa có màu sắc"}</TableCell>
-<TableCell>{item.size?.tenSize || "Chưa có kích cỡ"}</TableCell>
-<TableCell>{item.kieuDang?.tenKieuDang || "Chưa có kiểu dáng"}</TableCell>
-<TableCell>{item.kieuDaiQuan?.tenKieuDaiQuan || "Chưa có kiểu đai quần"}</TableCell>
-<TableCell>{item.xuatXu?.tenXuatXu || "Chưa có xuất xứ"}</TableCell>
+                  {filteredList.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={17} align="center">
+                        Không có dữ liệu phù hợp
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredList.map((item, index) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.includes(item.id)}
+                            onChange={() => handleCheckboxChange(item.id)}
+                          />
+                        </TableCell>
+                        <TableCell>{(page - 1) * 5 + index + 1}</TableCell>
+                        <TableCell>{item.ma}</TableCell>
+                        <TableCell>
+                          {item.tenSanPham || "Chưa có tên sản phẩm"}
+                        </TableCell>
+                        <TableCell>
+                          {item.danhMuc?.tenDanhMuc || "Chưa có danh mục"}
+                        </TableCell>
+                        <TableCell>
+                          {item.thuongHieu?.tenThuongHieu ||
+                            "Chưa có thương hiệu"}
+                        </TableCell>
+                        <TableCell>
+                          {item.phongCach?.tenPhongCach || "Chưa có phong cách"}
+                        </TableCell>
+                        <TableCell>
+                          {item.chatLieu?.tenChatLieu || "Chưa có chất liệu"}
+                        </TableCell>
+                        <TableCell>
+                          {item.mauSac?.tenMauSac || "Chưa có màu sắc"}
+                        </TableCell>
+                        <TableCell>
+                          {item.size?.tenSize || "Chưa có kích cỡ"}
+                        </TableCell>
+                        <TableCell>
+                          {item.kieuDang?.tenKieuDang || "Chưa có kiểu dáng"}
+                        </TableCell>
+                        <TableCell>
+                          {item.kieuDaiQuan?.tenKieuDaiQuan ||
+                            "Chưa có kiểu đai quần"}
+                        </TableCell>
+                        <TableCell>
+                          {item.xuatXu?.tenXuatXu || "Chưa có xuất xứ"}
+                        </TableCell>
 
-        <TableCell>
-          <input
-            type="number"
-            value={item.soLuong}
-            onChange={(e) => handleInputChange(e, item.id, "soLuong")}
-            style={{ width: "70px", padding: "4px" }}
-          />
-        </TableCell>
-        <TableCell>
-          <input
-            type="number"
-            value={item.gia}
-            onChange={(e) => handleInputChange(e, item.id, "gia")}
-            style={{ width: "90px", padding: "4px" }}
-          />
-        </TableCell>
-        <TableCell>
-          {item.trangThai || item.sanPhamTrangThai || "Không xác định"}
-        </TableCell>
-        <TableCell>
-          <Box display="flex" gap={1}>
-            {item.anhUrls?.slice(0, 3).map((url, i) => (
-              <img
-                key={i}
-                src={url}
-                alt={`Ảnh ${i + 1}`}
-                style={{
-                  width: 50,
-                  height: 50,
-                  objectFit: "cover",
-                  borderRadius: 4,
-                  border: "1px solid #ccc",
-                }}
-              />
-            ))}
-          </Box>
-        </TableCell>
-        <TableCell>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Edit />}
-            onClick={() => handleEdit(item.id)}
-          />
-        </TableCell>
-        <TableCell>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => handleDownloadQRCode(item.id)}
-          >
-            Download QR
-          </Button>
-        </TableCell>
-      </TableRow>
-    ))
-  )}
-</TableBody>
-
+                        <TableCell>
+                          <input
+                            type="number"
+                            value={item.soLuong}
+                            onChange={(e) =>
+                              handleInputChange(e, item.id, "soLuong")
+                            }
+                            style={{ width: "70px", padding: "4px" }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <input
+                            type="number"
+                            value={item.gia}
+                            onChange={(e) =>
+                              handleInputChange(e, item.id, "gia")
+                            }
+                            style={{ width: "90px", padding: "4px" }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {item.trangThai ||
+                            item.sanPhamTrangThai ||
+                            "Không xác định"}
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" gap={1}>
+                            {item.anhUrls?.slice(0, 3).map((url, i) => (
+                              <img
+                                key={i}
+                                src={url}
+                                alt={`Ảnh ${i + 1}`}
+                                style={{
+                                  width: 50,
+                                  height: 50,
+                                  objectFit: "cover",
+                                  borderRadius: 4,
+                                  border: "1px solid #ccc",
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<Edit />}
+                            onClick={() => handleEdit(item.id)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleDownloadQRCode(item.id)}
+                          >
+                            Download QR
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
               </Table>
             </TableContainer>
 
