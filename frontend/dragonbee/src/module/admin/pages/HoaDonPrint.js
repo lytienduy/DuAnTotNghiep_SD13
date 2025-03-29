@@ -1,33 +1,33 @@
 import React, { forwardRef } from "react";
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Divider, Container } from "@mui/material";
 
-const HoaDonPrint = forwardRef(({ hoaDon }, ref) => {
+const hoaDonPrint = forwardRef(({ hoaDon }, ref) => {
   return (
     <Container sx={{ textAlign: "center" }}>
       <Box ref={ref} p={3} width="500px">
         <Typography variant="h4" align="center">
           Shop Quần Âu DRAGONBEE
         </Typography>
-        <Typography variant="h5">Mã hóa đơn: {hoaDon.ma}</Typography>
-        {/* <Typography variant="body1"><strong>Khách hàng nhận hàng:</strong> {hoaDon.tenNguoiNhanHang} - {hoaDon.sdtNguoiNhanHang}</Typography> */}
-        {hoaDon.sdtNguoiNhanHang && (
+        <Typography variant="h5">Mã hóa đơn: {hoaDon?.ma}</Typography>
+        {/* <Typography variant="body1"><strong>Khách hàng nhận hàng:</strong> {hoaDon?.tenNguoiNhanHang} - {hoaDon?.sdtNguoiNhanHang}</Typography> */}
+        {hoaDon?.sdtNguoiNhanHang && (
           <Box item xs={12} md={6}>
             <Typography variant="h5"><strong>Thông tin nhận hàng</strong> </Typography>
             <Typography component="p" sx={{ fontSize: "1.5rem" }}>
-              Người nhận: {hoaDon.tenNguoiNhanHang} - {hoaDon.sdtNguoiNhanHang} - {hoaDon.emailNguoiNhanHang}
+              Người nhận: {hoaDon?.tenNguoiNhanHang} - {hoaDon?.sdtNguoiNhanHang} - {hoaDon?.emailNguoiNhanHang}
             </Typography>
             <Typography component="p" sx={{ fontSize: "1.5rem" }}>
-              Địa chỉ: {hoaDon.diaChiNguoiNhanHang}
+              Địa chỉ: {hoaDon?.diaChiNguoiNhanHang}
             </Typography>
           </Box>
         )}
-        {hoaDon.maKhachHang && (<Typography sx={{ fontSize: "1.5rem" }}>
-          <Typography component="span" variant="h5">Khách hàng:</Typography> {hoaDon.tenKhachHang} {hoaDon.sdtKhachHang}
+        {hoaDon?.maKhachHang && (<Typography sx={{ fontSize: "1.5rem" }}>
+          <Typography component="span" variant="h5">Khách hàng:</Typography> {hoaDon?.tenKhachHang} {hoaDon?.sdtKhachHang}
         </Typography>
         )}
 
         <Typography sx={{ fontSize: "1.5rem" }}>
-          <Typography component="span" variant="h5">Ngày tạo:</Typography> {new Date(hoaDon.ngayTao).toLocaleString("vi-VN")}
+          <Typography component="span" variant="h5">Ngày tạo:</Typography> {new Date(hoaDon?.ngayTao)?.toLocaleString("vi-VN")}
         </Typography>
 
 
@@ -50,8 +50,8 @@ const HoaDonPrint = forwardRef(({ hoaDon }, ref) => {
               </TableRow>
             </TableHead>
             <TableBody >
-              {hoaDon.listDanhSachSanPham.length > 0 ? (
-                hoaDon.listDanhSachSanPham.map((product, index) => {
+              {hoaDon?.listDanhSachSanPham?.length > 0 ? (
+                hoaDon?.listDanhSachSanPham?.map((product, index) => {
                   return (
                     <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
                       <TableCell align="center" sx={{ fontSize: "1.5rem" }}>{index + 1}</TableCell>
@@ -59,9 +59,9 @@ const HoaDonPrint = forwardRef(({ hoaDon }, ref) => {
                         <Typography sx={{}}>{product.tenMauSize}</Typography>
                         <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.maSanPhamChiTiet}</Typography>
                       </TableCell>
-                      <TableCell align="center" sx={{ fontSize: "1.5rem" }}>{product.donGia.toLocaleString()}₫</TableCell>
+                      <TableCell align="center" sx={{ fontSize: "1.5rem" }}>{product.donGia?.toLocaleString()}₫</TableCell>
                       <TableCell align="center" sx={{ fontSize: "1.5rem" }}>{product.soLuong}</TableCell>
-                      <TableCell align="center" sx={{ fontSize: "1.5rem" }}>{product.soTien.toLocaleString()}₫</TableCell>
+                      <TableCell align="center" sx={{ fontSize: "1.5rem" }}>{product.soTien?.toLocaleString()}₫</TableCell>
                     </TableRow>
                   );
                 })
@@ -80,23 +80,23 @@ const HoaDonPrint = forwardRef(({ hoaDon }, ref) => {
           {/* Tổng tiền hàng */}
 
           <Typography sx={{ fontSize: "1.5rem" }}>
-            <Typography component="span" variant="h5">Tổng tiền hàng:</Typography> {` ${hoaDon.tongTienSanPham.toLocaleString()} đ`}
+            <Typography component="span" variant="h5">Tổng tiền hàng:</Typography> {` ${hoaDon?.tongTienSanPham?.toLocaleString()} đ`}
           </Typography>
 
 
 
 
-          {hoaDon.phiVanChuyen && (
+          {hoaDon?.phiVanChuyen && (
             <Typography sx={{ fontSize: "1.5rem" }}>
-              <Typography component="span" variant="h5">Phí vận chuyển:</Typography> {` ${hoaDon.phiVanChuyen.toLocaleString()} đ`}
+              <Typography component="span" variant="h5">Phí vận chuyển:</Typography> {` ${hoaDon?.phiVanChuyen?.toLocaleString()} đ`}
             </Typography>)}
 
 
 
           {/* Mã voucher */}
-          {hoaDon.maVoucher && (
+          {hoaDon?.maVoucher && (
             <Typography variant="h5" fontWeight={500}>
-              <strong>Mã giảm giá:</strong>   {hoaDon.maVoucher} - {(hoaDon.tongTienSanPham + hoaDon.phiVanChuyen - hoaDon.tongTienThanhToan).toLocaleString()} đ
+              <strong>Mã giảm giá:</strong>   {hoaDon?.maVoucher} - {(hoaDon?.tongTienSanPham + hoaDon?.phiVanChuyen - hoaDon?.tongTienThanhToan)?.toLocaleString()} đ
             </Typography>
           )
           }
@@ -115,7 +115,7 @@ const HoaDonPrint = forwardRef(({ hoaDon }, ref) => {
                 color: "#D32F2F",
               }}
             >
-              {(hoaDon.tongTienSanPham + hoaDon.phiVanChuyen).toLocaleString()} VNĐ
+              {(hoaDon?.tongTienSanPham + hoaDon?.phiVanChuyen)?.toLocaleString()} VNĐ
             </Typography>
           </Box>
 
@@ -125,4 +125,4 @@ const HoaDonPrint = forwardRef(({ hoaDon }, ref) => {
   );
 });
 
-export default HoaDonPrint;
+export default hoaDonPrint;

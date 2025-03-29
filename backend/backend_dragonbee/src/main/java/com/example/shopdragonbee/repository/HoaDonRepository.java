@@ -1,6 +1,7 @@
 package com.example.shopdragonbee.repository;
 
 import com.example.shopdragonbee.entity.HoaDon;
+import com.example.shopdragonbee.entity.KhachHang;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -212,5 +213,9 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
                                               @Param("endDate") String endDate);
 
     List<HoaDon> getHoaDonByTrangThaiInAndLoaiDonOrderByNgayTaoAsc(List<String> trangThaitrangThai, String loaiDon);
+
+    HoaDon findHoaDonByMa(String ma);
+
+    List<HoaDon> getHoaDonByTrangThaiAndKhachHangOrderByNgayTaoDesc(String trangThai, KhachHang khachHang);
 
 }

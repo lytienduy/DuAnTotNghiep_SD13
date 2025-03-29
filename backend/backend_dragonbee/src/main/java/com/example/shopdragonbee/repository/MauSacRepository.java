@@ -26,7 +26,7 @@ public interface MauSacRepository extends JpaRepository<MauSac,Integer> {
     Optional<MauSac> findByTenMauSac(String tenMauSac);
 
     /// theo trạng thái
-    @Query("SELECT new com.example.shopdragonbee.dto.MauSacDTO(ms.id, ms.ma, ms.tenMauSac, ms.moTa, ms.trangThai) " +
+    @Query("SELECT new com.example.shopdragonbee.dto.MauSacDTO(ms.id, ms.ma, ms.tenMauSac,ms.maMau, ms.moTa, ms.trangThai) " +
             "FROM MauSac ms WHERE ms.trangThai = :trangThai")
     List<MauSacDTO> findByTrangThai(String trangThai);
 }

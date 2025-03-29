@@ -21,6 +21,8 @@ import soldOutImg from '../../../img/sold-out.png';
 import inactiveImg from '../../../img/inactive.png';
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import QrScanner from "react-qr-scanner";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import HoaDonPrint from "./HoaDonPrint";
 
 const BanTaiQuay = () => {
   //Khai báo Thành phố huyện xã
@@ -42,6 +44,23 @@ const BanTaiQuay = () => {
   const [newDistrict, setNewDistrict] = useState('');
   const [newWard, setNewWard] = useState('');
   const [openChonDC, setOpenChonDC] = useState(false);
+
+  //Thêm khách hàng mới
+  const [citiesKH, setCitiesKH] = useState([]);
+  const [districtsKH, setDistrictsKH] = useState([]);
+  const [wardsKH, setWardsKH] = useState([]);
+  const [cityKH, setCityKH] = useState('');
+  const [districtKH, setDistrictKH] = useState('');
+  const [wardKH, setWardKH] = useState('');
+  const [selectedCityKH, setSelectedCityKH] = useState('');
+  const [selectedDistrictKH, setSelectedDistrictKH] = useState('');
+  const [selectedWardKH, setSelectedWardKH] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
+  const [gender, setGender] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
 
   // State để lưu danh sách các đơn hàng
   const [orders, setOrders] = useState([]);
@@ -78,6 +97,7 @@ const BanTaiQuay = () => {
   const [imageIndexes, setImageIndexes] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại tại giỏ hàng
   const [imageIndexesThemSanPham, setImageIndexesThemSanPham] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại tại thêm sản phẩm vào giỏ hàng 
   const [openConfirmModal, setOpenConfirmModal] = useState(false);//Mở confirm có muốn xóa sản phẩm khỏi giỏ hàng không
+  const [openConfirmModalAddSanPham, setOpenConfirmModalAddSanPham] = useState(false);//Mở confirm có muốn add sản phẩm vào khỏi giỏ hàng không
   const [selectedProductId, setSelectedProductId] = useState(null);//Lưu ID sản phẩm được chọn trong giỏ hàng
   const [checkSelectedOrder, setCheckSelectedOrder] = useState(null);//Lưu ID sản phẩm được chọn trong giỏ hàng
   const [tempValues, setTempValues] = useState({}); // State tạm để lưu giá trị nhập vào của từng sản phẩm trong giỏ hàng
@@ -122,8 +142,10 @@ const BanTaiQuay = () => {
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
   const [openConfirmXacNhanDatHang, setOpenConfirmXacNhanDatHang] = useState(false);
   const [openQRQuetSanPham, setOpenQRQuetSanPham] = useState(false);
-  const [qrData, setQrData] = useState("");
-
+  const [scannedData, setScannedData] = useState(null);
+  const [qrScanner, setQrScanner] = useState(null);
+  const [nhuCauInHoaDon, setNhuCauInHoaDon] = useState(false);
+  const tongTienPhaiTra = (selectedOrder?.tongTienSanPham ?? 0) + Number(discount || 0) - Number(discountAmount || 0);
 
 
   // Hàm mở và đóng modal voucher
@@ -272,6 +294,36 @@ const BanTaiQuay = () => {
     }
     return null;
   };
+
+  const checkVoucherAvailability = async (voucherCode) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/dragonbee/kiem-tra-voucher/${voucherCode}`);
+      console.log(response.data.soLuong);
+      return response.data.soLuong > 0; // Kiểm tra số lượng voucher còn lại
+    } catch (error) {
+      console.error("Error checking voucher availability:", error);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      // Kiểm tra nếu có voucher đã chọn, đơn hàng chưa thanh toán và đơn hàng đã được chọn (selectedOrder)
+      if (selectedVoucherCode && selectedOrder && !selectedOrder?.isPaid) {
+        const isAvailable = await checkVoucherAvailability(selectedVoucherCode);
+        if (!isAvailable) {
+          alert("Phiếu giảm giá đã hết, vui lòng chọn phiếu khác.");
+
+          // Reset lại voucher đã chọn
+          setSelectedVoucherCode('');
+          setDiscountAmount(0); // Đặt giảm giá về 0
+        }
+      }
+    }, 1000); // Kiểm tra mỗi 3 giây
+
+    // Cleanup interval khi component unmount hoặc khi mã voucher thay đổi
+    return () => clearInterval(intervalId);
+  }, [selectedVoucherCode, selectedOrder?.isPaid, selectedOrder?.id]);  // Thêm selectedOrder vào dependency để theo dõi sự thay đổi
 
   //Hàm tìm khách hàng
   const searchCustomers = async (e) => {
@@ -460,6 +512,7 @@ const BanTaiQuay = () => {
         }));
         setCities(normalizedCities);  // Cập nhật citiess thay vì setCities
         setNewCities(normalizedCities);  // Cập nhật citiess thay vì setCities
+        setCitiesKH(normalizedCities);
       })
       .catch(error => console.error("Error fetching data:", error));
   }, []);
@@ -531,10 +584,152 @@ const BanTaiQuay = () => {
     setNewWard(event.target.value);
   };
 
+
+  //Tỉnh thành huyện xã của thêm khách hàng
+  // Cập nhật giá trị khi chọn thành phố
+  const handleCityChangeKH = (event) => {
+    const cityName = event.target.value;
+    setCityKH(cityName);  // Cập nhật giá trị thành phố
+    setDistrictKH("");  // Reset quận/huyện
+    setWardKH("");  // Reset xã/phường khi thay đổi thành phố
+
+    // Cập nhật danh sách quận/huyện
+    const selectedCity = citiesKH.find(city => city.Name === cityName);
+    setDistrictsKH(selectedCity ? selectedCity.Districts : []);  // Cập nhật danh sách quận/huyện
+    setWardsKH([]);  // Reset danh sách xã/phường
+  };
+
+  // Cập nhật giá trị khi chọn quận/huyện
+  const handleDistrictChangeKH = (event) => {
+    const districtName = event.target.value;
+    setDistrictKH(districtName);  // Cập nhật giá trị quận/huyện
+    setWardKH("");  // Reset xã/phường khi thay đổi quận/huyện
+
+    // Cập nhật danh sách xã/phường
+    const selectedDistrict = districtsKH.find(d => d.Name === districtName);
+    setWardsKH(selectedDistrict ? selectedDistrict.Wards : []);  // Cập nhật danh sách xã/phường
+  };
+
+  // Cập nhật giá trị khi chọn xã/phường
+  const handleWardChangeKH = (event) => {
+    setWardKH(event.target.value);  // Cập nhật giá trị xã/phường
+  };
+
   //Hàm mở giao hàng
   const handleSwitchChange = (event) => {
     setShowLeftPanel(event.target.checked);
   };
+  // Thêm mới địa chỉ cho khách hàng được chọn
+  const handleSaveAddress = () => {
+    const detailedAddress = document.getElementById('detailed-address').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const [soNha, duong] = detailedAddress.split(',');
+
+    const newAddress = {
+      khachHang: { id: selectedCustomerId },
+      soNha: soNha.trim(),
+      duong: duong.trim(),
+      xa: newWard,
+      huyen: newDistrict,
+      thanhPho: newCity,
+      moTa: description || '',
+      trangThai: 'Hoạt động',
+      macDinh: false,
+    };
+
+    // Gọi API để thêm địa chỉ mới
+    axios.post('http://localhost:8080/dragonbee/them-dia-chi', newAddress)
+      .then(response => {
+        // Sau khi thêm địa chỉ, gọi lại API để lấy danh sách địa chỉ mới nhất từ server
+        axios.get(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`)
+          .then(response => {
+            // Cập nhật lại danh sách địa chỉ từ response
+            setAddresses(response.data);
+
+            // Lấy địa chỉ mới nhất (ở cuối danh sách) để tự động chọn
+            const lastAddress = response.data[response.data.length - 1];
+            handleSelectAddress(lastAddress);  // Chọn địa chỉ cuối cùng trong danh sách
+
+            // Đóng modal thêm địa chỉ sau khi lưu thành công
+            setOpenChonDC(false);  // Đóng modal thêm địa chỉ
+
+            alert('Thêm địa chỉ thành công!');
+            setNewCity('');  // Reset thành phố
+            setNewDistrict('');  // Reset quận/huyện
+            setNewWard('');  // Reset xã/phường
+          })
+          .catch(error => {
+            console.error('Lỗi khi lấy danh sách địa chỉ:', error);
+            alert('Có lỗi khi lấy danh sách địa chỉ.');
+          });
+      })
+      .catch(error => {
+        console.error('Có lỗi khi thêm địa chỉ:', error);
+        alert('Có lỗi khi thêm địa chỉ.');
+      });
+  };
+
+  // Hàm submit khi thêm khách hàng mới
+  const handleSubmitAddNewKH = async (e) => {
+    e.preventDefault();
+
+    // Tách "Số nhà, Đường" thành hai trường 'soNha' và 'duong' ngăn cách bởi dấu phẩy
+    const [soNha, duong] = address.split(',');
+
+    // Tạo đối tượng dữ liệu để gửi lên API
+    const customerData = {
+      tenKhachHang: name,
+      ngaySinh: dob,
+      gioiTinh: gender,
+      sdt: phone,
+      email: email,
+      diaChi: {
+        soNha: soNha.trim(),
+        duong: duong ? duong.trim() : '',
+        xa: wardKH,
+        huyen: districtKH,
+        thanhPho: cityKH,
+        moTa: ''
+      }
+    };
+
+    try {
+      // Gửi dữ liệu đến API để thêm khách hàng mới
+      const response = await axios.post('http://localhost:8080/dragonbee/them-khach-hang', customerData);
+      alert('Thêm khách hàng thành công');
+      fetchDefaultCustomers();
+      // Sau khi thêm thành công, gọi hàm để lấy thông tin khách hàng mới nhất
+      fetchNewestCustomer();
+
+      // Đóng pop-up hoặc modal
+      setOpenKH(false);
+      setOpen(false);
+    } catch (error) {
+      console.error('Có lỗi xảy ra khi thêm khách hàng:', error);
+      alert('Có lỗi xảy ra khi thêm khách hàng!');
+    }
+  };
+
+  // Hàm tìm kiếm khách hàng mới nhất
+  const fetchNewestCustomer = async () => {
+    try {
+      // Lấy thông tin khách hàng mới nhất từ API
+      const response = await axios.get('http://localhost:8080/dragonbee/tim-kiem-khach-hang?keyword=');
+
+      // Lấy khách hàng mới nhất từ kết quả
+      const newestCustomer = response.data[response.data.length - 1];
+
+      // Tự động chọn khách hàng mới nhất
+      handleSelectCustomer(newestCustomer);
+
+      // Đảm bảo Popper vẫn hiển thị khách hàng mới nhất
+      setOpenKH(true);
+    } catch (error) {
+      console.error('Lỗi khi gọi API tìm kiếm khách hàng:', error);
+    }
+  };
+
+
 
 
 
@@ -546,19 +741,58 @@ const BanTaiQuay = () => {
 
 
   //Quét QR
-  const handleScan = (data) => {
-    console.log("Đã scan");
+  const scannerRef = useRef(null);
+  const isScanningRef = useRef(false); // Trạng thái đang quét
+  const handleCloseQRScanner = () => {
+    setOpenQRQuetSanPham(false); // Đóng modal
 
-    if (data) {
-      setQrData(data);
-      console.log("Đã quét ra data");
-      setOpenQRQuetSanPham(false); // Đóng camera sau khi quét thành công
+    if (scannerRef.current) {
+      try {
+        scannerRef.current.clear()
+          .then(() => {
+            console.log("Scanner đã dừng");
+            isScanningRef.current = false;
+            scannerRef.current = null; // Reset scanner để tránh lỗi
+          })
+          .catch(err => console.error("Lỗi dừng scanner:", err));
+      } catch (error) {
+        console.error("Scanner không thể dừng:", error);
+      }
     }
   };
+  useEffect(() => {
+    if (openQRQuetSanPham && !isScanningRef.current) {
+      setTimeout(() => {
+        const readerElement = document.getElementById("reader");
 
-  const handleError = (err) => {
-    console.error(err);
-  };
+        if (readerElement) {
+          const scanner = new Html5QrcodeScanner("reader", {
+            fps: 10,
+            qrbox: 250,
+            disableFlip: false,
+          });
+
+          scanner.render(
+            (decodedText) => {
+              setScannedData(decodedText.trim());
+              console.log("Đã quét được:", decodedText);
+              handleCloseQRScanner(); // Đóng modal & dừng quét
+            },
+            (errorMessage) => {
+              console.error("Lỗi quét QR:", errorMessage);
+            }
+          );
+
+          scannerRef.current = scanner;
+          isScanningRef.current = true;
+        }
+      }, 200);
+    } else if (!openQRQuetSanPham && scannerRef.current) {
+      handleCloseQRScanner();
+    }
+  }, [openQRQuetSanPham]);
+
+
   //Thông báo Toast
   const showSuccessToast = (message) => {
     toast.success(message, {
@@ -639,6 +873,7 @@ const BanTaiQuay = () => {
     setShowLeftPanel(false);
     setKeyword("");
     setDiscountAmount(0);
+    setNhuCauInHoaDon(false);
   }, [checkSelectedOrder]);
 
   //Hàm xử lý khi đóng mở modal
@@ -668,15 +903,11 @@ const BanTaiQuay = () => {
     return () => clearTimeout(handler); // Xóa timeout nếu người dùng tiếp tục kéo
   }, [value]);
 
-  //Khi bộ lọc khoảng giá thay đổi
-  useEffect(() => {
-    getSanPhamThem();
-  }, [debouncedValue]);
 
   //Khi thay đổi bộ lọc
   useEffect(() => {
     getSanPhamThem();
-  }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
+  }, [debouncedValue, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
 
   useEffect(() => {
     if (selectedOrder) {
@@ -697,7 +928,7 @@ const BanTaiQuay = () => {
 
   //Hàm cập nhật id hóa đơn được chọn
   const handleSelectOrder = (order) => {
-    if (order?.id != selectedOrder?.id) {
+    if (order?.id !== selectedOrder?.id) {
       setCheckSelectedOrder(order);
     }
     setSelectedOrder(order); // Cập nhật id của hóa đơn đã chọn
@@ -845,7 +1076,7 @@ const BanTaiQuay = () => {
   //Xử lý khi MỞ modal confirm thêm sản phẩm vào giỏ hàng
   const handleOpenConfirmModal = (product) => {
     setSelectedProduct(product);
-    setOpenConfirmModal(true);
+    setOpenConfirmModalAddSanPham(true);
   };
 
   //Xử lý khi confirm thêm vào giỏ hàng
@@ -857,9 +1088,12 @@ const BanTaiQuay = () => {
       if (response.data) {
         setSelectedProduct(null);
         setQuantity(1);
-        setOpenConfirmModal(false);
-        getSanPhamThem();
+        setOpenConfirmModalAddSanPham(false);
+        if (openSPModal == true) {
+          getSanPhamThem();
+        }
         showSuccessToast("Thêm sản phẩm thành công");
+        fetchOrders();
       } else {
         showErrorToast("Thêm sản phẩm thất bại");
       }
@@ -868,6 +1102,31 @@ const BanTaiQuay = () => {
       console.error(error.response || error.message);
     }
   };
+
+  //Hàm xử lý khi sacanneddata được quét
+  const handleScannedData = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/ban-hang-tai-quay/getSanPhamChiTietByMa/${scannedData}`
+      );
+      if (response.data) {
+        setSelectedProduct(response.data);
+        setOpenConfirmModalAddSanPham(true);
+      } else {
+        showErrorToast("Chúng tôi không có sản phẩm nào nhưu mã qr này");
+      }
+    } catch (error) {
+      showErrorToast("Chúng tôi không có sản phẩm nào nhưu mã qr này catch");
+      console.error(error.response || error.message);
+    }
+  }
+
+
+  useEffect(() => {
+    if (scannedData != null && scannedData != "") {
+      handleScannedData();
+    }
+  }, [scannedData]);
 
   //Cập nhật giá trị khi thay đổi số lượng nhập từ bàn phím
   const handleInputChangeThemSanPhamVaoGioHang = (value) => {
@@ -878,7 +1137,7 @@ const BanTaiQuay = () => {
       newValue = "";
     }
 
-    if (newValue != "") {
+    if (newValue !== "") {
       if (Number(newValue) > selectedProduct.soLuong) {
         newValue = Number(newValue).toString().slice(0, -1) || selectedProduct.soLuong;
       }
@@ -1015,6 +1274,37 @@ const BanTaiQuay = () => {
     setOpenConfirmXacNhanDatHang(false);
   };
 
+  const handlePrint = async () => {
+    // Lấy thông tin hóa đơn từ API hoặc dữ liệu có sẵn và gán vào state
+    try {
+      // const response = await axios.get(`http://localhost:8080/hoa-don/${id}`);
+      // if (response.data) {
+      //   setHoaDon(response.data);
+      setTimeout(() => {
+        const printContent = document.getElementById("hoaDonPrint");
+        if (!printContent) {
+          showErrorToast("Không tìm thấy nội dung hóa đơn để in!");
+          return;
+        }
+
+        const printWindow = window.open("", "_blank");
+        printWindow.document.write(printContent.innerHTML);
+        printWindow.document.close();
+
+        // Thêm sự kiện khi in xong
+        printWindow.onafterprint = () => {
+          showSuccessToast("In hóa đơn thành công!");
+        };
+
+        printWindow.print();
+      }, 500);
+      // }
+    } catch (error) { 
+      showErrorToast("Lỗi khi tải hóa đơn, vui lòng thử lại!");
+      console.error("Lỗi khi lấy dữ liệu hóa đơn:", error);
+    }
+  };
+
   const xacNhanDatHang = async () => {
     try {
       // if (!errorChuyen && !errorDua) {
@@ -1022,19 +1312,24 @@ const BanTaiQuay = () => {
         .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
         .join(" "); // Ghép chuỗi với dấu cách
       const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/xacNhanDatHang`, {
-        idHoaDon: selectedOrder.id, idKhachHang: selectedCustomerId, pgg: selectedVoucherCode, giaoHang: showLeftPanel, tenNguoiNhan: recipientName, sdtNguoiNhan: recipientPhone, diaChiNhanHang: addressParts, tongTienPhaiTra: selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount), phiShip: discount
+        idHoaDon: selectedOrder.id, idKhachHang: selectedCustomerId, pgg: selectedVoucherCode, giaoHang: showLeftPanel, tenNguoiNhan: recipientName, sdtNguoiNhan: recipientPhone, diaChiNhanHang: addressParts, tongTienPhaiTra: tongTienPhaiTra, phiShip: discount
       })
-      if (response.data) {
-        setShowLeftPanel(false);
+      if (response.data !== null) {
         showSuccessToast("Đặt hàng thành công");
+        if (nhuCauInHoaDon == true) {
+          setSelectedOrder(response.data);
+          handlePrint();
+        }
+        setShowLeftPanel(false);
         fetchOrders();
+
       } else {
-        showErrorToast("Lỗi thanh toán");
+        showErrorToast("Lỗi đặt hàng");
       }
       // }
     } catch (err) {
       console.log(err)
-      showErrorToast("Lỗi thanh toán2");
+      showErrorToast("Lỗi đặt hàng catch");
     }
   }
 
@@ -1063,20 +1358,28 @@ const BanTaiQuay = () => {
 
     setRecipientName(selectedCustomer.tenKhachHang);
     setRecipientPhone(selectedCustomer.sdt);
-    setSelectedCity(address.thanhPho);
-    setSelectedDistrict(address.huyen);
+    setCity(address.thanhPho);  // Cập nhật thành phố
+    setDistrict(address.huyen);  // Cập nhật huyện
+    setWard(address.xa);  // Cập nhật xã/phường
+    setSpecificAddress(`${address.soNha}, ${address.duong}`);  // Cập nhật địa chỉ cụ thể
+    setDescription(address.moTa || "");  // Cập nhật mô tả
 
-    // Cập nhật danh sách xã theo huyện mới
+    // Cập nhật lại danh sách quận/huyện và xã/phường dựa trên thành phố và huyện
     const city = cities.find(city => city.Name === address.thanhPho);
     if (city) {
+      setDistricts(city.Districts);  // Cập nhật danh sách quận/huyện của thành phố
       const district = city.Districts.find(d => d.Name === address.huyen);
-      setWards(district ? district.Wards : []);
+      if (district) {
+        setWards(district.Wards);  // Cập nhật danh sách xã/phường của huyện
+      } else {
+        setWards([]);  // Nếu không tìm thấy huyện, reset danh sách xã/phường
+      }
+    } else {
+      setDistricts([]);  // Nếu không tìm thấy thành phố, reset danh sách quận/huyện
+      setWards([]);  // Reset xã/phường
     }
 
-    setSelectedWard(address.xa);
-    setSpecificAddress(`${address.soNha}, ${address.duong}`);
-    setDescription(address.moTa || ""); // Nếu không có mô tả, đặt rỗng
-    setOpenDC(false); // Đóng modal
+    setOpenDC(false);  // Đóng modal sau khi chọn
   };
 
 
@@ -1313,7 +1616,7 @@ const BanTaiQuay = () => {
                       >
                         Quét QR Sản Phẩm
                       </Button>
-                      <Dialog open={openQRQuetSanPham} onClose={() => setOpenQRQuetSanPham(false)}>
+                      {/* <Dialog open={openQRQuetSanPham} onClose={() => setOpenQRQuetSanPham(false)}>
                         <DialogContent>
                           <QrScanner
                             delay={300}
@@ -1322,6 +1625,18 @@ const BanTaiQuay = () => {
                             style={{ width: "100%" }}
                           />
                         </DialogContent>
+                      </Dialog> */}
+                      {/* Dialog chứa camera */}
+                      <Dialog open={openQRQuetSanPham} onClose={handleCloseQRScanner} fullWidth maxWidth="sm">
+                        <DialogTitle>Quét mã QR</DialogTitle>
+                        <DialogContent>
+                          <div id="reader" style={{ width: "100%" }}></div>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={handleCloseQRScanner} color="secondary">
+                            Đóng
+                          </Button>
+                        </DialogActions>
                       </Dialog>
 
                       <Button
@@ -1470,7 +1785,7 @@ const BanTaiQuay = () => {
                     <Box>
                       <Typography component="span" variant="body1" sx={{ mr: 2 }}>Tổng tiền:</Typography>
                       <Typography component="span" fontSize={20} sx={{ fontWeight: 'bold', color: 'red', marginRight: 3 }}>
-                        {selectedOrder?.tongTienSanPham?.toLocaleString()} VNĐ
+                        {tongTienPhaiTra?.toLocaleString()} VNĐ
                       </Typography>
                     </Box>
                   </Box>
@@ -1813,7 +2128,7 @@ const BanTaiQuay = () => {
                       <Typography variant="body1" sx={{ marginTop: '16px' }} style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
                         Số tiền thanh toán:
                         <span style={{ color: 'red' }}>
-                          {((selectedOrder?.tongTienSanPham ?? 0) + Number(discount || 0) - Number(discountAmount || 0)).toLocaleString()} VNĐ
+                          {tongTienPhaiTra?.toLocaleString()} VNĐ
                         </span>
                       </Typography>
                       <Typography
@@ -1853,25 +2168,36 @@ const BanTaiQuay = () => {
                       </Typography>
                       <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
                         Tiền thiếu: <span style={{ color: 'red' }}>
-                          {tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)) < 0
-                            ? (tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0))).toLocaleString()
+                          {tongTienKhachDaThanhToan - tongTienPhaiTra < 0
+                            ? Math.abs(tongTienKhachDaThanhToan - tongTienPhaiTra).toLocaleString()
                             : "0"}
                           <span style={{ color: 'red' }}> VNĐ</span>
                         </span>
                       </Typography>
                       <Typography variant="body1" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontWeight: 'bold' }}>
                         Tiền thừa trả khách: <span style={{ color: 'red' }}>
-                          {tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)) > 0
-                            ? (tongTienKhachDaThanhToan - (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0))).toLocaleString()
+                          {tongTienKhachDaThanhToan - tongTienPhaiTra > 0
+                            ? (tongTienKhachDaThanhToan - tongTienPhaiTra).toLocaleString()
                             : "0"}
                           <span style={{ color: 'red' }}> VNĐ</span>
                         </span>
                       </Typography>
 
+                      <Box display="flex" justifyContent="space-between" alignItems="center" marginTop={2}>
+                        <Typography variant="h6" ></Typography>
+                        {/* Nút Switch điều khiển việc hiển thị/ẩn bên trái */}
+                        <FormControlLabel
+                          sx={{ marginRight: 0 }} // Đặt margin-right về 0
+                          control={<Switch checked={nhuCauInHoaDon} onChange={(event) => { setNhuCauInHoaDon(event.target.checked) }} />}
+                          label="In hóa đơn"
+                        />
+                      </Box>
+
+
                       <Button variant="contained" sx={{ width: '100%', marginTop: 10, height: 50, backgroundColor: '#1976D2' }}
                         disabled={
-                          selectedOrder.trangThai === "Chờ thêm sản phẩm" ||
-                          (!showLeftPanel && tongTienKhachDaThanhToan < (selectedOrder?.tongTienSanPham + Number(discount) - Number(discountAmount || 0)))
+                          selectedOrder.listDanhSachSanPham?.length === 0 ||
+                          (!showLeftPanel && tongTienKhachDaThanhToan < tongTienPhaiTra)
                         }
                         onClick={() => { setOpenConfirmXacNhanDatHang(true) }}
                       >
@@ -1924,7 +2250,7 @@ const BanTaiQuay = () => {
           {/* Tổng tiền hàng */}
           <Grid container justifyContent="space-between" sx={{ mb: 2 }}>
             <Typography variant="h6">Tổng tiền hàng</Typography>
-            <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{(selectedOrder?.tongTienSanPham + + Number(discount || 0)).toLocaleString()} VNĐ</Typography>
+            <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{selectedOrder?.tongTienSanPham?.toLocaleString()} VNĐ</Typography>
           </Grid>
 
 
@@ -2112,113 +2438,117 @@ const BanTaiQuay = () => {
           </IconButton>
 
           <h2>Thêm mới khách hàng</h2>
+          <form onSubmit={handleSubmitAddNewKH}>
+            <Grid container spacing={2}>
+              {/* Cột bên trái */}
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Tên khách hàng"
+                  variant="outlined"
+                  margin="normal"
+                  size='small'
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  label="Số điện thoại"
+                  variant="outlined"
+                  margin="normal"
+                  size='small'
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  label="Ngày sinh"
+                  variant="outlined"
+                  margin="normal"
+                  type="date"
+                  size='small'
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <FormControl fullWidth margin="normal" size='small'>
+                  <InputLabel>Giới tính</InputLabel>
+                  <Select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    label="Giới tính"
+                  >
+                    <MenuItem value="male">Nam</MenuItem>
+                    <MenuItem value="female">Nữ</MenuItem>
+                    <MenuItem value="other">Khác</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  variant="outlined"
+                  margin="normal"
+                  size='small'
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Grid>
 
-          <Grid container spacing={2}>
-            {/* Cột bên trái */}
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Tên khách hàng"
-                variant="outlined"
-                margin="normal"
-                name="name"
-                size='small'
-              />
-              <TextField
-                fullWidth
-                label="Số điện thoại"
-                variant="outlined"
-                margin="normal"
-                name="phone"
-                size='small'
-              />
-              <TextField
-                fullWidth
-                label="Ngày sinh"
-                variant="outlined"
-                margin="normal"
-                type="date"
-                size='small'
-                name="dob"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Thành phố"
-                variant="outlined"
-                margin="normal"
-                name="area"
-                size='small'
-              />
-              <TextField
-                fullWidth
-                label="Xã / Thị trấn"
-                variant="outlined"
-                margin="normal"
-                name="address"
-                size='small'
-              />
+              {/* Cột bên phải */}
+              <Grid item xs={6}>
+                <FormControl fullWidth size='small' sx={{ marginTop: 2 }}>
+                  <InputLabel>Tỉnh/Thành phố</InputLabel>
+                  <Select value={cityKH} onChange={handleCityChangeKH} label="Tỉnh/Thành phố">
+                    {citiesKH.map((city) => (
+                      <MenuItem key={city.Id} value={city.Name}>{city.Name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth size='small' sx={{ marginTop: 3 }}>
+                  <InputLabel>Quận/Huyện</InputLabel>
+                  <Select value={districtKH} onChange={handleDistrictChangeKH} label="Quận/Huyện">
+                    {districtsKH.map((district) => (
+                      <MenuItem key={district.Id} value={district.Name}>{district.Name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth size='small' sx={{ marginTop: 3 }}>
+                  <InputLabel>Xã/Phường</InputLabel>
+                  <Select value={wardKH} onChange={handleWardChangeKH} label="Xã/Phường">
+                    {wardsKH.length > 0 ? (
+                      wardsKH.map((ward) => (
+                        <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No wards available</MenuItem>
+                    )}
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  fullWidth
+                  label="Số nhà, Đường, Thôn/Xóm"
+                  variant="outlined"
+                  margin="normal"
+                  size='small'
+                  sx={{ marginTop: 3 }}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </Grid>
             </Grid>
 
-            {/* Cột bên phải */}
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Mã khách hàng (Có thể nhập hoặc không)"
-                variant="outlined"
-                margin="normal"
-                name="customerId"
-                size='small'
-              />
-              <FormControl fullWidth margin="normal" size='small'>
-                <InputLabel>Giới tính</InputLabel>
-                <Select
-                  name="gender"
-                  label="Giới tính"
-                >
-                  <MenuItem value="male">Nam</MenuItem>
-                  <MenuItem value="female">Nữ</MenuItem>
-                  <MenuItem value="other">Khác</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField
-                fullWidth
-                label="Email"
-                variant="outlined"
-                margin="normal"
-                name="email"
-                size='small'
-              />
-
-              <TextField
-                fullWidth
-                label="Quận / Huyện"
-                variant="outlined"
-                margin="normal"
-                name="district"
-                size='small'
-              />
-              <TextField
-                fullWidth
-                label="Số nhà, Đường, Thôn/Xóm"
-                variant="outlined"
-                margin="normal"
-                name="district"
-                size='small'
-              />
-            </Grid>
-          </Grid>
-
-          <Button
-
-            variant="contained"
-            color="primary"
-            sx={{ marginTop: '20px', left: 270 }}
-          >
-            Thêm khách hàng
-          </Button>
+            <Button
+              type='submit'
+              variant="contained"
+              color="primary"
+              sx={{ marginTop: '20px', left: 270 }}
+            >
+              Thêm khách hàng
+            </Button>
+          </form>
         </Box>
       </Modal>
 
@@ -2568,122 +2898,123 @@ const BanTaiQuay = () => {
                 </Table>
               </TableContainer>
 
-              {/* Modal xác nhận khi bấm "Chọn" */}
-              {selectedProduct && (
-                <Modal open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
-                  <Box
-                    sx={{
-                      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                      width: 400, bgcolor: 'white', p: 3, boxShadow: 24, borderRadius: 2
-                    }}
-                  >
-                    {/* Nút đóng Modal */}
-                    <IconButton
-                      sx={{ position: 'absolute', top: 8, right: 8 }}
-                      onClick={() => { setQuantity(1); fetchOrders(); setOpenConfirmModal(false) }}
-                    >
-                      <CloseIcon />
-                    </IconButton>
 
-                    {/* Tiêu đề sản phẩm (căn lề trái) */}
-                    <Typography variant="h6" fontWeight="bold" sx={{ textAlign: "left" }}>
-                      {selectedProduct?.tenMauSize} - {selectedProduct?.ma}
-                    </Typography>
-
-                    {/* Khu vực chứa ẢNH - GIÁ - Ô NHẬP SỐ LƯỢNG */}
-                    <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-                      {/* Ảnh sản phẩm (bên trái) */}
-                      <Box sx={{ flex: 1 }}>
-                        <img
-                          src={selectedProduct.hinhAnh[0]}
-                          alt={`Ảnh load`}
-                          style={{
-                            width: "60px",
-                            height: "60px",
-                            objectFit: "cover",
-                            borderRadius: "10px",
-                            transition: "transform 0.3s ease-in-out",
-                            boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
-                          }}
-                          onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
-                          onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
-                        />
-
-                      </Box>
-
-                      {/* Giá sản phẩm & Ô nhập số lượng (bên phải) */}
-                      <Box sx={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                        {/* Giá sản phẩm */}
-                        <Typography sx={{ fontSize: "16px", fontWeight: "bold", mb: 1 }}>
-                          {selectedProduct?.gia.toLocaleString()} VNĐ
-                        </Typography>
-
-                        {/* Chọn số lượng */}
-                        <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => setQuantity(prev => prev - 1)}
-                            disabled={quantity <= 1}
-                            sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
-                          >
-                            <RemoveIcon fontSize="small" />
-                          </IconButton>
-                          <TextField
-                            value={quantity}
-                            onChange={(e) => handleInputChangeThemSanPhamVaoGioHang(e.target.value)}
-                            // type="number"
-                            inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
-                            size="small"
-                            error={!!errorSoLuongThemVaoGioHang}
-                            helperText={errorSoLuongThemVaoGioHang}
-                            sx={{
-                              width: "60px",
-                              "& .MuiInputBase-input": {
-                                textAlign: "center",
-                                padding: "5px 0",
-                                backgroundColor: "transparent"
-                              },
-                              "& .MuiOutlinedInput-root": {
-                                border: "none",
-                                "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                                "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
-                                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
-                              },
-                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
-                                WebkitAppearance: "none",
-                                margin: 0
-                              }
-                            }}
-                          />
-                          <IconButton
-                            size="small"
-                            onClick={() => setQuantity(prev => Number(prev) + 1)}
-                            disabled={quantity >= selectedProduct.soLuong}
-                            sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
-                          >
-                            <AddIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      </Box>
-                    </Box>
-
-                    {/* Nút xác nhận */}
-                    <Button
-                      variant="contained"
-                      sx={{ width: '100%', mt: 2, color: '#fff', backgroundColor: '#1976D2' }}
-                      onClick={handleCloseConfirmModal}
-                      disabled={errorSoLuongThemVaoGioHang}
-                    >
-                      XÁC NHẬN
-                    </Button>
-                  </Box>
-                </Modal>
-
-              )}
             </>
           </Box>
         </Box>
       </Modal>
+      {/* Modal xác nhận khi bấm "Chọn" */}
+      {/* {selectedProduct && ( */}
+      <Modal open={openConfirmModalAddSanPham} onClose={() => setOpenConfirmModalAddSanPham(false)}>
+        <Box
+          sx={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: 400, bgcolor: 'white', p: 3, boxShadow: 24, borderRadius: 2
+          }}
+        >
+          {/* Nút đóng Modal */}
+          <IconButton
+            sx={{ position: 'absolute', top: 8, right: 8 }}
+            onClick={() => { setQuantity(1); fetchOrders(); setOpenConfirmModalAddSanPham(false) }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          {/* Tiêu đề sản phẩm (căn lề trái) */}
+          <Typography variant="h6" fontWeight="bold" sx={{ textAlign: "left" }}>
+            {selectedProduct?.tenMauSize} - {selectedProduct?.ma}
+          </Typography>
+
+          {/* Khu vực chứa ẢNH - GIÁ - Ô NHẬP SỐ LƯỢNG */}
+          <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+            {/* Ảnh sản phẩm (bên trái) */}
+            <Box sx={{ flex: 1 }}>
+              <img
+                src={selectedProduct?.hinhAnh[0]}
+                alt={`Ảnh load`}
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  objectFit: "cover",
+                  borderRadius: "10px",
+                  transition: "transform 0.3s ease-in-out",
+                  boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
+                }}
+                onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
+                onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
+              />
+
+            </Box>
+
+            {/* Giá sản phẩm & Ô nhập số lượng (bên phải) */}
+            <Box sx={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+              {/* Giá sản phẩm */}
+              <Typography sx={{ fontSize: "16px", fontWeight: "bold", mb: 1 }}>
+                {selectedProduct?.gia.toLocaleString()} VNĐ
+              </Typography>
+
+              {/* Chọn số lượng */}
+              <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
+                <IconButton
+                  size="small"
+                  onClick={() => setQuantity(prev => prev - 1)}
+                  disabled={quantity <= 1}
+                  sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                >
+                  <RemoveIcon fontSize="small" />
+                </IconButton>
+                <TextField
+                  value={quantity}
+                  onChange={(e) => handleInputChangeThemSanPhamVaoGioHang(e.target.value)}
+                  // type="number"
+                  inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
+                  size="small"
+                  error={!!errorSoLuongThemVaoGioHang}
+                  helperText={errorSoLuongThemVaoGioHang}
+                  sx={{
+                    width: "60px",
+                    "& .MuiInputBase-input": {
+                      textAlign: "center",
+                      padding: "5px 0",
+                      backgroundColor: "transparent"
+                    },
+                    "& .MuiOutlinedInput-root": {
+                      border: "none",
+                      "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                      "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
+                    },
+                    "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                      WebkitAppearance: "none",
+                      margin: 0
+                    }
+                  }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={() => setQuantity(prev => Number(prev) + 1)}
+                  disabled={quantity >= selectedProduct?.soLuong}
+                  sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Nút xác nhận */}
+          <Button
+            variant="contained"
+            sx={{ width: '100%', mt: 2, color: '#fff', backgroundColor: '#1976D2' }}
+            onClick={handleCloseConfirmModal}
+            disabled={errorSoLuongThemVaoGioHang}
+          >
+            XÁC NHẬN
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* )} */}
       {/* Gọi Modal */}
       <Modal open={openDC} onClose={handleCloseDC}>
         <Box
@@ -2836,12 +3167,18 @@ const BanTaiQuay = () => {
           <Button onClick={handleCloseChonDC} color="primary">
             Hủy
           </Button>
-          <Button onClick={handleCloseChonDC} color="primary">
+          <Button onClick={handleSaveAddress} color="primary">
             Lưu
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* In hóa đơn */}
+      <Box id="hoaDonPrint" style={{ display: "none" }}> {/* Thay display: none bằng block */}
+        <HoaDonPrint hoaDon={selectedOrder} />
+      </Box>
     </Box >
+
   );
 };
 

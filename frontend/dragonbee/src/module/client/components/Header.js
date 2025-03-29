@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
+import axios from 'axios';
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  Box,
-  InputBase,
-  IconButton,
+  AppBar, Toolbar, Typography, Button, Box, InputBase, IconButton, Badge, MenuItem, Menu, Avatar
 } from "@mui/material";
 import { Search, ShoppingCart, Person } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -27,6 +22,25 @@ const Header = () => {
   const navigate = useNavigate();
   const [isSticky, setIsSticky] = useState(false);
   const location = useLocation();
+  const [soLuongTrongGioHang, setSoLuongTrongGioHang] = useState(0);
+  const [anchorEl, setAnchorEl] = useState(null);
+  // Check if the user is logged in by checking localStorage
+  const userKH = JSON.parse(localStorage.getItem('userKH'));
+
+  const goToDonMua = () => {
+    navigate('/donMua');
+    handleClose(); // Close the menu after navigation
+  };
+
+  // Open the menu when clicking the icon
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // Close the menu
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,6 +57,54 @@ const Header = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+  //Hàm lấy số lượng giỏ hàng
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (userKH?.khachHang?.id) {
+        const response = await axios.post(`http://localhost:8080/gioHang/layDuLieuCartVaXoaSanPhamSoLuong0`, null,
+          {
+            params: {
+              idKhachHang: userKH?.khachHang?.id
+            }
+          });//Gọi api bằng  
+        setSoLuongTrongGioHang(response.data?.length);
+      } else {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        setSoLuongTrongGioHang(cart.length);
+      }
+    }, 1000); // 60 giây
+    return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
+  }, []);
+
+
+
+  // Navigate to the login page or any other page
+  const goToLogin = () => {
+    navigate('/login');
+    handleClose();
+  };
+
+  // Navigate to registration page
+  const goToRegister = () => {
+    navigate('/register');
+    handleClose();
+  };
+  // Logout functionality
+  const handleLogout = () => {
+    localStorage.removeItem('userKH');
+    localStorage.removeItem('tokenKH');
+    navigate('/home');
+    handleClose();
+  };
+
+  // Get first and last name initials
+  const getNameInitials = (name) => {
+    const nameArray = name.split(' ');
+    const firstInitial = nameArray[0]?.charAt(0).toUpperCase(); // First character of first name
+    const lastInitial = nameArray[nameArray.length - 1]?.charAt(0).toUpperCase(); // First character of last name
+    return firstInitial + lastInitial;
+  };
+
   return (
     <Box>
       {/* Hotline & Hệ thống cửa hàng */}
@@ -161,12 +223,74 @@ const Header = () => {
             </Box>
 
             {/* Giỏ hàng & tài khoản */}
-            <IconButton>
-              <ShoppingCart />
+            <IconButton component="a" href="/gioHang">
+              <Badge badgeContent={soLuongTrongGioHang} color="error">
+                <ShoppingCart />
+              </Badge>
             </IconButton>
-            <IconButton onClick={() => navigate("/login-client")}>
-              <Person />
-            </IconButton>
+            <div>
+              {/* Person Icon */}
+              <IconButton onClick={handleClick}>
+                {userKH ? (
+                  // Display initials if user is logged in
+                  <Avatar
+                    sx={{
+                      bgcolor: '#1976D2', // Gray background
+                      color: 'white', // White text
+                      width: 40,
+                      height: 40,
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {getNameInitials(userKH?.khachHang?.tenKhachHang)}
+                  </Avatar>
+                ) : (
+                  // Display person icon if not logged in
+                  <Person />
+                )}
+              </IconButton>
+
+              {/* Menu with dynamic items */}
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+                MenuListProps={{
+                  onMouseLeave: handleClose, // Close menu when mouse leaves
+                }}
+                PaperProps={{
+                  sx: {
+                    width: '200px', // Adjust width as needed
+                  },
+                }}
+              >
+                {userKH ? (
+
+                  <>
+                    <MenuItem onClick={handleClose}>
+                      <Typography color="textSecondary">Tài khoản của tôi</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={goToDonMua}>
+                      <Typography color="textSecondary">Đơn mua</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={handleLogout}>
+                      <Typography color="textSecondary">Đăng xuất</Typography>
+                    </MenuItem>
+                  </>
+                ) : (
+                  // If not logged in, show Login and Register options
+                  <>
+                    <MenuItem onClick={goToLogin}>
+                      <Typography color="textSecondary">Đăng nhập</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={goToRegister}>
+                      <Typography color="textSecondary">Đăng ký</Typography>
+                    </MenuItem>
+                  </>
+                )}
+              </Menu>
+            </div>
           </Box>
         </Toolbar>
       </AppBar>

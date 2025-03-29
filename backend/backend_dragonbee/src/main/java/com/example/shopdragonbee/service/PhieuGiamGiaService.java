@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.PhieuGiamGiaDTO;
 import com.example.shopdragonbee.entity.PhieuGiamGia;
 import com.example.shopdragonbee.entity.PhieuGiamGiaKhachHang;
 import com.example.shopdragonbee.repository.PhieuGiamGiaRepository;
@@ -154,6 +155,11 @@ public class PhieuGiamGiaService {
                 .filter(phieu -> "Đang diễn ra".equals(phieu.getTrangThai()))
                 .collect(Collectors.toList());
 
+        // Lọc phiếu có số lượng > 0
+        phieuGiamGias = phieuGiamGias.stream()
+                .filter(phieu -> phieu.getSoLuong() > 0)
+                .collect(Collectors.toList());
+
         // Nếu có khách hàng được chọn, chỉ lấy kiểu giảm giá "Cá nhân" và "Công khai"
         if (idKhachHang != null) {
             List<PhieuGiamGiaKhachHang> phieuGiamGiaKhachHangs = phieuGiamGiaKhachHangRepository.findByKhachHangId(idKhachHang);
@@ -184,4 +190,21 @@ public class PhieuGiamGiaService {
         return phieuGiamGias;
     }
 
+    // Hàm kiểm tra số lượng phiếu giảm giá còn lại
+    public PhieuGiamGiaDTO checkVoucherAvailability(String voucherCode) {
+        Optional<PhieuGiamGia> optionalPhieuGiamGia = phieuGiamGiaRepository.findByMa(voucherCode);
+
+        // Kiểm tra xem voucher có tồn tại không
+        if (optionalPhieuGiamGia.isPresent()) {
+            PhieuGiamGia phieuGiamGia = optionalPhieuGiamGia.get();
+
+            // Kiểm tra số lượng voucher còn lại
+            if (phieuGiamGia.getSoLuong() > 0) {
+                return new PhieuGiamGiaDTO(phieuGiamGia); // Trả về thông tin voucher nếu còn
+            }
+        }
+
+        // Nếu không có phiếu giảm giá hoặc hết số lượng, trả về null
+        return null;
+    }
 }

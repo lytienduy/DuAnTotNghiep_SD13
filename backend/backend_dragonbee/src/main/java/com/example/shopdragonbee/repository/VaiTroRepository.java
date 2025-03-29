@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface VaiTroRepository extends JpaRepository<VaiTro, Integer> {
     VaiTro findVaiTroByTenVaiTro(String tenVaiTro);
 
+    VaiTro findById(int id);
+
 }

@@ -4,12 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="20fa4398-a540-4bcc-8ac6-98e36f4ff058" name="Default Changelist" comment="">
+    <list default="true" id="3285daf9-171e-44be-80b7-eb3a6babbbd3" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/GioHangDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/entity/HoaDon.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/entity/HoaDon.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/BanTaiQuay.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/admin/pages/BanTaiQuay.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/GioHangController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/controller/Client/GioHangController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/HomeDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/HomeDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/GioHangService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/GioHangService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/HomeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/HomeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/components/Header.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/components/Header.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/GioHang.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/GioHang.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/Home.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/Home.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/SanPham.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/SanPham.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ThanhToan.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/ThanhToan.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,14 +26,13 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
-        <option value="Interface" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="ProjectId" id="2tXWdeL4iUUzHn6rCmxmc87SkZx" />
+  <component name="ProjectId" id="2ubv4rgYk3CX3HSaNMJoZdvRpTW" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
@@ -42,20 +47,27 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="project.structure.last.edited" value="Project" />
-    <property name="project.structure.proportion" value="0.0" />
-    <property name="project.structure.side.proportion" value="0.0" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/vnpay_jsp" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="com.example.shopdragonbee.repository" />
-      <recent name="com.example.shopdragonbee.dto" />
-      <recent name="com.example.shopdragonbee.controller" />
       <recent name="com.example.shopdragonbee.service" />
+      <recent name="com.example.shopdragonbee.controller" />
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
+      <option name="arquillianRunConfiguration">
+        <value>
+          <option name="containerStateName" value="" />
+        </value>
+      </option>
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="ShopdragonbeeApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
       <module name="shopdragonbee" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.shopdragonbee.ShopdragonbeeApplication" />
@@ -67,26 +79,20 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="20fa4398-a540-4bcc-8ac6-98e36f4ff058" name="Default Changelist" comment="" />
-      <created>1740498990633</created>
+      <changelist id="3285daf9-171e-44be-80b7-eb3a6babbbd3" name="Default Changelist" comment="" />
+      <created>1742529902611</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1740498990633</updated>
-      <workItem from="1740498991891" duration="595000" />
-      <workItem from="1740535911232" duration="2640000" />
-      <workItem from="1740542346284" duration="11674000" />
-      <workItem from="1740622236024" duration="16681000" />
-      <workItem from="1740707757283" duration="16406000" />
-      <workItem from="1740798113631" duration="6060000" />
-      <workItem from="1740890289275" duration="10462000" />
-      <workItem from="1740980711197" duration="13000" />
-      <workItem from="1740980738416" duration="619000" />
-      <workItem from="1741010112170" duration="5606000" />
-      <workItem from="1741055572170" duration="1689000" />
-      <workItem from="1741062866148" duration="151000" />
-      <workItem from="1741081211376" duration="624000" />
-      <workItem from="1741227044651" duration="2157000" />
-      <workItem from="1741269613714" duration="1337000" />
+      <updated>1742529902611</updated>
+      <workItem from="1742529903809" duration="15215000" />
+      <workItem from="1742710857986" duration="1260000" />
+      <workItem from="1742781025760" duration="13243000" />
+      <workItem from="1742870975183" duration="20082000" />
+      <workItem from="1742953132750" duration="22696000" />
+      <workItem from="1742994762058" duration="1317000" />
+      <workItem from="1743040846919" duration="10886000" />
+      <workItem from="1743127114555" duration="12846000" />
+      <workItem from="1743147289749" duration="6342000" />
     </task>
     <servers />
   </component>

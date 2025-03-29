@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -42,14 +43,11 @@ public class SanPham {
     private String nguoiSua;
 
     @OneToMany(mappedBy = "sanPham", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference // Phía "cha", quản lý vòng lặp
     private List<SanPhamChiTiet> sanPhamChiTietList;
 
-    // Getters and Setters
-    public List<SanPhamChiTiet> getSanPhamChiTietList() {
-        return sanPhamChiTietList;
-    }
 
-    public void setSanPhamChiTietList(List<SanPhamChiTiet> sanPhamChiTietList) {
-        this.sanPhamChiTietList = sanPhamChiTietList;
-    }
+
 }
+
+

@@ -31,7 +31,7 @@ public class HoaDonChiTiet {
     private Integer soLuong;
 
     @Column(name = "don_gia", nullable = false)
-    private Float donGia;
+    private Double donGia;
 
     @Column(name = "trang_thai")
     private String trangThai;

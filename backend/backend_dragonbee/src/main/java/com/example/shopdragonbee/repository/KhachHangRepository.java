@@ -14,4 +14,8 @@ public interface KhachHangRepository extends JpaRepository<KhachHang, Integer> {
 
     // Tìm kiếm khách hàng theo tên hoặc số điện thoại
     List<KhachHang> findByTenKhachHangContainingIgnoreCaseOrSdtContainingIgnoreCase(String tenKhachHang, String sdt);
+
+    @Query(value = "SELECT MAX(CAST(SUBSTRING(ma, 3, LEN(ma) - 2) AS INT)) FROM khach_hang", nativeQuery = true)
+    Integer getMaxMa();
+
 }

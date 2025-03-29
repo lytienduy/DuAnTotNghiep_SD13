@@ -71,7 +71,7 @@ const RevenueGrowthStats = () => {
         variant="h5"
         fontWeight="bold"
         mb={2}
-        sx={{ color: "#e3f2fd" }}
+        sx={{ color: "#fff" }}
       >
         Tốc độ tăng trưởng của cửa hàng
       </Typography>

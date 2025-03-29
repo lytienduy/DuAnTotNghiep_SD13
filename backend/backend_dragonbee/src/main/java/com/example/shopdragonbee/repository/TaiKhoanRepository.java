@@ -10,5 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface TaiKhoanRepository extends JpaRepository<TaiKhoan, Integer> {
-    Optional<TaiKhoan> findByTenNguoiDung(String tenNguoiDung);
+    TaiKhoan findByTenNguoiDung(String tenNguoiDung);
+    TaiKhoan findByTenNguoiDungAndMatKhau(String tenNguoiDung, String matKhau);
 }

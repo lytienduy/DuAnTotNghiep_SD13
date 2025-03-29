@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(exclude = {"vaiTro", "nhanVien", "khachHang"})
 public class TaiKhoan {
 
     @Id
@@ -44,13 +45,11 @@ public class TaiKhoan {
     @Column(name = "nguoi_sua")
     private String nguoiSua;
 
-    public String getRoleName() {
-        if (vaiTro.getTenVaiTro().equalsIgnoreCase("Admin") ||
-                vaiTro.getTenVaiTro().equalsIgnoreCase("Nhân viên")) {
-            return "ROLE_ADMIN";
-        } else {
-            return "ROLE_CLIENT";
-        }
-    }
+    // Thêm mối quan hệ với NhanVien
+    @OneToOne(mappedBy = "taiKhoan", fetch = FetchType.EAGER)
+    private NhanVien nhanVien;
 
+    // Thêm mối quan hệ với KhachHang
+    @OneToOne(mappedBy = "taiKhoan", fetch = FetchType.EAGER)
+    private KhachHang khachHang;
 }

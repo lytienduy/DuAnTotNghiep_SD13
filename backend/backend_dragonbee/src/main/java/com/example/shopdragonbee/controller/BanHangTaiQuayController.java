@@ -4,6 +4,7 @@ import com.example.shopdragonbee.dto.BanHangTaiQuayResponseDTO;
 import com.example.shopdragonbee.dto.HoaDonChiTietResponseDTO;
 import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.entity.HoaDon;
+import com.example.shopdragonbee.entity.SanPhamChiTiet;
 import com.example.shopdragonbee.repository.DanhMucRepositoryP;
 import com.example.shopdragonbee.repository.HoaDonChiTietRepository;
 import com.example.shopdragonbee.repository.SanPhamChiTietRepositoryP;
@@ -35,9 +36,15 @@ public class BanHangTaiQuayController {
     @Autowired
     private DanhMucRepositoryP danhMucRepositoryP;
 
+    //Lấy sản phẩm chi tiết quét QR
+    @GetMapping("/getSanPhamChiTietByMa/{ma}")
+    public BanHangTaiQuayResponseDTO.SanPhamHienThiTrongThemBanHangTaiQuay getSanPhamChiTietByMa(@PathVariable String ma) {
+        return banHangTaiQuayService.convertSanPhamHienThiTrongThemBanHangTaiQuayToDTO(sanPhamChiTietRepository.findByMa(ma));
+    }
+
     //Thêm hóa đơn tại quầy
     @GetMapping("/addHoaDonTaiQuay")
-    public HoaDon addHoaDonTaiQuayVaChoThanhToan() {
+    public HoaDon addHoaDonTaiQuay() {
         return banHangTaiQuayService.taoHoaDon();
     }
 
@@ -45,6 +52,20 @@ public class BanHangTaiQuayController {
     @GetMapping("/layHoaDonTaiQuay")
     public List<HoaDonChiTietResponseDTO.HoaDonChiTietDTO> layHoaDonTaiQuay() {
         return hoaDonService.getHoaDonChiTietTaiQuay();
+    }
+
+    @PostMapping("/addSanPhamVaoGioHang")
+    public Boolean addSanPhamVaoGioHang(@RequestBody Map<String, String> body) {
+        String idHoaDon = body.get("idHoaDon");
+        String idSanPhamChiTiet = body.get("idSanPhamChiTiet");
+        String soLuong = body.get("soLuong");
+        String donGia = body.get("donGia");
+
+        return banHangTaiQuayService.addSanPhamVaoGioHang(
+                java.lang.Integer.parseInt(idHoaDon)
+                , java.lang.Integer.parseInt(idSanPhamChiTiet),
+                java.lang.Integer.parseInt(soLuong),
+                Double.parseDouble(donGia));
     }
 
     //Tăng số lượng 1
@@ -93,19 +114,6 @@ public class BanHangTaiQuayController {
         return banHangTaiQuayService.getToanBoListBoLoc();
     }
 
-    @PostMapping("/addSanPhamVaoGioHang")
-    public Boolean addSanPhamVaoGioHang(@RequestBody Map<String, String> body) {
-        String idHoaDon = body.get("idHoaDon");
-        String idSanPhamChiTiet = body.get("idSanPhamChiTiet");
-        String soLuong = body.get("soLuong");
-        String donGia = body.get("donGia");
-
-        return banHangTaiQuayService.addSanPhamVaoGioHang(
-                java.lang.Integer.parseInt(idHoaDon)
-                , java.lang.Integer.parseInt(idSanPhamChiTiet),
-                java.lang.Integer.parseInt(soLuong),
-                java.lang.Float.parseFloat(donGia));
-    }
 
     @PostMapping("/thanhToanHoaDon")
     public Boolean thanhToanHoaDon(@RequestBody Map<String, String> body) {
@@ -121,7 +129,7 @@ public class BanHangTaiQuayController {
     }
 
     @PostMapping("/xacNhanDatHang")
-    public Boolean xacNhanDatHang(@RequestBody Map<String, String> body) {
+    public HoaDonChiTietResponseDTO.HoaDonChiTietDTO xacNhanDatHang(@RequestBody Map<String, String> body) {
         String idHoaDon = body.get("idHoaDon");
         String idkhachHang = body.get("idKhachHang");
         String maPGG = body.get("pgg");

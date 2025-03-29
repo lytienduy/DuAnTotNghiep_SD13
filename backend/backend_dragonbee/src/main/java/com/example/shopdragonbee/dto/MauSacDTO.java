@@ -12,6 +12,7 @@ public class MauSacDTO {
     private Integer id;
     private String ma;
     private String tenMauSac;
+    private String maMau;
     private String moTa;
     private String trangThai;
 }

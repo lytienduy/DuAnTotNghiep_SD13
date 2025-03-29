@@ -2,6 +2,7 @@ package com.example.shopdragonbee.controller;
 
 import com.example.shopdragonbee.dto.MauSacDTO;
 import com.example.shopdragonbee.dto.XuatXuDTO;
+import com.example.shopdragonbee.entity.MauSac;
 import com.example.shopdragonbee.repository.ChatLieuRepository;
 import com.example.shopdragonbee.repository.MauSacRepository;
 import com.example.shopdragonbee.respone.ChatLieuRespone;
@@ -10,6 +11,8 @@ import com.example.shopdragonbee.service.MauSacService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,5 +38,10 @@ public class MauSacController {
     @GetMapping("/mau-sac/hoat-dong")
     public List<MauSacDTO> getMauSacTrangThaiHoatDong() {
         return mauSacService.getMauSacByTrangThai("Hoạt động");
+    }
+    //add
+    @PostMapping("/add-mau")
+    public MauSac addColor(@RequestBody MauSac mauSac) {
+        return mauSacService.addColor(mauSac);
     }
 }

@@ -1,5 +1,5 @@
 package com.example.shopdragonbee.service;
-
+import org.springframework.scheduling.annotation.Async;
 import com.example.shopdragonbee.entity.PhieuGiamGia;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -24,6 +24,7 @@ public class EmailPGGService {
         this.mailSender = mailSender;
     }
 
+    @Async
     public void sendDiscountNotification(List<String> emailAddresses, PhieuGiamGia phieuGiamGia) {
         String loaiPhieuGiamGia = phieuGiamGia.getLoaiPhieuGiamGia();
         String donVi = "";
@@ -97,6 +98,7 @@ public class EmailPGGService {
         }
     }
 
+    @Async
     public void sendDiscountSuspendedNotification(List<String> emailAddresses, PhieuGiamGia phieuGiamGia) {
         for (String email : emailAddresses) {
             try {
@@ -140,6 +142,7 @@ public class EmailPGGService {
         }
     }
 
+    @Async
     public void sendDiscountResumedNotification(List<String> emailAddresses, PhieuGiamGia phieuGiamGia) {
         for (String email : emailAddresses) {
             try {

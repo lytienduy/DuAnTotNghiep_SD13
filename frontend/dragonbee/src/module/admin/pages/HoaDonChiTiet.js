@@ -2,8 +2,8 @@ import React, { useRef, useEffect, useState } from "react";
 import axios from "axios"; // Import axios
 import {
   Box, Table, TableBody,
-  TableCell, TableContainer, TableHead, TableRow, Typography, Button, Chip, Paper, Container, CircularProgress, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Stack,InputAdornment
-
+  TableCell, TableContainer, TableHead, TableRow, Typography, Button, Chip, Paper, Container, CircularProgress, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Stack, InputAdornment
+  , Modal, Slider, FormControl, Select, MenuItem
 } from "@mui/material";
 import { Delete, History, Close, ArrowBack, ArrowForward } from '@mui/icons-material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -13,6 +13,11 @@ import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import CloseIcon from '@mui/icons-material/Close';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import { Remove as RemoveIcon } from "@mui/icons-material";
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import soldOutImg from '../../../img/sold-out.png';
+import inactiveImg from '../../../img/inactive.png';
 
 const HoaDonChiTiet = () => {
   //Khai báo useState
@@ -38,6 +43,197 @@ const HoaDonChiTiet = () => {
   const [errorTienKhachChuyen, setErrorTienKhachChuyen] = useState("");
   const [errorTienKhachDua, setErrorTienKhachDua] = useState("");
 
+
+  const [openSPModal, setOpenSPModal] = useState(false); //giá trị mở đống modal add sản paharm
+  const [value, setValue] = useState([100000, 3200000]);//giá trị slider khoảng giá
+
+  const [selectedProduct, setSelectedProduct] = useState(null);//sản phẩm add được chọn
+  const [quantity, setQuantity] = useState(1);//số lượng sản phẩm được thêm vào giỏ hàng
+  const [debouncedValue, setDebouncedValue] = useState(value);//giá trị khoảng giá
+
+  //State khai báo hủy hóa đơn
+  const [imageIndexesThemSanPham, setImageIndexesThemSanPham] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại tại thêm sản phẩm vào giỏ hàng 
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);//Mở confirm có muốn xóa sản phẩm khỏi giỏ hàng không
+  const [selectedProductId, setSelectedProductId] = useState(null);//Lưu ID sản phẩm được chọn trong giỏ hàng
+  const [tempValues, setTempValues] = useState({}); // State tạm để lưu giá trị nhập vào của từng sản phẩm trong giỏ hàng
+  const [products, setProducts] = useState([]);//Các sản phẩm của cửa hàng để bán
+  const [danhMuc, setDanhMuc] = useState(0); // Giá trị của bộ lọc danh mục
+  const [mauSac, setMauSac] = useState(0); // Giá trị của bộ lọc màu sắc
+  const [chatLieu, setChatLieu] = useState(0); // Giá trị của bộ lọc chất liệu
+  const [kichCo, setKichCo] = useState(0); // Giá trị của bộ lọc sizw
+  const [kieuDang, setKieuDang] = useState(0); // Giá trị của bộ lọc kiểu dáng
+  const [thuongHieu, setThuongHieu] = useState(0); // Giá trị của bộ lọc thương hiệu
+  const [phongCach, setPhongCach] = useState(0); // Giá trị của bộ lọc phong cách
+  const [timKiem, setTimKiem] = useState(""); // Giá trị của bộ lọc tìm kiếm sản phẩm
+  const [listDanhMuc, setListDanhMuc] = useState([]);
+  const [listChatLieu, setListChatLieu] = useState([]);
+  const [listKichCo, setListKichCo] = useState([]);
+  const [listKieuDang, setListKieuDang] = useState([]);
+  const [listMauSac, setListMauSac] = useState([]);
+  const [listPhongCach, setListPhongCach] = useState([]);
+  const [listThuongHieu, setListThuongHieu] = useState([]);
+  const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
+
+  const xoaSanPham = async (id) => {
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/xoaSanPham/${id}/${hoaDon.id}`;
+    try {
+      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+      if (response.data === true) {
+        fetchHoaDon();
+        showSuccessToast("Xóa sản phẩm thành công");
+      } else {
+        showErrorToast("Xóa thất bại vui lòng thử lại");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Xóa thất bại vui lòng thử lại");
+    }
+  }
+
+  //Hàm gọi api lấy hóa đơn
+  const fetchHoaDon = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/hoa-don-chi-tiet/${id}`);
+      setTempValues({});
+      setHoaDon(response.data); // Dữ liệu được lấy từ response.data
+    } catch (err) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Không load được hóa đơn");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //Hàm lọcThemSanPhamHoaDonTaiQuay
+  const getSanPhamThem = async () => {
+    let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layListCacSanPhamHienThiThem";
+    // Xây dựng query string
+    const params = new URLSearchParams();
+    params.append("timKiem", timKiem);//Truyền vào loại đơn
+    params.append("fromGia", value[0]);//Truyền vào loại đơn
+    params.append("toGia", value[1]);//Truyền vào loại đơn
+    params.append("danhMuc", danhMuc);//Truyền vào loại đơn
+    params.append("mauSac", mauSac);//Truyền vào loại đơn
+    params.append("chatLieu", chatLieu);//Truyền vào loại đơn
+    params.append("kichCo", kichCo);//Truyền vào loại đơn
+    params.append("kieuDang", kieuDang);//Truyền vào loại đơn
+    params.append("thuongHieu", thuongHieu);//Truyền vào loại đơn
+    params.append("phongCach", phongCach);//Truyền vào loại đơn
+    try {
+      const response = await axios.get(`${apiUrl}?${params.toString()}`);//Gọi api bằng axiosGet
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi lấy dữ liệu sản phẩm để thêm vào giỏ hàng")
+    }
+  };
+
+  //get set toàn bộ bộ lọc
+  const getAndSetToanBoBoLoc = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/ban-hang-tai-quay/layListDanhMuc`);
+      var doiTuongCoCacThuocTinhListCacBoLoc = response.data;
+      setListDanhMuc(doiTuongCoCacThuocTinhListCacBoLoc.listDanhMuc);
+      setListMauSac(doiTuongCoCacThuocTinhListCacBoLoc.listMauSac);
+      setListChatLieu(doiTuongCoCacThuocTinhListCacBoLoc.listChatLieu);
+      setListKichCo(doiTuongCoCacThuocTinhListCacBoLoc.listSize);
+      setListKieuDang(doiTuongCoCacThuocTinhListCacBoLoc.listKieuDang);
+      setListThuongHieu(doiTuongCoCacThuocTinhListCacBoLoc.listThuongHieu);
+      setListPhongCach(doiTuongCoCacThuocTinhListCacBoLoc.listPhongCach);
+    } catch (err) {
+      console.log(err)
+      showErrorToast("Lỗi lấy dữ liệu bộ lọc");
+    }
+  };
+
+  //Hàm confirm xóa sản phẩm khỏi giỏ hàng
+  const handleConfirmDelete = async () => {
+    xoaSanPham(selectedProductId);
+    setOpenConfirmModal(false);
+  };
+
+  //Lấy dữ liệu hóa đơn
+  useEffect(() => {
+    fetchHoaDon();
+  }, []);
+
+
+  //Hàm load ảnh
+  useEffect(() => {
+    if (!hoaDon || !hoaDon.listDanhSachSanPham) return; // Kiểm tra nếu hoaDon chưa load hoặc hoaDon.listDanhSachSanPham rỗng
+    const interval = setInterval(() => {
+      setImageIndexes((prevIndexes) => {
+        const newIndexes = { ...prevIndexes };
+        hoaDon.listDanhSachSanPham.forEach((product) => {
+          if (product.hinhAnh.length > 1) {
+            newIndexes[product.id] = (prevIndexes[product.id] + 1) % product.hinhAnh.length || 0;
+          }
+        });
+        return newIndexes;
+      });
+    }, 3000); // Chuyển ảnh sau mỗi 3 giây
+    return () => clearInterval(interval);
+  }, [hoaDon?.listDanhSachSanPham]);
+
+  //Hàm load ảnh sản phẩm để thêm vào giỏ hàng
+  useEffect(() => {
+    if (!products) return;
+    const interval = setInterval(() => {
+      setImageIndexesThemSanPham((prevIndexes) => {
+        const newIndexes = { ...prevIndexes };
+        products.forEach((product) => {
+          if (product.hinhAnh.length > 1) {
+            newIndexes[product.id] = (prevIndexes[product.id] + 1) % product.hinhAnh.length || 0;
+          }
+        });
+        return newIndexes;
+      });
+    }, 3000); // Chuyển ảnh sau mỗi 3 giây
+    return () => clearInterval(interval);
+  }, [products]);
+
+
+  //Hàm xử lý khi đóng mở modal
+  useEffect(() => {
+    if (openSPModal) { // Khi mở modal add sản phẩm vào giỏ hàng thì load bộ lọc và sản phẩm thêm
+      getAndSetToanBoBoLoc();
+      getSanPhamThem();
+    }
+    else { // Khi modal add sản phẩm vào giỏ hàng đóng thì load lại hóa đơn
+      fetchHoaDon();
+    }
+  }, [openSPModal]);
+
+  //Tạo độ trễ cho ô tìm kiếm
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      getSanPhamThem();
+    }, 800); // Chờ 800ms sau khi user dừng nhập
+    return () => clearTimeout(handler); // Hủy timeout nếu user nhập tiếp
+  }, [timKiem]);
+
+  //Tạo độ trễ khi kéo slider khoảng giá
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value); // Chỉ cập nhật giá trị sau 1.5s
+    }, 1500);
+    return () => clearTimeout(handler); // Xóa timeout nếu người dùng tiếp tục kéo
+  }, [value]);
+
+  //Khi bộ lọc khoảng giá thay đổi
+  useEffect(() => {
+    getSanPhamThem();
+  }, [debouncedValue]);
+
+  //Khi thay đổi bộ lọc
+  useEffect(() => {
+    getSanPhamThem();
+  }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
+
+
+
+
+  //Validate nhập tiền khách đưa
   const handleTienKhachDua = (e) => {
     let newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
 
@@ -55,7 +251,6 @@ const HoaDonChiTiet = () => {
       setErrorTienKhachDua(""); // Xóa lỗi nếu nhập đúng
     }
   };
-
 
   // Hàm để xử lý nhập liệu cho "tiền khách đưa"
   const handleTienKhachChuyen = (e) => {
@@ -204,7 +399,6 @@ const HoaDonChiTiet = () => {
     }
   };
 
-
   //Hàm trả về CSS khung theo trạng thái
   const getStatusStyles = (status) => {
     switch (status) {
@@ -235,46 +429,9 @@ const HoaDonChiTiet = () => {
   const steps = hoaDon.loaiHoaDon === "Tại quầy"
     ? (hoaDon.sdtNguoiNhanHang === null
       ? ["Chờ thêm sản phẩm", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành"]
-      : ["Chờ thêm sản phẩm", "Chờ giao hàng", "Đang vận chuyển", "Đã giao hàng", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành"]
+      : ["Chờ thêm sản phẩm", "Chờ xác nhận", "Đã xác nhận", "Chờ giao hàng", "Đang vận chuyển", "Đã giao hàng", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành"]
     )
     : ["Chờ xác nhận", "Đã xác nhận", "Chờ giao hàng", "Đang vận chuyển", "Đã giao hàng", "Chờ thanh toán", "Đã thanh toán", "Hoàn thành"];
-
-
-
-  //Hàm gọi api lấy hóa đơn
-  const fetchHoaDon = async () => {
-    try {
-      const response = await axios.get(`http://localhost:8080/hoa-don/${id}`);
-      setHoaDon(response.data); // Dữ liệu được lấy từ response.data
-    } catch (err) {
-      console.log(err)
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  //Lấy dữ liệu hóa đơn
-  useEffect(() => {
-    fetchHoaDon();
-  }, [id]);
-
-
-  //Hàm load ảnh
-  useEffect(() => {
-    if (!hoaDon || !hoaDon.listDanhSachSanPham) return; // Kiểm tra nếu hoaDon chưa load hoặc hoaDon.listDanhSachSanPham rỗng
-    const interval = setInterval(() => {
-      setImageIndexes((prevIndexes) => {
-        const newIndexes = { ...prevIndexes };
-        hoaDon.listDanhSachSanPham.forEach((product) => {
-          if (product.hinhAnh.length > 1) {
-            newIndexes[product.id] = (prevIndexes[product.id] + 1) % product.hinhAnh.length || 0;
-          }
-        });
-        return newIndexes;
-      });
-    }, 3000); // Chuyển ảnh sau mỗi 3 giây
-    return () => clearInterval(interval);
-  }, [hoaDon?.listDanhSachSanPham]);
 
 
   if (loading) {
@@ -347,10 +504,149 @@ const HoaDonChiTiet = () => {
     }
   };
 
+  //Hàm giảm số lượng sản phẩm trong giỏ hàng 
+  const giamSoLuong = async (id) => {
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/giamSoLuong/${id}`;
+    try {
+      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+      if (response.data === true) {
+        fetchHoaDon();
+      } else {
+        setSelectedProductId(id);// Lấy id được chọn để confirm thao tác với sản phẩm
+        setOpenConfirmModal(true);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi giảm số lượng sản phẩm");
+    }
+  }
 
+  //Cập nhật giá trị khi thay đổi số lượng sản phẩm trong giỏ hàng nhập bàn phím
+  const handleInputChange = (id, value) => {
+    setTempValues((prev) => ({
+      ...prev,
+      [id]: value, // Cập nhật giá trị nhập vào
+    }));
+  };
+
+  //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
+  const handleInputBlur = (id) => {
+    setSelectedProductId(id);
+    const newValue = Number(tempValues[id]);
+    if (newValue >= 1) {
+      nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
+    } else {
+      setSelectedProductId(id);
+      setOpenConfirmModal(true);
+    }
+  };
+
+  //Hàm tăng số lượng sản phẩm trong giỏ hàng
+  const tangSoLuong = async (id) => {
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/tangSoLuong/${id}`;
+    try {
+      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+      if (response.data === true) {
+        fetchHoaDon();
+      } else {
+        showErrorToast("Rất tiếc đã hết sản phẩm");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi tăng số lượng sản phẩm");
+    }
+  }
+
+
+  //Hàm xử lý nhập số lượng
+  const nhapSoLuong = async (id, soLuong) => {
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/nhapSoLuong/${id}/${soLuong}`;
+    try {
+      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+      if (response.data === true) {
+        fetchHoaDon();
+      } else {
+        fetchHoaDon();
+        showErrorToast("Số lượng trong kho không đủ cung cấp hoàn toàn số lượng bạn muốn");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+      showErrorToast("Lỗi khi nhập số lượng sản phẩm catch");
+    }
+  }
+  const handleOpenConfirmModal = (product) => {
+    setSelectedProduct(product);
+    setOpenConfirmModal(true);
+  };
+
+  //Cập nhật giá trị khi thay đổi số lượng nhập từ bàn phím
+  const handleInputChangeThemSanPhamVaoGioHang = (value) => {
+    setQuantity(value);
+    let newValue = value.replace(/\D/g, ''); // Chỉ cho phép nhập số
+
+    if (/^0+$/.test(newValue)) {
+      newValue = "";
+    }
+
+    if (newValue != "") {
+      if (Number(newValue) > selectedProduct.soLuong) {
+        newValue = Number(newValue).toString().slice(0, -1) || selectedProduct.soLuong;
+      }
+    }
+    setTimeout(() => {
+      setQuantity(newValue);
+    }, 100);
+    if (newValue === "" || Number(newValue) <= 0) {
+      setErrorSoLuongThemVaoGioHang("Không hợp lệ");
+    } else {
+      setErrorSoLuongThemVaoGioHang(""); // Xóa lỗi nếu nhập đúng
+    }
+
+  };
+
+
+  //Xử lý khi confirm thêm vào giỏ hàng
+  const handleCloseConfirmModal = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/ban-hang-tai-quay/addSanPhamVaoGioHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
+      );
+      if (response.data) {
+        setSelectedProduct(null);
+        setQuantity(1);
+        setOpenConfirmModal(false);
+        getSanPhamThem();
+        showSuccessToast("Thêm sản phẩm thành công");
+      } else {
+        showErrorToast("Thêm sản phẩm thất bại");
+      }
+    } catch (error) {
+      showErrorToast("Thêm sản phẩm thất bại. Vui lòng thử lại!");
+      console.error(error.response || error.message);
+    }
+  };
 
   return (
     <div>
+      {/* Xác nhận xóa sản phẩm */}
+      <Dialog open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
+        <DialogTitle>Xác nhận xóa sản phẩm</DialogTitle>
+        <DialogContent>Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setTempValues((prev) => ({
+              ...prev,
+              [selectedProductId]: hoaDon?.listDanhSachSanPham?.find((p) => p.id === selectedProductId)?.soLuong || 1, // Reset nếu nhập sai
+            }));
+            setOpenConfirmModal(false)
+          }} color="primary">
+            Hủy
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error">
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog open={openTT} onClose={() => setOpenTT(false)} maxWidth="sm" fullWidth>
         {/* Tiêu đề có nút đóng */}
         <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center', fontSize: '25px', color: '#1976D2', position: 'relative' }}>
@@ -652,7 +948,7 @@ const HoaDonChiTiet = () => {
               (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Chờ thanh toán"
                 (!hoaDon.listThanhToanHoaDon ||              // Nếu danh sách lịch sử thanh toán không tồn tại
                   hoaDon.listThanhToanHoaDon.length === 0 ||  // Hoặc danh sách rỗng
-                  hoaDon.listThanhToanHoaDon.reduce((sum, item) => sum + item.soTien, 0) < hoaDon.tongTienHang)) ||
+                  hoaDon.listThanhToanHoaDon.reduce((sum, item) => sum + item.soTien, 0) < hoaDon.tongTienThanhToan)) ||
               (hoaDon.trangThai === "Đã xác nhận" &&  // Nếu trạng thái là "Đã xác nhận"
                 (!hoaDon.listDanhSachSanPham || hoaDon.listDanhSachSanPham.length === 0)) ||  // Nếu danh sách sản phẩm rỗng thì vô hiệu hóa
               (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Đã xác nhận"
@@ -703,7 +999,7 @@ const HoaDonChiTiet = () => {
           </Dialog>
         </Stack>
 
-        <Button disabled={isCanceled || isComplete} variant="outlined" color="error" startIcon={<Delete />} sx={{ borderRadius: 3, px: 3 }} onClick={() => handleOpenLyDo()}>
+        <Button disabled={isCanceled || isComplete || (hoaDon.trangThai !== "Chờ xác nhận")} variant="outlined" color="error" startIcon={<Delete />} sx={{ borderRadius: 3, px: 3 }} onClick={() => handleOpenLyDo()}>
           Hủy hóa đơn
         </Button>
         <Dialog open={openLyDo} onClose={() => setOpenLyDo(false)}>
@@ -770,7 +1066,7 @@ const HoaDonChiTiet = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {hoaDon.listLichSuHoaDon.map((lshd, index) => (
+                  {hoaDon?.listLichSuHoaDon?.map((lshd, index) => (
                     <TableRow key={index}
                       sx={{
                         backgroundColor:
@@ -904,25 +1200,27 @@ const HoaDonChiTiet = () => {
           >
             Lịch sử thanh toán
           </Typography>
-          <Button
-            variant="outlined" // Đặt kiểu viền
-            onClick={() => setOpenTT(true)} // Khi nhấn mở modal
-            sx={{
-              borderColor: 'black', // Viền màu đen
-              color: 'black', // Màu chữ đen
-              backgroundColor: 'white', // Nền trắng
-              borderRadius: '8px', // Bo góc
-              padding: '3px 13px', // Khoảng cách trong button
-              minWidth: '40px', // Kích thước tối thiểu cho button không bị co lại
-              marginRight: 20,
-              '&:hover': {
-                backgroundColor: '#f5f5f5', // Màu nền nhạt hơn khi hover
-                borderColor: 'black' // Giữ viền màu đen khi hover
-              }
-            }}
-          >
-            <CreditCardIcon style={{ color: 'black' }} /> {/* Icon ví */}
-          </Button>
+          {(hoaDon.trangThai != "Đã thanh toán" && hoaDon.trangThai != "Hoàn thành" && hoaDon.trangThai != "Đã hủy" && hoaDon.tongTienSanPham > 0) &&
+            <Button
+              variant="outlined" // Đặt kiểu viền
+              onClick={() => setOpenTT(true)} // Khi nhấn mở modal
+              sx={{
+                borderColor: 'black', // Viền màu đen
+                color: 'black', // Màu chữ đen
+                backgroundColor: 'white', // Nền trắng
+                borderRadius: '8px', // Bo góc
+                padding: '3px 13px', // Khoảng cách trong button
+                minWidth: '130px', // Kích thước tối thiểu cho button không bị co lại
+                // marginRight: "10px",
+                '&:hover': {
+                  backgroundColor: '#f5f5f5', // Màu nền nhạt hơn khi hover
+                  borderColor: 'black' // Giữ viền màu đen khi hover
+                }
+              }}
+            >
+              <CreditCardIcon style={{ color: 'black' }} /> {/* Icon ví */}
+            </Button>
+          }
         </Box>
         <Table sx={{ border: "1px solid #ddd" }}>
           <TableHead>
@@ -936,8 +1234,8 @@ const HoaDonChiTiet = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {hoaDon.listThanhToanHoaDon.length > 0 ? (
-              hoaDon.listThanhToanHoaDon.map((payment, index) => (
+            {hoaDon?.listThanhToanHoaDon?.length > 0 ? (
+              hoaDon?.listThanhToanHoaDon?.map((payment, index) => (
                 <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
                   <TableCell align="center">{index + 1}</TableCell>
                   <TableCell align="center">{payment.phuongThuc}</TableCell>
@@ -961,32 +1259,67 @@ const HoaDonChiTiet = () => {
 
 
       <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: "hidden" }}>
-        <Typography
-          variant="h6"
-          gutterBottom
-          align="center"
-          sx={{ fontWeight: "bold", p: 2, fontSize: "1.2rem", textTransform: "uppercase" }}
-        >
-          Danh sách sản phẩm
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "1.2rem", flex: 1, textAlign: "center" }}
+          >
+            Danh sách sản phẩm
+          </Typography>
+          {hoaDon.trangThai === "Chờ xác nhận" &&
+
+            <Button
+              variant="outlined"
+              sx={{
+                color: "#1976D2",
+                borderColor: "#1976D2",
+                backgroundColor: "#fff",
+                "&:hover": {
+                  backgroundColor: "#e3f2fd",
+                  borderColor: "#1565c0",
+                  color: "#1565c0",
+                },
+              }}
+              onClick={() => setOpenSPModal(true)}  // Khi nhấn vào button, mở modal
+            >
+              Thêm Sản Phẩm
+            </Button>
+          }
+        </Box>
+
         <Table sx={{ border: "1px solid #ddd" }}>
           <TableHead>
             <TableRow>
-              <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>#</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>STT</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Hình ảnh</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Sản phẩm</TableCell>
-              <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Đơn giá</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Đơn giá</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số tiền</TableCell>
+              {(hoaDon.trangThai === "Chờ xác nhận") && <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
-            {hoaDon.listDanhSachSanPham.length > 0 ? (
-              hoaDon.listDanhSachSanPham.map((product, index) => {
+            {hoaDon?.listDanhSachSanPham?.length === 0 ? (
+
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 2, fontStyle: "italic", color: "gray" }}>
+                  Không có dữ liệu
+                </TableCell>
+              </TableRow>
+
+            ) : (
+              hoaDon?.listDanhSachSanPham?.map((product, index) => {
                 const images = product.hinhAnh || [];
                 const currentIndex = imageIndexes[product.id] ?? 0;
                 return (
-                  <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                  <TableRow
+                    key={index}
+                    sx={{
+                      backgroundColor: product.trangThai !== "Hoạt động" ? "#FFEBEE" : "inherit", // Màu đỏ nhạt nếu không hoạt động
+                      "&:hover": { backgroundColor: product.trangThai !== "Hoạt động" ? "#FFCDD2" : "#f5f5f5" } // Màu hover khác nhau
+                    }}
+                  >
                     <TableCell align="center">{index + 1}</TableCell>
                     <TableCell align="center">
                       {images.length > 0 && (
@@ -994,8 +1327,8 @@ const HoaDonChiTiet = () => {
                           src={images[currentIndex]}
                           alt={`Ảnh ${currentIndex + 1}`}
                           style={{
-                            width: "60px",
-                            height: "60px",
+                            width: "70px",
+                            height: "70px",
                             objectFit: "cover",
                             borderRadius: "10px",
                             transition: "transform 0.3s ease-in-out",
@@ -1007,21 +1340,102 @@ const HoaDonChiTiet = () => {
                       )}
                     </TableCell>
                     <TableCell align="center">
-                      <Typography sx={{}}>{product.tenMauSize}</Typography>
+                      <Typography>{product.tenMauSize}</Typography>
                       <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.maSanPhamChiTiet}</Typography>
                     </TableCell>
-                    <TableCell align="center">{product.donGia.toLocaleString()}₫</TableCell>
-                    <TableCell align="center">{product.soLuong}</TableCell>
-                    <TableCell align="center">{product.soTien.toLocaleString()}₫</TableCell>
+                    <TableCell align="center">
+                      <Box display="flex" justifyContent="center" alignItems="center">
+                        {hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động" ? (
+                          <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
+
+                            <IconButton
+                              size="small"
+                              onClick={() => giamSoLuong(product.id)}
+                              disabled={product.quantity <= 1}
+                              sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                            >
+                              <RemoveIcon fontSize="small" />
+                            </IconButton>
+
+                            <TextField
+                              value={tempValues[product.id] ?? product.soLuong}
+                              onChange={(e) => handleInputChange(product.id, e.target.value)}
+                              onBlur={() => handleInputBlur(product.id)}
+                              type="number"
+                              inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
+                              size="small"
+                              sx={{
+                                width: "60px",
+                                "& .MuiInputBase-input": {
+                                  textAlign: "center",
+                                  padding: "5px 0",
+                                  backgroundColor: "transparent"
+                                },
+                                "& .MuiOutlinedInput-root": {
+                                  border: "none",
+                                  "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                  "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
+                                },
+                                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                                  WebkitAppearance: "none",
+                                  margin: 0
+                                }
+                              }}
+                            />
+
+                            <IconButton
+                              size="small"
+                              onClick={() => tangSoLuong(product.id)}
+                              sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                              hidden={hoaDon.trangThai != "Chờ xác nhận"}
+                            >
+                              <AddIcon fontSize="small" />
+                            </IconButton>
+
+                          </Box>
+                        ) : (
+                          <TextField
+                            value={tempValues[product.id] ?? product.soLuong}
+                            onChange={(e) => handleInputChange(product.id, e.target.value)}
+                            onBlur={() => handleInputBlur(product.id)}
+                            type="number"
+                            inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
+                            size="small"
+                            sx={{
+                              width: "60px",
+                              "& .MuiInputBase-input": {
+                                textAlign: "center",
+                                padding: "5px 0",
+                                backgroundColor: "transparent"
+                              },
+                              "& .MuiOutlinedInput-root": {
+                                border: "none",
+                                "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
+                              },
+                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                                WebkitAppearance: "none",
+                                margin: 0
+                              }
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </TableCell>
+                    <TableCell align="center">{product.donGia?.toLocaleString()} VNĐ</TableCell>
+                    <TableCell align="center">{product.soTien?.toLocaleString()} VNĐ</TableCell>
+                    <TableCell align="center">
+                      {(hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động") &&
+                        <IconButton color="error" onClick={() => { setSelectedProductId(product.id); setOpenConfirmModal(true) }}>
+                          <DeleteIcon />
+                        </IconButton>
+                      }
+                    </TableCell>
                   </TableRow>
                 );
               })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 2, fontStyle: "italic", color: "gray" }}>
-                  Không có dữ liệu
-                </TableCell>
-              </TableRow>
             )}
           </TableBody>
         </Table>
@@ -1030,7 +1444,7 @@ const HoaDonChiTiet = () => {
         {/* Tổng tiền hàng */}
         <Box display="flex" justifyContent="space-between" mb={1}>
           <Typography variant="body1" fontWeight={500}>Tổng tiền hàng:</Typography>
-          <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienSanPham?.toLocaleString()} ₫</Typography>
+          <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienSanPham?.toLocaleString()} VNĐ</Typography>
         </Box>
 
         {/* Phí ship */}
@@ -1071,10 +1485,403 @@ const HoaDonChiTiet = () => {
         </Box>
       </Box>
       <ToastContainer /> {/* Quan trọng để hiển thị toast */}
+      {/* Modal sản phẩm*/}
+      <Modal
+        open={openSPModal} // Khi open=true, modal sẽ hiển thị
+        onClose={() => setOpenSPModal(false)} // Khi nhấn ngoài modal hoặc nhấn nút đóng sẽ đóng modal
+      >
+        <Box sx={style}>
+          {/* Nút đóng modal */}
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={() => { setOpenSPModal(false) }}
+            aria-label="close"
+            sx={{
+              position: 'absolute',
+              top: 10,
+              right: 20,
+              color: 'gray'
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
+            Tìm kiếm sản phẩm
+          </Typography>
+
+          {/* Bố trí tìm kiếm và slider cùng 1 dòng */}
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={6}>
+              <TextField
+                value={timKiem}
+                label="Tìm kiếm sản phẩm theo tên, mã sản phẩm"
+                variant="outlined"
+                fullWidth
+                size='small'
+                sx={{ marginBottom: 2 }}
+                onChange={(e) => setTimKiem(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={4} marginLeft={10} marginTop={3}>
+              <Slider
+                value={value}
+                onChange={(e, newValue) => setValue(newValue)} // Sửa lại đúng cú pháp
+                valueLabelDisplay="on"
+                valueLabelFormat={(value) => `${value.toLocaleString()} VNĐ`}
+                min={100000}
+                max={3200000}
+                sx={{
+                  marginBottom: 2,
+                  '& .MuiSlider-valueLabel': {
+                    backgroundColor: '#fff',  // Màu nền của giá trị
+                    color: 'black',  // Màu chữ của giá trị
+                  }
+                }}
+              />
+            </Grid>
+          </Grid>
+
+          {/* Bộ lọc danh mục */}
+          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 2 }}>
+
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Danh mục</Typography>
+                <Select
+                  value={danhMuc}//Sửa lại chỗ này
+                  onChange={(e) => setDanhMuc(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listDanhMuc?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenDanhMuc}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Màu sắc</Typography>
+                <Select
+                  value={mauSac}//Sửa lại chỗ này
+                  onChange={(e) => setMauSac(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listMauSac?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenMauSac}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item >
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Chất liệu</Typography>
+                <Select
+                  value={chatLieu}//Sửa lại chỗ này
+                  onChange={(e) => setChatLieu(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listChatLieu?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenChatLieu}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Kích cỡ</Typography>
+                <Select
+                  value={kichCo}//Sửa lại chỗ này
+                  onChange={(e) => setKichCo(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listKichCo?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenSize}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item >
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Kiểu dáng</Typography>
+                <Select
+                  value={kieuDang}//Sửa lại chỗ này
+                  onChange={(e) => setKieuDang(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listKieuDang?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenKieuDang}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Thương hiệu</Typography>
+                <Select
+                  value={thuongHieu}//Sửa lại chỗ này
+                  onChange={(e) => setThuongHieu(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listThuongHieu?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenThuongHieu}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item >
+              {/* ✅ Làm cho label (Danh mục, Màu sắc, ...) đậm */}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <Typography fontSize={14} fontWeight={500} sx={{ mb: 0.5 }}>Phong cách</Typography>
+                <Select
+                  value={phongCach}//Sửa lại chỗ này
+                  onChange={(e) => setPhongCach(e.target.value)}
+                >
+                  <MenuItem value="0" selected>Tất cả</MenuItem>
+                  {listPhongCach?.map((item, index) => (
+                    <MenuItem value={item.id} key={item.id}>{item.tenPhongCach}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+          </Grid>
+
+          {/* Bảng sản phẩm */}
+          <Box sx={{ overflowX: 'auto' }}>
+            <>
+              {/* Table hiển thị danh sách sản phẩm */}
+              <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>STT</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ảnh</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>TênMauSize Mã sản phẩm</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Chất liệu</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Danh mục</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thương hiệu-Xuất xứ</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Kiểu dáng</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Phong cách</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Giá</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Trạng thái</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thao tác</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {products?.length > 0 ? (
+                      products?.map((product, index) => {
+                        const images = product.hinhAnh || [];
+                        const currentIndex = imageIndexesThemSanPham[product.id] ?? 0;
+                        return (
+                          <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                            <TableCell align="center">{index + 1}</TableCell>
+                            <TableCell align="center">
+                              {images.length > 0 && (
+                                <img
+                                  src={images[currentIndex]}
+                                  alt={`Ảnh ${currentIndex + 1}`}
+                                  style={{
+                                    width: "65px",
+                                    height: "65px",
+                                    objectFit: "cover",
+                                    borderRadius: "10px",
+                                    transition: "transform 0.3s ease-in-out",
+                                    boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
+                                  }}
+                                  onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
+                                  onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Typography >{product.tenMauSize}</Typography>
+                              <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.ma}</Typography>
+                            </TableCell>
+                            <TableCell align="center">{product.chatLieu}</TableCell>
+                            <TableCell align="center">{product.danhMuc}</TableCell>
+                            <TableCell align="center">{product.thuongHieuXuatXu}</TableCell>
+                            <TableCell align="center">{product.kieuDang}</TableCell>
+                            <TableCell align="center">{product.phongCach}</TableCell>
+                            <TableCell align="center">{product.gia.toLocaleString()} đ</TableCell>
+                            <TableCell align="center">{product.soLuong}</TableCell>
+                            <TableCell align="center">{product.trangThai}</TableCell>
+                            <TableCell align="center">
+                              {product.soLuong === 0 ? (
+                                // Nếu hết hàng, hiển thị ảnh Sold Out
+                                <img
+                                  src={soldOutImg}  // Đổi link ảnh nếu cần
+                                  alt="Sold Out"
+                                  style={{ width: "100px", height: "50px", objectFit: "contain" }}
+                                />
+                              ) : product.trangThai !== "Hoạt động" ? (
+                                // Nếu không hoạt động, hiển thị ảnh Ngừng Hoạt Động
+                                <img
+                                  src={inactiveImg}  // Đổi link ảnh nếu cần
+                                  alt="Ngừng Hoạt Động"
+                                  style={{ width: "100px", height: "40px", objectFit: "contain" }}
+                                />
+                              ) : (
+                                // Nếu còn hàng và đang hoạt động, hiển thị nút Chọn
+                                <Button variant="outlined" onClick={() => handleOpenConfirmModal(product)}>Chọn</Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    ) : (
+                      <TableRow align="center" dis>
+                        <TableCell colSpan={13} align="center" sx={{ py: 2, fontStyle: "italic", color: "gray" }}>
+                          Không có dữ liệu
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+
+              {/* Modal xác nhận khi bấm "Chọn" */}
+              {selectedProduct && (
+                <Modal open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
+                  <Box
+                    sx={{
+                      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                      width: 400, bgcolor: 'white', p: 3, boxShadow: 24, borderRadius: 2
+                    }}
+                  >
+                    {/* Nút đóng Modal */}
+                    <IconButton
+                      sx={{ position: 'absolute', top: 8, right: 8 }}
+                      onClick={() => { setQuantity(1); fetchHoaDon(); setOpenConfirmModal(false) }}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+
+                    {/* Tiêu đề sản phẩm (căn lề trái) */}
+                    <Typography variant="h6" fontWeight="bold" sx={{ textAlign: "left" }}>
+                      {selectedProduct?.tenMauSize} - {selectedProduct?.ma}
+                    </Typography>
+
+                    {/* Khu vực chứa ẢNH - GIÁ - Ô NHẬP SỐ LƯỢNG */}
+                    <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+                      {/* Ảnh sản phẩm (bên trái) */}
+                      <Box sx={{ flex: 1 }}>
+                        <img
+                          src={selectedProduct.hinhAnh[0]}
+                          alt={`Ảnh load`}
+                          style={{
+                            width: "60px",
+                            height: "60px",
+                            objectFit: "cover",
+                            borderRadius: "10px",
+                            transition: "transform 0.3s ease-in-out",
+                            boxShadow: "0px 0px 8px rgba(0,0,0,0.15)",
+                          }}
+                          onMouseOver={(e) => (e.target.style.transform = "scale(1.1)")}
+                          onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
+                        />
+
+                      </Box>
+
+                      {/* Giá sản phẩm & Ô nhập số lượng (bên phải) */}
+                      <Box sx={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                        {/* Giá sản phẩm */}
+                        <Typography sx={{ fontSize: "16px", fontWeight: "bold", mb: 1 }}>
+                          {selectedProduct?.gia.toLocaleString()} VNĐ
+                        </Typography>
+
+                        {/* Chọn số lượng */}
+                        <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => setQuantity(prev => prev - 1)}
+                            disabled={quantity <= 1}
+                            sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                          >
+                            <RemoveIcon fontSize="small" />
+                          </IconButton>
+                          <TextField
+                            value={quantity}
+                            onChange={(e) => handleInputChangeThemSanPhamVaoGioHang(e.target.value)}
+                            // type="number"
+                            inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
+                            size="small"
+                            error={!!errorSoLuongThemVaoGioHang}
+                            helperText={errorSoLuongThemVaoGioHang}
+                            sx={{
+                              width: "60px",
+                              "& .MuiInputBase-input": {
+                                textAlign: "center",
+                                padding: "5px 0",
+                                backgroundColor: "transparent"
+                              },
+                              "& .MuiOutlinedInput-root": {
+                                border: "none",
+                                "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" }
+                              },
+                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                                WebkitAppearance: "none",
+                                margin: 0
+                              }
+                            }}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() => setQuantity(prev => Number(prev) + 1)}
+                            disabled={quantity >= selectedProduct.soLuong}
+                            sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
+                          >
+                            <AddIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    </Box>
+
+                    {/* Nút xác nhận */}
+                    <Button
+                      variant="contained"
+                      sx={{ width: '100%', mt: 2, color: '#fff', backgroundColor: '#1976D2' }}
+                      onClick={handleCloseConfirmModal}
+                      disabled={errorSoLuongThemVaoGioHang}
+                    >
+                      XÁC NHẬN
+                    </Button>
+                  </Box>
+                </Modal>
+
+              )}
+            </>
+          </Box>
+        </Box>
+      </Modal>
     </div>
 
 
   );
 };
-
+// Style cho modal
+const style = {
+  position: "fixed",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "80vw", // Giới hạn chiều rộng
+  maxWidth: "1200px", // Định kích thước tối đa
+  maxHeight: "80vh", // Giới hạn chiều cao
+  bgcolor: "white",
+  boxShadow: 24,
+  p: 2,
+  overflow: "auto", // Cho phép cuộn nếu nội dung quá dài
+  borderRadius: "8px",
+};
 export default HoaDonChiTiet;

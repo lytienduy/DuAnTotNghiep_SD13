@@ -29,4 +29,11 @@ public class TaiKhoanService {
         taiKhoanRepository.save(taiKhoan);
         return taiKhoan;
     }
+
+    public TaiKhoan findByUsernameAndPassword(String username, String password) {
+        return taiKhoanRepository.findByTenNguoiDungAndMatKhau(username, password);
+    }
+    public TaiKhoan findByUsername(String username) {
+        return taiKhoanRepository.findByTenNguoiDung(username);
+    }
 }
