@@ -18,7 +18,7 @@ public interface HoaDonChiTietRepository extends JpaRepository<HoaDonChiTiet, In
 
     HoaDonChiTiet getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGiaAndTrangThai(HoaDon hoaDon, SanPhamChiTiet sanPhamChiTiet, Double donGia,String trangThai);
 
-    List<HoaDonChiTiet> getHoaDonChiTietByHoaDonAndTrangThai(HoaDon hoaDon,String trangThai);
+    List<HoaDonChiTiet> getHoaDonChiTietByHoaDonAndTrangThaiOrderByNgayTaoDesc(HoaDon hoaDon,String trangThai);
 //    @Query("SELECT hdct.sanPhamChiTiet.sanPham FROM HoaDonChiTiet hdct " +
 //            "WHERE hdct.hoaDon.trangThai = 'Hoàn thành' " +
 //            "AND hdct.sanPhamChiTiet.sanPham.trangThai = :trangThai " +

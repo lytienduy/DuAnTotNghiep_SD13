@@ -382,7 +382,7 @@ public class BanHangTaiQuayService {
                 hoaDon.setSdt(sdtNguoiNhan);
                 hoaDon.setDiaChiNhanHang(diaChiNhanHang);
                 hoaDon.setPhiShip(phiShip);
-                hoaDon.setTrangThai("Chờ xác nhận");
+                hoaDon.setTrangThai("Chờ giao hàng");
             } else {
                 hoaDon.setTrangThai("Hoàn thành");
             }

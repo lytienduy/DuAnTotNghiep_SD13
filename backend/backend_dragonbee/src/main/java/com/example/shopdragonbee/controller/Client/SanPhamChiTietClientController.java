@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.controller.Client;
 
+import com.example.shopdragonbee.dto.Client.GioHangDTO;
 import com.example.shopdragonbee.dto.Client.HomeDTO;
 import com.example.shopdragonbee.dto.Client.SPCTDTO;
 import com.example.shopdragonbee.service.Client.SanPhamChiTietClientService;
@@ -16,8 +17,8 @@ public class SanPhamChiTietClientController {
     private SanPhamChiTietClientService sanPhamChiTietService;
 
     @PostMapping("/getListSanPhamChiTietTheoMau/{idSanPham}")
-    public SPCTDTO.SanPhamChiTietClient getListHienThiTrongSanPhamChiTiet(@PathVariable Integer idSanPham, @RequestBody List<SPCTDTO.SanPhamCart> danhSachSanPhamTrongGioHang) {
-        return sanPhamChiTietService.getSanPhamChiTietClient(idSanPham, danhSachSanPhamTrongGioHang);
+    public SPCTDTO.SanPhamChiTietClient getListHienThiTrongSanPhamChiTiet(@PathVariable Integer idSanPham, @RequestBody GioHangDTO.DuLieuDataBodyTrongGioHang requestData) {
+        return sanPhamChiTietService.getSanPhamChiTietClient(idSanPham, requestData.getIdKhachHang(),requestData.getCart());
     }
 
 }

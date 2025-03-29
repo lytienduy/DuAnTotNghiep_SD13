@@ -2,14 +2,13 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from 'axios';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { Container, Typography, Grid, Card, CardContent, CardMedia, Divider, Box, IconButton } from '@mui/material';
+import { Container, Card, CardContent, Box } from '@mui/material';
 
 const PaymentResult = () => {
     const [searchParams] = useSearchParams();
     const vnp_ResponseCode = searchParams.get("vnp_ResponseCode");
     const vnp_TxnRef = searchParams.get("vnp_TxnRef");
     const vnp_Amount = searchParams.get("vnp_Amount");
-
 
     const [message, setMessage] = useState("");
     const [status, setStatus] = useState("");

@@ -101,7 +101,7 @@ public class GioHangService {
                     sanPhamCart.setTenSPCT(sanPhamChiTiet.getSanPham().getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
                     sanPhamCart.setTenMauSac(sanPhamChiTiet.getMauSac().getTenMauSac());
                     sanPhamCart.setTenSize(sanPhamChiTiet.getSize().getTenSize());
-                    sanPhamCart.setGia(sanPhamChiTiet.getGia());
+                    sanPhamCart.setGia(sanPhamChiTiet.getGia());//Cập nhật giá rồi
                     sanPhamCart.setQuantity(gioHangChiTiet.getSoLuong());
                     listDanhSachSanPhamCartKhachHang.add(sanPhamCart);
                 }
@@ -154,8 +154,8 @@ public class GioHangService {
             if (gioHang == null) {//Nếu chưa thì tạo
                 GioHang gioHangKhoiTao = new GioHang();
                 gioHangKhoiTao.setMa("GH" + (System.currentTimeMillis() % 100000));
-                gioHang.setKhachHang(khachHang);
-                gioHang.setNgayTao(LocalDateTime.now());
+                gioHangKhoiTao.setKhachHang(khachHang);
+                gioHangKhoiTao.setNgayTao(LocalDateTime.now());
                 gioHangRepository.save(gioHangKhoiTao);
                 gioHang = gioHangRepository.getGioHangByKhachHang(khachHang);//set với giỏ hàng mới
             }

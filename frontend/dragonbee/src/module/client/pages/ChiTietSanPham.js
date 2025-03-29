@@ -125,13 +125,23 @@ const ChiTietSanPham = () => {
     const getSanPhamChiTiet = async () => {
         const cart = JSON.parse(localStorage.getItem("cart")) || [];
         try {
-            const response = await axios.post(`http://localhost:8080/spctClient/getListSanPhamChiTietTheoMau/${id}`, cart, // Gửi mảng JSON
+            const response = await axios.post(`http://localhost:8080/spctClient/getListSanPhamChiTietTheoMau/${id}`,
+                {
+                    idKhachHang: userKH?.khachHang?.id || null,
+                    cart: cart
+                }, // Gửi mảng JSON
                 {
                     headers: {
                         "Content-Type": "application/json",
                     },
                 });//Gọi api bằng axiosGet
             setProduct(response.data);
+            if (selectedIDSize !== null) {
+                //Check nếu không còn đủ số lượng cung cấp
+                if (response.data?.listHinhAnhAndMauSacAndSize?.[selectedColor]?.listSize?.[selectedSize]?.soLuong <= 0) {
+                    setSelectedIDSize(null);
+                }
+            }
         } catch (error) {
             showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
         }
@@ -215,6 +225,8 @@ const ChiTietSanPham = () => {
                 localStorage.setItem("cart", JSON.stringify(cart));
                 showSuccessToast("Đã thêm vào giỏ hàng");
             }
+            //Cập nhật lại sản phẩm gồm số lượng
+            getSanPhamChiTiet();
             setQuantity(1);
         } catch (error) {
             showErrorToast("Thêm vào giỏ hàng thất bại. Đã có lỗi xảy ra vui lòng thử lại");
@@ -290,147 +302,152 @@ const ChiTietSanPham = () => {
                     {product.ten}
                 </Typography>
             </Breadcrumbs>
-            <Box sx={{ borderBottom: "1px solid rgba(0, 0, 0, 0.1)", pb: 3, marginTop: 3 }}>
-                <Grid container spacing={4}>
-                    {/* Hình ảnh sản phẩm */}
-                    <Grid item xs={12} md={6} display="flex" alignItems="center">
-                        <Box sx={{ display: "flex", marginTop: -7 }}>
-                            {/* List ảnh nhỏ */}
-                            <Box sx={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: 400, mr: 2 }}>
-                                {selectedColorReuse?.listAnh?.map((image, index) => (
+            {product !== null ? (
+                <Box sx={{ borderBottom: "1px solid rgba(0, 0, 0, 0.1)", pb: 3, marginTop: 3 }}>
+                    <Grid container spacing={4}>
+                        {/* Hình ảnh sản phẩm */}
+                        <Grid item xs={12} md={6} display="flex" alignItems="center">
+                            <Box sx={{ display: "flex", marginTop: -7 }}>
+                                {/* List ảnh nhỏ */}
+                                <Box sx={{ display: "flex", flexDirection: "column", overflowY: "auto", maxHeight: 400, mr: 2 }}>
+                                    {selectedColorReuse?.listAnh?.map((image, index) => (
+                                        <img
+                                            key={index}
+                                            ref={(el) => (thumbnailRefs.current[index] = el)}
+                                            src={image}
+                                            alt={`Thumbnail ${index}`}
+                                            style={{
+                                                width: 60,
+                                                height: 80,
+                                                objectFit: "cover",
+                                                cursor: "pointer",
+                                                border: selectedImageIndex === index ? "2px solid #1976D2" : "none",
+                                                marginBottom: 8,
+                                            }}
+                                            onClick={() => setSelectedImageIndex(index)}
+                                        />
+                                    ))}
+                                </Box>
+                                {/* Ảnh lớn hiển thị */}
+                                <Box sx={{ flex: 1, position: "relative", width: 450, height: 450, overflow: "hidden", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                     <img
+                                        src={selectedColorReuse?.listAnh?.[selectedImageIndex]}
+                                        alt="Selected product"
+                                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
+                                    />
+                                    <IconButton sx={{ position: "absolute", top: "45%", left: 10 }} onClick={handlePrevImage}>
+                                        <ArrowBackIosIcon />
+                                    </IconButton>
+                                    <IconButton sx={{ position: "absolute", top: "45%", right: 10 }} onClick={handleNextImage}>
+                                        <ArrowForwardIosIcon />
+                                    </IconButton>
+                                </Box>
+                            </Box>
+                        </Grid>
+
+                        {/* Thông tin sản phẩm */}
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="h5" fontWeight="bold">{product.ten}</Typography>
+                            <Typography variant="h6" color="primary" mt={1}>{product?.gia?.toLocaleString()} VND</Typography>
+
+                            {/* Chọn màu */}
+                            <Box mt={2}>
+                                <Typography variant="subtitle1">Màu sắc</Typography>
+                                {product?.listHinhAnhAndMauSacAndSize?.map((item, index) => (
+                                    <IconButton
                                         key={index}
-                                        ref={(el) => (thumbnailRefs.current[index] = el)}
-                                        src={image}
-                                        alt={`Thumbnail ${index}`}
-                                        style={{
-                                            width: 60,
-                                            height: 80,
-                                            objectFit: "cover",
-                                            cursor: "pointer",
-                                            border: selectedImageIndex === index ? "2px solid #1976D2" : "none",
-                                            marginBottom: 8,
+                                        sx={{
+                                            width: 45, // Kích thước tổng thể
+                                            height: 30,
+                                            borderRadius: "16px", // Bo góc bầu dục
+                                            position: "relative",
+                                            backgroundColor: "transparent", // Tránh hover làm mất màu
+                                            marginRight: "7px",
+                                            // Viền xanh khi được chọn
+                                            border: selectedColorReuse?.mauSac.id === item.mauSac.id ? "2px solid blue" : "none",
+                                            padding: 0,
+
+                                            "&::after": {
+                                                content: '""',
+                                                display: "block",
+                                                width: selectedColorReuse?.mauSac?.id === item.mauSac.id ? "80%" : "85%", // Khi chọn, màu nhỏ đi 20%
+                                                height: selectedColorReuse?.mauSac?.id === item.mauSac.id ? "80%" : "85%",
+                                                backgroundColor: item.mauSac.maMau, // Giữ màu nền
+                                                borderRadius: "12px", // Bo góc nhỏ hơn một chút
+                                                transition: "all 0.2s ease-in-out",
+                                            },
+
+                                            // "&:hover::after": {
+                                            //     width: "90%",
+                                            //     height: "90%", // Hover làm nhỏ nhẹ hơn
+                                            // },
                                         }}
-                                        onClick={() => setSelectedImageIndex(index)}
+                                        onClick={() => setSelectedColor(index)}
                                     />
                                 ))}
                             </Box>
-                            {/* Ảnh lớn hiển thị */}
-                            <Box sx={{ flex: 1, position: "relative", width: 450, height: 450, overflow: "hidden", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                <img
-                                    src={selectedColorReuse?.listAnh?.[selectedImageIndex]}
-                                    alt="Selected product"
-                                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
-                                />
-                                <IconButton sx={{ position: "absolute", top: "45%", left: 10 }} onClick={handlePrevImage}>
-                                    <ArrowBackIosIcon />
-                                </IconButton>
-                                <IconButton sx={{ position: "absolute", top: "45%", right: 10 }} onClick={handleNextImage}>
-                                    <ArrowForwardIosIcon />
-                                </IconButton>
+
+                            {/* Chọn size */}
+                            <Box mt={2}>
+                                <Typography variant="subtitle1" fontWeight="bold">Kích thước</Typography>
+                                <Box display="flex" gap={1} mt={1}>
+                                    {selectedColorReuse?.listSize?.map((size, index) => (
+                                        <Button
+                                            variant={selectedSizeReuse?.id === size?.id ? "contained" : "outlined"}
+                                            onClick={() => { setSelectedSize(index); setSelectedIDSize(size.id) }}
+                                            sx={{
+                                                minWidth: 50,
+                                                borderRadius: 2,
+                                                bgcolor: selectedSizeReuse?.id === size?.id ? "black" : "white",
+                                                color: selectedSizeReuse?.id === size?.id ? "white" : "black",
+                                                borderColor: "black",
+                                                "&:hover": {
+                                                    bgcolor: selectedSizeReuse?.id === size?.id ? "black" : "#f0f0f0",
+                                                },
+                                            }}
+                                            disabled={size.soLuong <= 0} // Thêm điều kiện này
+                                        >
+                                            {size.tenSize}
+                                        </Button>
+                                    ))}
+                                </Box>
                             </Box>
-                        </Box>
-                    </Grid>
+                            {/* Hướng dẫn chọn size */}
+                            <Typography
+                                variant="body2"
+                                color="primary"
+                                sx={{ cursor: "pointer", marginTop: 1 }}
+                                onClick={handleOpenSizeGuide}
+                            >
+                                + Xem hướng dẫn chọn size
+                            </Typography>
 
-                    {/* Thông tin sản phẩm */}
-                    <Grid item xs={12} md={6}>
-                        <Typography variant="h5" fontWeight="bold">{product.ten}</Typography>
-                        <Typography variant="h6" color="primary" mt={1}>{product?.gia?.toLocaleString()} VND</Typography>
-
-                        {/* Chọn màu */}
-                        <Box mt={2}>
-                            <Typography variant="subtitle1">Màu sắc</Typography>
-                            {product?.listHinhAnhAndMauSacAndSize?.map((item, index) => (
-                                <IconButton
-                                    key={index}
-                                    sx={{
-                                        width: 45, // Kích thước tổng thể
-                                        height: 30,
-                                        borderRadius: "16px", // Bo góc bầu dục
-                                        position: "relative",
-                                        backgroundColor: "transparent", // Tránh hover làm mất màu
-                                        marginRight: "7px",
-                                        // Viền xanh khi được chọn
-                                        border: selectedColorReuse?.mauSac.id === item.mauSac.id ? "2px solid blue" : "none",
-                                        padding: 0,
-
-                                        "&::after": {
-                                            content: '""',
-                                            display: "block",
-                                            width: selectedColorReuse?.mauSac?.id === item.mauSac.id ? "80%" : "100%", // Khi chọn, màu nhỏ đi 20%
-                                            height: selectedColorReuse?.mauSac?.id === item.mauSac.id ? "80%" : "100%",
-                                            backgroundColor: item.mauSac.maMau, // Giữ màu nền
-                                            borderRadius: "12px", // Bo góc nhỏ hơn một chút
-                                            transition: "all 0.2s ease-in-out",
-                                        },
-
-                                        // "&:hover::after": {
-                                        //     width: "90%",
-                                        //     height: "90%", // Hover làm nhỏ nhẹ hơn
-                                        // },
-                                    }}
-                                    onClick={() => setSelectedColor(index)}
-                                />
-                            ))}
-                        </Box>
-
-                        {/* Chọn size */}
-                        <Box mt={2}>
-                            <Typography variant="subtitle1" fontWeight="bold">Kích thước</Typography>
-                            <Box display="flex" gap={1} mt={1}>
-                                {selectedColorReuse?.listSize?.map((size, index) => (
-                                    <Button
-                                        variant={selectedSizeReuse?.id === size?.id ? "contained" : "outlined"}
-                                        onClick={() => { setSelectedSize(index); setSelectedIDSize(size.id) }}
-                                        sx={{
-                                            minWidth: 50,
-                                            borderRadius: 2,
-                                            bgcolor: selectedSizeReuse?.id === size?.id ? "black" : "white",
-                                            color: selectedSizeReuse?.id === size?.id ? "white" : "black",
-                                            borderColor: "black",
-                                            "&:hover": {
-                                                bgcolor: selectedSizeReuse?.id === size?.id ? "black" : "#f0f0f0",
-                                            },
-                                        }}
-                                        disabled={size.soLuong <= 0} // Thêm điều kiện này
-                                    >
-                                        {size.tenSize}
-                                    </Button>
-                                ))}
+                            {/* Chọn số lượng */}
+                            <Box mt={2} display="flex" alignItems="center">
+                                <Typography variant="subtitle1">Số lượng</Typography>
+                                <IconButton onClick={() => setQuantity(Math.max(1, quantity - 1))}><RemoveIcon /></IconButton>
+                                <Typography variant="body1" mx={2}>{quantity}</Typography>
+                                <IconButton onClick={() => tangSoLuong()} disabled={quantity >= (selectedSizeReuse?.soLuong ?? 0)}><AddIcon /></IconButton>
                             </Box>
-                        </Box>
-                        {/* Hướng dẫn chọn size */}
-                        <Typography
-                            variant="body2"
-                            color="primary"
-                            sx={{ cursor: "pointer", marginTop: 1 }}
-                            onClick={handleOpenSizeGuide}
-                        >
-                            + Xem hướng dẫn chọn size
-                        </Typography>
 
-                        {/* Chọn số lượng */}
-                        <Box mt={2} display="flex" alignItems="center">
-                            <Typography variant="subtitle1">Số lượng</Typography>
-                            <IconButton onClick={() => setQuantity(Math.max(1, quantity - 1))}><RemoveIcon /></IconButton>
-                            <Typography variant="body1" mx={2}>{quantity}</Typography>
-                            <IconButton onClick={() => tangSoLuong()} disabled={quantity >= (selectedSizeReuse?.soLuong ?? 0)}><AddIcon /></IconButton>
-                        </Box>
+                            {/* Nút thao tác */}
+                            <Box mt={3} display="flex" gap={2}>
+                                <Button variant="contained" sx={{ backgroundColor: '#1976D2' }} startIcon={<AddShoppingCartIcon />} onClick={() => addVaoGioHang()} disabled={selectedSize === -1}>Thêm vào giỏ hàng</Button>
+                                {/* <Button variant="contained" color="error" startIcon={<ShoppingCartCheckoutIcon />}>Mua ngay</Button> */}
+                            </Box>
 
-                        {/* Nút thao tác */}
-                        <Box mt={3} display="flex" gap={2}>
-                            <Button variant="contained" sx={{ backgroundColor: '#1976D2' }} startIcon={<AddShoppingCartIcon />} onClick={() => addVaoGioHang()} disabled={selectedSize === -1}>Thêm vào giỏ hàng</Button>
-                            {/* <Button variant="contained" color="error" startIcon={<ShoppingCartCheckoutIcon />}>Mua ngay</Button> */}
-                        </Box>
-
-                        {/* Chi tiết sản phẩm */}
-                        <Box mt={4}>
-                            <Typography variant="h6">Chi Tiết Sản Phẩm</Typography>
-                            <Typography variant="body1" whiteSpace="pre-line">{product.moTa}</Typography>
-                        </Box>
+                            {/* Chi tiết sản phẩm */}
+                            <Box mt={4}>
+                                <Typography variant="h6">Chi Tiết Sản Phẩm</Typography>
+                                <Typography variant="body1" whiteSpace="pre-line">{product.moTa}</Typography>
+                            </Box>
+                        </Grid>
                     </Grid>
-                </Grid>
-            </Box>
+                </Box>
+            ) : (
+                <div>Sản phẩm này đã ngừng kinh doanh. Xin mời quý khách tham khảo sản phẩm khác!</div>
+            )}
+
             <Box sx={{ marginTop: -1 }}>
                 {/* Quần âu Nam */}
                 <Container sx={{ py: 4 }}>
