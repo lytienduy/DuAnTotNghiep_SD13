@@ -731,7 +731,7 @@ const SanPhamChiTiet = () => {
     setOpenSnackbarUpdate(false);
   };
   return (
-    <Container maxWidth="lg">
+    <Box>
       <Grid
         container
         justifyContent="space-between"
@@ -1609,7 +1609,7 @@ const SanPhamChiTiet = () => {
       >
         <Alert severity="success">{snackbarMessage}</Alert>
       </Snackbar>
-    </Container>
+    </Box>
   );
 };
 

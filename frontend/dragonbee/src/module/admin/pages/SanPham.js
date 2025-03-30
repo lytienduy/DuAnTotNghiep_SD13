@@ -239,7 +239,7 @@ const renderPageNumbers = () => {
   };
 
   return (
-    <Container maxWidth="lg">
+    <Box>
       <Grid
         container
         justifyContent="space-between"
@@ -474,7 +474,7 @@ const renderPageNumbers = () => {
       >
         <Alert severity="success">{snackbarMessage}</Alert>
       </Snackbar>
-    </Container>
+    </Box>
   );
 };
 

@@ -129,7 +129,7 @@ const ChatLieu = () => {
     }
   };
   return (
-    <Container maxWidth="lg">
+    <Box>
       {/* Header */}
       <Grid container alignItems="center" justifyContent="space-between">
   {/* Tiêu đề */}
@@ -376,7 +376,7 @@ const ChatLieu = () => {
           </Box>
         </>
       )}
-    </Container>
+    </Box>
   );
 };
 

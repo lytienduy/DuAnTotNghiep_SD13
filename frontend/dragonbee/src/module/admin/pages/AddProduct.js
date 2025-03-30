@@ -30,7 +30,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
-import Add from '@mui/icons-material/Add';
+import Add from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Cloudinary } from "cloudinary-core";
 import { SketchPicker } from "react-color"; // Thêm thư viện chọn màu
@@ -49,7 +49,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectAll, setSelectAll] = useState(false); // State để kiểm tra "Chọn tất cả"
- 
+
   // lưu sản phẩm
   const [openColorModal, setOpenColorModal] = useState(false);
   const [openAddColorModal, setOpenAddColorModal] = useState(false);
@@ -455,94 +455,98 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       setLoading(false);
     }
   };
-  
+
   const handleCloseModalAnh = () => {
     setSelectedImages([]);
     setOpenModalAnh(false); // Đóng modal
   };
-  
+
   // add sản phẩm chi tiết
-const handleSelectImage = (e, image) => {
-  const checked = e.target.checked;
+  const handleSelectImage = (e, image) => {
+    const checked = e.target.checked;
 
-  setSelectedImages((prevImages) =>
-    checked
-      ? [...prevImages, image.secure_url] // Chỉ lưu đường dẫn ảnh
-      : prevImages.filter((url) => url !== image.secure_url) // Xóa nếu bỏ chọn
-  );
-
-  console.log("Danh sách ảnh đã chọn:", selectedImages);
-};
-const handleAddProductImages = () => {
-  if (selectedImages.length === 0) {
-    alert("Vui lòng chọn ít nhất một ảnh.");
-    return;
-  }
-
-  setProductDetails((prevDetails) =>
-    prevDetails.map((detail) =>
-      detail.id === selectedProductId
-        ? { ...detail, images: [...(detail.images || []), ...selectedImages] } // Thêm ảnh vào sản phẩm chi tiết
-        : detail
-    )
-  );
-
-  console.log("Ảnh đã thêm vào sản phẩm:", selectedImages);
-  setSelectedImages([]); // Reset danh sách sau khi lưu
-  setOpenModalAnh(false); // Đóng modal
-};
-
-const handleSave = async () => {
-  console.log("Danh sách productDetails trước khi lưu:", productDetails);
-
-  if (!selectedProduct) {
-    alert("Vui lòng chọn sản phẩm.");
-    return;
-  }
-
-  // Kiểm tra từng sản phẩm chi tiết có ảnh không
-  const isValid = productDetails.every((detail) => detail.images && detail.images.length > 0);
-  if (!isValid) {
-    alert("Vui lòng chọn ít nhất một ảnh cho mỗi sản phẩm chi tiết.");
-    return;
-  }
-
-  const requestDataList = productDetails.map((detail) => ({
-    sanPhamId: selectedProduct,
-    soLuong: detail.quantity || 0,
-    gia: detail.price || 0,
-    moTa: detail.moTa || "Không có mô tả",
-    trangThai: "Hoạt động",
-    danhMucId: selectedCategory,
-    thuongHieuId: selectedThuongHieu,
-    phongCachId: selectedPhongCach,
-    chatLieuId: selectedChatLieu,
-    mauSacId: colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
-    sizeId: sizes.find((s) => s.tenSize === detail.tenSize)?.id || null,
-    kieuDangId: selectedKieuDang,
-    kieuDaiQuanId: selectedKieuDaiQuan,
-    xuatXuId: selectedXuatXus,
-    anhUrls: detail.images || [], // Đảm bảo gửi đúng danh sách ảnh
-  }));
-
-  try {
-    const response = await axios.post(
-      "http://localhost:8080/api/san-pham-chi-tiet/add/chi-tiet",
-      requestDataList,
-      { headers: { "Content-Type": "application/json" } }
+    setSelectedImages(
+      (prevImages) =>
+        checked
+          ? [...prevImages, image.secure_url] // Chỉ lưu đường dẫn ảnh
+          : prevImages.filter((url) => url !== image.secure_url) // Xóa nếu bỏ chọn
     );
 
-    if (response.status === 200 || response.status === 201) {
-      console.log("Sản phẩm chi tiết đã được lưu", response.data);
-      setSnackMessage("Thêm sản phẩm thành công!");
-      setSnackOpen(true);
-      navigate("/admin/sanpham", { replace: true });
+    console.log("Danh sách ảnh đã chọn:", selectedImages);
+  };
+  const handleAddProductImages = () => {
+    if (selectedImages.length === 0) {
+      alert("Vui lòng chọn ít nhất một ảnh.");
+      return;
     }
-  } catch (error) {
-    console.error("Lỗi khi gửi request:", error);
-    alert("Có lỗi xảy ra khi lưu sản phẩm.");
-  }
-};
+
+    setProductDetails((prevDetails) =>
+      prevDetails.map((detail) =>
+        detail.id === selectedProductId
+          ? { ...detail, images: [...(detail.images || []), ...selectedImages] } // Thêm ảnh vào sản phẩm chi tiết
+          : detail
+      )
+    );
+
+    console.log("Ảnh đã thêm vào sản phẩm:", selectedImages);
+    setSelectedImages([]); // Reset danh sách sau khi lưu
+    setOpenModalAnh(false); // Đóng modal
+  };
+
+  const handleSave = async () => {
+    console.log("Danh sách productDetails trước khi lưu:", productDetails);
+
+    if (!selectedProduct) {
+      alert("Vui lòng chọn sản phẩm.");
+      return;
+    }
+
+    // Kiểm tra từng sản phẩm chi tiết có ảnh không
+    const isValid = productDetails.every(
+      (detail) => detail.images && detail.images.length > 0
+    );
+    if (!isValid) {
+      alert("Vui lòng chọn ít nhất một ảnh cho mỗi sản phẩm chi tiết.");
+      return;
+    }
+
+    const requestDataList = productDetails.map((detail) => ({
+      sanPhamId: selectedProduct,
+      soLuong: detail.quantity || 0,
+      gia: detail.price || 0,
+      moTa: detail.moTa || "Không có mô tả",
+      trangThai: "Hoạt động",
+      danhMucId: selectedCategory,
+      thuongHieuId: selectedThuongHieu,
+      phongCachId: selectedPhongCach,
+      chatLieuId: selectedChatLieu,
+      mauSacId:
+        colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
+      sizeId: sizes.find((s) => s.tenSize === detail.tenSize)?.id || null,
+      kieuDangId: selectedKieuDang,
+      kieuDaiQuanId: selectedKieuDaiQuan,
+      xuatXuId: selectedXuatXus,
+      anhUrls: detail.images || [], // Đảm bảo gửi đúng danh sách ảnh
+    }));
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/san-pham-chi-tiet/add/chi-tiet",
+        requestDataList,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        console.log("Sản phẩm chi tiết đã được lưu", response.data);
+        setSnackMessage("Thêm sản phẩm thành công!");
+        setSnackOpen(true);
+        navigate("/admin/sanpham", { replace: true });
+      }
+    } catch (error) {
+      console.error("Lỗi khi gửi request:", error);
+      alert("Có lỗi xảy ra khi lưu sản phẩm.");
+    }
+  };
 
   // xóa spct
   const removeSanPhamChiTiet = (index) => {
@@ -589,34 +593,39 @@ const handleSave = async () => {
   // add sản phẩm
   const handleAddProduct = () => {
     if (!tenSanPham.trim()) {
-        setError("Tên sản phẩm không được để trống!");
-        return;
+      setError("Tên sản phẩm không được để trống!");
+      return;
     }
 
-    axios.post("http://localhost:8080/api/sanpham/add/sanpham", {
-        tenSanPham: tenSanPham,
-        moTa: moTa,
-    }, {
-        headers: {
-            'Content-Type': 'application/json'
+    axios
+      .post(
+        "http://localhost:8080/api/sanpham/add/sanpham",
+        {
+          tenSanPham: tenSanPham,
+          moTa: moTa,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-    })
-    .then((res) => {
+      )
+      .then((res) => {
         const newProduct = res.data; // Nhận dữ liệu sản phẩm vừa thêm từ backend
         setSanPhamList((prevList) => [newProduct, ...prevList]);
         setSelectedProduct(newProduct.id);
         handleCloseModal();
         setOpenSnackbar(true);
-    })
-    .catch((err) => {
+      })
+      .catch((err) => {
         console.error(err); // Log lỗi chi tiết
         if (err.response && err.response.data) {
-            setError(err.response.data); // Hiển thị lỗi từ backend
+          setError(err.response.data); // Hiển thị lỗi từ backend
         } else {
-            setError("Lỗi khi thêm sản phẩm!");
+          setError("Lỗi khi thêm sản phẩm!");
         }
-    });
-};
+      });
+  };
   // add nhanh danh mục
   const handleAddDanhMuc = () => {
     if (!newCategory.tenDanhMuc.trim()) {
@@ -2370,16 +2379,15 @@ const handleSave = async () => {
                       style={{ borderRadius: "5px" }}
                     />
                     <div>
-                    <input
-  type="checkbox"
-  onChange={(e) => handleSelectImage(e, image)}
-  checked={selectedImages.includes(image.secure_url)} // Kiểm tra ảnh đã được chọn chưa
-  disabled={
-    selectedImages.length >= 6 &&
-    !selectedImages.includes(image.secure_url)
-  }
-/>
-
+                      <input
+                        type="checkbox"
+                        onChange={(e) => handleSelectImage(e, image)}
+                        checked={selectedImages.includes(image.secure_url)} // Kiểm tra ảnh đã được chọn chưa
+                        disabled={
+                          selectedImages.length >= 6 &&
+                          !selectedImages.includes(image.secure_url)
+                        }
+                      />
                     </div>
                   </div>
                 ))
@@ -2392,32 +2400,31 @@ const handleSave = async () => {
               Danh sách ảnh đã chọn
             </h3>
             <div
-  style={{
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "10px",
-    marginTop: "10px",
-    maxHeight: "150px",
-    overflowY: "auto",
-  }}
->
-  {selectedImages.length > 0 ? (
-    selectedImages.map((url, index) => (
-      <div key={index} style={{ marginBottom: "5px" }}>
-        <img
-          src={url} // Hiển thị ảnh đã chọn
-          alt={`selected-image-${index}`}
-          width={80}
-          height={80}
-          style={{ borderRadius: "5px" }}
-        />
-      </div>
-    ))
-  ) : (
-    <p>Chưa có ảnh nào được chọn.</p>
-  )}
-</div>
-
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "10px",
+                marginTop: "10px",
+                maxHeight: "150px",
+                overflowY: "auto",
+              }}
+            >
+              {selectedImages.length > 0 ? (
+                selectedImages.map((url, index) => (
+                  <div key={index} style={{ marginBottom: "5px" }}>
+                    <img
+                      src={url} // Hiển thị ảnh đã chọn
+                      alt={`selected-image-${index}`}
+                      width={80}
+                      height={80}
+                      style={{ borderRadius: "5px" }}
+                    />
+                  </div>
+                ))
+              ) : (
+                <p>Chưa có ảnh nào được chọn.</p>
+              )}
+            </div>
 
             {selectedImages.length > 6 && (
               <p style={{ color: "red" }}>Bạn chỉ có thể chọn tối đa 6 ảnh.</p>

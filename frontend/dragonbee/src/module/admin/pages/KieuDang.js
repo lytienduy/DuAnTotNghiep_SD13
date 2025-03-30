@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { 
-  Container, Typography, Button, Table, TableBody, TableCell, 
+  Container, Typography, Button, Table, TableBody, TableCell,Box, 
   TableContainer, TableHead, TableRow, Paper, IconButton, CircularProgress 
 } from "@mui/material";
 import { Add, Visibility, Edit, Delete } from "@mui/icons-material";
@@ -24,7 +24,7 @@ const KieuDang = () => {
   }, []);
 
   return (
-    <Container maxWidth="lg">
+    <Box>
       {/* Header */}
       <Typography variant="h4" gutterBottom>
         Quản Lý Kiểu Dáng
@@ -82,7 +82,7 @@ const KieuDang = () => {
           </Table>
         </TableContainer>
       )}
-    </Container>
+    </Box>
   );
 };
 
