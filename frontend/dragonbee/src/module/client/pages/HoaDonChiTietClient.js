@@ -6,14 +6,12 @@ import {
   , Modal, Slider, FormControl, Select, MenuItem
 
 } from "@mui/material";
-import { Delete, History, Close, ArrowBack, ArrowForward } from '@mui/icons-material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useParams, useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import CloseIcon from '@mui/icons-material/Close';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { Remove as RemoveIcon } from "@mui/icons-material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -29,13 +27,6 @@ const HoaDonChiTietClient = () => {
   const [loading, setLoading] = useState(true);//Biến lưu giá trị loading dữ liệu
   const [error, setError] = useState(false);//Biến báo lỗi
   const [imageIndexes, setImageIndexes] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại 
-  const [openLyDo, setOpenLyDo] = useState(false);  // Biến lưu giá trị mở modal nhập lý do khi thực hiện chức năng hủy hóa đơn
-  const [openConfirm, setOpenConfirm] = useState(false); // Mở modal xác nhận
-  const [open, setOpen] = useState(false);//Biến lưu giá trị mở modal xem lịch sử hóa đơn
-  const [openGhiChuPrevious, setOpenGhiChuPrevious] = useState(false);  // Biến lưu giá trị mở modal nhập lý do khi thực hiện chức năng hủy hóa đơn
-  const [openConfirmPrevious, setOpenConfirmPrevious] = useState(false); // Mở modal xác nhận
-  const [openGhiChuNext, setOpenGhiChuNext] = useState(false);
-  const [openConfirmNext, setOpenConfirmNext] = useState(false); // Mở modal xác nhận
   const [ghiChuTrangThai, setGhiChuTrangThai] = useState("");
   const [openTT, setOpenTT] = useState(false);
   const [tienKhachDua, setTienKhachDua] = useState(0);
@@ -357,57 +348,6 @@ const HoaDonChiTietClient = () => {
     });
   };
 
-  //Hàm mở modal nhập lý do hủy hóa đơn khi thực hiện chức năng hủy hóa đơn
-  const handleOpenLyDo = () => {
-    setOpenLyDo(true);
-  };
-
-  //Hàm kiểm tra check nhạp lý do chưa để mở confirm khi thực hiện chức năng hủy hóa đơn
-  const handleNextConfirm = () => {
-    if (!ghiChuTrangThai.trim()) { //Check nếu nhập lý do hủy hóa đơn
-      setError(true);
-    } else {
-      setError(false);
-      setOpenLyDo(false);
-      setOpenConfirm(true);
-    }
-  };
-  const handleNextConfirmPrevious = () => {
-    if (!ghiChuTrangThai.trim()) { //Check nếu nhập lý do hủy hóa đơn
-      setError(true);
-    } else {
-      setError(false);
-      setOpenGhiChuPrevious(false);
-      setOpenConfirmPrevious(true);
-    }
-
-  };
-  const handleNextConfirmNext = () => {
-    setOpenGhiChuNext(false);
-    setOpenConfirmNext(true);
-  };
-
-  //Hàm thực hiện chức năng hủy hóa đơn gọi api
-  const handleHuyHoaDon = async () => {
-    try {
-      const response = await axios.post(`http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, {
-        lyDo: ghiChuTrangThai,
-        trangThai: "Đã hủy",
-        hanhDong: "Hủy"
-      });
-      if (response.data) {
-        setOpenConfirm(false);
-        setGhiChuTrangThai("");
-        fetchHoaDon();
-        showSuccessToast("Hủy hóa đơn thành công")
-      } else {
-        showErrorToast("Hủy hóa đơn đã có lỗi xảy ra");
-      }
-    } catch (error) {
-      showErrorToast("Hủy hóa đơn đã có lỗi xảy ra");
-      console.error(error);
-    }
-  };
 
   //Hàm trả về CSS khung theo trạng thái
   const getStatusStyles = (status) => {
@@ -461,56 +401,6 @@ const HoaDonChiTietClient = () => {
     if (scrollRef.current) {
       event.preventDefault();
       scrollRef.current.scrollLeft += event.deltaY;
-    }
-  };
-
-  //Hàm trờ lại trạng thái trước
-  const handlePrevious = async () => {
-    if (currentStep === 0) return;
-
-    try {
-      // Lấy trạng thái trước đó
-      const trangThaiCanDoi = steps[currentStep - 1];
-      // Gọi API để thay đổi trạng thái
-      const response = await axios.post(
-        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: "Hoàn tác", lyDo: ghiChuTrangThai }
-      );
-      if (response.data) {
-        setGhiChuTrangThai("");
-        setOpenConfirmPrevious(false);
-        fetchHoaDon();
-        showSuccessToast("Hoàn tác trạng thái hóa đơn thành công");
-      } else {
-        showErrorToast("Hoàn tác thất bại, thử lại!");
-      }
-    } catch (error) {
-      showErrorToast("Lỗi khi hoàn tác hóa đơn!");
-      console.error(error.response || error.message);
-    }
-  };
-
-  const handleNext = async () => {
-    if (currentStep === steps.length - 1) return;
-
-    try {
-      // Lấy trạng thái trước đó
-      const trangThaiCanDoi = steps[currentStep + 1];
-      // Gọi API để thay đổi trạng thái
-      const response = await axios.post(
-        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: trangThaiCanDoi === "Hoàn thành" ? "Hoàn thành" : "Cập nhật", lyDo: ghiChuTrangThai }
-      );
-      if (response.data) {
-        setGhiChuTrangThai("");
-        setOpenConfirmNext(false);
-        fetchHoaDon();
-        showSuccessToast("Cập nhật trạng thái hóa đơn thành công");
-      } else {
-        showErrorToast("Cập nhật thất bại, thử lại!");
-      }
-      console.log(response.data);  // In kết quả trả về
-    } catch (error) {
-      showErrorToast("Lỗi khi cập nhật hóa đơn!");
-      console.error(error.response || error.message);
     }
   };
 
@@ -671,6 +561,7 @@ const HoaDonChiTietClient = () => {
 
   return (
     <div>
+      {/* Modal thông báo lỗi */}
       <Dialog open={openDialogThongBaoHetHangHoacKDuSoLuong} onClose={handleDialogClose}>
         <DialogTitle>Thông Báo</DialogTitle>
         <DialogContent>{dialogMessage}</DialogContent>
@@ -678,166 +569,7 @@ const HoaDonChiTietClient = () => {
           <Button onClick={handleDialogClose} color="primary">Đóng</Button>
         </DialogActions>
       </Dialog>
-      {/* Xác nhận xóa sản phẩm */}
-      <Dialog open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
-        <DialogTitle>Xác nhận xóa sản phẩm</DialogTitle>
-        <DialogContent>Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?</DialogContent>
-        <DialogActions>
-          <Button onClick={() => {
-            setTempValues((prev) => ({
-              ...prev,
-              [selectedProductId]: hoaDon?.listDanhSachSanPham?.find((p) => p.id === selectedProductId)?.soLuong || 1, // Reset nếu nhập sai
-            }));
-            setOpenConfirmModal(false)
-          }} color="primary">
-            Hủy
-          </Button>
-          <Button onClick={handleConfirmDelete} color="error">
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={openTT} onClose={() => setOpenTT(false)} maxWidth="sm" fullWidth>
-        {/* Tiêu đề có nút đóng */}
-        <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center', fontSize: '25px', color: '#1976D2', position: 'relative' }}>
-          THANH TOÁN
-          <IconButton
-            onClick={() => {
-              setTienKhachDua(0);
-              setTienKhachChuyen(0);
-              setPaymentMethod('cash');
-              setOpenTT(false)
-            }}
-            sx={{ position: 'absolute', top: 8, right: 8, color: '#1976D2' }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent>
-          {/* Tổng tiền hàng */}
-          {/* Nút Chuyển Khoản - Tiền Mặt - Cả Hai */}
-          <Grid container justifyContent="center" spacing={1} sx={{ mb: 2 }}>
-            <Grid item xs={4}>
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={() => {
-                  setPaymentMethod('transfer');
-                  setTienKhachDua(0);
-                  setTienKhachChuyen(0);
-                }}
-                sx={{
-                  backgroundColor: paymentMethod === 'transfer' ? 'red' : '#FFB6C1',
-                  color: 'white',
-                  opacity: paymentMethod === 'transfer' ? 1 : 0.5,
-                }}
-              >
-                CHUYỂN KHOẢN
-              </Button>
-            </Grid>
-            <Grid item xs={4}>
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={() => {
-                  setPaymentMethod('cash');
-                  setTienKhachDua(0);
-                  setTienKhachChuyen(0);
-                }}
-                sx={{
-                  backgroundColor: paymentMethod === 'cash' ? 'green' : '#a3c88e',
-                  color: 'white',
-                  opacity: paymentMethod === 'cash' ? 1 : 0.5,
-                }}
-              >
-                TIỀN MẶT
-              </Button>
-            </Grid>
-            <Grid item xs={4}>
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={() => {
-                  setPaymentMethod('both');
-                  setTienKhachDua(0);
-                  setTienKhachChuyen(0);
-                }}
-                sx={{
-                  backgroundColor: paymentMethod === 'both' ? '#1976D2' : '#B6D0FF',
-                  color: 'white',
-                  opacity: paymentMethod === 'both' ? 1 : 0.5,
-                }}
-              >
-                CẢ HAI
-              </Button>
-            </Grid>
-          </Grid>
-
-          {/* Nếu chọn TIỀN MẶT hoặc CẢ HAI thì hiển thị input nhập tiền khách đưa */}
-          {(paymentMethod === 'cash' || paymentMethod === 'both') && (
-            <>
-              <Typography sx={{ color: '#1976D2', fontSize: 14 }}>Tiền khách đưa</Typography>
-              <TextField
-                fullWidth
-                variant="standard"
-                value={tienKhachDua ? parseInt(tienKhachDua, 10).toLocaleString() : tienKhachDua}
-                onChange={handleTienKhachDua}
-                error={!!errorTienKhachDua} // Nếu có lỗi thì hiển thị lỗi
-                helperText={errorTienKhachDua} // Nội dung lỗi
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Typography sx={{ color: 'black' }}>VNĐ</Typography>
-                    </InputAdornment>
-                  )
-                }}
-                sx={{
-                  mb: 2,
-                  '& .MuiInputBase-input': { fontSize: 18, fontWeight: 'bold', textAlign: 'right' }
-                }}
-              />
-            </>
-          )}
-
-          {/* Nếu chọn CHUYỂN KHOẢN hoặc CẢ HAI thì hiển thị input Mã giao dịch & Tiền khách chuyển */}
-          {(paymentMethod === 'transfer' || paymentMethod === 'both') && (
-            <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
-
-              <Grid item xs={12}>
-                <Typography sx={{ color: '#1976D2', fontSize: 14 }}>Tiền khách chuyển</Typography>
-                <TextField
-                  fullWidth
-                  variant="standard"
-                  value={tienKhachChuyen ? parseInt(tienKhachChuyen, 10).toLocaleString() : tienKhachChuyen}
-                  onChange={handleTienKhachChuyen}
-                  error={!!errorTienKhachChuyen}
-                  helperText={errorTienKhachChuyen}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Typography sx={{ color: 'black' }}>VNĐ</Typography>
-                      </InputAdornment>
-                    )
-                  }}
-                  sx={{
-                    '& .MuiInputBase-input': { fontSize: 18, fontWeight: 'bold', textAlign: 'right' }
-                  }}
-                />
-              </Grid>
-            </Grid>
-          )}</DialogContent> <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
-          <Button onClick={xacNhanThanhToan} variant="contained" sx={{ backgroundColor: 'green', color: 'white', fontWeight: 'bold' }}
-            disabled={
-              (paymentMethod === 'transfer' && errorTienKhachChuyen) ||
-              (paymentMethod === 'cash' && errorTienKhachDua) ||
-              (paymentMethod === 'both' && errorTienKhachChuyen || errorTienKhachDua)
-            }
-          >
-            Xác nhận thanh toán
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Giao diện */}
       <Box display="flex" alignItems="center" mb={3}>
         <IconButton onClick={() => navigate(`/admin/hoaDon`)} sx={{ marginRight: 2 }}>
           <ArrowBackIcon />
@@ -924,104 +656,7 @@ const HoaDonChiTietClient = () => {
             </Box>
           </>)}
       </Box>
-      <Box display="flex" gap={2} justifyContent="center" mb={3}>
-        {/* <Button disabled={isCanceled || isComplete || (hoaDon.trangThai !== "Chờ xác nhận")} variant="outlined" color="error" startIcon={<Delete />} sx={{ borderRadius: 3, px: 3 }} onClick={() => handleOpenLyDo()}>
-          Hủy hóa đơn
-        </Button>
-        <Dialog open={openLyDo} onClose={() => setOpenLyDo(false)}>
-          <DialogTitle>Nhập lý do hủy hóa đơn</DialogTitle>
-          <DialogContent>
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              label="Lý do hủy"
-              variant="outlined"
-              value={ghiChuTrangThai}
-              onChange={(e) => { setGhiChuTrangThai(e.target.value); setError(false) }}
-              error={error} // Hiển thị lỗi nếu có
-              helperText={error ? "Bạn chưa nhập lý do!" : ""} // Nội dung lỗi
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenLyDo(false)} color="primary">
-              Hủy bỏ
-            </Button>
-            <Button onClick={handleNextConfirm} color="error" variant="contained">
-              Tiếp tục
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
-          <DialogTitle>Xác nhận hủy hóa đơn</DialogTitle>
-          <DialogContent>
-            <p><b>Lý do hủy:</b> {ghiChuTrangThai}</p>
-            <p>Bạn có chắc chắn muốn hủy hóa đơn này không?</p>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenConfirm(false)} color="primary">
-              Quay lại
-            </Button>
-            <Button onClick={handleHuyHoaDon} color="error" variant="contained">
-              Xác nhận hủy
-            </Button>
-          </DialogActions>
-        </Dialog> */}
-        {/* <Button variant="outlined" color="secondary" startIcon={<History />} sx={{ borderRadius: 3, px: 3 }} onClick={() => setOpen(true)} >
-          Lịch sử hóa đơn
-        </Button>
-        <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>
-            Lịch sử hóa đơn
-            <IconButton onClick={() => setOpen(false)} sx={{ position: "absolute", right: 16, top: 16 }}>
-              <Close />
-            </IconButton>
-          </DialogTitle>
-
-          <DialogContent>
-           
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow >
-                    <TableCell><b>#</b></TableCell>
-                    <TableCell><b>Hành động</b></TableCell>
-                    <TableCell><b>Thời gian</b></TableCell>
-                    <TableCell><b>Mô tả</b></TableCell>
-                    <TableCell><b>Nhân viên xác nhận</b></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {hoaDon?.listLichSuHoaDon?.map((lshd, index) => (
-                    <TableRow key={index}
-                      sx={{
-                        backgroundColor:
-                          lshd.hanhDong === "Hoàn tác" ? "#E8F5E9" :  // Xanh nhạt
-                            lshd.hanhDong === "Hủy" ? "#FFEBEE" :       // Đỏ nhạt
-                              lshd.hanhDong === "Hoàn thành" ? "#ECEFF1" : // Xám nhạt
-                                "white", // Mặc định là màu trắng
-                      }}
-                    >
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell >{lshd.hanhDong}</TableCell>
-                      <TableCell>{new Date(lshd.ngay).toLocaleString("vi-VN")}</TableCell>
-                      <TableCell>{lshd.moTa}</TableCell>
-                      <TableCell>{lshd.nguoiTao}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </DialogContent>
-
-          
-          <DialogActions>
-            <Button onClick={() => setOpen(false)} color="primary" variant="contained">
-              Đóng
-            </Button>
-          </DialogActions>
-        </Dialog> */}
-      </Box>
+      
       {/* Thông tin hóa đơn */}
       <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }}>
         <Grid container spacing={2}>
@@ -1126,27 +761,6 @@ const HoaDonChiTietClient = () => {
           >
             Lịch sử thanh toán
           </Typography>
-          {/* {(hoaDon.trangThai != "Đã thanh toán" && hoaDon.trangThai != "Hoàn thành" && hoaDon.trangThai != "Đã hủy" && hoaDon.tongTienSanPham > 0) &&
-            <Button
-              variant="outlined" // Đặt kiểu viền
-              onClick={() => setOpenTT(true)} // Khi nhấn mở modal
-              sx={{
-                borderColor: 'black', // Viền màu đen
-                color: 'black', // Màu chữ đen
-                backgroundColor: 'white', // Nền trắng
-                borderRadius: '8px', // Bo góc
-                padding: '3px 13px', // Khoảng cách trong button
-                minWidth: '130px', // Kích thước tối thiểu cho button không bị co lại
-                // marginRight: "10px",
-                '&:hover': {
-                  backgroundColor: '#f5f5f5', // Màu nền nhạt hơn khi hover
-                  borderColor: 'black' // Giữ viền màu đen khi hover
-                }
-              }}
-            >
-              <CreditCardIcon style={{ color: 'black' }} /> 
-            </Button>
-          } */}
         </Box>
         <Table sx={{ border: "1px solid #ddd" }}>
           <TableHead>
