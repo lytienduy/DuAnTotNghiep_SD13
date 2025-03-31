@@ -538,7 +538,7 @@ const HoaDonChiTiet = () => {
     const newValue = Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
-    } else {
+    } else if(newValue < 1)  {//Không được để else
       setSelectedProductId(id);
       setOpenConfirmModal(true);
     }
@@ -598,7 +598,7 @@ const HoaDonChiTiet = () => {
     }
     setTimeout(() => {
       setQuantity(newValue);
-    }, 100);
+    }, 50);
     if (newValue === "" || Number(newValue) <= 0) {
       setErrorSoLuongThemVaoGioHang("Không hợp lệ");
     } else {

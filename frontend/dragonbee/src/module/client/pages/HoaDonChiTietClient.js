@@ -18,6 +18,7 @@ import AddIcon from '@mui/icons-material/Add';
 import soldOutImg from '../../../img/sold-out.png';
 import inactiveImg from '../../../img/inactive.png';
 
+
 const HoaDonChiTietClient = () => {
   //Khai báo useState
   const scrollRef = useRef(null);
@@ -351,7 +352,7 @@ const HoaDonChiTietClient = () => {
     const newValue = Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
-    } else {
+    } else if(newValue < 1)  {//Không được để else
       setSelectedProductId(id);
       setOpenConfirmModal(true);
     }
@@ -387,7 +388,6 @@ const HoaDonChiTietClient = () => {
       fetchHoaDon();
       return;
     }
-
     let apiUrl = `http://localhost:8080/ban-hang-tai-quay/nhapSoLuongOnline/${id}/${soLuong}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
@@ -429,7 +429,8 @@ const HoaDonChiTietClient = () => {
     }
     setTimeout(() => {
       setQuantity(newValue);
-    }, 100);
+    }, 50);
+
     if (newValue === "" || Number(newValue) <= 0) {
       setErrorSoLuongThemVaoGioHang("Không hợp lệ");
     } else {
@@ -874,8 +875,8 @@ const HoaDonChiTietClient = () => {
                         ) : (
                           <TextField
                             value={tempValues[product.id] ?? product.soLuong}
-                            onChange={(e) => handleInputChange(product.id, e.target.value)}
-                            onBlur={() => handleInputBlur(product.id)}
+                            // onChange={(e) => handleInputChange(product.id, e.target.value)}
+                            // onBlur={() => handleInputBlur(product.id)}
                             type="number"
                             inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
                             size="small"
