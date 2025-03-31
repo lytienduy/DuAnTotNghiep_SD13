@@ -99,7 +99,8 @@ const GioHang = () => {
                 }
                 if (item.gia !== response.data?.[index]?.gia) {
                     if (cart[index]) {
-                        cart[index].gia = response.data?.[index]?.gia;
+                        showSuccessToast("Giá sản phẩm "+index+" đã có thay đổi giá cũ "+cart[index].gia+" giá mới "+response.data?.[index]?.gia)
+                        cart[index].gia = response.data?.[index]?.gia;        
                     }
                 }
             }

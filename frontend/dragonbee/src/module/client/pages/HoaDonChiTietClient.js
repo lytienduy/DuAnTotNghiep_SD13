@@ -25,20 +25,9 @@ const HoaDonChiTietClient = () => {
   const { id } = useParams(); //Lấy id khi truyền đến trang này bằng useParams
   const [hoaDon, setHoaDon] = useState({}); //Biến lưu dữ liệu hóa đơn
   const [loading, setLoading] = useState(true);//Biến lưu giá trị loading dữ liệu
-  const [error, setError] = useState(false);//Biến báo lỗi
   const [imageIndexes, setImageIndexes] = useState({});//Biến lưu giá trị key(idSPCT từ HDCT) cùng index hình ảnh hiện tại 
-  const [ghiChuTrangThai, setGhiChuTrangThai] = useState("");
-  const [openTT, setOpenTT] = useState(false);
-  const [tienKhachDua, setTienKhachDua] = useState(0);
-  const [tienKhachChuyen, setTienKhachChuyen] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState('cash'); // Mặc định là 'cash' (tiền mặt)
-  const [errorTienKhachChuyen, setErrorTienKhachChuyen] = useState("");
-  const [errorTienKhachDua, setErrorTienKhachDua] = useState("");
-
-
   const [openSPModal, setOpenSPModal] = useState(false); //giá trị mở đống modal add sản paharm
   const [value, setValue] = useState([100000, 3200000]);//giá trị slider khoảng giá
-
   const [selectedProduct, setSelectedProduct] = useState(null);//sản phẩm add được chọn
   const [quantity, setQuantity] = useState(1);//số lượng sản phẩm được thêm vào giỏ hàng
   const [debouncedValue, setDebouncedValue] = useState(value);//giá trị khoảng giá
@@ -67,6 +56,10 @@ const HoaDonChiTietClient = () => {
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
   const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
+
+
+
+
   const handleDialogOpen = (message) => {
     setDialogMessage(message);
     setOpenDialogThongBaoHetHangHoacKDuSoLuong(true);
@@ -74,8 +67,8 @@ const HoaDonChiTietClient = () => {
   const handleDialogClose = () => {
     setOpenDialogThongBaoHetHangHoacKDuSoLuong(false);
   };
-  const xoaSanPham = async (id) => {
 
+  const xoaSanPham = async (id) => {
     let apiUrl = `http://localhost:8080/ban-hang-tai-quay/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
@@ -98,13 +91,15 @@ const HoaDonChiTietClient = () => {
       setTempValues({});
       setHoaDon(response.data); // Dữ liệu được lấy từ response.data
     } catch (err) {
-      console.error("Lỗi khi lấy dữ liệu:", error);
+      console.error("Lỗi khi lấy dữ liệu:", err);
       showErrorToast("Không load được hóa đơn");
     } finally {
       setLoading(false);
     }
   };
-
+  const tienDaThanhToanBangVNPAY = hoaDon?.listThanhToanHoaDon 
+    .filter(tt => tt?.phuongThuc === "Thanh toán VNPay") // Lọc chỉ lấy các phần tử có id = 3
+    .reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tổng tiền
   //Hàm lọcThemSanPhamHoaDonTaiQuay
   const getSanPhamThem = async () => {
     let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layListCacSanPhamHienThiThem";
@@ -231,84 +226,6 @@ const HoaDonChiTietClient = () => {
     getSanPhamThem();
   }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
 
-
-
-
-  //Validate nhập tiền khách đưa
-  const handleTienKhachDua = (e) => {
-    let newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
-
-    if (/^0+$/.test(newValue)) {
-      newValue = "0";
-    } else {
-      newValue = newValue.replace(/^0+/, ''); // Xóa 0 thừa đầu
-    }
-
-    setTienKhachDua(newValue);
-    // Kiểm tra lỗi ngay khi nhập
-    if (Number(newValue) < 1000) {
-      setErrorTienKhachDua("Số tiền khách đưa phải lớn hơn 1,000 VNĐ");
-    } else {
-      setErrorTienKhachDua(""); // Xóa lỗi nếu nhập đúng
-    }
-  };
-
-  // Hàm để xử lý nhập liệu cho "tiền khách đưa"
-  const handleTienKhachChuyen = (e) => {
-    var newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
-
-    if (/^0+$/.test(newValue)) {
-      newValue = "0";
-    } else {
-      newValue = newValue.replace(/^0+/, ''); // Xóa 0 thừa đầu
-    }
-    setTienKhachChuyen(newValue);
-    // Kiểm tra lỗi ngay khi nhập
-    if (Number(newValue) < 1000) {
-      setErrorTienKhachChuyen("Số tiền chuyển phải lớn hơn 1,000 VNĐ");
-    } else {
-      setErrorTienKhachChuyen(""); // Xóa lỗi nếu nhập đúng
-    }
-  };
-
-  const xacNhanThanhToan = async () => {
-    try {
-      let errorChuyen = "";
-      let errorDua = "";
-
-      if (paymentMethod === 'transfer' && Number(tienKhachChuyen) < 1000) {
-        errorChuyen = "Số tiền chuyển phải lớn hơn 1,000 VNĐ";
-      }
-      if (paymentMethod === 'cash' && Number(tienKhachDua) < 1000) {
-        errorDua = "Số tiền khách đưa phải lớn hơn 1,000 VNĐ";
-      }
-      if (paymentMethod === 'both') {
-        if (Number(tienKhachChuyen) < 1000) errorChuyen = "Số tiền chuyển phải lớn hơn 1,000 VNĐ";
-        if (Number(tienKhachDua) < 1000) errorDua = "Số tiền khách đưa phải lớn hơn 1,000 VNĐ";
-      }
-
-      setErrorTienKhachChuyen(errorChuyen);
-      setErrorTienKhachDua(errorDua);
-      if (!errorChuyen && !errorDua) {
-        const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/thanhToanHoaDon`, {
-          idHoaDon: hoaDon.id, pttt: paymentMethod, tienMat: tienKhachDua, chuyenKhoan: tienKhachChuyen
-        })
-        if (response.data) {
-          setTienKhachDua(0);
-          setTienKhachChuyen(0);
-          setPaymentMethod('cash');
-          setOpenTT(false);
-          showSuccessToast("Xác nhận thanh toán thành công");
-          fetchHoaDon();
-        } else {
-          showErrorToast("Lỗi thanh toán");
-        }
-      }
-    } catch (err) {
-      console.log(err)
-      showErrorToast("Lỗi thanh toán");
-    }
-  }
 
   //Thông báo thành công
   const showSuccessToast = (message) => {
@@ -484,7 +401,7 @@ const HoaDonChiTietClient = () => {
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
       } else {
         showErrorToast(response.data);
-      }   
+      }
       fetchHoaDon();
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -567,6 +484,25 @@ const HoaDonChiTietClient = () => {
         <DialogContent>{dialogMessage}</DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose} color="primary">Đóng</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Modal xóa sản phẩm */}
+      <Dialog open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
+        <DialogTitle>Xác nhận xóa sản phẩm</DialogTitle>
+        <DialogContent>Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setTempValues((prev) => ({
+              ...prev,
+              [selectedProductId]: hoaDon?.listDanhSachSanPham?.find((p) => p.id === selectedProductId)?.soLuong || 1, // Reset nếu nhập sai
+            }));
+            setOpenConfirmModal(false)
+          }} color="primary">
+            Hủy
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error">
+            Xóa
+          </Button>
         </DialogActions>
       </Dialog>
       {/* Giao diện */}
@@ -656,7 +592,7 @@ const HoaDonChiTietClient = () => {
             </Box>
           </>)}
       </Box>
-      
+
       {/* Thông tin hóa đơn */}
       <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }}>
         <Grid container spacing={2}>
@@ -760,6 +696,7 @@ const HoaDonChiTietClient = () => {
             sx={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "1.2rem", flex: 1, textAlign: "center" }}
           >
             Lịch sử thanh toán
+            {tienDaThanhToanBangVNPAY - hoaDon?.tongTienThanhToan < 0 ? "Khách cần trả thêm " + (hoaDon?.tongTienThanhToan - tienDaThanhToanBangVNPAY) + " tiền mặt" : ""}
           </Typography>
         </Box>
         <Table sx={{ border: "1px solid #ddd" }}>
