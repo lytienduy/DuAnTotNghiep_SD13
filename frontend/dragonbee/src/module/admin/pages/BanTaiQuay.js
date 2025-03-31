@@ -995,7 +995,7 @@ const BanTaiQuay = () => {
     }
   };
 
-  //Hàm lấy dữu liệu hóa đơn tại quầy
+  //Hàm lấy dữ liệu hóa đơn tại quầy
   const fetchOrders = async () => {
     let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layHoaDonTaiQuay";
     try {
@@ -1785,7 +1785,7 @@ const BanTaiQuay = () => {
                     <Box>
                       <Typography component="span" variant="body1" sx={{ mr: 2 }}>Tổng tiền:</Typography>
                       <Typography component="span" fontSize={20} sx={{ fontWeight: 'bold', color: 'red', marginRight: 3 }}>
-                        {tongTienPhaiTra?.toLocaleString()} VNĐ
+                        {selectedOrder?.tongTienSanPham?.toLocaleString()} VNĐ
                       </Typography>
                     </Box>
                   </Box>

@@ -23,7 +23,7 @@ const DonMua = () => {
     const [openConfirm, setOpenConfirm] = useState(false); // Mở modal xác nhận
     const [ghiChuTrangThai, setGhiChuTrangThai] = useState("");
     const [error, setError] = useState(false);//Biến báo lỗi
-    const [idHoaDonCanThaoTac, setIdHoaDonCanThaoTac] = useState(null);//Biến báo lỗi
+    const [idHoaDonCanThaoTac, setIdHoaDonCanThaoTac] = useState(null);
     const userKH = JSON.parse(localStorage.getItem("userKH"));
 
 
