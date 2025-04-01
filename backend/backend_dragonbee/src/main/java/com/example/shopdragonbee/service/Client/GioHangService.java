@@ -101,7 +101,7 @@ public class GioHangService {
                     sanPhamCart.setTenSPCT(sanPhamChiTiet.getSanPham().getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
                     sanPhamCart.setTenMauSac(sanPhamChiTiet.getMauSac().getTenMauSac());
                     sanPhamCart.setTenSize(sanPhamChiTiet.getSize().getTenSize());
-                    sanPhamCart.setGia(sanPhamChiTiet.getGia());
+                    sanPhamCart.setGia(sanPhamChiTiet.getGia());//Cập nhật giá rồi
                     sanPhamCart.setQuantity(gioHangChiTiet.getSoLuong());
                     listDanhSachSanPhamCartKhachHang.add(sanPhamCart);
                 }

@@ -99,7 +99,8 @@ const GioHang = () => {
                 }
                 if (item.gia !== response.data?.[index]?.gia) {
                     if (cart[index]) {
-                        cart[index].gia = response.data?.[index]?.gia;
+                        showSuccessToast("Giá sản phẩm "+index+" đã có thay đổi giá cũ "+cart[index].gia+" giá mới "+response.data?.[index]?.gia)
+                        cart[index].gia = response.data?.[index]?.gia;        
                     }
                 }
             }
@@ -157,6 +158,14 @@ const GioHang = () => {
             showErrorToast("Bạn chưa chọn sản phẩm cần thanh toán");
             return;
         } else {
+            if (totalAmount > 20000000) {
+                handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+                return;
+            }
+            if (checkCoSanPhamCoSoLuongMuaLonHon30 === true) {
+                handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+                return;
+            }
             navigate('/thanhToan', { state: { selectedProducts } });
         }
     };
@@ -180,9 +189,9 @@ const GioHang = () => {
 
     useEffect(() => {
         layDuLieuCart();
-        getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         const interval = setInterval(() => {
             getListDanhSachCapNhatSoLuongSanPhamGioHang();
+            getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         }, 5000); // 60 giây
 
         return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
@@ -239,7 +248,7 @@ const GioHang = () => {
         // Cập nhật lại giỏ hàng trong Local Storage
         localStorage.setItem("cart", JSON.stringify(cart));
         if (userKH?.khachHang?.id) {
-            const response = await axios.post(`http://localhost:8080/gioHang/tangSoLuongSanPhamCoDangNhap`, null,
+            await axios.post(`http://localhost:8080/gioHang/tangSoLuongSanPhamCoDangNhap`, null,
                 {
                     params: {
                         idSanPhamChiTiet: idspct,
@@ -311,6 +320,12 @@ const GioHang = () => {
         const product = products[index];
         return sum + product.gia * product?.quantity;
     }, 0);
+
+    // Check số lượng mua sản phẩm
+    const checkCoSanPhamCoSoLuongMuaLonHon30 = selectedProducts.some(index => {
+        const product = products[index];
+        return product?.quantity > 30;
+    }, false);
 
     const handleBackHome = () => {
         navigate("/home"); // Điều hướng về trang phiếu giảm giá
@@ -450,7 +465,7 @@ const GioHang = () => {
                                                                 ),
                                                                 endAdornment: (
                                                                     <IconButton
-                                                                        onClick={() => { console.log("product.idSPCT trước khi truyền:", product?.idSPCT); handleIncrement(index, product?.idSPCT) }}
+                                                                        onClick={() => handleIncrement(index, product?.idSPCT)}
                                                                         size="small"
                                                                         style={{ padding: '2px', marginRight: -10 }}
                                                                         disabled={productsCapNhatSoLuong?.[index]?.quantity === 0}

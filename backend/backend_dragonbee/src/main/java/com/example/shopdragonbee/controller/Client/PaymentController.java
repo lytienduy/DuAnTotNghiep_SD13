@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,7 @@ public class PaymentController {
             String vnp_ResponseCode = params.get("vnp_ResponseCode");
             String vnp_TxnRef = params.get("vnp_TxnRef");
             String vnp_Amount = params.get("vnp_Amount");
+            String vnp_PayDate = params.get("vnp_PayDate");
             if ("00".equals(vnp_ResponseCode)) {
                 HoaDon hoaDon = new HoaDon();
                 hoaDon.setMa(vnp_TxnRef);
@@ -57,7 +59,11 @@ public class PaymentController {
                 thanhToanHoaDon.setHoaDon(hoaDonRepository.findHoaDonByMa(vnp_TxnRef));
                 thanhToanHoaDon.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(3).get());
                 thanhToanHoaDon.setSoTienThanhToan(Float.parseFloat(vnp_Amount) / 100);
-                thanhToanHoaDon.setNgayTao(LocalDateTime.now());
+                //Chuyển định dạng date thanh toán thành công sang localdatetime để lưu vào database
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                // Chuyển đổi sang LocalDateTime
+                LocalDateTime localDateTime = LocalDateTime.parse(vnp_PayDate, formatter);
+                thanhToanHoaDon.setNgayTao(localDateTime);
                 thanhToanHoaDonRepository.save(thanhToanHoaDon);
                 return hoaDon.getId();
             } else {
@@ -78,4 +84,10 @@ public class PaymentController {
         }
         return hoaDon.getTrangThai();
     }
+
+//    @GetMapping("/refund")
+//    public String refundTransaction(HttpServletRequest request) {
+//        return paymentService.createRefundRequest(request);
+//    }
+
 }

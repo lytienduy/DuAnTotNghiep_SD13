@@ -68,10 +68,44 @@ public class BanHangTaiQuayController {
                 Double.parseDouble(donGia));
     }
 
+    @PostMapping("/addSanPhamSauKhiDatHang")
+    public Boolean addSanPhamSauKhiDatHang(@RequestBody Map<String, String> body) {
+        String idHoaDon = body.get("idHoaDon");
+        String idSanPhamChiTiet = body.get("idSanPhamChiTiet");
+        String soLuong = body.get("soLuong");
+        String donGia = body.get("donGia");
+
+        return banHangTaiQuayService.addSanPhamSauKhiDatHang(
+                java.lang.Integer.parseInt(idHoaDon)
+                , java.lang.Integer.parseInt(idSanPhamChiTiet),
+                java.lang.Integer.parseInt(soLuong),
+                Double.parseDouble(donGia));
+    }
+
+    @PostMapping("/addSanPhamSauKhiDatHangOnline")
+    public String addSanPhamSauKhiDatHangOnlineSauKhiDatHang(@RequestBody Map<String, String> body) {
+        String idHoaDon = body.get("idHoaDon");
+        String idSanPhamChiTiet = body.get("idSanPhamChiTiet");
+        String soLuong = body.get("soLuong");
+        String donGia = body.get("donGia");
+
+        return banHangTaiQuayService.addSanPhamVaoGioHangOnlineSauKhiDatHang(
+                java.lang.Integer.parseInt(idHoaDon)
+                , java.lang.Integer.parseInt(idSanPhamChiTiet),
+                java.lang.Integer.parseInt(soLuong),
+                Double.parseDouble(donGia));
+    }
+
     //Tăng số lượng 1
     @PostMapping("/tangSoLuong/{id}")
     public Boolean tangSoLuong(@PathVariable Integer id) {
         return banHangTaiQuayService.tangSoLuong(id);
+    }
+
+    //Tăng số lượng 1
+    @PostMapping("/tangSoLuongOnline/{id}")
+    public String tangSoLuongOnline(@PathVariable Integer id) {
+        return banHangTaiQuayService.tangSoLuongOnline(id);
     }
 
     //Giảm số lượng 1
@@ -86,10 +120,22 @@ public class BanHangTaiQuayController {
         return banHangTaiQuayService.xoaSanPham(id, idHoaDon);
     }
 
+    //Xóa sản phẩm khỏi giỏ hàng bán hàng tại quầy
+    @PostMapping("/xoaSanPhamSauKhiDatHang/{id}/{idHoaDon}")
+    public Boolean xoaSanPhamSauKhiDatHang(@PathVariable Integer id, @PathVariable Integer idHoaDon) {
+        return banHangTaiQuayService.xoaSanPhamSauKhiDatHang(id, idHoaDon);
+    }
+
     //Nhập số lượng sản phẩm từ bán phím
     @PostMapping("/nhapSoLuong/{id}/{soLuong}")
     public Boolean nhapSoLuong(@PathVariable Integer id, @PathVariable Integer soLuong) {
         return banHangTaiQuayService.nhapSoLuong(id, soLuong);
+    }
+
+    //Nhập số lượng sản phẩm từ bán phím
+    @PostMapping("/nhapSoLuongOnline/{id}/{soLuong}")
+    public String nhapSoLuongOnline(@PathVariable Integer id, @PathVariable Integer soLuong) {
+        return banHangTaiQuayService.nhapSoLuongOnline(id, soLuong);
     }
 
     //Nhập số lượng sản phẩm từ bán phím

@@ -15,8 +15,8 @@ import java.util.Optional;
 @Repository
 public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpecificationExecutor<HoaDon> {
 
-    @Query("SELECT COALESCE(SUM(hdct.soLuong * hdct.donGia), 0) FROM HoaDonChiTiet hdct WHERE hdct.hoaDon.id = :idHoaDon")
-    Float tinhTongTienByHoaDonId(@Param("idHoaDon") Integer idHoaDon);
+    @Query("SELECT COALESCE(SUM(hdct.soLuong * hdct.donGia), 0) FROM HoaDonChiTiet hdct WHERE hdct.hoaDon.id = :idHoaDon and hdct.trangThai like :trangThai")
+    Float tinhTongTienByHoaDonId(@Param("idHoaDon") Integer idHoaDon,@Param("trangThai") String trangThai);
     // 1. Thống kê theo ngày
     @Query(value = """
     WITH AllStatuses AS (

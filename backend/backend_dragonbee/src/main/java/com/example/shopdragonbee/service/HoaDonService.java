@@ -22,7 +22,8 @@ public class HoaDonService {
 
     @Autowired
     private HoaDonRepository hoaDonRepository;
-
+    @Autowired
+    private HoaDonChiTietRepository hoaDonChiTietRepository;
     @Autowired
     private LichSuHoaDonRepository lichSuHoaDonRepository;
 
@@ -173,8 +174,7 @@ public class HoaDonService {
                 .collect(Collectors.toList());
 
 
-        List<HoaDonChiTietResponseDTO.DanhSachSanPhamDTO> listDanhSachSanPham = hoaDon.getListHoaDonChiTiet().stream()
-                .filter(hdct -> "Hoạt động".equalsIgnoreCase(hdct.getTrangThai())) // Lọc trạng thái "Hoạt động"
+        List<HoaDonChiTietResponseDTO.DanhSachSanPhamDTO> listDanhSachSanPham = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndTrangThaiOrderByNgayTaoDesc(hoaDon,"Hoạt động").stream()
                 .sorted(Comparator.comparing(
                         HoaDonChiTiet::getNgayTao,
                         Comparator.nullsLast(Comparator.reverseOrder()) // Đưa null xuống cuối danh sách
@@ -216,7 +216,7 @@ public class HoaDonService {
                 tenKhachHang,
                 sdtKhachHang,
                 hoaDon.getTongTien(),
-                hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()),
+                hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(),"Hoạt động"),
                 hoaDon.getPhiShip(),
                 maPhieuGiamGia,
                 hoaDon.getTrangThai(),

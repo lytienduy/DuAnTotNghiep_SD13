@@ -75,7 +75,11 @@ const HoaDonChiTiet = () => {
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
 
   const xoaSanPham = async (id) => {
-    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/xoaSanPham/${id}/${hoaDon.id}`;
+    if (hoaDon?.listDanhSachSanPham.length === 1) {
+      showSuccessToast("Hóa đơn khoonlg được để trống sản phẩm");
+      return;
+    }
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
       if (response.data === true) {
@@ -512,8 +516,7 @@ const HoaDonChiTiet = () => {
       if (response.data === true) {
         fetchHoaDon();
       } else {
-        setSelectedProductId(id);// Lấy id được chọn để confirm thao tác với sản phẩm
-        setOpenConfirmModal(true);
+        clickDeleteIcon(id);
       }
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -535,7 +538,7 @@ const HoaDonChiTiet = () => {
     const newValue = Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
-    } else {
+    } else if(newValue < 1)  {//Không được để else
       setSelectedProductId(id);
       setOpenConfirmModal(true);
     }
@@ -595,7 +598,7 @@ const HoaDonChiTiet = () => {
     }
     setTimeout(() => {
       setQuantity(newValue);
-    }, 100);
+    }, 50);
     if (newValue === "" || Number(newValue) <= 0) {
       setErrorSoLuongThemVaoGioHang("Không hợp lệ");
     } else {
@@ -609,7 +612,7 @@ const HoaDonChiTiet = () => {
   const handleCloseConfirmModal = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8080/ban-hang-tai-quay/addSanPhamVaoGioHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
+        `http://localhost:8080/ban-hang-tai-quay/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
       );
       if (response.data) {
         setSelectedProduct(null);
@@ -626,6 +629,14 @@ const HoaDonChiTiet = () => {
     }
   };
 
+  const clickDeleteIcon = (id) => {
+    if (hoaDon?.listDanhSachSanPham?.length === 1) {
+      showErrorToast("Hóa đơn không được để trống sản phẩm");
+      return;
+    }
+    setSelectedProductId(id);
+    setOpenConfirmModal(true);
+  }
   return (
     <div>
       {/* Xác nhận xóa sản phẩm */}
@@ -890,7 +901,7 @@ const HoaDonChiTiet = () => {
             onClick={() => setOpenGhiChuPrevious(true)}
             disabled={currentStep === 0 || isCanceled || isComplete} // Vô hiệu hóa khi ở trạng thái đầu tiên hoặc khi hóa đơn đã hủy hoặc hoàn thành
           >
-            Previous
+            Hoàn tác
           </Button>
           <Dialog open={openGhiChuPrevious} onClose={() => setOpenGhiChuPrevious(false)}>
             <DialogTitle>Nhập lý do hoàn tác trạng thái</DialogTitle>
@@ -955,7 +966,7 @@ const HoaDonChiTiet = () => {
                 (!hoaDon.listDanhSachSanPham || hoaDon.listDanhSachSanPham.length === 0))
             }
           >
-            Next
+            Xác nhận
           </Button>
           <Dialog open={openGhiChuNext} onClose={() => setOpenGhiChuNext(false)}>
             <DialogTitle>Nhập lý do thay đổi trạng thái</DialogTitle>
@@ -1428,7 +1439,7 @@ const HoaDonChiTiet = () => {
                     <TableCell align="center">{product.soTien?.toLocaleString()} VNĐ</TableCell>
                     <TableCell align="center">
                       {(hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động") &&
-                        <IconButton color="error" onClick={() => { setSelectedProductId(product.id); setOpenConfirmModal(true) }}>
+                        <IconButton color="error" onClick={() => clickDeleteIcon(product.id)}>
                           <DeleteIcon />
                         </IconButton>
                       }

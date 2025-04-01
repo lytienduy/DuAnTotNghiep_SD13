@@ -44,7 +44,7 @@ public class DonMuaService {
             hoaDonClient.setMaHoaDon(hoaDon.getMa());
             hoaDonClient.setTrangThai(hoaDon.getTrangThai());
             List<DonMuaDTO.SanPham> listSanPham = new ArrayList<>();
-            for (HoaDonChiTiet hoaDonChiTiet : hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndTrangThai(hoaDon, "Hoạt động")
+            for (HoaDonChiTiet hoaDonChiTiet : hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndTrangThaiOrderByNgayTaoDesc(hoaDon, "Hoạt động")
             ) {
                 //Tạo ra đối tượng sản phẩm để lưu những sản phẩm đã mua của hóa đơn
                 DonMuaDTO.SanPham sanPhamDTO = new DonMuaDTO.SanPham();
