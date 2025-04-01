@@ -183,26 +183,29 @@ public class SanPhamChiTietController {
         SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sản phẩm chi tiết không tồn tại"));
 
-        // Kiểm tra số lượng sản phẩm
-        if (sanPhamChiTiet.getSoLuong() == 0) {
-            response.put("success", false);
-            response.put("message", "Không thể thay đổi trạng thái, sản phẩm đã hết hàng");
-            return ResponseEntity.badRequest().body(response);
-        }
-
         // Kiểm tra trạng thái hiện tại và chuyển đổi trạng thái
         String currentStatus = sanPhamChiTiet.getTrangThai();
-        if ("Hoạt động".equals(currentStatus)) {
-            sanPhamChiTiet.setTrangThai("Ngừng hoạt động");
-        } else if ("Ngừng hoạt động".equals(currentStatus)) {
-            sanPhamChiTiet.setTrangThai("Hoạt động");
-        } else {
-            response.put("success", false);
-            response.put("message", "Trạng thái không hợp lệ để thay đổi");
-            return ResponseEntity.badRequest().body(response);
+
+        switch (currentStatus) {
+            case "Hoạt động":
+                // Nếu hiện tại là "Hoạt động", chuyển sang "Ngừng hoạt động" hoặc "Ngừng bán"
+                sanPhamChiTiet.setTrangThai("Ngừng hoạt động"); // Ví dụ, bạn có thể điều chỉnh theo nhu cầu
+                break;
+            case "Ngừng hoạt động":
+                // Nếu hiện tại là "Ngừng hoạt động", chuyển sang "Hoạt động" hoặc "Ngừng bán"
+                sanPhamChiTiet.setTrangThai("Hoạt động"); // Ví dụ, bạn có thể điều chỉnh theo nhu cầu
+                break;
+            case "Ngừng bán":
+                // Nếu hiện tại là "Ngừng bán", chuyển sang "Hoạt động" hoặc "Ngừng hoạt động"
+                sanPhamChiTiet.setTrangThai("Ngừng hoạt động"); // Ví dụ, bạn có thể điều chỉnh theo nhu cầu
+                break;
+            default:
+                response.put("success", false);
+                response.put("message", "Trạng thái không hợp lệ để thay đổi");
+                return ResponseEntity.badRequest().body(response);
         }
 
-        // Cập nhật lại trạng thái của sản phẩm chi tiết
+        // Cập nhật trạng thái sản phẩm chi tiết
         sanPhamChiTietRepository.save(sanPhamChiTiet);
 
         response.put("success", true);

@@ -172,15 +172,27 @@ public String toggleProductStatus(Integer id) {
     if (optionalSanPham.isPresent()) {
         SanPham sanPham = optionalSanPham.get();
         String oldStatus = sanPham.getTrangThai();
-        String newStatus = oldStatus.equals("Hoạt động") ? "Ngừng bán" : "Hoạt động"; // Chuyển đổi giữa "Đang bán" và "Ngừng bán"
+        String newStatus = oldStatus.equals("Hoạt động") ? "Ngừng bán" : "Hoạt động"; // Chuyển đổi trạng thái sản phẩm cha
 
-        sanPham.setTrangThai(newStatus); // Cập nhật trạng thái
+        // Cập nhật trạng thái sản phẩm cha
+        sanPham.setTrangThai(newStatus);
         sanPhamRepository.save(sanPham); // Lưu vào database
+
+        // Không thay đổi trạng thái các sản phẩm chi tiết con đã bị thay đổi
+        List<SanPhamChiTiet> chiTietList = sanPhamChiTietRepository.findBySanPhamId(id); // Lấy các sản phẩm chi tiết của sản phẩm cha
+        for (SanPhamChiTiet chiTiet : chiTietList) {
+            // Kiểm tra nếu trạng thái của sản phẩm chi tiết chưa bị thay đổi thủ công
+            if (chiTiet.getTrangThai() == null || chiTiet.getTrangThai().equals(oldStatus)) {
+                chiTiet.setTrangThai(newStatus); // Chỉ cập nhật nếu trạng thái của sản phẩm chi tiết chưa bị thay đổi
+                sanPhamChiTietRepository.save(chiTiet); // Lưu các sản phẩm chi tiết đã thay đổi
+            }
+        }
 
         return "Trạng thái đã chuyển từ " + oldStatus + " -> " + newStatus;
     }
     return "Không tìm thấy sản phẩm với ID: " + id;
 }
+
     // add sản phẩm
     public SanPham addSanPham(SanPham sanPham) throws Exception {
         // Kiểm tra trùng tên sản phẩm

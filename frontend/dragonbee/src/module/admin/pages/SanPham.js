@@ -42,7 +42,8 @@ const SanPham = () => {
   const [snackbarMessage, setSnackbarMessage] = useState(""); // Nội dung thông báo
   const [size, setSize] = useState(5);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
+const [chiTietList, setChiTietList] = useState([]); 
+  const [itemsPerPage, setItemsPerPage] = useState(5); 
   const navigate = useNavigate();
 
   // Hàm gọi API với debounce
@@ -206,14 +207,14 @@ const renderPageNumbers = () => {
   // chuyển đổi trạng thái switch
   const toggleTrangThai = async (id) => {
     try {
-      // Gọi API để cập nhật trạng thái
+      // Gọi API để cập nhật trạng thái sản phẩm cha và sản phẩm chi tiết
       const response = await axios.put(
         `http://localhost:8080/api/sanpham/${id}/toggle-trang-thai`
       );
-
+  
       console.log("Phản hồi API:", response.data);
-
-      // Cập nhật trạng thái trực tiếp trong sanPhams state
+  
+      // Cập nhật trạng thái sản phẩm cha trong frontend
       setSanPhams((prevSanPhams) =>
         prevSanPhams.map((sp) =>
           sp.id === id
@@ -229,7 +230,20 @@ const renderPageNumbers = () => {
             : sp
         )
       );
-
+  
+      // Cập nhật trạng thái các sản phẩm chi tiết trong frontend
+      const sanPhamChiTietResponse = await axios.get(
+        `http://localhost:8080/api/sanpham/by-san-pham/${id}`,
+        {
+          params: {
+            page: page - 1,
+            size: itemsPerPage,
+          },
+        }
+      );
+  
+      setChiTietList(sanPhamChiTietResponse.data.content); // Cập nhật lại danh sách sản phẩm chi tiết
+  
       setSnackbarMessage("Cập nhật trạng thái thành công!");
       setOpenSnackbar(true);
     } catch (error) {
@@ -237,6 +251,8 @@ const renderPageNumbers = () => {
       alert("Có lỗi xảy ra khi cập nhật trạng thái sản phẩm!");
     }
   };
+  
+  
 
   return (
     <Box>

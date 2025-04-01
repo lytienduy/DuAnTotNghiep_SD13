@@ -47,6 +47,6 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet, 
     List<SanPhamChiTiet> searchByTenSanPham(@Param("ten") String ten);
 
 
-
+    List<SanPhamChiTiet> findBySanPhamId(Integer sanPhamId);
 
 }

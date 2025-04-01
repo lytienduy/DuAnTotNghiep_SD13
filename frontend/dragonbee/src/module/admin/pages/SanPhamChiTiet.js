@@ -137,12 +137,14 @@ const SanPhamChiTiet = () => {
           },
         }
       );
-      setChiTietList(response.data.content);
-      setTotalPages(response.data.totalPages);
+  
+      setChiTietList(response.data.content);  // Cập nhật danh sách sản phẩm chi tiết
+      setTotalPages(response.data.totalPages);  // Cập nhật tổng số trang
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết theo ID:", error);
     }
   };
+  
 
   // Hàm lấy tất cả sản phẩm chi tiết
   const fetchAllSanPhamChiTiet = async () => {
@@ -733,36 +735,48 @@ const SanPhamChiTiet = () => {
     setOpenSnackbarUpdate(false);
   };
   // chuyển đổi trạng thái
-  const handleChangeStatus = (id, currentStatus) => {
-    // Kiểm tra nếu trạng thái không phải là "Hoạt động" hoặc "Ngừng hoạt động"
-    if (currentStatus !== "Hoạt động" && currentStatus !== "Ngừng hoạt động") {
-      alert('Trạng thái không hợp lệ để thay đổi.');
-      return;
+  const handleChangeStatusChiTiet = async (id, currentStatus) => {
+    // Xác định trạng thái mới dựa trên trạng thái hiện tại
+    let newStatus;
+    switch (currentStatus) {
+      case "Hoạt động":
+        newStatus = "Ngừng hoạt động";
+        break;
+      case "Ngừng hoạt động":
+        newStatus = "Ngừng bán";
+        break;
+      case "Ngừng bán":
+        newStatus = "Hoạt động";
+        break;
+      default:
+        newStatus = "Hoạt động"; // Giá trị mặc định trong trường hợp không có trạng thái hợp lệ
+        break;
     }
   
-    const newStatus = currentStatus === "Hoạt động" ? "Ngừng hoạt động" : "Hoạt động";
-    
-    fetch(`http://localhost:8080/api/san-pham-chi-tiet/${id}/trang-thai`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        trangThaiMoi: newStatus
-      }),
-    })
-    .then(response => response.json())
-    .then(data => {
-      alert(data.message); // Hiển thị thông báo từ API (nếu có)
-      setFilteredList(prevList => prevList.map(item => 
-        item.id === id ? { ...item, trangThai: newStatus } : item
-      ));
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Có lỗi xảy ra khi thay đổi trạng thái.');
-    });
+    try {
+      // Gửi yêu cầu PATCH để cập nhật trạng thái sản phẩm chi tiết
+      const response = await axios.patch(
+        `http://localhost:8080/api/san-pham-chi-tiet/${id}/trang-thai`,
+        { trangThaiMoi: newStatus }
+      );
+      alert(response.data.message); // Hiển thị thông báo thành công từ API
+  
+      // Cập nhật trạng thái trong state frontend
+      setChiTietList((prevList) =>
+        prevList.map((item) =>
+          item.id === id ? { ...item, trangThai: newStatus } : item
+        )
+      );
+    } catch (error) {
+      console.error("Lỗi khi thay đổi trạng thái sản phẩm chi tiết:", error);
+      alert("Có lỗi xảy ra khi thay đổi trạng thái sản phẩm chi tiết!");
+    }
   };
+  
+  
+  
+
+  
   
   
   return (
@@ -1019,14 +1033,14 @@ const SanPhamChiTiet = () => {
             </TableCell>
             <TableCell>
   <IconButton
-    onClick={() => handleChangeStatus(item.id, item.trangThai)}
+    onClick={() => handleChangeStatusChiTiet(item.id, item.trangThai)}
     style={{
       backgroundColor:
         item.trangThai === "Hoạt động"
-          ? "#1976d2"
+          ? "#1976d2"  // Màu xanh khi sản phẩm đang hoạt động
           : item.trangThai === "Ngừng hoạt động"
-          ? "#bdbdbd"
-          : "#d32f2f", // Đỏ khi Hết hàng
+          ? "#bdbdbd"  // Màu xám khi sản phẩm ngừng bán
+          : "#d32f2f", // Màu đỏ khi sản phẩm ngừng hoạt động
       color: "#fff",
       borderRadius: "50px",
       padding: "8px",
@@ -1035,6 +1049,7 @@ const SanPhamChiTiet = () => {
     <Autorenew />
   </IconButton>
 </TableCell>
+
 
           </TableRow>
         ))
