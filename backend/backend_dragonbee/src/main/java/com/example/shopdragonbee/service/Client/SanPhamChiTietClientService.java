@@ -69,16 +69,21 @@ public class SanPhamChiTietClientService {
 
     public SPCTDTO.SanPhamChiTietClient getSanPhamChiTietClient(Integer idSanPham, Integer idKhachHang, List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCart) {
         //Nếu khách hàng không đăng nhập thì dựa trên local
-        if(sanPhamRepositoryP.findById(idSanPham).get().getTrangThai().equalsIgnoreCase("Hoạt động") == false){
+        if (sanPhamRepositoryP.findById(idSanPham).get().getTrangThai().equalsIgnoreCase("Hoạt động") == false) {
             return null;
         }
         if (idKhachHang == null) {
             idSet = listDanhSachSanPhamCart.stream().collect(Collectors.toMap(SPCTDTO.SanPhamCart::getIdSPCT, sp -> sp));
         } else {//nếu khách có đăng nhập
-            List<SPCTDTO.SanPhamCart> listChuyenDoiGioHangChiTietSangSanPhamCart = gioHangChiTietRepository.findByGioHangOrderByNgayTaoDesc(gioHangRepository.findById(idKhachHang).get()).stream()
-                    .map(this::convertSangSanPhamCart) // Gọi hàm convert từng phần tử
-                    .collect(Collectors.toList());
-            idSet = listChuyenDoiGioHangChiTietSangSanPhamCart.stream().collect(Collectors.toMap(SPCTDTO.SanPhamCart::getIdSPCT, sp -> sp));
+            Optional<GioHang> gioHang = gioHangRepository.findById(idKhachHang);
+            if (gioHang.isPresent()) {
+                List<SPCTDTO.SanPhamCart> listChuyenDoiGioHangChiTietSangSanPhamCart = gioHangChiTietRepository.findByGioHangOrderByNgayTaoDesc(gioHang.get()).stream()
+                        .map(this::convertSangSanPhamCart) // Gọi hàm convert từng phần tử
+                        .collect(Collectors.toList());
+                idSet = listChuyenDoiGioHangChiTietSangSanPhamCart.stream().collect(Collectors.toMap(SPCTDTO.SanPhamCart::getIdSPCT, sp -> sp));
+            } else {
+                idSet = Collections.emptyMap();
+            }
         }
         SPCTDTO.SanPhamChiTietClient tongQuanSanPhamCTClient = new SPCTDTO.SanPhamChiTietClient();//Tạo ra đối tượng lưu thông tin sanPhamChiTiet
         List<SPCTDTO.MauSacAndHinhAnhAndSize> listMauSacAndSizeCuaSp = new ArrayList<>();//Tạo ra list để lưu những sản phẩm màu sắc của đối tượng

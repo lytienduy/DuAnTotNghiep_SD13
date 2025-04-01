@@ -299,10 +299,10 @@ const ChiTietSanPham = () => {
                     Sản phẩm
                 </Link>
                 <Typography color="text.primary" sx={{ fontSize: '14px' }}>
-                    {product.ten}
+                    {product?.ten}
                 </Typography>
             </Breadcrumbs>
-            {product !== null ? (
+            {product ? (
                 <Box sx={{ borderBottom: "1px solid rgba(0, 0, 0, 0.1)", pb: 3, marginTop: 3 }}>
                     <Grid container spacing={4}>
                         {/* Hình ảnh sản phẩm */}
@@ -446,7 +446,8 @@ const ChiTietSanPham = () => {
                 </Box>
             ) : (
                 <div>Sản phẩm này đã ngừng kinh doanh. Xin mời quý khách tham khảo sản phẩm khác!</div>
-            )}
+            )
+            }
 
             <Box sx={{ marginTop: -1 }}>
                 {/* Quần âu Nam */}

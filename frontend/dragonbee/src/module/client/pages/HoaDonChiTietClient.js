@@ -98,9 +98,11 @@ const HoaDonChiTietClient = () => {
       setLoading(false);
     }
   };
-  const tienDaThanhToanBangVNPAY = hoaDon?.listThanhToanHoaDon 
+
+  const tienDaThanhToanBangVNPAY = (hoaDon?.listThanhToanHoaDon || []) 
     .filter(tt => tt?.phuongThuc === "Thanh toán VNPay") // Lọc chỉ lấy các phần tử có id = 3
     .reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tổng tiền
+  
   //Hàm lọcThemSanPhamHoaDonTaiQuay
   const getSanPhamThem = async () => {
     let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layListCacSanPhamHienThiThem";
