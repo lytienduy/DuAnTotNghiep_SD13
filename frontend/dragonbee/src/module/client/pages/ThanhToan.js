@@ -3,7 +3,8 @@ import axios from 'axios';
 import {
     Box, Grid, TextField, Typography, Button, FormControlLabel, Radio, InputAdornment,
     Container, Breadcrumbs, Link, MenuItem, Select, InputLabel, FormControl, Input, Dialog,
-    DialogTitle, IconButton, DialogContent, DialogActions, DialogContentText
+    DialogTitle, IconButton, DialogContent, DialogActions, DialogContentText, Modal,
+    TableContainer, Paper, Table, TableHead, TableCell, TableRow, TableBody
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
@@ -34,6 +35,13 @@ const ThanhToan = () => {
     const [sdtNguoiNhan, setSdtNguoiNhan] = useState('');
     const [emailNguoiNhan, setEmailNguoiNhan] = useState('');
 
+    //Thêm mới địa chỉ
+    const [newCities, setNewCities] = useState([]);
+    const [newDistricts, setNewDistricts] = useState([]);
+    const [newWards, setNewWards] = useState([]);
+    const [newCity, setNewCity] = useState('');
+    const [newDistrict, setNewDistrict] = useState('');
+    const [newWard, setNewWard] = useState('');
 
     //khai báo phiếu giảm giá
     const [openVoucherModal, setOpenVoucherModal] = useState(false);
@@ -42,7 +50,7 @@ const ThanhToan = () => {
     const [selectedVoucherCode, setSelectedVoucherCode] = useState('');
     const [discountAmount, setDiscountAmount] = useState(0);
     const [selectedCustomerId, setSelectedCustomerId] = useState(null);
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("COD");
     const [phiShip, setPhiShip] = useState(0);
 
     //Phong
@@ -194,6 +202,7 @@ const ThanhToan = () => {
                     Name: city.Name.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
                 }));
                 setCities(normalizedCities);
+                setNewCities(normalizedCities); 
             })
             .catch(error => console.error("Error fetching data:", error));
     }, []);
@@ -222,6 +231,33 @@ const ThanhToan = () => {
 
     const handleWardChange = (event) => {
         setWard(event.target.value);
+    };
+
+    // Hàm thay đổi tỉnh thành cho modal
+    const handleCityChangeModal = (event) => {
+        const cityName = event.target.value;
+        setNewCity(cityName);
+        setNewDistrict(""); // Reset quận/huyện khi thay đổi tỉnh thành
+        setNewWard(""); // Reset xã/phường khi thay đổi quận/huyện
+        // Tìm thành phố đã chọn và cập nhật districtss
+        const selectedCity = newCities.find(city => city.Name === cityName);
+        setNewDistricts(selectedCity ? selectedCity.Districts : []);  // Cập nhật quận/huyện
+        setNewWards([]);  // Reset xã/phường
+    };
+
+    // Hàm thay đổi quận/huyện cho modal
+    const handleDistrictChangeModal = (event) => {
+        const districtName = event.target.value;
+        setNewDistrict(districtName);
+        setNewWard(""); // Reset xã/phường khi thay đổi quận/huyện
+        // Tìm quận/huyện đã chọn và cập nhật wardss
+        const district = newDistricts.find(d => d.Name === districtName);
+        setNewWards(district ? district.Wards : []);  // Cập nhật danh sách xã/phường
+    };
+
+    // Hàm thay đổi xã/phường cho modal
+    const handleWardChangeModal = (event) => {
+        setNewWard(event.target.value);
     };
 
     // Hàm mở và đóng modal voucher
@@ -398,6 +434,187 @@ const ThanhToan = () => {
         return () => clearInterval(intervalId);
     }, [selectedVoucherCode]); // Lắng nghe sự thay đổi của mã voucher đã chọn  
 
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [addresses, setAddresses] = useState([]); // Để lưu danh sách địa chỉ
+    const [defaultAddress, setDefaultAddress] = useState(null); // Địa chỉ mặc định
+
+    useEffect(() => {
+        // Kiểm tra xem khách hàng có đăng nhập không
+        const user = localStorage.getItem('userKH');
+        if (user) {
+            setIsLoggedIn(true);
+            const customerId = JSON.parse(user).khachHang.id; // Lấy customerId từ localStorage
+
+            // Gọi API lấy danh sách địa chỉ của khách hàng
+            fetch(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${customerId}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    // Sắp xếp địa chỉ để địa chỉ mặc định luôn lên đầu
+                    const sortedAddresses = data.sort((a, b) => {
+                        if (a.macDinh && !b.macDinh) return -1; // Địa chỉ mặc định lên đầu
+                        if (!a.macDinh && b.macDinh) return 1;
+                        return 0;
+                    });
+
+                    // Lưu danh sách địa chỉ đã sắp xếp
+                    setAddresses(sortedAddresses);
+
+                    // Nếu có địa chỉ mặc định, lưu vào state
+                    const defaultAddr = sortedAddresses.find(addr => addr.macDinh);
+                    if (defaultAddr) {
+                        setDefaultAddress(defaultAddr);
+
+                        // Tự động điền các trường theo địa chỉ mặc định
+                        setCity(defaultAddr.thanhPho);
+                        setDistrict(defaultAddr.huyen);
+                        setWard(defaultAddr.xa);
+                        setSpecificAddress(`${defaultAddr.soNha}, ${defaultAddr.duong}`);
+
+                        // Gọi lại handleCityChange để cập nhật danh sách quận/huyện
+                        const cityObj = cities.find(city => city.Name === defaultAddr.thanhPho);
+                        if (cityObj) {
+                            setDistricts(cityObj.Districts);  // Cập nhật quận/huyện
+                        }
+
+                        // Gọi lại handleDistrictChange để cập nhật danh sách xã/phường
+                        const districtObj = cityObj?.Districts.find(district => district.Name === defaultAddr.huyen);
+                        if (districtObj) {
+                            setWards(districtObj.Wards);  // Cập nhật xã/phường
+                        }
+                    }
+                })
+                .catch((error) => console.error('Error fetching addresses:', error));
+        } else {
+            setIsLoggedIn(false);
+        }
+    }, [cities]);  // Lắng nghe sự thay đổi của cities để cập nhật lại khi cần
+
+    useEffect(() => {
+        // Kiểm tra xem khách hàng có đăng nhập không
+        const user = localStorage.getItem('userKH');
+        if (user) {
+            const customerData = JSON.parse(user);
+            setTenNguoiNhan(customerData.khachHang.tenKhachHang); // Set tên người nhận
+            setSdtNguoiNhan(customerData.khachHang.sdt); // Set số điện thoại
+            setEmailNguoiNhan(customerData.khachHang.email); // Set email
+        }
+    }, []);
+
+    const handleLoginRedirect = () => {
+        // Điều hướng đến trang login
+        navigate('/login');
+    };
+
+    const [openDC, setOpenDC] = useState(false);
+    const handleOpenDC = () => setOpenDC(true);
+    const handleCloseDC = () => setOpenDC(false);
+    const [openChonDC, setOpenChonDC] = useState(false);
+
+    const handleClickOpen = () => {
+        setOpenChonDC(true);
+    };
+
+    // Hàm đóng modal
+    const handleCloseChonDC = () => {
+        // Chỉ reset các giá trị đã chọn, không xóa dữ liệu
+        setNewCity('');  // Reset thành phố
+        setNewDistrict('');  // Reset quận/huyện
+        setNewWard('');  // Reset xã/phường
+
+        setOpenChonDC(false);  // Đóng modal
+    };
+
+    // Thêm mới địa chỉ cho khách hàng được chọn
+    const handleSaveAddress = () => {
+        const detailedAddress = document.getElementById('detailed-address').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const [soNha, duong] = detailedAddress.split(',');
+
+        // Lấy customerId từ localStorage
+        const user = localStorage.getItem('userKH');
+        const selectedCustomerId = user ? JSON.parse(user).khachHang.id : null; // Lấy ID khách hàng từ localStorage
+
+        if (!selectedCustomerId) {
+            alert('Không tìm thấy thông tin khách hàng.');
+            return;
+        }
+
+        const newAddress = {
+            khachHang: { id: selectedCustomerId },
+            soNha: soNha.trim(),
+            duong: duong.trim(),
+            xa: newWard,
+            huyen: newDistrict,
+            thanhPho: newCity,
+            moTa: description || '',
+            trangThai: 'Hoạt động',
+            macDinh: false,
+        };
+
+        // Gọi API để thêm địa chỉ mới
+        axios.post('http://localhost:8080/dragonbee/them-dia-chi', newAddress)
+            .then(response => {
+                // Sau khi thêm địa chỉ, gọi lại API để lấy danh sách địa chỉ mới nhất từ server
+                axios.get(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`)
+                    .then(response => {
+                        // Cập nhật lại danh sách địa chỉ từ response
+                        setAddresses(response.data);
+
+                        // Lấy địa chỉ mới nhất (ở cuối danh sách) để tự động chọn
+                        const lastAddress = response.data[response.data.length - 1];
+                        handleSelectAddress(lastAddress);  // Chọn địa chỉ cuối cùng trong danh sách
+
+                        // Đóng modal thêm địa chỉ sau khi lưu thành công
+                        setOpenChonDC(false);  // Đóng modal thêm địa chỉ
+
+                        alert('Thêm địa chỉ thành công!');
+                        setNewCity('');  // Reset thành phố
+                        setNewDistrict('');  // Reset quận/huyện
+                        setNewWard('');  // Reset xã/phường
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi lấy danh sách địa chỉ:', error);
+                        alert('Có lỗi khi lấy danh sách địa chỉ.');
+                    });
+            })
+            .catch(error => {
+                console.error('Có lỗi khi thêm địa chỉ:', error);
+                alert('Có lỗi khi thêm địa chỉ.');
+            });
+    };
+
+    const handleSelectAddress = (address) => {
+        // Lấy thông tin người dùng từ localStorage
+        const user = localStorage.getItem('userKH');
+        const selectedCustomerId = user ? JSON.parse(user).khachHang.id : null;
+
+        if (!selectedCustomerId) return; // Nếu không tìm thấy khách hàng thì thoát
+
+        setTenNguoiNhan(address.khachHang.tenKhachHang);  // Cập nhật tên người nhận
+        setSdtNguoiNhan(address.khachHang.sdt);  // Cập nhật số điện thoại người nhận
+        setCity(address.thanhPho);  // Cập nhật thành phố
+        setDistrict(address.huyen);  // Cập nhật huyện
+        setWard(address.xa);  // Cập nhật xã/phường
+        setSpecificAddress(`${address.soNha}, ${address.duong}`);  // Cập nhật địa chỉ cụ thể
+
+        // Cập nhật lại danh sách quận/huyện và xã/phường dựa trên thành phố và huyện
+        const city = cities.find(city => city.Name === address.thanhPho);
+        if (city) {
+            setDistricts(city.Districts);  // Cập nhật danh sách quận/huyện của thành phố
+            const district = city.Districts.find(d => d.Name === address.huyen);
+            if (district) {
+                setWards(district.Wards);  // Cập nhật danh sách xã/phường của huyện
+            } else {
+                setWards([]);  // Nếu không tìm thấy huyện, reset danh sách xã/phường
+            }
+        } else {
+            setDistricts([]);  // Nếu không tìm thấy thành phố, reset danh sách quận/huyện
+            setWards([]);  // Reset xã/phường
+        }
+
+        setOpenDC(false);  // Đóng modal sau khi chọn
+    };
+
     return (
         <Container sx={{ marginBottom: 0 }}>
             <Box sx={{ display: 'flex', height: '100vh' }}>
@@ -420,25 +637,57 @@ const ThanhToan = () => {
                             </Typography>
                         </Breadcrumbs>
 
-                        <Box sx={{
-                            border: '1px solid #e0e0e0', padding: '16px', borderRadius: '8px', marginTop: '24px',
-                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        }}>
-                            <Box>
-                                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                                    Bạn đã có tài khoản?
-                                </Typography>
-                                <Typography variant="body2" sx={{ marginTop: '8px' }}>
-                                    Đăng nhập để có trải nghiệm thanh toán nhanh nhất
-                                </Typography>
-                            </Box>
-                            <Button variant="contained" sx={{ fontWeight: 'bold' }}>
-                                ĐĂNG NHẬP
-                            </Button>
+                        <Box>
+                            {isLoggedIn ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={handleOpenDC}
+                                        sx={{
+                                            color: "#1976D2",
+                                            borderColor: "#1976D2",
+                                            backgroundColor: "#fff",
+                                            "&:hover": {
+                                                backgroundColor: "#e3f2fd",
+                                                borderColor: "#1565c0",
+                                                color: "#1565c0",
+                                            },
+
+                                        }}
+                                    >
+                                        Chọn địa chỉ
+                                    </Button>
+                                </Box>
+                            ) : (
+                                <Box
+                                    sx={{
+                                        border: '1px solid #e0e0e0',
+                                        padding: '16px',
+                                        borderRadius: '8px',
+                                        marginTop: '24px',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Box>
+                                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                            Bạn đã có tài khoản?
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ marginTop: '8px' }}>
+                                            Đăng nhập để có trải nghiệm thanh toán nhanh nhất
+                                        </Typography>
+                                    </Box>
+                                    <Button
+                                        variant="contained"
+                                        sx={{ fontWeight: 'bold' }}
+                                        onClick={handleLoginRedirect}  // Gọi hàm điều hướng khi click
+                                    >
+                                        ĐĂNG NHẬP
+                                    </Button>
+                                </Box>
+                            )}
                         </Box>
-                        <Button variant="contained" sx={{ fontWeight: 'bold' }}>
-                            Chọn địa chỉ
-                        </Button>
 
                         <Grid container spacing={2}>
                             <Grid item xs={6}>
@@ -834,6 +1083,164 @@ const ThanhToan = () => {
                     </Button>
                     <Button onClick={xacNhanDatHang} color="primary" variant="contained">
                         Xác nhận
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Gọi Modal */}
+            <Modal open={openDC} onClose={handleCloseDC}>
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: 800,
+                        bgcolor: "white",
+                        boxShadow: 24,
+                        p: 3,
+                        borderRadius: 2,
+                    }}
+                >
+                    {/* Header */}
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="h6">Danh sách Địa chỉ</Typography>
+                        <IconButton onClick={handleCloseDC}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+
+                    {/* Table hiển thị danh sách địa chỉ */}
+                    <TableContainer component={Paper} sx={{ mt: 2, maxHeight: 400 }}>
+                        <Table stickyHeader>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell sx={{ fontWeight: "bold" }}>STT</TableCell>
+                                    <TableCell sx={{ fontWeight: "bold" }}>Tên người nhận</TableCell>
+                                    <TableCell sx={{ fontWeight: "bold" }}>Số điện thoại</TableCell>
+                                    <TableCell sx={{ fontWeight: "bold" }}>Địa chỉ</TableCell>
+                                    <TableCell sx={{ fontWeight: "bold" }}>Thao tác</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {addresses.map((address, index) => (
+                                    <TableRow key={address.id}>
+                                        <TableCell>{index + 1}</TableCell>
+                                        <TableCell>{tenNguoiNhan}</TableCell>
+                                        <TableCell>{sdtNguoiNhan}</TableCell>
+                                        <TableCell>
+                                            {`${address.soNha}, ${address.duong}, ${address.xa}, ${address.huyen}, ${address.thanhPho}`}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button variant="outlined" color="primary" onClick={() => handleSelectAddress(address)}>
+                                                CHỌN
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+
+                        </Table>
+                    </TableContainer>
+
+                    {/* Nút thêm địa chỉ */}
+                    <Button variant="contained" color="warning" sx={{ mt: 2 }} fullWidth onClick={handleClickOpen}>
+                        THÊM ĐỊA CHỈ
+                    </Button>
+                </Box>
+            </Modal>
+
+            {/* Modal cho chọn địa chỉ */}
+            <Dialog open={openChonDC} onClose={handleCloseChonDC}>
+                <DialogTitle>Chọn địa chỉ</DialogTitle>
+                <DialogContent>
+                    {/* Thành phố */}
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="city-label" size="small">Tỉnh/Thành phố</InputLabel>
+                        <Select
+                            labelId="city-label"
+                            value={newCity}  // Sử dụng state cho modal là 'city'
+                            label="Tỉnh/Thành phố"
+                            onChange={handleCityChangeModal}
+                            size="small" // Áp dụng size nhỏ cho Select
+                        >
+                            {newCities.map((newCity) => (  // Sử dụng citiess (dữ liệu cho modal)
+                                <MenuItem key={newCity.Id} value={newCity.Name}>
+                                    {newCity.Name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                    {/* Quận/Huyện */}
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="district-label" size="small">Quận/Huyện</InputLabel>
+                        <Select
+                            labelId="district-label"
+                            value={newDistrict}  // Sử dụng state cho modal là 'district'
+                            label="Quận/Huyện"
+                            onChange={handleDistrictChangeModal}
+                            disabled={!newCities}  // Disable nếu chưa chọn thành phố
+                            size="small" // Áp dụng size nhỏ cho Select
+                        >
+                            {newDistricts.map((newDistrict) => (  // Sử dụng districtss (dữ liệu cho modal)
+                                <MenuItem key={newDistrict.Id} value={newDistrict.Name}>
+                                    {newDistrict.Name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                    {/* Xã/Phường */}
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="ward-label" size="small">Xã/Phường</InputLabel>
+                        <Select
+                            labelId="ward-label"
+                            value={newWard}  // Sử dụng state cho modal là 'ward'
+                            label="Xã/Phường"
+                            onChange={handleWardChangeModal}
+                            disabled={!newDistrict}  // Disable nếu chưa chọn quận/huyện
+                            size="small" // Áp dụng size nhỏ cho Select
+                        >
+                            {newWards.map((newWard) => (  // Sử dụng wardss (dữ liệu cho modal)
+                                <MenuItem key={newWard.Id} value={newWard.Name}>
+                                    {newWard.Name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                    {/* Địa chỉ cụ thể */}
+                    <FormControl fullWidth margin="normal">
+                        <TextField
+                            id="detailed-address"
+                            label="Địa chỉ cụ thể"
+                            variant="outlined"
+                            placeholder="Nhập địa chỉ cụ thể"
+                            fullWidth
+                            size="small" // Áp dụng size nhỏ cho TextField
+                        />
+                    </FormControl>
+
+                    {/* Mô tả */}
+                    <FormControl fullWidth margin="normal">
+                        <TextField
+                            id="description"
+                            label="Mô tả"
+                            variant="outlined"
+                            placeholder="Nhập mô tả"
+                            fullWidth
+                            size="small" // Áp dụng size nhỏ cho TextField
+                        />
+                    </FormControl>
+
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseChonDC} color="primary">
+                        Hủy
+                    </Button>
+                    <Button onClick={handleSaveAddress} color="primary">
+                        Lưu
                     </Button>
                 </DialogActions>
             </Dialog>
