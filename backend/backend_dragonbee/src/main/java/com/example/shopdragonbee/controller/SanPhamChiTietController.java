@@ -7,6 +7,7 @@ import com.example.shopdragonbee.entity.AnhSanPham;
 import com.example.shopdragonbee.entity.SanPham;
 import com.example.shopdragonbee.entity.SanPhamChiTiet;
 import com.example.shopdragonbee.repository.AnhSanPhamRepository;
+import com.example.shopdragonbee.repository.SanPhamChiTietRepository;
 import com.example.shopdragonbee.service.SanPhamChiTietService;
 import com.example.shopdragonbee.service.SanPhamService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -29,6 +32,11 @@ public class SanPhamChiTietController {
     private SanPhamService sanPhamService;
     @Autowired
     private AnhSanPhamRepository anhSanPhamRepository;
+
+    @Autowired
+    private SanPhamChiTietRepository sanPhamChiTietRepository;
+
+
     @GetMapping("/{id}")
     public ResponseEntity<SanPhamChiTietDTO> getSanPhamChiTiet(@PathVariable Integer id) {
         SanPhamChiTietDTO sanPhamChiTietDTO = sanPhamChiTietService.getSanPhamChiTietById(id);
@@ -143,6 +151,65 @@ public class SanPhamChiTietController {
         }
 
         return new ResponseEntity<>(updatedSanPhamChiTiet, HttpStatus.OK);
+    }
+
+    @GetMapping("/tim-kiem")
+    public ResponseEntity<List<SanPhamChiTiet>> searchSanPhamChiTiet(
+            @RequestParam(required = false) String tenSanPham,
+            @RequestParam(required = false) String tenDanhMuc,
+            @RequestParam(required = false) String tenThuongHieu,
+            @RequestParam(required = false) String tenPhongCach,
+            @RequestParam(required = false) String tenChatLieu,
+            @RequestParam(required = false) String tenKieuDang,
+            @RequestParam(required = false) String tenKieuDaiQuan,
+            @RequestParam(required = false) String tenMauSac,
+            @RequestParam(required = false) String tenSize,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
+
+        List<SanPhamChiTiet> result = sanPhamChiTietService.searchSanPhamChiTiet(
+                tenSanPham, tenDanhMuc, tenThuongHieu, tenPhongCach, tenChatLieu,
+                tenKieuDang, tenKieuDaiQuan, tenMauSac, tenSize, minPrice, maxPrice);
+
+        return ResponseEntity.ok(result);
+    }
+
+    // API chuyển đổi trạng thái giữa "Hoạt động" và "Ngừng hoạt động"
+    @PatchMapping("/{id}/trang-thai")
+    public ResponseEntity<Map<String, Object>> updateTrangThai(@PathVariable Integer id) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Tìm sản phẩm chi tiết theo ID
+        SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sản phẩm chi tiết không tồn tại"));
+
+        // Kiểm tra số lượng sản phẩm
+        if (sanPhamChiTiet.getSoLuong() == 0) {
+            response.put("success", false);
+            response.put("message", "Không thể thay đổi trạng thái, sản phẩm đã hết hàng");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Kiểm tra trạng thái hiện tại và chuyển đổi trạng thái
+        String currentStatus = sanPhamChiTiet.getTrangThai();
+        if ("Hoạt động".equals(currentStatus)) {
+            sanPhamChiTiet.setTrangThai("Ngừng hoạt động");
+        } else if ("Ngừng hoạt động".equals(currentStatus)) {
+            sanPhamChiTiet.setTrangThai("Hoạt động");
+        } else {
+            response.put("success", false);
+            response.put("message", "Trạng thái không hợp lệ để thay đổi");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Cập nhật lại trạng thái của sản phẩm chi tiết
+        sanPhamChiTietRepository.save(sanPhamChiTiet);
+
+        response.put("success", true);
+        response.put("message", "Trạng thái sản phẩm chi tiết đã được cập nhật");
+        response.put("newStatus", sanPhamChiTiet.getTrangThai());
+
+        return ResponseEntity.ok(response);
     }
 
 }

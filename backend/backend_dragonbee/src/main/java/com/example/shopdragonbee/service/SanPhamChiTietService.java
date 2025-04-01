@@ -17,7 +17,9 @@ import com.example.shopdragonbee.repository.SanPhamChiTietRepository;
 import com.example.shopdragonbee.repository.SizeRepository;
 import com.example.shopdragonbee.repository.ThuongHieuRepository;
 import com.example.shopdragonbee.repository.XuatXuRepository;
+import com.example.shopdragonbee.specification.SanPhamChiTietSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -289,5 +291,26 @@ public class SanPhamChiTietService {
         }
 
         return updatedSanPhamChiTietList;
+    }
+
+    /// lọc sản phẩm chi tiết
+    public List<SanPhamChiTiet> searchSanPhamChiTiet(String tenSanPham, String tenDanhMuc, String tenThuongHieu,
+                                                     String tenPhongCach, String tenChatLieu, String tenKieuDang,
+                                                     String tenKieuDaiQuan, String tenMauSac, String tenSize,
+                                                     Double minPrice, Double maxPrice) {
+
+        Specification<SanPhamChiTiet> spec = Specification.where(
+                SanPhamChiTietSpecification.hasTenSanPhamLike(tenSanPham))
+                .and(SanPhamChiTietSpecification.hasDanhMuc(tenDanhMuc))
+                .and(SanPhamChiTietSpecification.hasThuongHieu(tenThuongHieu))
+                .and(SanPhamChiTietSpecification.hasPhongCach(tenPhongCach))
+                .and(SanPhamChiTietSpecification.hasChatLieu(tenChatLieu))
+                .and(SanPhamChiTietSpecification.hasKieuDang(tenKieuDang))
+                .and(SanPhamChiTietSpecification.hasKieuDaiQuan(tenKieuDaiQuan))
+                .and(SanPhamChiTietSpecification.hasMauSac(tenMauSac))
+                .and(SanPhamChiTietSpecification.hasSize(tenSize))
+                .and(SanPhamChiTietSpecification.isPriceBetween(minPrice, maxPrice));
+
+        return sanPhamChiTietRepository.findAll(spec);
     }
 }
