@@ -84,7 +84,7 @@ const HoaDonChiTiet = () => {
   const [danhMuc, setDanhMuc] = useState(0); // Giá trị của bộ lọc danh mục
   const [mauSac, setMauSac] = useState(0); // Giá trị của bộ lọc màu sắc
   const [chatLieu, setChatLieu] = useState(0); // Giá trị của bộ lọc chất liệu
-  const [kichCo, setKichCo] = useState(0); // Giá trị của bộ lọc sizw
+  const [kichCo, setKichCo] = useState(0); // Giá trị của bộ lọc size
   const [kieuDang, setKieuDang] = useState(0); // Giá trị của bộ lọc kiểu dáng
   const [thuongHieu, setThuongHieu] = useState(0); // Giá trị của bộ lọc thương hiệu
   const [phongCach, setPhongCach] = useState(0); // Giá trị của bộ lọc phong cách
