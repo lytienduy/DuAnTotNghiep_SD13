@@ -429,23 +429,24 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   };
   const handleOpenModalAnh = async (id) => {
     setLoading(true);
-
+  
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/anh-san-pham/cloudinary-images"
-      );
-
+      const response = await fetch("http://localhost:8080/api/anh-san-pham/cloudinary-images");
+  
       if (!response.ok) {
         throw new Error("Không thể lấy ảnh từ backend");
       }
-
+  
       const data = await response.json();
       console.log("Dữ liệu ảnh từ API:", data); // Kiểm tra dữ liệu ảnh
-
+  
       if (data && Array.isArray(data.resources)) {
-        setCloudinaryImages(data.resources); // Cập nhật ảnh từ API
+        // Sắp xếp ảnh theo created_at (ảnh mới hơn xuống cuối cùng)
+        const sortedImages = data.resources.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  
+        setCloudinaryImages(sortedImages); // Cập nhật ảnh đã sắp xếp vào state
       }
-
+  
       setSelectedProductId(id);
       setOpenModalAnh(true); // Mở modal sau khi tải ảnh
     } catch (error) {
@@ -455,6 +456,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       setLoading(false);
     }
   };
+  
 
   const handleCloseModalAnh = () => {
     setSelectedImages([]);
@@ -2473,7 +2475,10 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
           </div>
         </Modal>
 
-        <Button onClick={handleSave}>Lưu</Button>
+        <Box display="flex" justifyContent="flex-end">
+  <Button onClick={handleSave}>Lưu</Button>
+</Box>
+
       </Paper>
     </div>
   );
