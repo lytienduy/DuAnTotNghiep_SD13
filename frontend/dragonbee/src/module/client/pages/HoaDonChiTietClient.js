@@ -3,7 +3,7 @@ import axios from "axios"; // Import axios
 import {
   Box, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Typography, Button, Chip, Paper, CircularProgress, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Stack, InputAdornment
-  , Modal, Slider, FormControl, Select, MenuItem,Container
+  , Modal, Slider, FormControl, Select, MenuItem,Container,InputLabel
 
 } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -58,8 +58,235 @@ const HoaDonChiTietClient = () => {
   const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
 
+//Thay đổi địa chỉ nhận hàng
+  const [openModal, setOpenModal] = useState(false);
+  const [hoTen, setHoTen] = useState(hoaDon.tenNguoiNhanHang);
+  const [sdt, setSdt] = useState(hoaDon.sdtNguoiNhanHang);
+  const [email, setEmail] = useState(hoaDon.emailNguoiNhanHang);
+  const [diaChiCuThe, setDiaChiCuThe] = useState("");
+  const [phiVanChuyen, setPhiVanChuyen] = useState("");
 
+  // Khai báo Thành phố huyện xã
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
+  const [ward, setWard] = useState("");
 
+  // State để lưu thông báo lỗi
+  const [errorMessage, setErrorMessage] = useState({
+    hoTen: "",
+    sdt: "",
+    email: "",
+    phiShip: "",
+    diaChi: "",
+  });
+
+  useEffect(() => {
+      if (hoaDon.diaChiNguoiNhanHang) {
+        const addressParts = hoaDon.diaChiNguoiNhanHang.split(", ");
+        if (addressParts.length >= 4) {
+          const cityFromAddress = addressParts[addressParts.length - 1];
+          const districtFromAddress = addressParts[addressParts.length - 2];
+          const wardFromAddress = addressParts[addressParts.length - 3];
+          setCity(cityFromAddress);
+          setDistrict(districtFromAddress);
+          setWard(wardFromAddress);  // Cập nhật xã/phường từ địa chỉ
+          setDiaChiCuThe(addressParts.slice(0, addressParts.length - 3).join(", "));
+        }
+      }
+    }, [hoaDon.diaChiNguoiNhanHang]);
+  
+    const handleChangeAddress = () => {
+      // Khi bấm nút Thay đổi địa chỉ, mở modal và cập nhật thông tin từ địa chỉ hiện tại
+      setCity(city);
+      setDistrict(district);
+      setWard(ward);
+      setDiaChiCuThe(diaChiCuThe);
+      setOpenModal(true); // Mở modal thay đổi địa chỉ
+    };
+  
+    // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
+    useEffect(() => {
+      axios.get("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json")
+        .then(response => {
+          const normalizedCities = response.data.map(city => ({
+            ...city,
+            Name: city.Name.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
+          }));
+          setCities(normalizedCities);
+        })
+        .catch(error => console.error("Error fetching data:", error));
+    }, []);
+  
+    const handleCityChange = (event) => {
+      const cityName = event.target.value;
+      setCity(cityName);  // Cập nhật giá trị thành phố
+      setDistrict("");  // Reset quận/huyện
+      setWard("");  // Reset xã/phường khi thay đổi thành phố
+  
+      // Cập nhật danh sách quận/huyện dựa trên thành phố đã chọn
+      const city = cities.find(city => city.Name === cityName);
+      if (city) {
+        setDistricts(city.Districts);  // Cập nhật danh sách quận/huyện từ thành phố đã chọn
+        setWards([]);  // Reset danh sách xã/phường
+      }
+    };
+  
+    const handleDistrictChange = (event) => {
+      const districtName = event.target.value;
+      setDistrict(districtName);  // Cập nhật giá trị quận/huyện
+      setWard("");  // Reset xã/phường khi thay đổi quận/huyện
+  
+      // Cập nhật danh sách xã/phường cho quận/huyện đã chọn
+      const selectedDistrict = districts.find(d => d.Name === districtName);
+      if (selectedDistrict) {
+        setWards(selectedDistrict.Wards);  // Cập nhật danh sách xã/phường
+      } else {
+        setWards([]);  // Nếu không tìm thấy quận, reset danh sách xã/phường
+      }
+    };
+  
+    const handleWardChange = (event) => {
+      setWard(event.target.value);
+    };
+    useEffect(() => {
+      // Khi thành phố thay đổi, cập nhật danh sách quận/huyện và reset xã/phường
+      if (city) {
+        const selectedCity = cities.find(c => c.Name === city);
+        if (selectedCity) {
+          setDistricts(selectedCity.Districts);  // Cập nhật danh sách quận/huyện
+          setDistrict(district);  // Reset quận/huyện
+          setWard(ward);  // Reset xã/phường
+          setWards([]);  // Reset danh sách xã/phường
+        }
+      }
+    }, [city, cities]); // Theo dõi sự thay đổi của thành phố
+  
+    useEffect(() => {
+      if (district) {
+        const selectedDistrict = districts.find(d => d.Name === district);
+        if (selectedDistrict) {
+          setWards(selectedDistrict.Wards);  // Cập nhật danh sách xã/phường cho quận/huyện
+        }
+      }
+    }, [district, districts]); // Theo dõi sự thay đổi của quận/huyện  
+  
+    useEffect(() => {
+      // Khi xã/phường thay đổi, cập nhật trạng thái xã/phường
+      if (ward) {
+        // Có thể thực hiện thêm logic khi xã/phường thay đổi (nếu cần)
+        console.log("Xã/Phường đã thay đổi:", ward);
+      }
+    }, [ward]); // Theo dõi sự thay đổi của xã/phường
+  
+    const handlePhiVanChuyenChange = (e) => {
+      const value = e.target.value;
+      setHoaDon((prev) => ({
+        ...prev,
+        phiVanChuyen: value,
+      }));
+    };
+  
+    const handleSave = async () => {
+      const storedUserData = JSON.parse(localStorage.getItem('userKH'));
+      if (!storedUserData || !storedUserData.khachHang) {
+        setErrorMessage((prev) => ({ ...prev, hoTen: "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại." }));
+        return;
+      }
+  
+      // Kiểm tra các trường không được để null hoặc rỗng
+      let formIsValid = true;
+      const newError = { hoTen: "", sdt: "", email: "", phiShip: "", diaChi: "" };
+  
+      if (!hoaDon.tenNguoiNhanHang || !hoaDon.sdtNguoiNhanHang || !hoaDon.emailNguoiNhanHang || !diaChiCuThe) {
+        formIsValid = false;
+        if (!hoaDon.tenNguoiNhanHang) newError.hoTen = "Họ tên không được để trống.";
+        if (!hoaDon.sdtNguoiNhanHang) newError.sdt = "Số điện thoại không được để trống.";
+        if (!hoaDon.emailNguoiNhanHang) newError.email = "Email không được để trống.";
+        if (!diaChiCuThe) newError.diaChi = "Địa chỉ không được để trống.";
+      }
+  
+      // Kiểm tra số điện thoại hợp lệ
+      const phonePattern = /^(03|05|07|08|09)\d{7}$/;
+      if (hoaDon.sdtNguoiNhanHang && !phonePattern.test(hoaDon.sdtNguoiNhanHang)) {
+        formIsValid = false;
+        newError.sdt = "Số điện thoại không hợp lệ. Đầu số phải thuộc các nhà mạng Viettel, Mobifone, Vinaphone hoặc Vietnamobile và có 9 chữ số.";
+      }
+  
+      // Kiểm tra email hợp lệ
+      const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (hoaDon.emailNguoiNhanHang && !emailPattern.test(hoaDon.emailNguoiNhanHang)) {
+        formIsValid = false;
+        newError.email = "Email không hợp lệ.";
+      }
+  
+      // Kiểm tra phí vận chuyển hợp lệ (đảm bảo phiVanChuyen không phải undefined)
+let phiShip = hoaDon.phiVanChuyen != null
+? String(hoaDon.phiVanChuyen).replace(/,/g, '')
+: ''; // Loại bỏ dấu phẩy
+
+// Kiểm tra nếu phiShip không phải là số hợp lệ
+if (phiShip === '' || isNaN(parseFloat(phiShip))) {
+formIsValid = false;
+newError.phiShip = "Phí vận chuyển không hợp lệ.";
+} else {
+phiShip = parseFloat(phiShip); // Chuyển đổi sang kiểu số thực
+}
+
+  
+      // Cập nhật lỗi vào state
+      setErrorMessage(newError);
+  
+      if (!formIsValid) return;
+  
+      // Xây dựng địa chỉ đầy đủ từ các thông tin nhận hàng
+      const diaChiNhanHang = `${diaChiCuThe}, ${ward}, ${district}, ${city}`;
+  
+      const data = {
+        tenNguoiNhan: hoaDon.tenNguoiNhanHang,  // Họ tên
+        sdt: hoaDon.sdtNguoiNhanHang,           // Số điện thoại
+        emailNguoiNhan: hoaDon.emailNguoiNhanHang,  // Email
+        diaChiNhanHang: diaChiNhanHang,           // Địa chỉ nhận hàng đầy đủ
+        phiShip: phiShip,                        // Phí vận chuyển đã chuyển thành số
+        nguoiSua: storedUserData.khachHang.tenKhachHang,  // Người sửa
+      };
+  
+      try {
+        const response = await fetch(`http://localhost:8080/hoa-don/cap-nhat-thong-tin-nhan-hang/${hoaDon.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+  
+        if (response.ok) {
+          const result = await response.json();
+          if (result) {
+            setHoaDon(prevHoaDon => ({
+              ...prevHoaDon,
+              tenNguoiNhanHang: hoaDon.tenNguoiNhanHang,
+              sdtNguoiNhanHang: hoaDon.sdtNguoiNhanHang,
+              emailNguoiNhanHang: hoaDon.emailNguoiNhanHang,
+              diaChiNguoiNhanHang: diaChiNhanHang,
+            }));
+  
+            setOpenModal(false); // Đóng modal nếu thành công
+            alert("Cập nhật thông tin nhận hàng thành công!");
+          } else {
+            alert("Cập nhật thất bại!");
+          }
+        } else {
+          const errorMessage = await response.text();
+          alert(`Lỗi từ server: ${errorMessage}`);
+        }
+      } catch (errorMessage) {
+        console.error("Lỗi khi cập nhật thông tin:", errorMessage);
+        alert("Đã có lỗi xảy ra, vui lòng thử lại!");
+      }
+    };
 
   const handleDialogOpen = (message) => {
     setDialogMessage(message);
@@ -98,7 +325,7 @@ const HoaDonChiTietClient = () => {
       setLoading(false);
     }
   };
-  const tienDaThanhToanBangVNPAY = hoaDon?.listThanhToanHoaDon 
+  const tienDaThanhToanBangVNPAY = (hoaDon?.listThanhToanHoaDon || []) 
     .filter(tt => tt?.phuongThuc === "Thanh toán VNPay") // Lọc chỉ lấy các phần tử có id = 3
     .reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tổng tiền
   //Hàm lọcThemSanPhamHoaDonTaiQuay
@@ -642,26 +869,46 @@ const HoaDonChiTietClient = () => {
           </Grid>
 
           {/* Cột 2: Thông tin nhận hàng */}
-          {hoaDon.sdtNguoiNhanHang && (
-            <Grid item xs={12} md={6}>
-              <Typography variant="h7" gutterBottom sx={{ fontWeight: "bold", color: "#E65100" }}>
-                Thông tin nhận hàng
-              </Typography>
-              <Typography>
-                <b>Tên người nhận:</b> {hoaDon.tenNguoiNhanHang}
-              </Typography>
-              <Typography>
-                <b>SDT người nhận:</b> {hoaDon.sdtNguoiNhanHang}
-              </Typography>
-              <Typography>
-                <b>Email người nhận:</b> {hoaDon.emailNguoiNhanHang}
-              </Typography>
-              <Typography>
-                <b>Địa chỉ người nhận:</b> {hoaDon.diaChiNguoiNhanHang}
-              </Typography>
-            </Grid>
-          )
+                    {hoaDon.sdtNguoiNhanHang && (
+                      <Grid item xs={12} md={6}>
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          <Typography variant="h7" gutterBottom sx={{ fontWeight: "bold", color: "#E65100" }}>
+                            Thông tin nhận hàng
+                          </Typography>
+                          {hoaDon.trangThai === "Chờ xác nhận" &&
+                          <Button
+                            variant="outlined"
+                            sx={{
+                              backgroundColor: "white",
+                              color: "#0077ff", // Màu chữ xanh
+                              borderColor: "#0077ff", // Màu viền xanh
+                              "&:hover": {
+                                backgroundColor: "#e3f2fd",
+                                borderColor: "#1565c0",
+                                color: "#1565c0",
+                              },
+                            }}
+                            onClick={handleChangeAddress} // Sử dụng hàm để mở modal
+                          >
+                            Thay đổi địa chỉ
+                          </Button>
           }
+                        </Box>
+                        <Typography>
+                          <b>Tên người nhận:</b> {hoaDon.tenNguoiNhanHang}
+                        </Typography>
+                        <Typography>
+                          <b>SDT người nhận:</b> {hoaDon.sdtNguoiNhanHang}
+                        </Typography>
+                        <Typography>
+                          <b>Email người nhận:</b> {hoaDon.emailNguoiNhanHang}
+                        </Typography>
+                        <Typography>
+                          <b>Địa chỉ người nhận:</b> {hoaDon.diaChiNguoiNhanHang}
+                        </Typography>
+                      </Grid>
+                    )
+                    }
 
           {/* Dòng mới: Thông tin khách hàng */}
           <Grid item xs={12}>
@@ -1343,6 +1590,122 @@ const HoaDonChiTietClient = () => {
           </Box>
         </Box>
       </Modal>
+
+      {/* Modal thay đổi địa chỉ nhận hàng */}
+            <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+              <DialogTitle>Thay đổi địa chỉ</DialogTitle>
+              <DialogContent>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Họ và Tên"
+                      fullWidth
+                      value={hoaDon.tenNguoiNhanHang}
+                      onChange={(e) => setHoaDon({ ...hoaDon, tenNguoiNhanHang: e.target.value })}
+                      variant="outlined"
+                      margin="normal"
+                      size="small"
+                    />
+                    {errorMessage.hoTen && <Typography color="error" variant="body2">{errorMessage.hoTen}</Typography>}
+                  </Grid>
+      
+                  <Grid item xs={12} marginTop={-2}>
+                    <TextField
+                      label="Số Điện Thoại"
+                      fullWidth
+                      value={hoaDon.sdtNguoiNhanHang}
+                      onChange={(e) => setHoaDon({ ...hoaDon, sdtNguoiNhanHang: e.target.value })}
+                      variant="outlined"
+                      margin="normal"
+                      size="small"
+                    />
+                    {errorMessage.sdt && <Typography color="error" variant="body2">{errorMessage.sdt}</Typography>}
+                  </Grid>
+      
+                  <Grid item xs={12} marginTop={-2}>
+                    <TextField
+                      label="Email"
+                      fullWidth
+                      value={hoaDon.emailNguoiNhanHang}
+                      onChange={(e) => setHoaDon({ ...hoaDon, emailNguoiNhanHang: e.target.value })}
+                      variant="outlined"
+                      margin="normal"
+                      size="small"
+                    />
+                    {errorMessage.email && <Typography color="error" variant="body2">{errorMessage.email}</Typography>}
+                  </Grid>
+      
+                  <Grid item xs={12} marginTop={-2}>
+                    <TextField
+                      label="Địa Chỉ Cụ Thể"
+                      fullWidth
+                      value={diaChiCuThe}
+                      onChange={(e) => setDiaChiCuThe(e.target.value)}
+                      variant="outlined"
+                      margin="normal"
+                      size="small"
+                    />
+                    {errorMessage.diaChi && <Typography color="error" variant="body2">{errorMessage.diaChi}</Typography>}
+                  </Grid>
+      
+                  {/* Các trường Thành phố, Quận, Xã... */}
+                  <Grid item xs={12} md={4}>
+                    <FormControl fullWidth size="small" sx={{ height: '100%' }}>
+                      <InputLabel>Tỉnh/Thành phố</InputLabel>
+                      <Select value={city} onChange={handleCityChange} label="Tỉnh/Thành phố">
+                        {cities.map((city) => (
+                          <MenuItem key={city.Id} value={city.Name}>{city.Name}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+      
+                  <Grid item xs={12} md={4}>
+                    <FormControl fullWidth size="small" sx={{ height: '100%' }}>
+                      <InputLabel>Quận/Huyện</InputLabel>
+                      <Select value={district} onChange={handleDistrictChange} label="Quận/Huyện">
+                        {districts.map((district) => (
+                          <MenuItem key={district.Id} value={district.Name}>{district.Name}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+      
+                  <Grid item xs={12} md={4}>
+                    <FormControl fullWidth size="small" sx={{ height: '100%' }}>
+                      <InputLabel>Xã/Phường</InputLabel>
+                      <Select value={ward} onChange={handleWardChange} label="Xã/Phường">
+                        {wards.length > 0 ? (
+                          wards.map((ward) => (
+                            <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem disabled>No wards available</MenuItem>
+                        )}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+      
+                  {/* Phí vận chuyển */}
+                <Grid item xs={12} marginTop={-1}>
+                  <TextField
+                    label="Phí vận chuyển"
+                    fullWidth
+                    value={hoaDon.phiVanChuyen}
+                    onChange={handlePhiVanChuyenChange}  // Sử dụng hàm thay đổi riêng cho phí vận chuyển
+                    variant="outlined"
+                    margin="normal"
+                    size="small"
+                  />
+                  {errorMessage.phiShip && <Typography color="error" variant="body2">{errorMessage.phiShip}</Typography>}
+                </Grid>
+                </Grid>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setOpenModal(false)}>Hủy</Button>
+                <Button onClick={handleSave} color="primary">Lưu</Button>
+              </DialogActions>
+            </Dialog>
     </div>
     </Container>
   );

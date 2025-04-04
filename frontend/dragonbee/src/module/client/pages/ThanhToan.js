@@ -124,7 +124,7 @@ const ThanhToan = () => {
     const luuHoaDon = async (maHoaDon = "") => {
         const addressParts = [specificAddress, ward, district, city]
             .filter(part => part) // Lọc bỏ giá trị null, undefined hoặc chuỗi rỗng
-            .join(" "); // Ghép chuỗi với dấu cách
+            .join(", "); // Ghép chuỗi với dấu , cách
         const response = await axios.post(`http://localhost:8080/thanhToanClient/xacNhanDatHang`, {
             maHoaDon: maHoaDon,
             pgg: selectedVoucherCode,
