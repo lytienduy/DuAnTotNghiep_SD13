@@ -7,6 +7,7 @@ import com.example.shopdragonbee.entity.AnhSanPham;
 import com.example.shopdragonbee.entity.SanPham;
 import com.example.shopdragonbee.entity.SanPhamChiTiet;
 import com.example.shopdragonbee.repository.AnhSanPhamRepository;
+import com.example.shopdragonbee.repository.SanPhamChiTietRepository;
 import com.example.shopdragonbee.service.SanPhamChiTietService;
 import com.example.shopdragonbee.service.SanPhamService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -29,30 +32,25 @@ public class SanPhamChiTietController {
     private SanPhamService sanPhamService;
     @Autowired
     private AnhSanPhamRepository anhSanPhamRepository;
+
+    @Autowired
+    private SanPhamChiTietRepository sanPhamChiTietRepository;
+
+
     @GetMapping("/{id}")
     public ResponseEntity<SanPhamChiTietDTO> getSanPhamChiTiet(@PathVariable Integer id) {
         SanPhamChiTietDTO sanPhamChiTietDTO = sanPhamChiTietService.getSanPhamChiTietById(id);
         return ResponseEntity.ok(sanPhamChiTietDTO);
     }
 
+
     // update 1 sản phẩm chi tiết
-    @PutMapping("/{id}")
-    public ResponseEntity<SanPhamChiTietDTO> updateSanPhamChiTiet(@PathVariable Integer id,
-                                                                  @RequestBody SanPhamChiTietUpdateDTO request) {
-        try {
-            System.out.println("Dữ liệu nhận từ frontend: " + request); // Kiểm tra dữ liệu từ frontend
-            // Gọi service để cập nhật sản phẩm chi tiết
-            SanPhamChiTietDTO updatedProduct = sanPhamChiTietService.updateSanPhamChiTiet(id, request);
-
-            // Trả về phản hồi thành công kèm theo DTO đã được cập nhật
-            return ResponseEntity.ok(updatedProduct);
-
-        } catch (RuntimeException e) {
-            // Xử lý lỗi nếu có vấn đề trong quá trình cập nhật
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new SanPhamChiTietDTO()); // Hoặc có thể trả về thông báo lỗi chi tiết
-        }
+    @PutMapping("/update/{id}")
+    public ResponseEntity<SanPhamChiTiet> updateSanPhamChiTiet(@PathVariable Integer id, @RequestBody SanPhamChiTietUpdateDTO sanPhamChiTietUpdateDTO) {
+        SanPhamChiTiet updatedSanPhamChiTiet = sanPhamChiTietService.updateSanPhamChiTiet(id, sanPhamChiTietUpdateDTO);
+        return ResponseEntity.ok(updatedSanPhamChiTiet);
     }
+
 
     //add
     // API thêm sản phẩm chi tiết và ảnh
@@ -153,6 +151,68 @@ public class SanPhamChiTietController {
         }
 
         return new ResponseEntity<>(updatedSanPhamChiTiet, HttpStatus.OK);
+    }
+
+    @GetMapping("/tim-kiem")
+    public ResponseEntity<List<SanPhamChiTiet>> searchSanPhamChiTiet(
+            @RequestParam(required = false) String tenSanPham,
+            @RequestParam(required = false) String tenDanhMuc,
+            @RequestParam(required = false) String tenThuongHieu,
+            @RequestParam(required = false) String tenPhongCach,
+            @RequestParam(required = false) String tenChatLieu,
+            @RequestParam(required = false) String tenKieuDang,
+            @RequestParam(required = false) String tenKieuDaiQuan,
+            @RequestParam(required = false) String tenMauSac,
+            @RequestParam(required = false) String tenSize,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
+
+        List<SanPhamChiTiet> result = sanPhamChiTietService.searchSanPhamChiTiet(
+                tenSanPham, tenDanhMuc, tenThuongHieu, tenPhongCach, tenChatLieu,
+                tenKieuDang, tenKieuDaiQuan, tenMauSac, tenSize, minPrice, maxPrice);
+
+        return ResponseEntity.ok(result);
+    }
+
+    // API chuyển đổi trạng thái giữa "Hoạt động" và "Ngừng hoạt động"
+    @PatchMapping("/{id}/trang-thai")
+    public ResponseEntity<Map<String, Object>> updateTrangThai(@PathVariable Integer id) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Tìm sản phẩm chi tiết theo ID
+        SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sản phẩm chi tiết không tồn tại"));
+
+        // Kiểm tra trạng thái hiện tại và chuyển đổi trạng thái
+        String currentStatus = sanPhamChiTiet.getTrangThai();
+
+        switch (currentStatus) {
+            case "Hoạt động":
+                // Nếu hiện tại là "Hoạt động", chuyển sang "Ngừng hoạt động" hoặc "Ngừng bán"
+                sanPhamChiTiet.setTrangThai("Ngừng hoạt động"); // Ví dụ, bạn có thể điều chỉnh theo nhu cầu
+                break;
+            case "Ngừng hoạt động":
+                // Nếu hiện tại là "Ngừng hoạt động", chuyển sang "Hoạt động" hoặc "Ngừng bán"
+                sanPhamChiTiet.setTrangThai("Hoạt động"); // Ví dụ, bạn có thể điều chỉnh theo nhu cầu
+                break;
+            case "Ngừng bán":
+                // Nếu hiện tại là "Ngừng bán", chuyển sang "Hoạt động" hoặc "Ngừng hoạt động"
+                sanPhamChiTiet.setTrangThai("Ngừng hoạt động"); // Ví dụ, bạn có thể điều chỉnh theo nhu cầu
+                break;
+            default:
+                response.put("success", false);
+                response.put("message", "Trạng thái không hợp lệ để thay đổi");
+                return ResponseEntity.badRequest().body(response);
+        }
+
+        // Cập nhật trạng thái sản phẩm chi tiết
+        sanPhamChiTietRepository.save(sanPhamChiTiet);
+
+        response.put("success", true);
+        response.put("message", "Trạng thái sản phẩm chi tiết đã được cập nhật");
+        response.put("newStatus", sanPhamChiTiet.getTrangThai());
+
+        return ResponseEntity.ok(response);
     }
 
 }

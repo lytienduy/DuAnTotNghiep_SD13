@@ -13,4 +13,9 @@ public class PhongCachDTO {
     private String tenPhongCach;
     private String moTa;
     private String trangThai;
+
+    public PhongCachDTO(Integer id, String tenPhongCach) {
+        this.id = id;
+        this.tenPhongCach = tenPhongCach;
+    }
 }

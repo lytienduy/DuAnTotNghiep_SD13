@@ -15,4 +15,9 @@ public class KieuDaiQuanDTO {
     private String tenKieuDaiQuan;
     private String moTa;
     private String trangThai;
+
+    public KieuDaiQuanDTO(Integer id, String tenKieuDaiQuan) {
+        this.id = id;
+        this.tenKieuDaiQuan = tenKieuDaiQuan;
+    }
 }

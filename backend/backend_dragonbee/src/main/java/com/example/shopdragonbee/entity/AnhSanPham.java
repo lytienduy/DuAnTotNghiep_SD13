@@ -3,7 +3,6 @@ package com.example.shopdragonbee.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 
 
 
@@ -15,7 +14,7 @@ import org.springframework.data.annotation.Id;
 @Builder
 public class AnhSanPham {
 
-    @jakarta.persistence.Id
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

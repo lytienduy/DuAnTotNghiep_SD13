@@ -77,4 +77,15 @@ public class AnhSanPhamController {
             return ResponseEntity.status(response.getStatusCode()).body("Không thể lấy ảnh từ Cloudinary");
         }
     }
+
+    // xóa
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteAnhSanPham(@PathVariable Integer id) {
+        boolean isDeleted = anhSanPhamService.deleteAnhSanPham(id);
+        if (isDeleted) {
+            return ResponseEntity.ok("Xóa ảnh thành công.");
+        } else {
+            return ResponseEntity.badRequest().body("Không tìm thấy ảnh để xóa.");
+        }
+    }
 }

@@ -14,4 +14,9 @@ public class KieuDangDTO {
     private String tenKieuDang;
     private String moTa;
     private String trangThai;
+
+    public KieuDangDTO(Integer id, String tenKieuDang) {
+        this.id = id;
+        this.tenKieuDang = tenKieuDang;
+    }
 }

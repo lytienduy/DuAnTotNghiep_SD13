@@ -691,6 +691,9 @@ ALTER COLUMN id_khach_hang INT NULL;
 
 ALTER TABLE hoa_don
 ALTER COLUMN tong_tien FLOAT NULL;
-
+/*
 ALTER TABLE mau_sac
 ADD ma_mau VARCHAR(20);
+*/
+ALTER TABLE anh_san_pham
+DROP CONSTRAINT anh_san_pham_anh_url_key;
