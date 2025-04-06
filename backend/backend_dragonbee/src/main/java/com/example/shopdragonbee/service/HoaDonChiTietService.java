@@ -24,7 +24,10 @@ public class HoaDonChiTietService {
     private HoaDonRepository hoaDonRepository;
     @Autowired
     private HoaDonChiTietRepository hoaDonChiTietRepository;
-
+    @Autowired
+    private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
+    @Autowired
+    private PhuongThucThanhToanRepository phuongThucThanhToanRepository;
 
     //Lấy object HoaDonChiTiet đã chuyển đổi thông tin theo id hóa đơn
     public HoaDonChiTietResponseDTO.HoaDonChiTietDTO getHoaDonById(Integer id) {
@@ -46,6 +49,23 @@ public class HoaDonChiTietService {
         return listUrl;
     }
 
+    public Boolean xacNhanHoanTien(Integer idHoaDon, Float soTienCanHoan) {
+        try {
+            ThanhToanHoaDon thanhToanHoaDonHoanTien = new ThanhToanHoaDon();
+            thanhToanHoaDonHoanTien.setMa("TTHD" + (System.currentTimeMillis() % 100000));
+            thanhToanHoaDonHoanTien.setHoaDon(hoaDonRepository.findById(idHoaDon).get());
+            thanhToanHoaDonHoanTien.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(3).get());//Thanh toán VNPAY
+            thanhToanHoaDonHoanTien.setSoTienThanhToan(soTienCanHoan);
+            thanhToanHoaDonHoanTien.setNgayTao(LocalDateTime.now());
+            thanhToanHoaDonHoanTien.setLoai("Hoàn tiền");
+            thanhToanHoaDonRepository.save(thanhToanHoaDonHoanTien);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     //Chuyển đổi sang object có những thông tin bên Hóa Đơn Chi Tiết
     public HoaDonChiTietResponseDTO.HoaDonChiTietDTO convertHoaDonChiTietToDTO(HoaDon hoaDon) {
@@ -54,7 +74,7 @@ public class HoaDonChiTietService {
                         ThanhToanHoaDon::getNgayTao,
                         Comparator.nullsLast(Comparator.reverseOrder()) // Đưa null xuống cuối danh sách
                 ))
-                .map(tt -> new HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO(tt.getId(), tt.getSoTienThanhToan(), tt.getNgayTao(), tt.getPhuongThucThanhToan().getTenPhuongThuc(), tt.getNguoiTao(), tt.getGhiChu()))
+                .map(tt -> new HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO(tt.getId(), tt.getSoTienThanhToan(), tt.getNgayTao(), tt.getPhuongThucThanhToan().getTenPhuongThuc(), tt.getNguoiTao(), tt.getGhiChu(), tt.getLoai()))
                 .collect(Collectors.toList());
 
 
@@ -63,7 +83,7 @@ public class HoaDonChiTietService {
                         HoaDonChiTiet::getNgayTao,
                         Comparator.nullsLast(Comparator.reverseOrder()) // Đưa null xuống cuối danh sách
                 ))
-                .map(hdct -> new HoaDonChiTietResponseDTO.DanhSachSanPhamDTO(hdct.getId(), listURLAnhSanPhamChiTiet(hdct.getSanPhamChiTiet().getListAnh()), hdct.getSanPhamChiTiet().getSanPham().getTenSanPham() + hdct.getSanPhamChiTiet().getMauSac().getTenMauSac() + " size " + hdct.getSanPhamChiTiet().getSize().getTenSize(), hdct.getSanPhamChiTiet().getId(), hdct.getSanPhamChiTiet().getMa(), hdct.getDonGia(), hdct.getSoLuong(), hdct.getDonGia() * hdct.getSoLuong(),hdct.getTrangThai()))
+                .map(hdct -> new HoaDonChiTietResponseDTO.DanhSachSanPhamDTO(hdct.getId(), listURLAnhSanPhamChiTiet(hdct.getSanPhamChiTiet().getListAnh()), hdct.getSanPhamChiTiet().getSanPham().getTenSanPham() + hdct.getSanPhamChiTiet().getMauSac().getTenMauSac() + " size " + hdct.getSanPhamChiTiet().getSize().getTenSize(), hdct.getSanPhamChiTiet().getId(), hdct.getSanPhamChiTiet().getMa(), hdct.getDonGia(), hdct.getSoLuong(), hdct.getDonGia() * hdct.getSoLuong(), hdct.getTrangThai()))
                 .collect(Collectors.toList());
 
         List<HoaDonChiTietResponseDTO.LichSuHoaDonDTO> listLichSuHoaDon = hoaDon.getListLichSuHoaDon().stream()
@@ -100,7 +120,7 @@ public class HoaDonChiTietService {
                 tenKhachHang,
                 sdtKhachHang,
                 hoaDon.getTongTien(),
-                hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(),"Hoạt động"),
+                hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động"),
                 hoaDon.getPhiShip(),
                 maPhieuGiamGia,
                 hoaDon.getTrangThai(),
@@ -118,16 +138,16 @@ public class HoaDonChiTietService {
                         ThanhToanHoaDon::getNgayTao,
                         Comparator.nullsLast(Comparator.reverseOrder()) // Đưa null xuống cuối danh sách
                 ))
-                .map(tt -> new HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO(tt.getId(), tt.getSoTienThanhToan(), tt.getNgayTao(), tt.getPhuongThucThanhToan().getTenPhuongThuc(), tt.getNguoiTao(), tt.getGhiChu()))
+                .map(tt -> new HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO(tt.getId(), tt.getSoTienThanhToan(), tt.getNgayTao(), tt.getPhuongThucThanhToan().getTenPhuongThuc(), tt.getNguoiTao(), tt.getGhiChu(), tt.getLoai()))
                 .collect(Collectors.toList());
 
 
-        List<HoaDonChiTietResponseDTO.DanhSachSanPhamDTO> listDanhSachSanPham = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndTrangThaiOrderByNgayTaoDesc(hoaDon,"Hoạt động").stream()
+        List<HoaDonChiTietResponseDTO.DanhSachSanPhamDTO> listDanhSachSanPham = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndTrangThaiOrderByNgayTaoDesc(hoaDon, "Hoạt động").stream()
                 .sorted(Comparator.comparing(
                         HoaDonChiTiet::getNgayTao,
                         Comparator.nullsLast(Comparator.reverseOrder()) // Đưa null xuống cuối danh sách
                 ))
-                .map(hdct -> new HoaDonChiTietResponseDTO.DanhSachSanPhamDTO(hdct.getId(), listURLAnhSanPhamChiTiet(hdct.getSanPhamChiTiet().getListAnh()), hdct.getSanPhamChiTiet().getSanPham().getTenSanPham() + hdct.getSanPhamChiTiet().getMauSac().getTenMauSac() + " size " + hdct.getSanPhamChiTiet().getSize().getTenSize(), hdct.getSanPhamChiTiet().getId(), hdct.getSanPhamChiTiet().getMa(), hdct.getDonGia(), hdct.getSoLuong(), hdct.getDonGia() * hdct.getSoLuong(),hdct.getTrangThai()))
+                .map(hdct -> new HoaDonChiTietResponseDTO.DanhSachSanPhamDTO(hdct.getId(), listURLAnhSanPhamChiTiet(hdct.getSanPhamChiTiet().getListAnh()), hdct.getSanPhamChiTiet().getSanPham().getTenSanPham() + hdct.getSanPhamChiTiet().getMauSac().getTenMauSac() + " size " + hdct.getSanPhamChiTiet().getSize().getTenSize(), hdct.getSanPhamChiTiet().getId(), hdct.getSanPhamChiTiet().getMa(), hdct.getDonGia(), hdct.getSoLuong(), hdct.getDonGia() * hdct.getSoLuong(), hdct.getTrangThai()))
                 .collect(Collectors.toList());
 
         List<HoaDonChiTietResponseDTO.LichSuHoaDonDTO> listLichSuHoaDon = hoaDon.getListLichSuHoaDon().stream()
@@ -164,7 +184,7 @@ public class HoaDonChiTietService {
                 tenKhachHang,
                 sdtKhachHang,
                 hoaDon.getTongTien(),
-                hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(),"Hoạt động"),
+                hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động"),
                 hoaDon.getPhiShip(),
                 maPhieuGiamGia,
                 hoaDon.getTrangThai(),
