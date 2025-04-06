@@ -46,7 +46,16 @@ public class SanPham {
     @JsonManagedReference // Phía "cha", quản lý vòng lặp
     private List<SanPhamChiTiet> sanPhamChiTietList;
 
+    @OneToMany(mappedBy = "sanPham", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<SanPhamChiTiet> sanPhamChiTiets;
 
+    public List<SanPhamChiTiet> getSanPhamChiTiets() {
+        return sanPhamChiTiets;
+    }
+
+    public void setSanPhamChiTiets(List<SanPhamChiTiet> sanPhamChiTiets) {
+        this.sanPhamChiTiets = sanPhamChiTiets;
+    }
 
 }
 

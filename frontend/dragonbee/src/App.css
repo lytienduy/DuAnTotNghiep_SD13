@@ -31,3 +31,9 @@ html, body {
     background-color: #135BA0 !important; /* Màu khi hover */
   }
   
+  @keyframes typingEffect {
+    0% { font-size: 24px; }
+    50% { font-size: 30px; }
+    100% { font-size: 24px; }
+  }
+  

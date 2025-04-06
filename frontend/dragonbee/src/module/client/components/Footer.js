@@ -2,9 +2,12 @@ import React from "react";
 import { Box, Container, Grid, Typography, TextField, Button, IconButton } from "@mui/material";
 import { Facebook, Instagram, YouTube, Twitter } from "@mui/icons-material";
 import logo from '../../../img/bannerFooter.png';
+import Chatbot from '../components/Chatbot';
+
 const Footer = () => {
     return (
         <Box sx={{ backgroundColor: "#bcbcbc80", color: "#333", marginTop: 8 }}>
+            <Chatbot />
             {/* Banner */}
             <Box
                 sx={{

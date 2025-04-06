@@ -82,4 +82,5 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
 
     Optional<SanPham> findByTenSanPham(String tenSanPham);
 
+    List<SanPham> findTop3ByOrderByNgayTaoDesc();
 }

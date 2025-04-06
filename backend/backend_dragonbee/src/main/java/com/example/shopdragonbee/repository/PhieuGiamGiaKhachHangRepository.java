@@ -26,4 +26,7 @@ public interface PhieuGiamGiaKhachHangRepository extends JpaRepository<PhieuGiam
     void updateTrangThaiKhachHang(@Param("phieuGiamGiaId") Integer phieuGiamGiaId, @Param("trangThai") String trangThai);
 
     List<PhieuGiamGiaKhachHang> findByKhachHangId(Integer idKhachHang);
+
+    List<PhieuGiamGiaKhachHang> findByKhachHang_Id(Integer idKhachHang);
+
 }

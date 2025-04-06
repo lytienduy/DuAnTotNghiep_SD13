@@ -49,4 +49,25 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet, 
 
     List<SanPhamChiTiet> findBySanPhamId(Integer sanPhamId);
 
+    List<SanPhamChiTiet> findByMauSac_TenMauSac(String color);
+    List<SanPhamChiTiet> findBySize_TenSize(String size);
+    List<SanPhamChiTiet> findByThuongHieu_TenThuongHieu(String brand);
+    List<SanPhamChiTiet> findByChatLieu_TenChatLieu(String material);
+    List<SanPhamChiTiet> findByXuatXu_TenXuatXu(String origin);
+    List<SanPhamChiTiet> findByDanhMuc_TenDanhMuc(String category);
+    List<SanPhamChiTiet> findByPhongCach_TenPhongCach(String style);
+    List<SanPhamChiTiet> findByKieuDang_TenKieuDang(String kieuDang);
+    List<SanPhamChiTiet> findByKieuDaiQuan_TenKieuDaiQuan(String kieuDaiQuan);
+
+    @Query("""
+    SELECT hct.sanPhamChiTiet, SUM(hct.soLuong) as totalQuantity
+    FROM HoaDonChiTiet hct
+    JOIN hct.hoaDon hd
+    WHERE hd.trangThai = 'Hoàn thành'
+    GROUP BY hct.sanPhamChiTiet
+    ORDER BY totalQuantity DESC
+    """)
+    List<Object[]> findTopBestSellingProducts(Pageable pageable);
+
+
 }
