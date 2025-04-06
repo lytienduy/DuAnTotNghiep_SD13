@@ -34,6 +34,12 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
 """)
     List<HoaDon> timKiemHoaDonChoHoanTien();
 
+    List<HoaDon> getHoaDonByTrangThaiInAndLoaiDonOrderByNgayTaoAsc(List<String> trangThaitrangThai, String loaiDon);
+
+    HoaDon findHoaDonByMa(String ma);
+
+    List<HoaDon> getHoaDonByTrangThaiAndKhachHangOrderByNgayTaoDesc(String trangThai, KhachHang khachHang);
+
 //    @Query("""
 //                SELECT hdct.hoaDon
 //                FROM HoaDonChiTiet hdct
@@ -244,10 +250,6 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
                                               @Param("endDate") String endDate);
 
 
-    List<HoaDon> getHoaDonByTrangThaiInAndLoaiDonOrderByNgayTaoAsc(List<String> trangThaitrangThai, String loaiDon);
 
-    HoaDon findHoaDonByMa(String ma);
-
-    List<HoaDon> getHoaDonByTrangThaiAndKhachHangOrderByNgayTaoDesc(String trangThai, KhachHang khachHang);
 
 }

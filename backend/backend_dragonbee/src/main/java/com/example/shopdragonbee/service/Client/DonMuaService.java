@@ -1,10 +1,8 @@
 package com.example.shopdragonbee.service.Client;
 
 import com.example.shopdragonbee.dto.Client.DonMuaDTO;
-import com.example.shopdragonbee.entity.HoaDon;
-import com.example.shopdragonbee.entity.HoaDonChiTiet;
-import com.example.shopdragonbee.entity.SanPham;
-import com.example.shopdragonbee.entity.SanPhamChiTiet;
+import com.example.shopdragonbee.dto.HoaDonChiTietResponseDTO;
+import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.HoaDonChiTietRepository;
 import com.example.shopdragonbee.repository.HoaDonRepository;
 import com.example.shopdragonbee.repository.KhachHangRepository;
@@ -13,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DonMuaService {
@@ -65,6 +65,15 @@ public class DonMuaService {
                 listSanPham.add(sanPhamDTO);
             }
             hoaDonClient.setSanPhams(listSanPham);
+            List<HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO> listThanhToan = hoaDon.getListThanhToanHoaDon().stream()
+                    .sorted(Comparator.comparing(
+                            ThanhToanHoaDon::getNgayTao,
+                            Comparator.nullsLast(Comparator.reverseOrder()) // Đưa null xuống cuối danh sách
+                    ))
+                    .map(tt -> new HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO(tt.getId(), tt.getSoTienThanhToan(), tt.getNgayTao(), tt.getPhuongThucThanhToan().getTenPhuongThuc(), tt.getNguoiTao(), tt.getGhiChu(), tt.getLoai()))
+                    .collect(Collectors.toList());
+            hoaDonClient.setTongTienThanhToan(hoaDon.getTongTien());
+            hoaDonClient.setListThanhToanHoaDon(listThanhToan);
             listTraVe.add(hoaDonClient);
         }
         return listTraVe;
