@@ -18,21 +18,31 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
     @Query("SELECT COALESCE(SUM(hdct.soLuong * hdct.donGia), 0) FROM HoaDonChiTiet hdct WHERE hdct.hoaDon.id = :idHoaDon and hdct.trangThai like :trangThai")
     Float tinhTongTienByHoaDonId(@Param("idHoaDon") Integer idHoaDon, @Param("trangThai") String trangThai);
 
-//        @Query("SELECT hdct.hoaDon FROM HoaDonChiTiet hdct WHERE hdct.hoaDon.trangThai NOT IN ('Hoàn thành', 'Đã hủy','Chờ xác nhận') AND (" +
-//            "(Select COALESCE(SUM(tthd.soTienThanhToan), 0) FROM ThanhToanHoaDon tthd  WHERE tthd.hoaDon = hdct.hoaDon and tthd.loai not like 'Hoàn tiền')" +
-//            "- (Select COALESCE(SUM(tthd.soTienThanhToan), 0) FROM ThanhToanHoaDon tthd  WHERE tthd.hoaDon = hdct.hoaDon and tthd.loai like 'Hoàn tiền' ) ) > hdct.hoaDon.tongTien")
-//    List<HoaDon> timKiemHoaDonChoHoanTien(@Param("idHoaDon") Integer idHoaDon, @Param("trangThai") String trangThai);
 
+
+//    @Query("""
+//                SELECT hdct.hoaDon
+//                FROM HoaDonChiTiet hdct
+//                JOIN ThanhToanHoaDon tthd ON tthd.hoaDon = hdct.hoaDon
+//                WHERE hdct.hoaDon.trangThai NOT IN :notInTrangThai and hdct.hoaDon.loaiDon like :online
+//                GROUP BY hdct.hoaDon
+//                HAVING
+//                    COALESCE(SUM(CASE WHEN tthd.loai not like :hoanTien THEN tthd.soTienThanhToan ELSE 0 END), 0)
+//                  - COALESCE(SUM(CASE WHEN tthd.loai like :hoanTien THEN tthd.soTienThanhToan ELSE 0 END), 0)
+//                  > hdct.hoaDon.tongTien
+//            """)
+//    List<HoaDon> timKiemHoaDonChoHoanTien(@Param("notInTrangThai") List<String> listnotInTrangThai, @Param("hoanTien") String hoanTien, @Param("online") String online);
     @Query("""
-    SELECT hdct.hoaDon
-    FROM HoaDonChiTiet hdct
-    JOIN ThanhToanHoaDon tthd ON tthd.hoaDon = hdct.hoaDon
-    WHERE hdct.hoaDon.trangThai NOT IN ('Hoàn thành', 'Đã hủy', 'Chờ xác nhận')
-    GROUP BY hdct.hoaDon
-    HAVING SUM(CASE WHEN tthd.loai not like 'Hoàn tiền' THEN tthd.soTienThanhToan ELSE 0 END)
-           - SUM(CASE WHEN tthd.loai like 'Hoàn tiền' THEN tthd.soTienThanhToan ELSE 0 END) > hdct.hoaDon.tongTien
-""")
-    List<HoaDon> timKiemHoaDonChoHoanTien();
+                SELECT hd
+                FROM HoaDon hd
+                WHERE hd.trangThai NOT IN :notInTrangThai
+                  AND hd.loaiDon LIKE :online
+            """)
+    List<HoaDon> timKiemHoaDonChoHoanTien(
+            @Param("notInTrangThai") List<String> listnotInTrangThai,
+            @Param("online") String online
+    );
+
 
     List<HoaDon> getHoaDonByTrangThaiInAndLoaiDonOrderByNgayTaoAsc(List<String> trangThaitrangThai, String loaiDon);
 
@@ -248,8 +258,6 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
             """, nativeQuery = true)
     List<Object[]> findOrderStatusStatsCustom(@Param("startDate") String startDate,
                                               @Param("endDate") String endDate);
-
-
 
 
 }

@@ -9,6 +9,7 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -65,8 +66,25 @@ public class HoaDonService {
         Arrays.stream(trangThais)
                 .map(status -> (int) listHoaDonHienTaiDangFill.stream().filter(hd -> hd.getTrangThai().equalsIgnoreCase(status)).count())
                 .forEach(counts::add);
+        List<String> trangThaisCheckHoan = Arrays.asList("Hoàn thành", "Đã hủy", "Chờ xác nhận");
+        List<HoaDon> listHoaDonHoan = hoaDonRepository.timKiemHoaDonChoHoanTien(trangThaisCheckHoan, "Online").stream()
+                .filter(hd -> {
+                    float tongThanhToan = (float) hd.getListThanhToanHoaDon().stream()
+                            .filter(tt -> tt.getLoai() == null || tt.getLoai().equalsIgnoreCase("Thanh toán"))
+                            .mapToDouble(tt -> tt.getSoTienThanhToan()) // float to double
+                            .sum();
 
-        counts.add(hoaDonRepository.timKiemHoaDonChoHoanTien().size());
+                    float tongHoanTien = (float) hd.getListThanhToanHoaDon().stream()
+                            .filter(tt -> tt.getLoai() != null && tt.getLoai().equalsIgnoreCase("Hoàn tiền"))
+                            .mapToDouble(tt -> tt.getSoTienThanhToan())
+                            .sum();
+
+                    float soTienThuc = tongThanhToan - tongHoanTien;
+
+                    return soTienThuc > hd.getTongTien();
+                })
+                .collect(Collectors.toList());
+        counts.add(listHoaDonHoan.size());
         return counts;
     }
 
@@ -74,7 +92,26 @@ public class HoaDonService {
     public List<HoaDonResponseDTO> locHoaDon(String timKiem, String tuNgay, String denNgay, String loaiDon, String trangThai) {
 
         if (trangThai != null && trangThai.equalsIgnoreCase("Chờ hoàn tiền")) {
-            return hoaDonRepository.timKiemHoaDonChoHoanTien().stream().map(this::convertToDTO).collect(Collectors.toList());
+            List<String> trangThaisCheckHoan = Arrays.asList("Hoàn thành", "Đã hủy", "Chờ xác nhận");
+            List<HoaDon> listHoaDonHoan = hoaDonRepository.timKiemHoaDonChoHoanTien(trangThaisCheckHoan, "Online").stream()
+                    .filter(hd -> {
+                        float tongThanhToan = (float) hd.getListThanhToanHoaDon().stream()
+                                .filter(tt -> tt.getLoai() == null || tt.getLoai().equalsIgnoreCase("Thanh toán"))
+                                .mapToDouble(tt -> tt.getSoTienThanhToan()) // float to double
+                                .sum();
+
+                        float tongHoanTien = (float) hd.getListThanhToanHoaDon().stream()
+                                .filter(tt -> tt.getLoai() != null && tt.getLoai().equalsIgnoreCase("Hoàn tiền"))
+                                .mapToDouble(tt -> tt.getSoTienThanhToan())
+                                .sum();
+
+                        float soTienThuc = tongThanhToan - tongHoanTien;
+
+                        return soTienThuc > hd.getTongTien();
+                    })
+                    .collect(Collectors.toList());
+            return listHoaDonHoan.stream().map(this::convertToDTO).collect(Collectors.toList());
+
         }
         List<HoaDon> hoaDons = hoaDonRepository.findAll((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
