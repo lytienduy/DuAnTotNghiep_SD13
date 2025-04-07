@@ -215,8 +215,8 @@ const ChiTietSanPham = () => {
                         idSPCT: selectedSizeReuse?.idSPCT,
                         anhSPCT: selectedColorReuse?.listAnh === null ? null : selectedColorReuse?.listAnh[0],
                         tenSPCT: selectedSizeReuse.tenSPCT,
-                        mauSac: selectedColorReuse.mauSac,
-                        size: selectedSizeReuse,
+                        tenMauSac: selectedColorReuse.mauSac.tenMauSac,
+                        tenSize: selectedSizeReuse.tenSize,
                         gia: product.gia,
                         quantity: quantity
                     });

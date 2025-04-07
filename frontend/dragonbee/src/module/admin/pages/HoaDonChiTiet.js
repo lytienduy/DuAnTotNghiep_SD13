@@ -709,6 +709,7 @@ const HoaDonChiTiet = () => {
         </DialogActions>
       </Dialog>
       <Dialog open={openTT} onClose={() => setOpenTT(false)} maxWidth="sm" fullWidth>
+
         {/* Tiêu đề có nút đóng */}
         <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center', fontSize: '25px', color: '#1976D2', position: 'relative' }}>
           THANH TOÁN
@@ -726,6 +727,12 @@ const HoaDonChiTiet = () => {
         </DialogTitle>
 
         <DialogContent>
+          {(hoaDon.tongTienThanhToan - tongTienDaThanhToanVaDaHoanTienCuaOnline) > 0 &&
+            <Grid container justifyContent="space-between" sx={{ mb: 2 }}>
+              <Typography variant="h6">Thanh toán còn lại</Typography>
+              <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{(hoaDon.tongTienThanhToan - tongTienDaThanhToanVaDaHoanTienCuaOnline)?.toLocaleString()} VNĐ</Typography>
+            </Grid>
+          }
           {/* Tổng tiền hàng */}
           {/* Nút Chuyển Khoản - Tiền Mặt - Cả Hai */}
           <Grid container justifyContent="center" spacing={1} sx={{ mb: 2 }}>
@@ -1590,7 +1597,7 @@ const HoaDonChiTiet = () => {
       <Box sx={{ p: 2, borderRadius: 2 }}>
         {/* Tổng tiền hàng */}
         <Box display="flex" justifyContent="space-between" mb={1}>
-          <Typography variant="body1" fontWeight={500}>Tổng tiền hàng:</Typography>
+          <Typography variant="body1" fontWeight={500}>Tổng tiền sản phẩm:</Typography>
           <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienSanPham?.toLocaleString()} VNĐ</Typography>
         </Box>
 

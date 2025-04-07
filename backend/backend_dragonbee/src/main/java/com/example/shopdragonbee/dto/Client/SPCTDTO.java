@@ -3,6 +3,7 @@ package com.example.shopdragonbee.dto.Client;
 import com.example.shopdragonbee.entity.ChatLieu;
 import com.example.shopdragonbee.entity.KieuDang;
 import com.example.shopdragonbee.entity.MauSac;
+import com.example.shopdragonbee.entity.Size;
 import lombok.*;
 
 import java.util.List;

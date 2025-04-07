@@ -99,8 +99,8 @@ const GioHang = () => {
                 }
                 if (item.gia !== response.data?.[index]?.gia) {
                     if (cart[index]) {
-                        showSuccessToast("Giá sản phẩm "+index+" đã có thay đổi giá cũ "+cart[index].gia+" giá mới "+response.data?.[index]?.gia)
-                        cart[index].gia = response.data?.[index]?.gia;        
+                        showSuccessToast("Giá sản phẩm " + index + " đã có thay đổi giá cũ " + cart[index].gia + " giá mới " + response.data?.[index]?.gia)
+                        cart[index].gia = response.data?.[index]?.gia;
                     }
                 }
             }
@@ -261,7 +261,7 @@ const GioHang = () => {
         layDuLieuCart();
         getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         //Nên cho hàm check nào vào getListDanhSach luôn check vs respone
-        if (productsCapNhatSoLuong[index].quantity === 1) {//Fix lỗi chậm một nhịp  
+        if (productsCapNhatSoLuong[index]?.quantity === 1) {//Fix lỗi chậm một nhịp  
             showSuccessToast("Bạn đã mua tối đa sản phẩm thứ " + index);
         }
     };
