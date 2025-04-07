@@ -497,21 +497,31 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
 
   const handleSave = async () => {
     console.log("Danh sách productDetails trước khi lưu:", productDetails);
-
+  
     if (!selectedProduct) {
       alert("Vui lòng chọn sản phẩm.");
       return;
     }
-
+  
     // Kiểm tra từng sản phẩm chi tiết có ảnh không
-    const isValid = productDetails.every(
+    const isValidImages = productDetails.every(
       (detail) => detail.images && detail.images.length > 0
     );
-    if (!isValid) {
+    if (!isValidImages) {
       alert("Vui lòng chọn ít nhất một ảnh cho mỗi sản phẩm chi tiết.");
       return;
     }
-
+  
+    // Kiểm tra số lượng và giá phải lớn hơn 0
+    const invalidDetail = productDetails.find(
+      (detail) =>
+        !detail.quantity || detail.quantity <= 0 || !detail.price || detail.price <= 0
+    );
+    if (invalidDetail) {
+      alert("Số lượng và giá của mỗi sản phẩm phải lớn hơn 0.");
+      return;
+    }
+  
     const requestDataList = productDetails.map((detail) => ({
       sanPhamId: selectedProduct,
       soLuong: detail.quantity || 0,
@@ -528,16 +538,16 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       kieuDangId: selectedKieuDang,
       kieuDaiQuanId: selectedKieuDaiQuan,
       xuatXuId: selectedXuatXus,
-      anhUrls: detail.images || [], // Đảm bảo gửi đúng danh sách ảnh
+      anhUrls: detail.images || [],
     }));
-
+  
     try {
       const response = await axios.post(
         "http://localhost:8080/api/san-pham-chi-tiet/add/chi-tiet",
         requestDataList,
         { headers: { "Content-Type": "application/json" } }
       );
-
+  
       if (response.status === 200 || response.status === 201) {
         console.log("Sản phẩm chi tiết đã được lưu", response.data);
         setSnackMessage("Thêm sản phẩm thành công!");
@@ -549,6 +559,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       alert("Có lỗi xảy ra khi lưu sản phẩm.");
     }
   };
+  
 
   // xóa spct
   const removeSanPhamChiTiet = (index) => {

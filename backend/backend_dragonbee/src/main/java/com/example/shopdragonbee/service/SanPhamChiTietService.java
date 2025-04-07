@@ -142,20 +142,21 @@ public class SanPhamChiTietService {
             sanPhamChiTiet.setSize(sizeRepository.findById(sanPhamChiTietUpdateDTO.getSizeId()).orElse(null));
         }
 
+        // Cập nhật số lượng và giá
         sanPhamChiTiet.setSoLuong(sanPhamChiTietUpdateDTO.getSoLuong());
         sanPhamChiTiet.setGia(sanPhamChiTietUpdateDTO.getGia());
 
-        // Cập nhật trạng thái sản phẩm chi tiết
-        if (sanPhamChiTiet.getSoLuong() == 0) {
+// Lưu trạng thái cũ
+        String trangThaiCu = sanPhamChiTiet.getTrangThai();
+
+// Cập nhật trạng thái sản phẩm chi tiết
+        if (sanPhamChiTietUpdateDTO.getSoLuong() == 0) {
             sanPhamChiTiet.setTrangThai("Hết hàng");
         } else {
-            // Kiểm tra nếu sanPhamChiTiet.getSanPham() không bị null
-            if (sanPhamChiTiet.getSanPham() != null) {
-                sanPhamChiTiet.setTrangThai(sanPhamChiTiet.getSanPham().getTrangThai());
-            } else {
-                sanPhamChiTiet.setTrangThai("Chưa xác định");
-            }
+            // Nếu số lượng > 0, giữ nguyên trạng thái cũ
+            sanPhamChiTiet.setTrangThai(trangThaiCu);
         }
+
 
         // Cập nhật ảnh cho sản phẩm chi tiết
         updateAnhSanPham(sanPhamChiTiet, sanPhamChiTietUpdateDTO.getAnhUrlsToAdd(), sanPhamChiTietUpdateDTO.getAnhIdsToDelete());

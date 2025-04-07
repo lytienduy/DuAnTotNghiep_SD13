@@ -489,8 +489,7 @@ const SanPhamChiTiet = () => {
       setOpenSnackbar(true);
     }
   };
-
-  const handleSave = async () => {
+const handleSave = async () => {
     const anhUrlsCurrent = selectedItem.anhUrls || [];
     const anhUrlsOriginal = selectedItem.anhUrlsOriginal || [];
     const anhSanPhamList = selectedItem.anhSanPhams || [];
@@ -772,13 +771,7 @@ const SanPhamChiTiet = () => {
       alert("Có lỗi xảy ra khi thay đổi trạng thái sản phẩm chi tiết!");
     }
   };
-  
-  
-  
 
-  
-  
-  
   return (
     <Box>
       <Grid
