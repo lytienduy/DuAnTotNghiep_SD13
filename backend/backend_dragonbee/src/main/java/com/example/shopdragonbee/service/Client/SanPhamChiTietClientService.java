@@ -132,11 +132,12 @@ public class SanPhamChiTietClientService {
     public List<HomeDTO.SanPhamClient> getListSanPhamTuongTu(Integer idSanPham, String tenDanhMuc) {
         List<HomeDTO.SanPhamClient> listTraVe = new ArrayList<>();
         listTraVe.addAll(homeService.getListSanPhamQuanAuNamDanhMucTheoDanhMucTop3(tenDanhMuc, idSanPham));
-        listTraVe.addAll(homeService.getListSanPhamQuanAuNamDanhMucTopBanChay());
-        // Nếu muốn loại trùng sản phẩm theo ID
-        Map<Integer, HomeDTO.SanPhamClient> uniqueMap = listTraVe.stream()
-                .collect(Collectors.toMap(HomeDTO.SanPhamClient::getId, sp -> sp, (sp1, sp2) -> sp1));
-        return  new ArrayList<>(uniqueMap.values());
+        List<HomeDTO.SanPhamClient> listBanChay = homeService.getListSanPhamQuanAuNamDanhMucTopBanChay()
+                .stream()
+                .filter(sp -> sp.getId() != idSanPham) // Lọc bỏ sản phẩm có id = 1
+                .collect(Collectors.toList());
+        listTraVe.addAll(listBanChay);
+        return  listTraVe;
     }
 
 }
