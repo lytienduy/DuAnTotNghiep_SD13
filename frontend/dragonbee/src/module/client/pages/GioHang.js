@@ -21,15 +21,18 @@ const GioHang = () => {
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [productsCapNhatSoLuong, setProductsCapNhatSoLuong] = useState([]);
     const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
+    const [tenSanPhamThongBao, setTenSanPhamThongBao] = useState("");
     const [dialogMessage, setDialogMessage] = useState("");
     const userKH = JSON.parse(localStorage.getItem("userKH"));
 
-    const handleDialogOpen = (message) => {
+    const handleDialogOpen = (message, tenSanPhamThongBao) => {
         setDialogMessage(message);
+        setTenSanPhamThongBao(tenSanPhamThongBao);
         setOpenDialogThongBaoHetHangHoacKDuSoLuong(true);
     };
 
     const handleDialogClose = () => {
+        setTenSanPhamThongBao("");
         setOpenDialogThongBaoHetHangHoacKDuSoLuong(false);
     };
     //Thông báo Toast
@@ -90,12 +93,12 @@ const GioHang = () => {
                     if (cart[index]) {
                         cart[index].quantity = 0;
                     }
-                    handleDialogOpen("Sản phẩm đã hết hàng, bạn có thể tham khảo sản phẩm khác");
+                    handleDialogOpen("Sản phẩm đã hết hàng, bạn có thể tham khảo sản phẩm khác", cart[index].tenSPCT + " - " + cart[index].tenMauSac + " - size" + cart[index].tenSize);
                 } else if (item?.quantity !== response.data?.[index]?.quantity) {
                     if (cart[index]) {
                         cart[index].quantity = response.data?.[index]?.quantity;
                     }
-                    handleDialogOpen("Sản phẩm không còn đủ số lượng bạn mong muốn");
+                    handleDialogOpen("Sản phẩm không còn đủ số lượng bạn mong muốn", cart[index].tenSPCT + " - " + cart[index].tenMauSac + " - size" + cart[index].tenSize);
                 }
                 if (item.gia !== response.data?.[index]?.gia) {
                     if (cart[index]) {
@@ -335,6 +338,7 @@ const GioHang = () => {
         <Container>
             <Dialog open={openDialogThongBaoHetHangHoacKDuSoLuong} onClose={handleDialogClose}>
                 <DialogTitle>Thông Báo</DialogTitle>
+                {tenSanPhamThongBao && <DialogContent ><strong>{tenSanPhamThongBao}</strong></DialogContent>}
                 <DialogContent>{dialogMessage}</DialogContent>
                 <DialogActions>
                     <Button onClick={handleDialogClose} color="primary">Đóng</Button>
@@ -401,7 +405,7 @@ const GioHang = () => {
                                                         color="primary"
                                                     />
                                                 </TableCell>
-                                                <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px',cursor: 'pointer' }}  onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
+                                                <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px', cursor: 'pointer' }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                                                     <Grid container spacing={2} alignItems="center" sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                                                         <Grid item>
                                                             <img src={product.anhSPCT} alt={product.tenSPCT} width={80} height={80} />
