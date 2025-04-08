@@ -642,10 +642,12 @@ const HoaDonChiTiet = () => {
   const listThanhToan = (hoaDon?.listThanhToanHoaDon || [])
     .filter(tt => tt?.loai !== "Hoàn tiền")
 
+  const soTienDaThanhToan = listThanhToan?.reduce((tong, tt) => tong + tt?.soTien, 0);
+
   const listHoanTien = (hoaDon?.listThanhToanHoaDon || [])
     .filter(tt => tt?.loai === "Hoàn tiền") // Lọc chỉ lấy các phần tử có id = 3
 
-  const tongTienDaThanhToanVaDaHoanTienCuaOnline = listThanhToan?.reduce((tong, tt) => tong + tt?.soTien, 0) - listHoanTien?.reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tiền cần hoàn lấy tiền đã thanh toán trừ đi tiền đã hoàn so sánh với số tiền cần thanh toán của hóa đơn
+  const tongTienDaThanhToanVaDaHoanTienCuaOnline = soTienDaThanhToan - listHoanTien?.reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tiền cần hoàn lấy tiền đã thanh toán trừ đi tiền đã hoàn so sánh với số tiền cần thanh toán của hóa đơn
 
   const handleNextCheckHoanTienVaMoModal = () => {
 
@@ -1636,7 +1638,41 @@ const HoaDonChiTiet = () => {
           >
             {(hoaDon.tongTienThanhToan ?? 0).toLocaleString()} VNĐ
           </Typography>
+
         </Box>
+        {(soTienDaThanhToan > 0 && tongTienDaThanhToanVaDaHoanTienCuaOnline < hoaDon?.tongTienThanhToan) &&
+          <>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" fontWeight="bold" color="primary">
+                Đã thanh toán:
+              </Typography>
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                sx={{
+                  color: "#D32F2F",
+                  // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
+                }}
+              >
+                {(soTienDaThanhToan ?? 0).toLocaleString()} VNĐ
+              </Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" fontWeight="bold" color="primary">
+                Số tiền cần thanh toán còn lại:
+              </Typography>
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                sx={{
+                  color: "#D32F2F",
+                  // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
+                }}
+              >
+                {(hoaDon.tongTienThanhToan - soTienDaThanhToan ?? 0).toLocaleString()} VNĐ
+              </Typography>
+            </Box>
+          </>}
       </Box>
       <ToastContainer /> {/* Quan trọng để hiển thị toast */}
       {/* Modal sản phẩm*/}

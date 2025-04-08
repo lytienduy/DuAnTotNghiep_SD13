@@ -5,6 +5,8 @@ import com.example.shopdragonbee.dto.Client.SPCTDTO;
 import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,6 +25,8 @@ public class SanPhamChiTietClientService {
     private GioHangRepository gioHangRepository;
     @Autowired
     private GioHangChiTietRepository gioHangChiTietRepository;
+    @Autowired
+    private HomeService homeService;
 
     private Map<Integer, SPCTDTO.SanPhamCart> idSet = new HashMap<>();
 
@@ -55,6 +59,7 @@ public class SanPhamChiTietClientService {
     public SPCTDTO.SanPhamCart convertSangSanPhamCart(GioHangChiTiet gioHangChiTiet) {
         SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
         SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
+        sanPhamCart.setId(sanPhamChiTiet.getSanPham().getId());
         sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
         if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
             sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
@@ -105,6 +110,9 @@ public class SanPhamChiTietClientService {
                     tongQuanSanPhamCTClient.setGia(sanPhamChiTiet.getGia());
                     tongQuanSanPhamCTClient.setKieuDang(sanPhamChiTiet.getKieuDang());
                     tongQuanSanPhamCTClient.setChatLieu(sanPhamChiTiet.getChatLieu());
+                    tongQuanSanPhamCTClient.setDanhMuc(sanPhamChiTiet.getDanhMuc());
+                    tongQuanSanPhamCTClient.setThuongHieu(sanPhamChiTiet.getThuongHieu());
+                    tongQuanSanPhamCTClient.setXuatXu(sanPhamChiTiet.getXuatXu());
                 }
                 if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                     mauSacAndHinhAnhAndSize.setListAnh(listURLAnhSanPham(sanPhamChiTiet.getListAnh()));
@@ -119,5 +127,16 @@ public class SanPhamChiTietClientService {
         return tongQuanSanPhamCTClient;
     }
 
+
+
+    public List<HomeDTO.SanPhamClient> getListSanPhamTuongTu(Integer idSanPham, String tenDanhMuc) {
+        List<HomeDTO.SanPhamClient> listTraVe = new ArrayList<>();
+        listTraVe.addAll(homeService.getListSanPhamQuanAuNamDanhMucTheoDanhMucTop3(tenDanhMuc, idSanPham));
+        listTraVe.addAll(homeService.getListSanPhamQuanAuNamDanhMucTopBanChay());
+        // Nếu muốn loại trùng sản phẩm theo ID
+        Map<Integer, HomeDTO.SanPhamClient> uniqueMap = listTraVe.stream()
+                .collect(Collectors.toMap(HomeDTO.SanPhamClient::getId, sp -> sp, (sp1, sp2) -> sp1));
+        return  new ArrayList<>(uniqueMap.values());
+    }
 
 }

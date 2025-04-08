@@ -393,7 +393,7 @@ const GioHang = () => {
                                         </TableRow>
                                     ) : (
                                         products.map((product, index) => (
-                                            <TableRow key={index} disabled={product.quantity === 0}>
+                                            <TableRow key={index} disabled={product.quantity === 0} >
                                                 <TableCell padding="checkbox" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
                                                     <Checkbox
                                                         checked={selectedProducts.includes(index)}
@@ -401,7 +401,7 @@ const GioHang = () => {
                                                         color="primary"
                                                     />
                                                 </TableCell>
-                                                <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
+                                                <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px',cursor: 'pointer' }}  onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                                                     <Grid container spacing={2} alignItems="center" sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                                                         <Grid item>
                                                             <img src={product.anhSPCT} alt={product.tenSPCT} width={80} height={80} />

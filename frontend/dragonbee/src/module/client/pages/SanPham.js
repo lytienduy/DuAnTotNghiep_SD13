@@ -469,7 +469,7 @@ const SanPham = () => {
               {products?.length > 0 ? (
                 products.map((product) => (
                   <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}> {/* Cập nhật lg={3} để có 4 sản phẩm mỗi dòng */}
-                    <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
+                    <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2, cursor: 'pointer' }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                       {product?.isNew === true && <Typography
                         variant="caption"
                         sx={{

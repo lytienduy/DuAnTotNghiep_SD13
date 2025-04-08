@@ -29,6 +29,14 @@ public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet,
             nativeQuery = true)
     List<SanPham> getListSanPhamTheoTenDanhMucVaDangHoatDong(@Param("tenDanhMuc") String tenDanhMuc);
 
+    @Query(value = " SELECT DISTINCT Top 3  sp.* FROM san_pham sp " +
+            " JOIN san_pham_chi_tiet spct ON sp.id = spct.id_san_pham " +
+            " JOIN danh_muc dm ON spct.id_danh_muc = dm.id " +
+            " WHERE LOWER(dm.ten_danh_muc) LIKE LOWER(:tenDanhMuc) " +
+            " AND LOWER(TRIM(sp.trang_thai)) = N'hoạt động' and sp.id != :idSanPham",
+            nativeQuery = true)
+    List<SanPham> getListSanPhamTheoTenDanhMucVaDangHoatDongTop3(@Param("tenDanhMuc") String tenDanhMuc,@Param("idSanPham") Integer idSanPham);
+
     @Query("SELECT spct.mauSac FROM SanPhamChiTiet spct WHERE spct.sanPham.id = :idSanPham AND spct.trangThai = :trangThai AND spct.danhMuc.tenDanhMuc = :danhMuc GROUP BY spct.mauSac")
     List<MauSac> getMauSacTheoIDSanPhamAndTrangThaiAndDanhMuc(@Param("idSanPham") Integer idSanPham, @Param("trangThai") String trangThai, @Param("danhMuc") String danhMuc);
 
@@ -39,6 +47,8 @@ public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet,
 
 
     List<SanPhamChiTiet> findBySanPhamAndMauSacAndTrangThai(SanPham sanPham, MauSac mauSac, String trangThai);
+
+
 
 
     @Query("SELECT hdct.sanPhamChiTiet.sanPham FROM HoaDonChiTiet hdct " +
