@@ -429,24 +429,28 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   };
   const handleOpenModalAnh = async (id) => {
     setLoading(true);
-  
+
     try {
-      const response = await fetch("http://localhost:8080/api/anh-san-pham/cloudinary-images");
-  
+      const response = await fetch(
+        "http://localhost:8080/api/anh-san-pham/cloudinary-images"
+      );
+
       if (!response.ok) {
         throw new Error("Không thể lấy ảnh từ backend");
       }
-  
+
       const data = await response.json();
       console.log("Dữ liệu ảnh từ API:", data); // Kiểm tra dữ liệu ảnh
-  
+
       if (data && Array.isArray(data.resources)) {
         // Sắp xếp ảnh theo created_at (ảnh mới hơn xuống cuối cùng)
-        const sortedImages = data.resources.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-  
+        const sortedImages = data.resources.sort(
+          (a, b) => new Date(a.created_at) - new Date(b.created_at)
+        );
+
         setCloudinaryImages(sortedImages); // Cập nhật ảnh đã sắp xếp vào state
       }
-  
+
       setSelectedProductId(id);
       setOpenModalAnh(true); // Mở modal sau khi tải ảnh
     } catch (error) {
@@ -456,7 +460,6 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       setLoading(false);
     }
   };
-  
 
   const handleCloseModalAnh = () => {
     setSelectedImages([]);
@@ -497,12 +500,12 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
 
   const handleSave = async () => {
     console.log("Danh sách productDetails trước khi lưu:", productDetails);
-  
+
     if (!selectedProduct) {
       alert("Vui lòng chọn sản phẩm.");
       return;
     }
-  
+
     // Kiểm tra từng sản phẩm chi tiết có ảnh không
     const isValidImages = productDetails.every(
       (detail) => detail.images && detail.images.length > 0
@@ -511,17 +514,20 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       alert("Vui lòng chọn ít nhất một ảnh cho mỗi sản phẩm chi tiết.");
       return;
     }
-  
+
     // Kiểm tra số lượng và giá phải lớn hơn 0
     const invalidDetail = productDetails.find(
       (detail) =>
-        !detail.quantity || detail.quantity <= 0 || !detail.price || detail.price <= 0
+        !detail.quantity ||
+        detail.quantity <= 0 ||
+        !detail.price ||
+        detail.price <= 0
     );
     if (invalidDetail) {
       alert("Số lượng và giá của mỗi sản phẩm phải lớn hơn 0.");
       return;
     }
-  
+
     const requestDataList = productDetails.map((detail) => ({
       sanPhamId: selectedProduct,
       soLuong: detail.quantity || 0,
@@ -540,14 +546,14 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       xuatXuId: selectedXuatXus,
       anhUrls: detail.images || [],
     }));
-  
+
     try {
       const response = await axios.post(
         "http://localhost:8080/api/san-pham-chi-tiet/add/chi-tiet",
         requestDataList,
         { headers: { "Content-Type": "application/json" } }
       );
-  
+
       if (response.status === 200 || response.status === 201) {
         console.log("Sản phẩm chi tiết đã được lưu", response.data);
         setSnackMessage("Thêm sản phẩm thành công!");
@@ -559,7 +565,6 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       alert("Có lỗi xảy ra khi lưu sản phẩm.");
     }
   };
-  
 
   // xóa spct
   const removeSanPhamChiTiet = (index) => {
@@ -2486,10 +2491,29 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
           </div>
         </Modal>
 
-        <Box display="flex" justifyContent="flex-end">
-  <Button onClick={handleSave}>Lưu</Button>
-</Box>
-
+        <Box display="flex" justifyContent="flex-end" mt={2}>
+          <Button
+            variant="outlined"
+            onClick={handleSave}
+            sx={{
+              border: "1px solid lightblue",
+              px: 3,
+              py: 1,
+              backgroundColor: "#f9f9f9",
+              borderRadius: "8px",
+              transition: "all 0.2s",
+              "&:hover": {
+                backgroundColor: "lightblue",
+              },
+              "&:active": {
+                backgroundColor: "#d5d5d5",
+                boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)",
+              },
+            }}
+          >
+            Lưu
+          </Button>
+        </Box>
       </Paper>
     </div>
   );

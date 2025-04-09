@@ -19,6 +19,8 @@ import com.example.shopdragonbee.repository.ThuongHieuRepository;
 import com.example.shopdragonbee.repository.XuatXuRepository;
 import com.example.shopdragonbee.specification.SanPhamChiTietSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -294,11 +296,10 @@ public class SanPhamChiTietService {
         return updatedSanPhamChiTietList;
     }
 
-    /// lọc sản phẩm chi tiết
-    public List<SanPhamChiTiet> searchSanPhamChiTiet(String tenSanPham, String tenDanhMuc, String tenThuongHieu,
+    public Page<SanPhamChiTiet> searchSanPhamChiTiet(String tenSanPham, String tenDanhMuc, String tenThuongHieu,
                                                      String tenPhongCach, String tenChatLieu, String tenKieuDang,
                                                      String tenKieuDaiQuan, String tenMauSac, String tenSize,
-                                                     Double minPrice, Double maxPrice) {
+                                                     Double minPrice, Double maxPrice, Pageable pageable) {
 
         Specification<SanPhamChiTiet> spec = Specification.where(
                 SanPhamChiTietSpecification.hasTenSanPhamLike(tenSanPham))
@@ -312,6 +313,7 @@ public class SanPhamChiTietService {
                 .and(SanPhamChiTietSpecification.hasSize(tenSize))
                 .and(SanPhamChiTietSpecification.isPriceBetween(minPrice, maxPrice));
 
-        return sanPhamChiTietRepository.findAll(spec);
+        return sanPhamChiTietRepository.findAll(spec, pageable);
     }
+
 }

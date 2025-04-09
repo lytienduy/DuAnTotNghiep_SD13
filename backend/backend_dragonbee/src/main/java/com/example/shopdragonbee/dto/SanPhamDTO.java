@@ -26,4 +26,9 @@ public class SanPhamDTO {
         this.ngayTao = ngayTao;
         this.trangThai = trangThai;
     }
+
+    public SanPhamDTO(Integer id, String tenSanPham) {
+        this.id = id;
+        this.tenSanPham = tenSanPham;
+    }
 }
