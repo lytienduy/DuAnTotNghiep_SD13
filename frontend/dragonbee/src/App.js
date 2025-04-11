@@ -33,6 +33,7 @@ import AddProduct from "./module/admin/pages/AddProduct";
 import AddChatLieu from "./module/admin/pages/AddChatLieu";
 import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
 import LoginPage from "./module/admin/pages/LoginPage";
+import ChatWithClient from './module/admin/pages/ChatWithClient';
 
 // Import Client Components
 import ClientFooter from './module/client/components/Footer';
@@ -146,6 +147,8 @@ const MainLayout = () => {
             <Route path="/admin/sanpham/addProduct" element={<PrivateRoute element={<AddProduct />} />} />
             {/* Add Chất liệu */}
             <Route path="/admin/chatlieu/addChatLieu" element={<PrivateRoute element={<AddChatLieu />} />} />
+            {/* Chat với khách hàng  */}
+            <Route path="/admin/chat" element={<PrivateRoute element={<ChatWithClient />} />} />
             {/* Thêm các route Admin khác... */}
 
             {/* Login Route */}

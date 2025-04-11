@@ -53,53 +53,53 @@ const Chatbot = () => {
         return (
             <Box sx={{ display: "flex", alignItems: "center", mt: 1, marginLeft: 3 }}>
                 <Box sx={{
-    display: "flex",
-    alignItems: "center", // Căn giữa theo chiều dọc
-    justifyContent: "center", // Căn giữa theo chiều ngang
-    padding: "8px",  // Khoảng đệm trong box bao quanh dấu chấm
-    backgroundColor: "#f0f0f0",  // Màu nền xám cho box
-    borderRadius: "8px",  // Bo góc cho box
-    border: "1px solid #d0d0d0",  // Đường viền xung quanh box
-    marginRight: "4px",  // Khoảng cách giữa các dấu chấm
-    height: 5 // Đảm bảo chiều cao box đủ lớn để căn giữa
-}}>
-    <Typography sx={{
-        fontSize: 24,
-        color: "gray",
-        animation: "typingEffect 1.5s infinite",
-        animationDelay: "0s", // Delay cho dấu chấm đầu tiên
-        marginBottom:1.7
-    }}>
-        .
-    </Typography>
+                    display: "flex",
+                    alignItems: "center", // Căn giữa theo chiều dọc
+                    justifyContent: "center", // Căn giữa theo chiều ngang
+                    padding: "8px",  // Khoảng đệm trong box bao quanh dấu chấm
+                    backgroundColor: "#f0f0f0",  // Màu nền xám cho box
+                    borderRadius: "8px",  // Bo góc cho box
+                    border: "1px solid #d0d0d0",  // Đường viền xung quanh box
+                    marginRight: "4px",  // Khoảng cách giữa các dấu chấm
+                    height: 5 // Đảm bảo chiều cao box đủ lớn để căn giữa
+                }}>
+                    <Typography sx={{
+                        fontSize: 24,
+                        color: "gray",
+                        animation: "typingEffect 1.5s infinite",
+                        animationDelay: "0s", // Delay cho dấu chấm đầu tiên
+                        marginBottom: 1.7
+                    }}>
+                        .
+                    </Typography>
 
-    <Typography sx={{
-        fontSize: 24,
-        color: "gray",
-        animation: "typingEffect 1.5s infinite",
-        animationDelay: "0.3s", // Delay cho dấu chấm thứ hai
-        marginBottom:1.7
-    }}>
-        .
-    </Typography>
+                    <Typography sx={{
+                        fontSize: 24,
+                        color: "gray",
+                        animation: "typingEffect 1.5s infinite",
+                        animationDelay: "0.3s", // Delay cho dấu chấm thứ hai
+                        marginBottom: 1.7
+                    }}>
+                        .
+                    </Typography>
 
-    <Typography sx={{
-        fontSize: 24,
-        color: "gray",
-        animation: "typingEffect 1.5s infinite",
-        animationDelay: "0.6s", // Delay cho dấu chấm thứ ba
-        marginBottom:1.7
-    }}>
-        .
-    </Typography>
-</Box>
+                    <Typography sx={{
+                        fontSize: 24,
+                        color: "gray",
+                        animation: "typingEffect 1.5s infinite",
+                        animationDelay: "0.6s", // Delay cho dấu chấm thứ ba
+                        marginBottom: 1.7
+                    }}>
+                        .
+                    </Typography>
+                </Box>
 
             </Box>
         );
     };
 
     return (
-        <Box sx={{ position: "fixed", bottom: 20, right: 20, zIndex: 9999 }}>
+        <Box sx={{ position: "fixed", bottom: 20, right: 20,  zIndex: openChat ? 1300 : 1000 }}>
             {/* Chat Icon */}
             {!openChat && (
                 <Box

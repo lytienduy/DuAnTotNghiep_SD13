@@ -396,6 +396,20 @@ CREATE TABLE dot_giam_gia_chi_tiet (
     nguoi_sua NVARCHAR(50)
 );
 
+CREATE TABLE chat_message (
+    id INT PRIMARY KEY IDENTITY,            -- ID chính của bảng
+    noi_dung NVARCHAR(MAX) NOT NULL,        -- Nội dung tin nhắn
+    thoi_gian DATETIME DEFAULT GETDATE(),   -- Thời điểm gửi tin nhắn
+
+    gui_tu_nhan_vien BIT,                   -- TRUE nếu gửi từ nhân viên, FALSE nếu từ khách hàng
+
+    id_nhan_vien INT,                       -- Khóa ngoại đến bảng nhân viên (có thể null nếu gửi từ khách hàng)
+    id_khach_hang INT,                      -- Khóa ngoại đến bảng khách hàng (có thể null nếu gửi từ nhân viên)
+
+    FOREIGN KEY (id_nhan_vien) REFERENCES nhan_vien(id),
+    FOREIGN KEY (id_khach_hang) REFERENCES khach_hang(id)
+);
+
 -- Bảng thuong_hieu
 INSERT INTO thuong_hieu (ma, ten_thuong_hieu, mo_ta, trang_thai)
 VALUES 

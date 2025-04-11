@@ -33,6 +33,7 @@ import StyleIcon from '@mui/icons-material/Style';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
 import PanoramaHorizontalIcon from '@mui/icons-material/PanoramaHorizontal';
 import logo from '../../../img/dragonbee_logo_v1.png';
+import ChatIcon from '@mui/icons-material/Chat';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -147,6 +148,37 @@ const Sidebar = ({ isSidebarOpen }) => {
             {isSidebarOpen && (
               <ListItemText
                 primary="Thống Kê"
+                primaryTypographyProps={{ fontSize: '13.6px' }} // Chỉnh kích thước chữ
+              />
+            )}
+          </ListItemButton>
+          
+          {/* Chat */}
+          <ListItemButton
+            component={Link}
+            to="/admin/chat"
+            sx={{
+              borderRadius: 3,
+              backgroundColor: isActive('/admin/chat') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
+              color: isActive('/admin/chat') ? '#fff' : 'inherit',
+              '&:hover': {
+                backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
+                color: '#fff', // Chữ màu trắng khi hover
+              },
+            }}
+          >
+            <Tooltip title="Kênh tin nhắn" placement="right" disableHoverListener={isSidebarOpen}>
+              <ListItemIcon
+                sx={{
+                  color: isActive('/admin/chat') ? '#fff' : 'inherit',
+                  minWidth: '40px',
+                }}
+              >
+                <ChatIcon sx={{ marginLeft: '5px' }} />
+              </ListItemIcon></Tooltip>
+            {isSidebarOpen && (
+              <ListItemText
+                primary="Kênh tin nhắn"
                 primaryTypographyProps={{ fontSize: '13.6px' }} // Chỉnh kích thước chữ
               />
             )}
