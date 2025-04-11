@@ -821,7 +821,7 @@ const HoaDonChiTietClient = () => {
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Đơn giá</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số tiền</TableCell>
-              {(hoaDon.trangThai === "Chờ xác nhận") && <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>}
+              {(hoaDon.trangThai === "Chờ xác nhận" && hoaDon?.listDanhSachSanPham?.length > 1) && <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -952,7 +952,7 @@ const HoaDonChiTietClient = () => {
                     <TableCell align="center">{product.donGia?.toLocaleString()} VNĐ</TableCell>
                     <TableCell align="center">{product.soTien?.toLocaleString()} VNĐ</TableCell>
                     <TableCell align="center">
-                      {(hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động") &&
+                      {(hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động" && hoaDon?.listDanhSachSanPham?.length > 1) &&
                         <IconButton color="error" onClick={() => clickDeleteIcon(product.id)}>
                           <DeleteIcon />
                         </IconButton>
