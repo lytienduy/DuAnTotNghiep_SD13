@@ -57,6 +57,7 @@ public class HoaDonChiTietResponseDTO {
         private String phuongThuc;
         private String nhanVienXacNhan;
         private String ghiChu;
+        private String loai;
     }
 
     @Getter

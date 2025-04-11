@@ -325,10 +325,11 @@ phiShip = parseFloat(phiShip); // Chuyển đổi sang kiểu số thực
       setLoading(false);
     }
   };
-  const tienDaThanhToanBangVNPAY = (hoaDon?.listThanhToanHoaDon || []) 
+
+  const tienDaThanhToanBangVNPAY = (hoaDon?.listThanhToanHoaDon || [])
     .filter(tt => tt?.phuongThuc === "Thanh toán VNPay") // Lọc chỉ lấy các phần tử có id = 3
     .reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tổng tiền
-  
+
   //Hàm lọcThemSanPhamHoaDonTaiQuay
   const getSanPhamThem = async () => {
     let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layListCacSanPhamHienThiThem";
@@ -580,7 +581,7 @@ phiShip = parseFloat(phiShip); // Chuyển đổi sang kiểu số thực
     const newValue = Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
-    } else if(newValue < 1)  {//Không được để else
+    } else if (newValue < 1) {//Không được để else
       setSelectedProductId(id);
       setOpenConfirmModal(true);
     }
@@ -705,6 +706,11 @@ phiShip = parseFloat(phiShip); // Chuyển đổi sang kiểu số thực
     setOpenConfirmModal(true);
   }
 
+  const listThanhToan = (hoaDon?.listThanhToanHoaDon || [])
+    .filter(tt => tt?.loai !== "Hoàn tiền")
+
+  const listHoanTien = (hoaDon?.listThanhToanHoaDon || [])
+    .filter(tt => tt?.loai === "Hoàn tiền") // Lọc chỉ lấy các phần tử có id = 3
   return (
     <Container>
     <div>
@@ -946,7 +952,9 @@ phiShip = parseFloat(phiShip); // Chuyển đổi sang kiểu số thực
             sx={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "1.2rem", flex: 1, textAlign: "center" }}
           >
             Lịch sử thanh toán
-            {tienDaThanhToanBangVNPAY - hoaDon?.tongTienThanhToan < 0 ? "Khách cần trả thêm " + (hoaDon?.tongTienThanhToan - tienDaThanhToanBangVNPAY) + " tiền mặt" : ""}
+            {/* 
+            {tienDaThanhToanBangVNPAY - hoaDon?.tongTienThanhToan < 0 ? "Khách cần trả thêm " + (hoaDon?.tongTienThanhToan - tienDaThanhToanBangVNPAY) + " tiền mặt" : ""} 
+            */}
           </Typography>
         </Box>
         <Table sx={{ border: "1px solid #ddd" }}>
@@ -961,8 +969,8 @@ phiShip = parseFloat(phiShip); // Chuyển đổi sang kiểu số thực
             </TableRow>
           </TableHead>
           <TableBody>
-            {hoaDon?.listThanhToanHoaDon?.length > 0 ? (
-              hoaDon?.listThanhToanHoaDon?.map((payment, index) => (
+            {listThanhToan?.length > 0 ? (
+              listThanhToan?.map((payment, index) => (
                 <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
                   <TableCell align="center">{index + 1}</TableCell>
                   <TableCell align="center">{payment.phuongThuc}</TableCell>
@@ -982,6 +990,44 @@ phiShip = parseFloat(phiShip); // Chuyển đổi sang kiểu số thực
           </TableBody>
         </Table>
       </TableContainer>
+      {listHoanTien?.length > 0 &&
+        <>
+          <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: "hidden", flex: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1 }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "1.2rem", flex: 1, textAlign: "center" }}
+              >
+                Lịch sử hoàn tiền
+              </Typography>
+            </Box>
+            <Table sx={{ border: "1px solid #ddd" }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>#</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Phương Thức</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số Tiền</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thời Gian</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Nhân Viên Xác Nhận</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {listHoanTien?.map((payment, index) => (
+                  <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                    <TableCell align="center">{index + 1}</TableCell>
+                    <TableCell align="center">{payment.phuongThuc}</TableCell>
+                    <TableCell align="center">{payment.soTien.toLocaleString()} VND</TableCell>
+                    <TableCell align="center">{new Date(payment.ngayTao).toLocaleString("vi-VN")}</TableCell>
+                    <TableCell align="center">{payment.nhanVienXacNhan}</TableCell>
+                    <TableCell align="center">{payment.ghiChu}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      }
 
 
 

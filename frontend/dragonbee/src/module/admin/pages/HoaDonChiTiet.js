@@ -97,6 +97,7 @@ const HoaDonChiTiet = () => {
   const [listPhongCach, setListPhongCach] = useState([]);
   const [listThuongHieu, setListThuongHieu] = useState([]);
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
+  const [openConfirmRefund, setOpenConfirmRefund] = useState(false);
 
   useEffect(() => {
     if (hoaDon.diaChiNguoiNhanHang) {
@@ -863,6 +864,55 @@ const HoaDonChiTiet = () => {
     setSelectedProductId(id);
     setOpenConfirmModal(true);
   }
+
+  const listThanhToan = (hoaDon?.listThanhToanHoaDon || [])
+    .filter(tt => tt?.loai !== "Hoàn tiền")
+
+  const listHoanTien = (hoaDon?.listThanhToanHoaDon || [])
+    .filter(tt => tt?.loai === "Hoàn tiền") // Lọc chỉ lấy các phần tử có id = 3
+
+  const tongTienDaThanhToanVaDaHoanTienCuaOnline = listThanhToan?.reduce((tong, tt) => tong + tt?.soTien, 0) - listHoanTien?.reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tiền cần hoàn lấy tiền đã thanh toán trừ đi tiền đã hoàn so sánh với số tiền cần thanh toán của hóa đơn
+
+  const handleNextCheckHoanTienVaMoModal = () => {
+
+    if (hoaDon?.trangThai === "Đã thanh toán" && tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon?.tongTienThanhToan) {
+      showErrorToast("Bạn chưa hoàn tiền cho khách hàng");
+      return;
+    }
+    setOpenGhiChuNext(true);
+  }
+  const handleHuyCheckHoanTienVaMoModal = () => {
+    if (tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon?.tongTienThanhToan) {
+      showErrorToast("Bạn chưa hoàn tiền cho khách hàng");
+      return;
+    }
+    handleOpenLyDo();
+  }
+
+  const handleHoanTien = async () => {
+    // Gửi API hoàn tiền hoặc thực hiện xử lý tại đây
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/hoa-don-chi-tiet/hoanTien/${id}`, null,
+        {
+          params: {
+            soTienCanHoan: tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan
+          }
+        });//Gọi api bằng  
+      if (response.data) {
+        setOpenConfirmRefund(false);
+        fetchHoaDon();
+        showSuccessToast("Xác nhận hoàn tiền thành công");
+      } else {
+        setOpenConfirmRefund(false);
+        showErrorToast("Xác nhận hoàn tiền thất bại");
+
+      }
+    } catch (error) {
+      showErrorToast("Xác nhận oàn tiền thất bại. Vui lòng thử lại!");
+      console.error(error.response || error.message);
+    }
+  };
   return (
     <div>
       {/* Xác nhận xóa sản phẩm */}
@@ -1180,7 +1230,7 @@ const HoaDonChiTiet = () => {
               background: "#3498EA",
               "&:hover": { background: "#3498EA" },
             }}
-            onClick={() => setOpenGhiChuNext(true)}
+            onClick={() => handleNextCheckHoanTienVaMoModal()}
             disabled={isCanceled || isComplete ||
               (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Chờ thanh toán"
                 (!hoaDon.listThanhToanHoaDon ||              // Nếu danh sách lịch sử thanh toán không tồn tại
@@ -1236,7 +1286,7 @@ const HoaDonChiTiet = () => {
           </Dialog>
         </Stack>
 
-        <Button disabled={isCanceled || isComplete || (hoaDon.trangThai !== "Chờ xác nhận")} variant="outlined" color="error" startIcon={<Delete />} sx={{ borderRadius: 3, px: 3 }} onClick={() => handleOpenLyDo()}>
+        <Button disabled={isCanceled || isComplete || (hoaDon.trangThai !== "Chờ xác nhận")} variant="outlined" color="error" startIcon={<Delete />} sx={{ borderRadius: 3, px: 3 }} onClick={() => handleHuyCheckHoanTienVaMoModal()}>
           Hủy hóa đơn
         </Button>
         <Dialog open={openLyDo} onClose={() => setOpenLyDo(false)}>
@@ -1457,6 +1507,7 @@ const HoaDonChiTiet = () => {
           >
             Lịch sử thanh toán
           </Typography>
+
           {(hoaDon.trangThai != "Đã thanh toán" && hoaDon.trangThai != "Hoàn thành" && hoaDon.trangThai != "Đã hủy" && hoaDon.tongTienSanPham > 0) &&
             <Button
               variant="outlined" // Đặt kiểu viền
@@ -1475,7 +1526,8 @@ const HoaDonChiTiet = () => {
                 }
               }}
             >
-              <CreditCardIcon style={{ color: 'black' }} /> {/* Icon ví */}
+              <CreditCardIcon style={{ color: 'black', marginRight: '5px' }} /> {/* Icon ví */}
+              Thanh toán
             </Button>
           }
         </Box>
@@ -1491,8 +1543,8 @@ const HoaDonChiTiet = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {hoaDon?.listThanhToanHoaDon?.length > 0 ? (
-              hoaDon?.listThanhToanHoaDon?.map((payment, index) => (
+            {listThanhToan?.length > 0 ? (
+              listThanhToan?.map((payment, index) => (
                 <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
                   <TableCell align="center">{index + 1}</TableCell>
                   <TableCell align="center">{payment.phuongThuc}</TableCell>
@@ -1512,7 +1564,91 @@ const HoaDonChiTiet = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {(listHoanTien?.length > 0 || (hoaDon?.loaiHoaDon === "Online" && tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon?.tongTienThanhToan)) &&
+        <>
+          <Dialog
+            open={openConfirmRefund}
+            onClose={() => setOpenConfirmRefund(false)}
+          >
+            <DialogTitle fontWeight="bold">Xác nhận hoàn tiền</DialogTitle>
+            <DialogContent>
+              <Typography>Bạn có chắc chắn muốn xác nhận đã hoàn tiền {(tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan)?.toLocaleString()} cho khách hàng?</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenConfirmRefund(false)} color="inherit">
+                Hủy
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => {
+                  // TODO: Xử lý hoàn tiền ở đây
+                  handleHoanTien(); // Giả sử bạn có hàm này xử lý hoàn tiền
 
+                }}
+              >
+                Xác nhận
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: "hidden", flex: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1 }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "1.2rem", flex: 1, textAlign: "center" }}
+              >
+                Lịch sử hoàn tiền
+              </Typography>
+              {(hoaDon.loaiHoaDon === "Online" && tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon.tongTienThanhToan) &&
+                <Button
+                  variant="outlined" // Đặt kiểu viền 
+                  onClick={() => setOpenConfirmRefund(true)} // Khi nhấn mở modal
+                  sx={{
+                    borderColor: 'black', // Viền màu đen
+                    color: 'black', // Màu chữ đen
+                    backgroundColor: 'white', // Nền trắng
+                    borderRadius: '8px', // Bo góc
+                    padding: '3px 13px', // Khoảng cách trong button
+                    minWidth: '130px', // Kích thước tối thiểu cho button không bị co lại
+                    // marginRight: "10px",
+                    '&:hover': {
+                      backgroundColor: '#f5f5f5', // Màu nền nhạt hơn khi hover
+                      borderColor: 'black' // Giữ viền màu đen khi hover
+                    }
+                  }}
+                >
+                  <CreditCardIcon style={{ color: 'black', marginRight: '5px' }} /> {/* Icon ví */}
+                  Xác nhận hoàn tiền {(tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan)?.toLocaleString()}
+                </Button>
+              }
+            </Box>
+            <Table sx={{ border: "1px solid #ddd" }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>#</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Phương Thức</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số Tiền</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thời Gian</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Nhân Viên Xác Nhận</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {listHoanTien?.map((payment, index) => (
+                  <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                    <TableCell align="center">{index + 1}</TableCell>
+                    <TableCell align="center">{payment.phuongThuc}</TableCell>
+                    <TableCell align="center">{payment.soTien.toLocaleString()} VND</TableCell>
+                    <TableCell align="center">{new Date(payment.ngayTao).toLocaleString("vi-VN")}</TableCell>
+                    <TableCell align="center">{payment.nhanVienXacNhan}</TableCell>
+                    <TableCell align="center">{payment.ghiChu}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      }
 
 
       <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: "hidden" }}>

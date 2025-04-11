@@ -23,7 +23,7 @@ import java.util.*;
 @Service
 public class ChatbotService {
     private static final String API_URL = "https://api.openai.com/v1/chat/completions";
-    private static final String API_KEY = "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"; // Replace with actual API key
+    private static final String API_KEY = "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"; // Replace with actual API key
 
     @Autowired
     private SanPhamChiTietRepository sanPhamChiTietRepository;

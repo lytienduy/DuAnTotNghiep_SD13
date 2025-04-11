@@ -9,6 +9,7 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -40,7 +41,7 @@ public class HoaDonService {
     }
 
     //Hàm lấy listCount số lượng hóa đơn của từng trạng thái theo listHoaDon theo bộ lọc
-    public List<Integer> laySoLuongHoaDonTrangThaiVaHoaDon(String timKiem, String tuNgay, String denNgay, String loaiDon, String trangThai) {
+    public List<Integer> laySoLuongHoaDonTrangThaiVaHoaDon(String timKiem, String tuNgay, String denNgay, String loaiDon) {
         // Các trạng thái cần đếm
         String[] trangThais;
         if ("online".equalsIgnoreCase(loaiDon)) {
@@ -58,14 +59,57 @@ public class HoaDonService {
         List<HoaDonResponseDTO> listHoaDonHienTaiDangFill = locHoaDon(timKiem, tuNgay, denNgay, loaiDon, null);
         List<Integer> counts = new ArrayList<>();
         counts.add(listHoaDonHienTaiDangFill.size());
+
         Arrays.stream(trangThais)
                 .map(status -> (int) listHoaDonHienTaiDangFill.stream().filter(hd -> hd.getTrangThai().equalsIgnoreCase(status)).count())
                 .forEach(counts::add);
+        List<String> trangThaisCheckHoan = Arrays.asList("Hoàn thành", "Đã hủy", "Chờ xác nhận");
+        List<HoaDon> listHoaDonHoan = hoaDonRepository.timKiemHoaDonChoHoanTien(trangThaisCheckHoan, "Online").stream()
+                .filter(hd -> {
+                    float tongThanhToan = (float) hd.getListThanhToanHoaDon().stream()
+                            .filter(tt -> tt.getLoai() == null || tt.getLoai().equalsIgnoreCase("Thanh toán"))
+                            .mapToDouble(tt -> tt.getSoTienThanhToan()) // float to double
+                            .sum();
+
+                    float tongHoanTien = (float) hd.getListThanhToanHoaDon().stream()
+                            .filter(tt -> tt.getLoai() != null && tt.getLoai().equalsIgnoreCase("Hoàn tiền"))
+                            .mapToDouble(tt -> tt.getSoTienThanhToan())
+                            .sum();
+
+                    float soTienThuc = tongThanhToan - tongHoanTien;
+
+                    return soTienThuc > hd.getTongTien();
+                })
+                .collect(Collectors.toList());
+        counts.add(listHoaDonHoan.size());
         return counts;
     }
 
     //Hàm lọc hóa đơn trả về List HoaDonDTO bên hóa đơn
     public List<HoaDonResponseDTO> locHoaDon(String timKiem, String tuNgay, String denNgay, String loaiDon, String trangThai) {
+
+        if (trangThai != null && trangThai.equalsIgnoreCase("Chờ hoàn tiền")) {
+            List<String> trangThaisCheckHoan = Arrays.asList("Hoàn thành", "Đã hủy", "Chờ xác nhận");
+            List<HoaDon> listHoaDonHoan = hoaDonRepository.timKiemHoaDonChoHoanTien(trangThaisCheckHoan, "Online").stream()
+                    .filter(hd -> {
+                        float tongThanhToan = (float) hd.getListThanhToanHoaDon().stream()
+                                .filter(tt -> tt.getLoai() == null || tt.getLoai().equalsIgnoreCase("Thanh toán"))
+                                .mapToDouble(tt -> tt.getSoTienThanhToan()) // float to double
+                                .sum();
+
+                        float tongHoanTien = (float) hd.getListThanhToanHoaDon().stream()
+                                .filter(tt -> tt.getLoai() != null && tt.getLoai().equalsIgnoreCase("Hoàn tiền"))
+                                .mapToDouble(tt -> tt.getSoTienThanhToan())
+                                .sum();
+
+                        float soTienThuc = tongThanhToan - tongHoanTien;
+
+                        return soTienThuc > hd.getTongTien();
+                    })
+                    .collect(Collectors.toList());
+            return listHoaDonHoan.stream().map(this::convertToDTO).collect(Collectors.toList());
+
+        }
         List<HoaDon> hoaDons = hoaDonRepository.findAll((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -94,6 +138,7 @@ public class HoaDonService {
             if (trangThai != null && !trangThai.equalsIgnoreCase("Tất Cả")) {
                 predicates.add(criteriaBuilder.equal(root.get("trangThai"), trangThai));
             }
+
             query.orderBy(criteriaBuilder.asc(root.get("ngayTao")));
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
@@ -167,16 +212,16 @@ public class HoaDonService {
                         ThanhToanHoaDon::getNgayTao,
                         Comparator.nullsLast(Comparator.reverseOrder()) // Đưa null xuống cuối danh sách
                 ))
-                .map(tt -> new HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO(tt.getId(), tt.getSoTienThanhToan(), tt.getNgayTao(), tt.getPhuongThucThanhToan().getTenPhuongThuc(), tt.getNguoiTao(), tt.getGhiChu()))
+                .map(tt -> new HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO(tt.getId(), tt.getSoTienThanhToan(), tt.getNgayTao(), tt.getPhuongThucThanhToan().getTenPhuongThuc(), tt.getNguoiTao(), tt.getGhiChu(), tt.getLoai()))
                 .collect(Collectors.toList());
 
 
-        List<HoaDonChiTietResponseDTO.DanhSachSanPhamDTO> listDanhSachSanPham = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndTrangThaiOrderByNgayTaoDesc(hoaDon,"Hoạt động").stream()
+        List<HoaDonChiTietResponseDTO.DanhSachSanPhamDTO> listDanhSachSanPham = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndTrangThaiOrderByNgayTaoDesc(hoaDon, "Hoạt động").stream()
                 .sorted(Comparator.comparing(
                         HoaDonChiTiet::getNgayTao,
                         Comparator.nullsLast(Comparator.reverseOrder()) // Đưa null xuống cuối danh sách
                 ))
-                .map(hdct -> new HoaDonChiTietResponseDTO.DanhSachSanPhamDTO(hdct.getId(), listURLAnhSanPhamChiTiet(hdct.getSanPhamChiTiet().getListAnh()), hdct.getSanPhamChiTiet().getSanPham().getTenSanPham() + hdct.getSanPhamChiTiet().getMauSac().getTenMauSac() + " size " + hdct.getSanPhamChiTiet().getSize().getTenSize(), hdct.getSanPhamChiTiet().getId(), hdct.getSanPhamChiTiet().getMa(), hdct.getDonGia(), hdct.getSoLuong(), hdct.getDonGia() * hdct.getSoLuong(),hdct.getTrangThai()))
+                .map(hdct -> new HoaDonChiTietResponseDTO.DanhSachSanPhamDTO(hdct.getId(), listURLAnhSanPhamChiTiet(hdct.getSanPhamChiTiet().getListAnh()), hdct.getSanPhamChiTiet().getSanPham().getTenSanPham() + hdct.getSanPhamChiTiet().getMauSac().getTenMauSac() + " size " + hdct.getSanPhamChiTiet().getSize().getTenSize(), hdct.getSanPhamChiTiet().getId(), hdct.getSanPhamChiTiet().getMa(), hdct.getDonGia(), hdct.getSoLuong(), hdct.getDonGia() * hdct.getSoLuong(), hdct.getTrangThai()))
                 .collect(Collectors.toList());
 
         List<HoaDonChiTietResponseDTO.LichSuHoaDonDTO> listLichSuHoaDon = hoaDon.getListLichSuHoaDon().stream()
@@ -213,7 +258,7 @@ public class HoaDonService {
                 tenKhachHang,
                 sdtKhachHang,
                 hoaDon.getTongTien(),
-                hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(),"Hoạt động"),
+                hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động"),
                 hoaDon.getPhiShip(),
                 maPhieuGiamGia,
                 hoaDon.getTrangThai(),
@@ -251,7 +296,7 @@ public class HoaDonService {
     public List<HoaDonChiTietResponseDTO.HoaDonChiTietDTO> getHoaDonChiTietTaiQuay() {
         List<String> trangThais = Arrays.asList("Chờ thêm sản phẩm");//Nếu là chờ thêm sản phẩm mới show ra
         List<HoaDon> hoaDons = hoaDonRepository.getHoaDonByTrangThaiInAndLoaiDonOrderByNgayTaoAsc(trangThais, "Tại quầy");
-        return hoaDons.stream().map(this::  convertHoaDonChiTietToDTO).collect(Collectors.toList());
+        return hoaDons.stream().map(this::convertHoaDonChiTietToDTO).collect(Collectors.toList());
     }
 
 
