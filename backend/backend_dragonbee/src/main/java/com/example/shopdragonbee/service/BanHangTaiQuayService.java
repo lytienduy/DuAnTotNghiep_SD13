@@ -510,7 +510,7 @@ public class BanHangTaiQuayService {
             thanhToanHoaDonTienMat.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(1).get());
             thanhToanHoaDonTienMat.setSoTienThanhToan(tienMat);
             thanhToanHoaDonTienMat.setNgayTao(LocalDateTime.now());
-
+            thanhToanHoaDonTienMat.setLoai("Thanh toán");
 
             ThanhToanHoaDon thanhToanHoaDonChuyenKhoan = new ThanhToanHoaDon();
             thanhToanHoaDonChuyenKhoan.setMa("TTHD" + (System.currentTimeMillis() % 100000));
@@ -518,6 +518,7 @@ public class BanHangTaiQuayService {
             thanhToanHoaDonChuyenKhoan.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(2).get());//Chuyển khoản
             thanhToanHoaDonChuyenKhoan.setSoTienThanhToan(chuyenKhoan);
             thanhToanHoaDonChuyenKhoan.setNgayTao(LocalDateTime.now());
+            thanhToanHoaDonChuyenKhoan.setLoai("Thanh toán");
 
 
             if (pttt.equalsIgnoreCase("cash")) {

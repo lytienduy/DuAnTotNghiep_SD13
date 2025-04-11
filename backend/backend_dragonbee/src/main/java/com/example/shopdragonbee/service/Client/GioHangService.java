@@ -39,6 +39,7 @@ public class GioHangService {
             ) {
                 SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
                 SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
+                sanPhamCart.setId(sanPhamChiTiet.getSanPham().getId());
                 sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
                 if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                     sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
@@ -94,6 +95,7 @@ public class GioHangService {
                 } else {
                     SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
                     SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
+                    sanPhamCart.setId(sanPhamChiTiet.getSanPham().getId());
                     sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
                     if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                         sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
@@ -123,6 +125,7 @@ public class GioHangService {
             ) {
                 SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
                 SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
+                sanPhamCart.setId(sanPhamChiTiet.getSanPham().getId());
                 sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
                 if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                     sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());

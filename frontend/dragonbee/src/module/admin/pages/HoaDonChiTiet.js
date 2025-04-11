@@ -868,10 +868,12 @@ const HoaDonChiTiet = () => {
   const listThanhToan = (hoaDon?.listThanhToanHoaDon || [])
     .filter(tt => tt?.loai !== "Hoàn tiền")
 
+  const soTienDaThanhToan = listThanhToan?.reduce((tong, tt) => tong + tt?.soTien, 0);
+
   const listHoanTien = (hoaDon?.listThanhToanHoaDon || [])
     .filter(tt => tt?.loai === "Hoàn tiền") // Lọc chỉ lấy các phần tử có id = 3
 
-  const tongTienDaThanhToanVaDaHoanTienCuaOnline = listThanhToan?.reduce((tong, tt) => tong + tt?.soTien, 0) - listHoanTien?.reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tiền cần hoàn lấy tiền đã thanh toán trừ đi tiền đã hoàn so sánh với số tiền cần thanh toán của hóa đơn
+  const tongTienDaThanhToanVaDaHoanTienCuaOnline = soTienDaThanhToan - listHoanTien?.reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tiền cần hoàn lấy tiền đã thanh toán trừ đi tiền đã hoàn so sánh với số tiền cần thanh toán của hóa đơn
 
   const handleNextCheckHoanTienVaMoModal = () => {
 
@@ -935,6 +937,7 @@ const HoaDonChiTiet = () => {
         </DialogActions>
       </Dialog>
       <Dialog open={openTT} onClose={() => setOpenTT(false)} maxWidth="sm" fullWidth>
+
         {/* Tiêu đề có nút đóng */}
         <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center', fontSize: '25px', color: '#1976D2', position: 'relative' }}>
           THANH TOÁN
@@ -952,6 +955,12 @@ const HoaDonChiTiet = () => {
         </DialogTitle>
 
         <DialogContent>
+          {(hoaDon.tongTienThanhToan - tongTienDaThanhToanVaDaHoanTienCuaOnline) > 0 &&
+            <Grid container justifyContent="space-between" sx={{ mb: 2 }}>
+              <Typography variant="h6">Thanh toán còn lại</Typography>
+              <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{(hoaDon.tongTienThanhToan - tongTienDaThanhToanVaDaHoanTienCuaOnline)?.toLocaleString()} VNĐ</Typography>
+            </Grid>
+          }
           {/* Tổng tiền hàng */}
           {/* Nút Chuyển Khoản - Tiền Mặt - Cả Hai */}
           <Grid container justifyContent="center" spacing={1} sx={{ mb: 2 }}>
@@ -1836,7 +1845,7 @@ const HoaDonChiTiet = () => {
       <Box sx={{ p: 2, borderRadius: 2 }}>
         {/* Tổng tiền hàng */}
         <Box display="flex" justifyContent="space-between" mb={1}>
-          <Typography variant="body1" fontWeight={500}>Tổng tiền hàng:</Typography>
+          <Typography variant="body1" fontWeight={500}>Tổng tiền sản phẩm:</Typography>
           <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienSanPham?.toLocaleString()} VNĐ</Typography>
         </Box>
 
@@ -1875,7 +1884,41 @@ const HoaDonChiTiet = () => {
           >
             {(hoaDon.tongTienThanhToan ?? 0).toLocaleString()} VNĐ
           </Typography>
+
         </Box>
+        {(soTienDaThanhToan > 0 && tongTienDaThanhToanVaDaHoanTienCuaOnline < hoaDon?.tongTienThanhToan) &&
+          <>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" fontWeight="bold" color="primary">
+                Đã thanh toán:
+              </Typography>
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                sx={{
+                  color: "#D32F2F",
+                  // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
+                }}
+              >
+                {(soTienDaThanhToan ?? 0).toLocaleString()} VNĐ
+              </Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" fontWeight="bold" color="primary">
+                Số tiền cần thanh toán còn lại:
+              </Typography>
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                sx={{
+                  color: "#D32F2F",
+                  // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
+                }}
+              >
+                {(hoaDon.tongTienThanhToan - soTienDaThanhToan ?? 0).toLocaleString()} VNĐ
+              </Typography>
+            </Box>
+          </>}
       </Box>
       <ToastContainer /> {/* Quan trọng để hiển thị toast */}
       {/* Modal sản phẩm*/}

@@ -316,17 +316,18 @@ public class ChatbotService {
         for (PhieuGiamGia pgg : vouchers) {
             StringBuilder line = new StringBuilder();
             line.append("- ").append(pgg.getTenPhieuGiamGia()).append(" (")
-                    .append(pgg.getMa()).append("): Giảm ")
-                    .append(formatCurrency(pgg.getGiaTriGiam()));
+                    .append(pgg.getMa()).append("): Giảm ");
 
             if ("Phần trăm".equalsIgnoreCase(pgg.getLoaiPhieuGiamGia())) {
-                line.append("% (cho đơn từ ")
+                line.append(String.format("%.0f", pgg.getGiaTriGiam())) // làm tròn và bỏ .0
+                        .append("% (cho đơn từ ")
                         .append(formatCurrency(pgg.getSoTienToiThieu()))
                         .append(" trở lên, tối đa ")
                         .append(formatCurrency(pgg.getSoTienGiamToiDa()))
                         .append(")");
             } else {
-                line.append(" VNĐ (cho đơn từ ")
+                line.append(formatCurrency(pgg.getGiaTriGiam()))
+                        .append(" (cho đơn từ ")
                         .append(formatCurrency(pgg.getSoTienToiThieu()))
                         .append(" trở lên)");
             }
