@@ -58,6 +58,12 @@ public class ChatWebSocketController {
                     .ifPresent(message::setNhanVien);
         }
 
+        if (!request.getGuiTuNhanVien()) {
+            message.setDaDoc(false); // khách gửi, chưa đọc
+        } else {
+            message.setDaDoc(true); // nhân viên gửi, không cần xử lý unread
+        }
+
         chatMessageRepository.save(message);
 
         ChatMessageDTO dto = new ChatMessageDTO();
@@ -100,25 +106,15 @@ public class ChatWebSocketController {
 
     @GetMapping("/api/chat/clients")
     public List<ChatKhachHangDTO> getClientsChatted() {
-        List<Integer> sortedKhachHangIds = chatMessageRepository.findKhachHangIdsOrderByLastMessageTimeDesc();
-
-        List<KhachHang> khachHangs = khachHangRepository.findAllById(sortedKhachHangIds);
-
-        // Đảm bảo thứ tự giống với danh sách ID đã được sắp xếp từ query
-        Map<Integer, KhachHang> khMap = khachHangs.stream()
-                .collect(Collectors.toMap(KhachHang::getId, kh -> kh));
-
-        return sortedKhachHangIds.stream()
-                .map(id -> {
-                    KhachHang kh = khMap.get(id);
-                    ChatKhachHangDTO dto = new ChatKhachHangDTO();
-                    dto.setId(kh.getId());
-                    dto.setTenKhachHang(kh.getTenKhachHang());
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        return chatMessageRepository.findClientsWithLastMessageFull();
     }
 
+    @PutMapping("/api/chat/markAsRead/{idKhachHang}")
+    public void markMessagesAsRead(@PathVariable Integer idKhachHang) {
+        List<ChatMessage> messages = chatMessageRepository.findByKhachHang_IdAndGuiTuNhanVienFalseAndDaDocFalse(idKhachHang);
+        messages.forEach(msg -> msg.setDaDoc(true));
+        chatMessageRepository.saveAll(messages);
+    }
 
     @PostMapping("/api/chat/upload")
     public Map<String, String> uploadChatImage(@RequestParam("file") MultipartFile file) throws IOException {

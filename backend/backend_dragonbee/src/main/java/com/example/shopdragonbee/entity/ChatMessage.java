@@ -27,6 +27,9 @@ public class ChatMessage {
     @Column(name = "gui_tu_nhan_vien")
     private Boolean guiTuNhanVien;
 
+    @Column(name = "da_doc")
+    private Boolean daDoc = false;
+
     @ManyToOne
     @JoinColumn(name = "id_nhan_vien")
     private NhanVien nhanVien;

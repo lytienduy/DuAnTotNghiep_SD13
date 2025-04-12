@@ -711,3 +711,8 @@ ADD ma_mau VARCHAR(20);
 */
 ALTER TABLE anh_san_pham
 DROP CONSTRAINT anh_san_pham_anh_url_key;
+
+ALTER TABLE chat_message ADD da_doc BIT DEFAULT 0;
+ALTER TABLE chat_message ADD from_khach_hang BIT;
+
+drop table chat_message

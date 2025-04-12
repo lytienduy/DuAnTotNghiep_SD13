@@ -21,19 +21,22 @@ const ChatWithClient = () => {
     const [previewImage, setPreviewImage] = useState(null);
 
     useEffect(() => {
-        fetch('http://localhost:8080/api/chat/clients')
-            .then(res => res.json())
-            .then(data => {
-                const withFallbackTime = data.map(client => ({
-                    ...client,
-                    lastMessageTime: client.lastMessageTime || 0,
-                    unread: false
-                }));
-                const sorted = withFallbackTime.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
-                setClients(sorted);
-            });
-            
+        const fetchClients = async () => {
+            const response = await fetch('http://localhost:8080/api/chat/clients');
+            const data = await response.json();
+            setClients(data);  // Cập nhật clients state
+        };
+
+        fetchClients();  // Gọi lần đầu tiên khi component mount
+
+        const intervalId = setInterval(() => {
+            fetchClients();  // Gọi lại mỗi 5 giây
+        }, 1000);
+
+        // Cleanup interval khi component unmount
+        return () => clearInterval(intervalId);
     }, []);
+
 
     // Tạo màu từ chuỗi (ổn định theo tên)
     const stringToColor = (str) => {
@@ -117,6 +120,11 @@ const ChatWithClient = () => {
         setClients(prevClients => prevClients.map(c =>
             c.id === client.id ? { ...c, unread: false } : c
         ));
+
+        fetch(`http://localhost:8080/api/chat/markAsRead/${client.id}`, {
+            method: 'PUT'
+        });
+
     };
 
     const handleSend = () => {
@@ -198,13 +206,13 @@ const ChatWithClient = () => {
     }, [messages]);
 
     useEffect(() => {
-            if (selectedClient && bottomRef.current) {
-                // Delay 1 chút để khung chat hiển thị xong rồi mới cuộn
-                setTimeout(() => {
-                    bottomRef.current.scrollIntoView({ behavior: "smooth" });
-                }, 100);
-            }
-        }, [selectedClient]);
+        if (selectedClient && bottomRef.current) {
+            // Delay 1 chút để khung chat hiển thị xong rồi mới cuộn
+            setTimeout(() => {
+                bottomRef.current.scrollIntoView({ behavior: "smooth" });
+            }, 100);
+        }
+    }, [selectedClient]);
 
     useEffect(() => {
         const handlePreviewImage = (e) => {
@@ -232,6 +240,24 @@ const ChatWithClient = () => {
 
     //     setClients(fakeClients);
     // }, []);
+    function formatTime(lastMessageTime) {
+        const now = new Date();
+        const messageTime = new Date(lastMessageTime);
+
+        const diffInMs = now - messageTime;
+        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24)); // Tính số ngày chênh lệch
+
+        if (diffInDays === 0) {
+            // Nếu tin nhắn là trong ngày hôm nay, hiển thị giờ
+            return messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else if (diffInDays === 1) {
+            // Nếu tin nhắn là hôm qua, hiển thị "Hôm qua"
+            return "Hôm qua";
+        } else {
+            // Nếu tin nhắn là trước ngày hôm qua, hiển thị ngày (ví dụ: 10/04)
+            return messageTime.toLocaleDateString();
+        }
+    }
 
     return (
         <Box display="flex" height="80vh" gap={2}>
@@ -262,11 +288,19 @@ const ChatWithClient = () => {
                                 <ListItemText
                                     primary={client.tenKhachHang}
                                     secondary={
-                                        client.lastMessage && client.lastMessage.length > 0
-                                            ? client.lastMessage.length > 15
-                                                ? client.lastMessage.slice(0, 15) + '...'
-                                                : client.lastMessage
-                                            : ''
+                                        <>
+                                            <span style={{ fontSize: '0.75rem', color: 'gray' }}>
+                                                {client.lastMessageTime && formatTime(client.lastMessageTime)}
+                                            </span>
+                                            <span> </span>
+                                            {client.lastMessage && client.lastMessage.length > 0 && (
+                                                <span>
+                                                    {client.lastMessage.length > 15
+                                                        ? client.lastMessage.slice(0, 15) + '...'
+                                                        : client.lastMessage}
+                                                </span>
+                                            )}
+                                        </>
                                     }
                                     secondaryTypographyProps={{
                                         sx: { color: 'text.secondary', fontSize: '0.875rem' }
@@ -279,6 +313,7 @@ const ChatWithClient = () => {
                         </ListItem>
                     ))}
                 </List>
+
             </Paper>
 
             {/* Khung chat */}
@@ -339,7 +374,7 @@ const ChatWithClient = () => {
                     <Box mt={2} display="flex" gap={1}>
                         <InputAdornment position="start">
                             <IconButton component="label">
-                                <ImageIcon />
+                                <ImageIcon sx={{marginTop:1}}/>
                                 <input
                                     type="file"
                                     hidden
@@ -357,7 +392,7 @@ const ChatWithClient = () => {
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                            sx={{ backgroundColor: 'white', borderRadius: 1 }}
+                            sx={{ backgroundColor: 'white', borderRadius: 1 ,marginLeft:-2}}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
