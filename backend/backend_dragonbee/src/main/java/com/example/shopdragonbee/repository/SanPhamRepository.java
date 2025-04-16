@@ -1,6 +1,7 @@
 package com.example.shopdragonbee.repository;
 
 import com.example.shopdragonbee.dto.SanPhamDTO;
+import com.example.shopdragonbee.dto.SanPhamSoLuongDTO;
 import com.example.shopdragonbee.respone.SanPhamRespone;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -83,4 +84,17 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
     Optional<SanPham> findByTenSanPham(String tenSanPham);
 
     List<SanPham> findTop3ByOrderByNgayTaoDesc();
+
+    @Query("SELECT new com.example.shopdragonbee.dto.SanPhamSoLuongDTO(sp.id, sp.ma, sp.tenSanPham, SUM(spct.soLuong)) " +
+            "FROM SanPham sp JOIN sp.sanPhamChiTietList spct " +
+            "GROUP BY sp.id, sp.ma, sp.tenSanPham")
+    List<SanPhamSoLuongDTO> findAllSanPhamWithTongSoLuong();
+
+    @Query("SELECT new com.example.shopdragonbee.dto.SanPhamSoLuongDTO(sp.id, sp.ma, sp.tenSanPham, SUM(spct.soLuong)) " +
+            "FROM SanPham sp JOIN sp.sanPhamChiTietList spct " +
+            "WHERE LOWER(sp.tenSanPham) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "   OR LOWER(sp.ma) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "GROUP BY sp.id, sp.ma, sp.tenSanPham")
+    List<SanPhamSoLuongDTO> findByMaOrTenSanPhamContaining(@Param("keyword") String keyword);
+
 }

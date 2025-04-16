@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Drawer,
   List,
@@ -85,8 +85,8 @@ const Sidebar = ({ isSidebarOpen }) => {
     }
   }, []);
 
-   // Hàm để kiểm tra xem nút có bị disable không
-   const isDisabled = roleId === 2;
+  // Hàm để kiểm tra xem nút có bị disable không
+  const isDisabled = roleId === 2;
 
   return (
     <Box sx={{ width: isSidebarOpen ? 240 : 72, transition: 'width 0.3s' }}>
@@ -152,7 +152,7 @@ const Sidebar = ({ isSidebarOpen }) => {
               />
             )}
           </ListItemButton>
-          
+
           {/* Chat */}
           <ListItemButton
             component={Link}
@@ -339,6 +339,40 @@ const Sidebar = ({ isSidebarOpen }) => {
             )}
           </ListItemButton>
 
+          {/* Đợt giảm giá
+
+          <ListItemButton
+            component={Link}
+            to="/admin/dot-giam-gia"
+            disabled={isDisabled}
+            sx={{
+              borderRadius: 3,
+              backgroundColor: isActive('/admin/dot-giam-gia') ? 'rgb(52, 152, 234)' : 'transparent', // Màu xanh với opacity 50% khi được chọn
+              color: isActive('/admin/dot-giam-gia') ? '#fff' : 'inherit',
+              '&:hover': {
+                backgroundColor: '#d3d3d3', // Màu xám nhạt khi hover
+                color: '#fff', // Chữ màu trắng khi hover
+              },
+            }}
+          >
+            <Tooltip title="Đợt giảm giá" placement="right" disableHoverListener={isSidebarOpen}>
+              <ListItemIcon
+                sx={{
+                  color: isActive('/admin/dot-giam-gia') ? '#fff' : 'inherit',
+                  minWidth: '40px',
+                }}
+              >
+                <EventIcon sx={{ marginLeft: '5px' }} />
+              </ListItemIcon></Tooltip>
+            {isSidebarOpen && (
+              <ListItemText
+                primary="Đợt Giảm Giá"
+                primaryTypographyProps={{ fontSize: '13.6px' }} // Chỉnh kích thước chữ
+              />
+            )}
+          </ListItemButton> */}
+
+          {/* Đăng xuất */}
           <ListItemButton onClick={handleLogout}>
             <Tooltip title="Đăng xuất" placement="right">
               <ListItemIcon sx={{ minWidth: '40px', color: 'inherit' }}>

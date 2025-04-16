@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.repository;
 
+import com.example.shopdragonbee.dto.SanPhamChiTietResponse;
 import com.example.shopdragonbee.respone.SanPhamChiTietRespone;
 import com.example.shopdragonbee.entity.SanPhamChiTiet;
 import org.springframework.data.domain.Page;
@@ -69,5 +70,18 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet, 
     """)
     List<Object[]> findTopBestSellingProducts(Pageable pageable);
 
+    @Query("SELECT new com.example.shopdragonbee.dto.SanPhamChiTietResponse(" +
+            "spct.id, " +
+            "CONCAT(sp.tenSanPham, ' - ', ms.tenMauSac, ' - ', s.tenSize), " +
+            "dm.tenDanhMuc, th.tenThuongHieu, ms.tenMauSac, kd.tenKieuDang, spct.soLuong) " +
+            "FROM SanPhamChiTiet spct " +
+            "JOIN spct.sanPham sp " +
+            "LEFT JOIN spct.danhMuc dm " +
+            "LEFT JOIN spct.thuongHieu th " +
+            "LEFT JOIN spct.mauSac ms " +
+            "LEFT JOIN spct.kieuDang kd " +
+            "LEFT JOIN spct.size s " +
+            "WHERE sp.id IN :sanPhamIds")
+    List<SanPhamChiTietResponse> findChiTietBySanPhamIds(@Param("sanPhamIds") List<Integer> sanPhamIds);
 
 }

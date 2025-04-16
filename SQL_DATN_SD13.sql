@@ -716,3 +716,10 @@ ALTER TABLE chat_message ADD da_doc BIT DEFAULT 0;
 ALTER TABLE chat_message ADD from_khach_hang BIT;
 
 drop table chat_message
+
+ALTER TABLE dot_giam_gia
+ALTER COLUMN ngay_bat_dau DATETIME;
+
+ALTER TABLE dot_giam_gia
+ALTER COLUMN ngay_ket_thuc DATETIME;
+
