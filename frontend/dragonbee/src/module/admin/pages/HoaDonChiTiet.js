@@ -915,6 +915,8 @@ const HoaDonChiTiet = () => {
       console.error(error.response || error.message);
     }
   };
+  const listDanhSachSanPhamHoatDong = (hoaDon?.listDanhSachSanPham || [])
+    .filter(tt => tt?.trangThai === "Hoạt động") // Lọc chỉ lấy các phần tử có id = 3
   return (
     <div>
       {/* Xác nhận xóa sản phẩm */}
@@ -1244,10 +1246,10 @@ const HoaDonChiTiet = () => {
               (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Chờ thanh toán"
                 (!hoaDon.listThanhToanHoaDon ||              // Nếu danh sách lịch sử thanh toán không tồn tại
                   hoaDon.listThanhToanHoaDon.length === 0 ||  // Hoặc danh sách rỗng
-                  hoaDon.listThanhToanHoaDon.reduce((sum, item) => sum + item.soTien, 0) < hoaDon.tongTienThanhToan)) ||
+                  tongTienDaThanhToanVaDaHoanTienCuaOnline < hoaDon.tongTienThanhToan)) ||
               (hoaDon.trangThai === "Đã xác nhận" &&  // Nếu trạng thái là "Đã xác nhận"
                 (!hoaDon.listDanhSachSanPham || hoaDon.listDanhSachSanPham.length === 0)) ||  // Nếu danh sách sản phẩm rỗng thì vô hiệu hóa
-              (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Đã xác nhận"
+              (hoaDon.trangThai === "Chờ thanh toán" &&
                 (!hoaDon.listDanhSachSanPham || hoaDon.listDanhSachSanPham.length === 0))
             }
           >
@@ -1698,7 +1700,7 @@ const HoaDonChiTiet = () => {
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Đơn giá</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số tiền</TableCell>
-              {(hoaDon.trangThai === "Chờ xác nhận") && <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>}
+              {(hoaDon.trangThai === "Chờ xác nhận" && listDanhSachSanPhamHoatDong?.length > 1) && <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -1829,7 +1831,7 @@ const HoaDonChiTiet = () => {
                     <TableCell align="center">{product.donGia?.toLocaleString()} VNĐ</TableCell>
                     <TableCell align="center">{product.soTien?.toLocaleString()} VNĐ</TableCell>
                     <TableCell align="center">
-                      {(hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động") &&
+                      {(hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động" && listDanhSachSanPhamHoatDong?.length > 1) &&
                         <IconButton color="error" onClick={() => clickDeleteIcon(product.id)}>
                           <DeleteIcon />
                         </IconButton>

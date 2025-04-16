@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="3285daf9-171e-44be-80b7-eb3a6babbbd3" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/HoaDonChiTietClient.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/HoaDonChiTietClient.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,7 +93,8 @@
       <workItem from="1743919712096" duration="15401000" />
       <workItem from="1743995521624" duration="5440000" />
       <workItem from="1744074282263" duration="9399000" />
-      <workItem from="1744104671935" duration="611000" />
+      <workItem from="1744104671935" duration="1241000" />
+      <workItem from="1744389309572" duration="892000" />
     </task>
     <servers />
   </component>
