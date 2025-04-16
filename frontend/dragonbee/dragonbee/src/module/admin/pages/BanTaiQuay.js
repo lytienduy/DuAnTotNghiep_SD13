@@ -1224,7 +1224,7 @@ const BanTaiQuay = () => {
     }
   };
 
-  //Hàm lấy dữ liệu hóa đơn tại quầy
+  //Hàm lấy dữu liệu hóa đơn tại quầy
   const fetchOrders = async () => {
     let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layHoaDonTaiQuay";
     try {
@@ -1538,7 +1538,7 @@ const BanTaiQuay = () => {
         printWindow.print();
       }, 500);
       // }
-    } catch (error) { 
+    } catch (error) {
       showErrorToast("Lỗi khi tải hóa đơn, vui lòng thử lại!");
       console.error("Lỗi khi lấy dữ liệu hóa đơn:", error);
     }
