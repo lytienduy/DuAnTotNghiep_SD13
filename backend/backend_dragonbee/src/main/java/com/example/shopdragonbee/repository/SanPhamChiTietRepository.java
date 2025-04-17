@@ -42,10 +42,6 @@ public interface SanPhamChiTietRepository extends JpaRepository<SanPhamChiTiet, 
 
     SanPhamChiTiet findById(int id);
 
-    // tìm kiếm
-    @Query("SELECT spct FROM SanPhamChiTiet spct WHERE LOWER(spct.sanPham.tenSanPham) LIKE LOWER(CONCAT('%', :ten, '%'))")
-    List<SanPhamChiTiet> searchByTenSanPham(@Param("ten") String ten);
-
 
     List<SanPhamChiTiet> findBySanPhamId(Integer sanPhamId);
 

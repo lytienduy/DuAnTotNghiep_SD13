@@ -135,12 +135,7 @@ public class SanPhamChiTietController {
             return new ResponseEntity<>("❌ Lỗi khi thêm sản phẩm chi tiết: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    //tìm kiếm
-    @GetMapping("/search")
-    public ResponseEntity<List<SanPhamChiTiet>> searchSanPhamChiTiet(@RequestParam("ten") String ten) {
-        List<SanPhamChiTiet> sanPhamChiTietList = sanPhamChiTietService.searchSanPhamChiTietByTen(ten);
-        return ResponseEntity.ok(sanPhamChiTietList);
-    }
+    
     /// update số lượng và giá
     @PutMapping("/batch")
     public ResponseEntity<List<SanPhamChiTiet>> updateSanPhamChiTietBatch(
@@ -179,6 +174,7 @@ public class SanPhamChiTietController {
 
         return ResponseEntity.ok(result);
     }
+
 
 
     // API chuyển đổi trạng thái giữa "Hoạt động" và "Ngừng hoạt động"
