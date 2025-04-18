@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -384,6 +386,16 @@ public class AppController {
         return ResponseEntity.ok("Cập nhật phiếu giảm giá thành công!");
     }
 
-
+    @GetMapping("/giam-gia")
+    public ResponseEntity<?> tinhTienGiamGia(
+            @RequestParam("ma") String ma,
+            @RequestParam("tongTienSanPham") double tongTienSanPham) {
+        PhieuGiamGia phieu = phieuGiamGiaService.getByMa(ma);
+        double tienGiam = phieuGiamGiaService.tinhTienGiam(phieu, tongTienSanPham);
+        Map<String, Object> response = new HashMap<>();
+        response.put("phieuGiamGia", phieu);
+        response.put("tienGiam", tienGiam);
+        return ResponseEntity.ok(response);
+    }
 
 }

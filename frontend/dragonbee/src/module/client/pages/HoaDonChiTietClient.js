@@ -58,6 +58,37 @@ const HoaDonChiTietClient = () => {
   const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
 
+  const [tienGiam, setTienGiam] = useState(0);
+  const [phieuGiamGia, setPhieuGiamGia] = useState(null);
+
+  useEffect(() => {
+    const fetchGiamGia = async () => {
+      if (hoaDon.maVoucher && hoaDon.tongTienSanPham) {
+        try {
+          const res = await axios.get(`http://localhost:8080/dragonbee/giam-gia`, {
+            params: {
+              ma: hoaDon.maVoucher,
+              tongTienSanPham: hoaDon.tongTienSanPham,
+            },
+          });
+          setTienGiam(res.data.tienGiam);
+          setPhieuGiamGia(res.data.phieuGiamGia);
+
+          // Optional: cập nhật lại tổng tiền thanh toán nếu muốn
+          setHoaDon(prev => ({
+            ...prev,
+            tongTienThanhToan:
+              prev.tongTienSanPham + (prev.phiVanChuyen ?? 0) - res.data.tienGiam,
+          }));
+        } catch (error) {
+          console.error("Lỗi khi gọi API giảm giá:", error);
+        }
+      }
+    };
+
+    fetchGiamGia();
+  }, [hoaDon.maVoucher, hoaDon.tongTienSanPham]);
+
 //Thay đổi địa chỉ nhận hàng
   const [openModal, setOpenModal] = useState(false);
   const [hoTen, setHoTen] = useState(hoaDon.tenNguoiNhanHang);
@@ -1229,14 +1260,14 @@ phiShip = parseFloat(phiShip); // Chuyển đổi sang kiểu số thực
         )}
 
         {/* Mã voucher */}
-        {hoaDon.maVoucher && (
-          <Box display="flex" justifyContent="space-between" mb={2}>
-            <Typography variant="body1" fontWeight={500}>Mã giảm giá:</Typography>
-            <Typography variant="body1" fontWeight={500} color="error">
-              {hoaDon.maVoucher} - {(hoaDon.tongTienSanPham + (hoaDon?.phiVanChuyen ?? 0) - (hoaDon?.tongTienThanhToan ?? 0)).toLocaleString()} đ
-            </Typography>
-          </Box>
-        )}
+        {phieuGiamGia && (
+                  <Box display="flex" justifyContent="space-between" mb={2}>
+                    <Typography variant="body1" fontWeight={500}>Mã giảm giá:</Typography>
+                    <Typography variant="body1" fontWeight={500} color="error">
+                      {phieuGiamGia.ma} - {Math.round(tienGiam).toLocaleString()} VNĐ
+                    </Typography>
+                  </Box>
+                )}
 
         <Divider sx={{ my: 2 }} />
 

@@ -99,6 +99,37 @@ const HoaDonChiTiet = () => {
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
   const [openConfirmRefund, setOpenConfirmRefund] = useState(false);
 
+  const [tienGiam, setTienGiam] = useState(0);
+  const [phieuGiamGia, setPhieuGiamGia] = useState(null);
+
+  useEffect(() => {
+    const fetchGiamGia = async () => {
+      if (hoaDon.maVoucher && hoaDon.tongTienSanPham) {
+        try {
+          const res = await axios.get(`http://localhost:8080/dragonbee/giam-gia`, {
+            params: {
+              ma: hoaDon.maVoucher,
+              tongTienSanPham: hoaDon.tongTienSanPham,
+            },
+          });
+          setTienGiam(res.data.tienGiam);
+          setPhieuGiamGia(res.data.phieuGiamGia);
+
+          // Optional: cập nhật lại tổng tiền thanh toán nếu muốn
+          setHoaDon(prev => ({
+            ...prev,
+            tongTienThanhToan:
+              prev.tongTienSanPham + (prev.phiVanChuyen ?? 0) - res.data.tienGiam,
+          }));
+        } catch (error) {
+          console.error("Lỗi khi gọi API giảm giá:", error);
+        }
+      }
+    };
+
+    fetchGiamGia();
+  }, [hoaDon.maVoucher, hoaDon.tongTienSanPham]);
+
   useEffect(() => {
     if (hoaDon.diaChiNguoiNhanHang) {
       const addressParts = hoaDon.diaChiNguoiNhanHang.split(", ");
@@ -1448,23 +1479,23 @@ const HoaDonChiTiet = () => {
                   Thông tin nhận hàng
                 </Typography>
                 {hoaDon.trangThai === "Chờ xác nhận" &&
-                <Button
-                  variant="outlined"
-                  sx={{
-                    backgroundColor: "white",
-                    color: "#0077ff", // Màu chữ xanh
-                    borderColor: "#0077ff", // Màu viền xanh
-                    "&:hover": {
-                      backgroundColor: "#e3f2fd",
-                      borderColor: "#1565c0",
-                      color: "#1565c0",
-                    },
-                  }}
-                  onClick={handleChangeAddress} // Sử dụng hàm để mở modal
-                >
-                  Thay đổi địa chỉ
-                </Button>
-}
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      backgroundColor: "white",
+                      color: "#0077ff", // Màu chữ xanh
+                      borderColor: "#0077ff", // Màu viền xanh
+                      "&:hover": {
+                        backgroundColor: "#e3f2fd",
+                        borderColor: "#1565c0",
+                        color: "#1565c0",
+                      },
+                    }}
+                    onClick={handleChangeAddress} // Sử dụng hàm để mở modal
+                  >
+                    Thay đổi địa chỉ
+                  </Button>
+                }
               </Box>
               <Typography>
                 <b>Tên người nhận:</b> {hoaDon.tenNguoiNhanHang}
@@ -1860,11 +1891,11 @@ const HoaDonChiTiet = () => {
         )}
 
         {/* Mã voucher */}
-        {hoaDon.maVoucher && (
+        {phieuGiamGia && (
           <Box display="flex" justifyContent="space-between" mb={2}>
             <Typography variant="body1" fontWeight={500}>Mã giảm giá:</Typography>
             <Typography variant="body1" fontWeight={500} color="error">
-              {hoaDon.maVoucher} - {(hoaDon.tongTienSanPham + (hoaDon?.phiVanChuyen ?? 0) - (hoaDon?.tongTienThanhToan ?? 0)).toLocaleString()} đ
+              {phieuGiamGia.ma} - {Math.round(tienGiam).toLocaleString()} VNĐ
             </Typography>
           </Box>
         )}
@@ -2399,18 +2430,18 @@ const HoaDonChiTiet = () => {
             </Grid>
 
             {/* Phí vận chuyển */}
-          <Grid item xs={12} marginTop={-1}>
-            <TextField
-              label="Phí vận chuyển"
-              fullWidth
-              value={hoaDon.phiVanChuyen}
-              onChange={handlePhiVanChuyenChange}  // Sử dụng hàm thay đổi riêng cho phí vận chuyển
-              variant="outlined"
-              margin="normal"
-              size="small"
-            />
-            {errorMessage.phiShip && <Typography color="error" variant="body2">{errorMessage.phiShip}</Typography>}
-          </Grid>
+            <Grid item xs={12} marginTop={-1}>
+              <TextField
+                label="Phí vận chuyển"
+                fullWidth
+                value={hoaDon.phiVanChuyen}
+                onChange={handlePhiVanChuyenChange}  // Sử dụng hàm thay đổi riêng cho phí vận chuyển
+                variant="outlined"
+                margin="normal"
+                size="small"
+              />
+              {errorMessage.phiShip && <Typography color="error" variant="body2">{errorMessage.phiShip}</Typography>}
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
