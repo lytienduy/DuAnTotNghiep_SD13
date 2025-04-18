@@ -65,6 +65,7 @@ public class GioHangService {
             }
             return listDanhSachSanPhamCartKhachHang;
         }
+
         //Nếu không có khách hàng mà phụ thuộc vào listDanhSachSanPhamCart
         for (SPCTDTO.SanPhamCart sanPhamCart : listDanhSachSanPhamCart
         ) {
@@ -121,8 +122,10 @@ public class GioHangService {
         if (idKhachHang != null) {
             List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCartKhachHang = new ArrayList<>();
             List<GioHangChiTiet> listGioHangChiTiet = gioHangChiTietRepository.findByGioHangOrderByNgayTaoDesc(gioHangRepository.getGioHangByKhachHang(khachHangRepository.findById(idKhachHang).get()));
+
             for (GioHangChiTiet gioHangChiTiet : listGioHangChiTiet
             ) {
+                //Viết thêm truy vấn tống sô lượng sản phẩm trong hdct của hóa đơn trạng thái chờ xác nhận theo khách hàng
                 SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
                 SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
                 sanPhamCart.setId(sanPhamChiTiet.getSanPham().getId());
@@ -139,7 +142,6 @@ public class GioHangService {
             }
             return listDanhSachSanPhamCartKhachHang;
         }
-
         //Nếu không có đăng nhập
         for (SPCTDTO.SanPhamCart sanPhamCart : listDanhSachSanPhamCart
         ) {

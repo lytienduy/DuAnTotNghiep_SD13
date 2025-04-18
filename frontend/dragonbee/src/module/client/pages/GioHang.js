@@ -13,7 +13,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const GioHang = () => {
     const navigate = useNavigate();
@@ -146,11 +145,6 @@ const GioHang = () => {
                     },
                 });
             setProductsCapNhatSoLuong(response.data);
-            // for (const [index, item] of response.data.entries()) {
-            //     if (response.data?.[index]?.quantity === 0) {
-            //         showSuccessToast("Bạn đã mua tối đa sản phẩm thứ " + index);
-            //     }
-            // }
         } catch (error) {
             showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
         }
@@ -196,7 +190,6 @@ const GioHang = () => {
             getListDanhSachCapNhatSoLuongSanPhamGioHang();
             getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         }, 5000); // 60 giây
-
         return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
     }, []);
 
@@ -241,13 +234,15 @@ const GioHang = () => {
 
 
     const handleIncrement = async (index, idspct) => {
-        console.log("idspct là:" + idspct);
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        if (cart[index].quantity === 30) {
+            handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+            return;
+        }
         // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
         if (index >= 0 && index < cart.length) {
             cart[index].quantity += 1;
         }
-
         // Cập nhật lại giỏ hàng trong Local Storage
         localStorage.setItem("cart", JSON.stringify(cart));
         if (userKH?.khachHang?.id) {

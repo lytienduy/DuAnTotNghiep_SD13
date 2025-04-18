@@ -18,8 +18,6 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
     @Query("SELECT COALESCE(SUM(hdct.soLuong * hdct.donGia), 0) FROM HoaDonChiTiet hdct WHERE hdct.hoaDon.id = :idHoaDon and hdct.trangThai like :trangThai")
     Float tinhTongTienByHoaDonId(@Param("idHoaDon") Integer idHoaDon, @Param("trangThai") String trangThai);
 
-
-
 //    @Query("""
 //                SELECT hdct.hoaDon
 //                FROM HoaDonChiTiet hdct

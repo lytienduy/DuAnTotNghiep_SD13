@@ -86,6 +86,7 @@ public class SanPhamChiTietClientService {
                         .map(this::convertSangSanPhamCart) // Gọi hàm convert từng phần tử
                         .collect(Collectors.toList());
                 idSet = listChuyenDoiGioHangChiTietSangSanPhamCart.stream().collect(Collectors.toMap(SPCTDTO.SanPhamCart::getIdSPCT, sp -> sp));
+
             } else {
                 idSet = Collections.emptyMap();
             }
@@ -128,7 +129,6 @@ public class SanPhamChiTietClientService {
     }
 
 
-
     public List<HomeDTO.SanPhamClient> getListSanPhamTuongTu(Integer idSanPham, String tenDanhMuc) {
         List<HomeDTO.SanPhamClient> listTraVe = new ArrayList<>();
         listTraVe.addAll(homeService.getListSanPhamQuanAuNamDanhMucTheoDanhMucTop3(tenDanhMuc, idSanPham));
@@ -137,7 +137,7 @@ public class SanPhamChiTietClientService {
                 .filter(sp -> sp.getId() != idSanPham) // Lọc bỏ sản phẩm có id = 1
                 .collect(Collectors.toList());
         listTraVe.addAll(listBanChay);
-        return  listTraVe;
+        return listTraVe;
     }
 
 }

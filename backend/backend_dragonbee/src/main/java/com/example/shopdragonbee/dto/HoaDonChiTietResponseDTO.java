@@ -82,6 +82,16 @@ public class HoaDonChiTietResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
+    public static class SoLuongGocVaConLaiCuaSPCTTrongHDCT {
+        private Integer soLuongGoc;
+        private Integer soLuongConLai;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class LichSuHoaDonDTO {
         private Integer id;
         private String hanhDong;

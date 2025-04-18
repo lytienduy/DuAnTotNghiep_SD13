@@ -57,12 +57,14 @@ const HoaDonChiTietClient = () => {
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
   const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
-
+  const [productsCapNhatSoLuong, setProductsCapNhatSoLuong] = useState([]);
+  const [tenSanPhamThongBao, setTenSanPhamThongBao] = useState("");
 
 
 
   const handleDialogOpen = (message) => {
     setDialogMessage(message);
+    setTenSanPhamThongBao(tenSanPhamThongBao);
     setOpenDialogThongBaoHetHangHoacKDuSoLuong(true);
   };
   const handleDialogClose = () => {
@@ -70,7 +72,8 @@ const HoaDonChiTietClient = () => {
   };
 
   const xoaSanPham = async (id) => {
-    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}`;
+    //Đang sai đoạn này listDanhSachSanPham này chứa cả hoạt động và không hoạt động
+    let apiUrl = `http://localhost:8080/hdctClient/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
       if (response.data === true) {
@@ -88,7 +91,7 @@ const HoaDonChiTietClient = () => {
   //Hàm gọi api lấy hóa đơn
   const fetchHoaDon = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/hoa-don-chi-tiet/client/${id}`);
+      const response = await axios.get(`http://localhost:8080/hdctClient/client/${id}`);
       setTempValues({});
       setHoaDon(response.data); // Dữ liệu được lấy từ response.data
     } catch (err) {
@@ -99,13 +102,14 @@ const HoaDonChiTietClient = () => {
     }
   };
 
-  const tienDaThanhToanBangVNPAY = (hoaDon?.listThanhToanHoaDon || [])
-    .filter(tt => tt?.phuongThuc === "Thanh toán VNPay") // Lọc chỉ lấy các phần tử có id = 3
-    .reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tổng tiền
+  //Khi thay đổi bộ lọc
+  useEffect(() => {
+    fetchHoaDon();
+  }, []);
 
   //Hàm lọcThemSanPhamHoaDonTaiQuay
   const getSanPhamThem = async () => {
-    let apiUrl = "http://localhost:8080/ban-hang-tai-quay/layListCacSanPhamHienThiThem";
+    let apiUrl = "http://localhost:8080/hdctClient/layListCacSanPhamHienThiThem";
     // Xây dựng query string
     const params = new URLSearchParams();
     params.append("timKiem", timKiem);//Truyền vào loại đơn
@@ -118,6 +122,7 @@ const HoaDonChiTietClient = () => {
     params.append("kieuDang", kieuDang);//Truyền vào loại đơn
     params.append("thuongHieu", thuongHieu);//Truyền vào loại đơn
     params.append("phongCach", phongCach);//Truyền vào loại đơn
+    params.append("idHoaDon", id);//Truyền vào loại đơn
     try {
       const response = await axios.get(`${apiUrl}?${params.toString()}`);//Gọi api bằng axiosGet
       setProducts(response.data);
@@ -130,7 +135,7 @@ const HoaDonChiTietClient = () => {
   //get set toàn bộ bộ lọc
   const getAndSetToanBoBoLoc = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/ban-hang-tai-quay/layListDanhMuc`);
+      const response = await axios.get(`http://localhost:8080/hdctClient/layListDanhMuc`);
       var doiTuongCoCacThuocTinhListCacBoLoc = response.data;
       setListDanhMuc(doiTuongCoCacThuocTinhListCacBoLoc.listDanhMuc);
       setListMauSac(doiTuongCoCacThuocTinhListCacBoLoc.listMauSac);
@@ -145,17 +150,31 @@ const HoaDonChiTietClient = () => {
     }
   };
 
+  //Hàm cập nhật số lượng trong giỏ hàng
+  const getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/hdctClient/getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang?idHoaDon=${id}`);
+      setProductsCapNhatSoLuong(response.data);
+    } catch (error) {
+      showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
+    }
+  };
+
+
+  //Lấy dữ liệu hóa đơn
+  useEffect(() => {
+    fetchHoaDon();
+    const interval = setInterval(() => {
+      getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
+    }, 5000); // 60 giây
+    return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
+  }, []);
+
   //Hàm confirm xóa sản phẩm khỏi giỏ hàng
   const handleConfirmDelete = async () => {
     xoaSanPham(selectedProductId);
     setOpenConfirmModal(false);
   };
-
-  //Lấy dữ liệu hóa đơn
-  useEffect(() => {
-    fetchHoaDon();
-  }, []);
-
 
   //Hàm load ảnh
   useEffect(() => {
@@ -326,13 +345,17 @@ const HoaDonChiTietClient = () => {
 
   //Hàm giảm số lượng sản phẩm trong giỏ hàng 
   const giamSoLuong = async (id) => {
-    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/giamSoLuong/${id}`;
+    let apiUrl = `http://localhost:8080/hdctClient/giamSoLuongOnline/${id}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
       if (response.data === true) {
         fetchHoaDon();
       } else {
-        clickDeleteIcon(id);
+        if (hoaDon?.listDanhSachSanPham?.length > 1) {
+          clickDeleteIcon(id);
+        } else {
+          showErrorToast("Hóa đơn không được để rỗng sản phẩm");
+        }
       }
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -354,15 +377,24 @@ const HoaDonChiTietClient = () => {
     const newValue = Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
-    } else if (newValue < 1) {//Không được để else
-      setSelectedProductId(id);
-      setOpenConfirmModal(true);
+    } else if (newValue < 1) {//Không được để else  
+      if (hoaDon?.listDanhSachSanPham?.length > 1) {
+        setSelectedProductId(id);
+        setOpenConfirmModal(true);
+      } else if (hoaDon?.listDanhSachSanPham?.length === 1) {
+        setTempValues({});
+        showErrorToast("Hóa đơn không được để rỗng sản phẩm");
+      }
     }
   };
 
   //Hàm tăng số lượng sản phẩm trong giỏ hàng
-  const tangSoLuong = async (id) => {
-    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/tangSoLuongOnline/${id}`;
+  const tangSoLuong = async (index, id) => {
+    if (hoaDon?.listDanhSachSanPham[index]?.soLuong === 30) {
+      handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+      return;
+    }
+    let apiUrl = `http://localhost:8080/hdctClient/tangSoLuongOnline/${id}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
       if (response.data === "Ok") {
@@ -387,29 +419,29 @@ const HoaDonChiTietClient = () => {
   const nhapSoLuong = async (id, soLuong) => {
     if (soLuong > 30) {
       handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
-      fetchHoaDon();
       return;
     }
-    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/nhapSoLuongOnline/${id}/${soLuong}`;
+    let apiUrl = `http://localhost:8080/hdctClient/nhapSoLuongOnline/${id}/${soLuong}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
       if (response.data === "Ok") {
         fetchHoaDon();
-      } else if (response.data === "Số lượng không đủ cung cấp mong muốn") {
-        showErrorToast("Số lượng trong kho không đủ cung cấp hoàn toàn số lượng bạn muốn");
       } else if (response.data === "Có mặt hàng vượt quá số lượng 30") {
+        setTempValues({});
         handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
+        setTempValues({});
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
       } else {
+        setTempValues({});
         showErrorToast(response.data);
       }
-      fetchHoaDon();
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
       showErrorToast("Lỗi khi nhập số lượng sản phẩm catch");
     }
   }
+
   const handleOpenConfirmModal = (product) => {
     setSelectedProduct(product);
     setOpenConfirmModal(true);
@@ -442,11 +474,11 @@ const HoaDonChiTietClient = () => {
   };
 
 
-  //Xử lý khi confirm thêm vào giỏ hàng
+  ///Xử lý khi confirm thêm vào giỏ hàng
   const handleCloseConfirmModal = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8080/ban-hang-tai-quay/addSanPhamSauKhiDatHangOnline`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
+        `http://localhost:8080/hdctClient/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
       );
       if (response.data === "Ok") {
         setSelectedProduct(null);
@@ -454,8 +486,6 @@ const HoaDonChiTietClient = () => {
         setOpenConfirmModal(false);
         getSanPhamThem();
         showSuccessToast("Thêm sản phẩm thành công");
-      } else if (response.data === "Hết sản phẩm") {
-        showErrorToast("Rất tiếc đã hết sản phẩm");
       } else if (response.data === "Có mặt hàng vượt quá số lượng 30") {
         handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
@@ -471,6 +501,7 @@ const HoaDonChiTietClient = () => {
 
 
   const clickDeleteIcon = (id) => {
+    //listDanhSachSanPham này đã lọc những sản phẩm trạng thái hoạt động
     if (hoaDon?.listDanhSachSanPham?.length === 1) {
       showErrorToast("Hóa đơn không được để trống sản phẩm");
       return;
@@ -489,6 +520,7 @@ const HoaDonChiTietClient = () => {
       {/* Modal thông báo lỗi */}
       <Dialog open={openDialogThongBaoHetHangHoacKDuSoLuong} onClose={handleDialogClose}>
         <DialogTitle>Thông Báo</DialogTitle>
+        {tenSanPhamThongBao && <DialogContent ><strong>{tenSanPhamThongBao}</strong></DialogContent>}
         <DialogContent>{dialogMessage}</DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose} color="primary">Đóng</Button>
@@ -867,6 +899,15 @@ const HoaDonChiTietClient = () => {
                     <TableCell align="center">
                       <Typography>{product.tenMauSize}</Typography>
                       <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.maSanPhamChiTiet}</Typography>
+                      {(productsCapNhatSoLuong[index]?.soLuongConLai < 0 && hoaDon.trangThai === "Chờ xác nhận") && (
+                        productsCapNhatSoLuong[index]?.soLuongGoc === 0 ?
+                          <Typography variant="caption" color="error" display="block" font Weight="bold">
+                            Sản phẩm này đã hết hàng
+                          </Typography> :
+                          <Typography variant="caption" color="error" display="block" fontWeight="bold">
+                            Sản phẩm hiện chỉ còn {productsCapNhatSoLuong[index]?.soLuongGoc} sản phẩm
+                          </Typography>
+                      )}
                     </TableCell>
                     <TableCell align="center">
                       <Box display="flex" justifyContent="center" alignItems="center">
@@ -911,7 +952,7 @@ const HoaDonChiTietClient = () => {
 
                             <IconButton
                               size="small"
-                              onClick={() => tangSoLuong(product.id)}
+                              onClick={() => tangSoLuong(index,product.id)}
                               sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
                               hidden={hoaDon.trangThai != "Chờ xác nhận"}
                             >
