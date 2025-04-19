@@ -46,7 +46,7 @@ public interface SanPhamChiTietRepositoryP extends JpaRepository<SanPhamChiTiet,
     List<MauSac> getMauSacTheoIDSanPhamAndTrangThai(@Param("idSanPham") Integer idSanPham, @Param("trangThai") String trangThai);
 
 
-    List<SanPhamChiTiet> findBySanPhamAndMauSacAndTrangThai(SanPham sanPham, MauSac mauSac, String trangThai);
+    List<SanPhamChiTiet> findBySanPhamAndMauSacAndTrangThaiOrderBySize_TenSize(SanPham sanPham, MauSac mauSac, String trangThai);
 
 
 

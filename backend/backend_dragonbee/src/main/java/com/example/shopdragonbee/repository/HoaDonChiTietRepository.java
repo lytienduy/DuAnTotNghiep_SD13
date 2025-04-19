@@ -1,10 +1,7 @@
 package com.example.shopdragonbee.repository;
 
 
-import com.example.shopdragonbee.entity.HoaDon;
-import com.example.shopdragonbee.entity.HoaDonChiTiet;
-import com.example.shopdragonbee.entity.SanPham;
-import com.example.shopdragonbee.entity.SanPhamChiTiet;
+import com.example.shopdragonbee.entity.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -39,7 +36,7 @@ public interface HoaDonChiTietRepository extends JpaRepository<HoaDonChiTiet, In
             @Param("sanPhamChiTiet") SanPhamChiTiet sanPhamChiTiet,
             @Param("trangThai") String trangThai,
             @Param("trangThaiHoaDon") String trangThaiHoaDon,
-            @Param("khachHang") String khachHang
+            @Param("khachHang") KhachHang khachHang
     );
 
 

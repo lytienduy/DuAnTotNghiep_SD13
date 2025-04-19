@@ -186,9 +186,10 @@ const GioHang = () => {
 
     useEffect(() => {
         layDuLieuCart();
-        const interval = setInterval(() => {
-            getListDanhSachCapNhatSoLuongSanPhamGioHang();
+        const interval = setInterval(() => { 
             getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
+            getListDanhSachCapNhatSoLuongSanPhamGioHang();
+           
         }, 5000); // 60 giây
         return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
     }, []);
@@ -235,7 +236,7 @@ const GioHang = () => {
 
     const handleIncrement = async (index, idspct) => {
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
-        if (cart[index].quantity === 30) {
+        if (cart[index]?.quantity === 30) {
             handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
             return;
         }
@@ -392,7 +393,7 @@ const GioHang = () => {
                                         </TableRow>
                                     ) : (
                                         products.map((product, index) => (
-                                            <TableRow key={index} disabled={product.quantity === 0} >
+                                            <TableRow key={index} disabled={product.quantity <= 0} >
                                                 <TableCell padding="checkbox" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
                                                     <Checkbox
                                                         checked={selectedProducts.includes(index)}
@@ -467,7 +468,7 @@ const GioHang = () => {
                                                                         onClick={() => handleIncrement(index, product?.idSPCT)}
                                                                         size="small"
                                                                         style={{ padding: '2px', marginRight: -10 }}
-                                                                        disabled={productsCapNhatSoLuong?.[index]?.quantity === 0}
+                                                                        disabled={productsCapNhatSoLuong[index]?.quantity <= 0}
                                                                     >
                                                                         <AddIcon fontSize="small" />
                                                                     </IconButton>

@@ -18,13 +18,16 @@ public class SanPhamChiTietClientService {
 
     @Autowired
     private SanPhamChiTietRepositoryP sanPhamChiTietRepositoryP;
-
+    @Autowired
+    private HoaDonChiTietRepository hoaDonChiTietRepository;
     @Autowired
     private SanPhamRepositoryP sanPhamRepositoryP;
     @Autowired
     private GioHangRepository gioHangRepository;
     @Autowired
     private GioHangChiTietRepository gioHangChiTietRepository;
+    @Autowired
+    private KhachHangRepository khachHangRepository;
     @Autowired
     private HomeService homeService;
 
@@ -41,7 +44,7 @@ public class SanPhamChiTietClientService {
     }
 
     //P
-    public SPCTDTO.SizeCuaPhong convertSangListSizeCuaPhong(SanPhamChiTiet sanPhamChiTiet) {
+    public SPCTDTO.SizeCuaPhong convertSangListSizeCuaPhong(SanPhamChiTiet sanPhamChiTiet, Integer idKhachHang) {
         SPCTDTO.SanPhamCart sanPhamTrungTrongCart = idSet.get(sanPhamChiTiet.getId());
         if (sanPhamTrungTrongCart != null) {
             sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - sanPhamTrungTrongCart.getQuantity());
@@ -52,7 +55,7 @@ public class SanPhamChiTietClientService {
                 sanPhamChiTiet.getSize().getId(),
                 sanPhamChiTiet.getSize().getMa(),
                 sanPhamChiTiet.getSize().getTenSize(),
-                sanPhamChiTiet.getSoLuong()
+                idKhachHang == null ? sanPhamChiTiet.getSoLuong() : sanPhamChiTiet.getSoLuong() - hoaDonChiTietRepository.getSoLuongSanPhamTheoCacHoaDonChoXacNhanCuaKhachHang(sanPhamChiTiet, "Hoạt động", "Chờ xác nhận", khachHangRepository.findById(idKhachHang).get())
         );
     }
 
@@ -102,9 +105,14 @@ public class SanPhamChiTietClientService {
             mauSacAndHinhAnhAndSize.setMauSac(mauSac);
             //
             SanPham sp = sanPhamRepositoryP.findById(idSanPham).get();
-            List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThai(sp, mauSac, "Hoạt động");
+            List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThaiOrderBySize_TenSize(sp, mauSac, "Hoạt động");
+            int indexLayGiaTheoMau = 0;
             for (SanPhamChiTiet sanPhamChiTiet : listSPCT//For này chỉ để lấy tên và ảnh của sản phẩm
             ) {
+                //Lấy giá sản phẩm theo màu
+                if(indexLayGiaTheoMau == 0){
+                    mauSacAndHinhAnhAndSize.setGia(sanPhamChiTiet.getGia());
+                }
                 if (index == 0) {
                     tongQuanSanPhamCTClient.setTen(sp.getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
                     tongQuanSanPhamCTClient.setMoTa(sanPhamChiTiet.getMoTa());
@@ -120,8 +128,9 @@ public class SanPhamChiTietClientService {
                     break;
                 }
                 ++index;
+                ++indexLayGiaTheoMau;
             }
-            mauSacAndHinhAnhAndSize.setListSize(listSPCT.stream().map(this::convertSangListSizeCuaPhong).collect(Collectors.toList()));
+            mauSacAndHinhAnhAndSize.setListSize(listSPCT.stream().map(spct -> convertSangListSizeCuaPhong(spct, idKhachHang)).collect(Collectors.toList()));
             listMauSacAndSizeCuaSp.add(mauSacAndHinhAnhAndSize);
         }
         tongQuanSanPhamCTClient.setListHinhAnhAndMauSacAndSize(listMauSacAndSizeCuaSp);

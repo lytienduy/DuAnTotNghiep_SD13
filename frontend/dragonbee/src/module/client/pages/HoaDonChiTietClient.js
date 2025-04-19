@@ -164,10 +164,12 @@ const HoaDonChiTietClient = () => {
   //Lấy dữ liệu hóa đơn
   useEffect(() => {
     fetchHoaDon();
-    const interval = setInterval(() => {
-      getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
-    }, 5000); // 60 giây
-    return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
+    if (hoaDon?.trangThai === "Chờ xác nhận") {
+      const interval = setInterval(() => {
+        getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
+      }, 5000); // 60 giây
+      return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
+    }
   }, []);
 
   //Hàm confirm xóa sản phẩm khỏi giỏ hàng
@@ -952,7 +954,7 @@ const HoaDonChiTietClient = () => {
 
                             <IconButton
                               size="small"
-                              onClick={() => tangSoLuong(index,product.id)}
+                              onClick={() => tangSoLuong(index, product.id)}
                               sx={{ borderLeft: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
                               hidden={hoaDon.trangThai != "Chờ xác nhận"}
                             >
@@ -1283,18 +1285,24 @@ const HoaDonChiTietClient = () => {
                             <TableCell align="center">
                               {product.soLuong === 0 ? (
                                 // Nếu hết hàng, hiển thị ảnh Sold Out
-                                <img
-                                  src={soldOutImg}  // Đổi link ảnh nếu cần
-                                  alt="Sold Out"
-                                  style={{ width: "100px", height: "50px", objectFit: "contain" }}
-                                />
+                                // <img
+                                //   src={soldOutImg}  // Đổi link ảnh nếu cần
+                                //   alt="Sold Out"
+                                //   style={{ width: "100px", height: "50px", objectFit: "contain" }}
+                                // />
+                                <Typography color="error" fontWeight="bold">
+                                  Hết hàng
+                                </Typography>
                               ) : product.trangThai !== "Hoạt động" ? (
                                 // Nếu không hoạt động, hiển thị ảnh Ngừng Hoạt Động
-                                <img
-                                  src={inactiveImg}  // Đổi link ảnh nếu cần
-                                  alt="Ngừng Hoạt Động"
-                                  style={{ width: "100px", height: "40px", objectFit: "contain" }}
-                                />
+                                // <img
+                                //   src={inactiveImg}  // Đổi link ảnh nếu cần
+                                //   alt="Ngừng Hoạt Động"
+                                //   style={{ width: "100px", height: "40px", objectFit: "contain" }}
+                                // />
+                                <Typography color="error" fontWeight="bold">
+                                  Ngừng hoạt động
+                                </Typography>
                               ) : (
                                 // Nếu còn hàng và đang hoạt động, hiển thị nút Chọn
                                 <Button variant="outlined" onClick={() => handleOpenConfirmModal(product)}>Chọn</Button>

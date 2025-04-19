@@ -5,10 +5,7 @@ import com.example.shopdragonbee.entity.GioHang;
 import com.example.shopdragonbee.entity.GioHangChiTiet;
 import com.example.shopdragonbee.entity.KhachHang;
 import com.example.shopdragonbee.entity.SanPhamChiTiet;
-import com.example.shopdragonbee.repository.GioHangChiTietRepository;
-import com.example.shopdragonbee.repository.GioHangRepository;
-import com.example.shopdragonbee.repository.KhachHangRepository;
-import com.example.shopdragonbee.repository.SanPhamChiTietRepositoryP;
+import com.example.shopdragonbee.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +17,8 @@ import java.util.List;
 public class GioHangService {
     @Autowired
     private SanPhamChiTietRepositoryP sanPhamChiTietRepositoryP;
+    @Autowired
+    private HoaDonChiTietRepository hoaDonChiTietRepository;
     @Autowired
     private GioHangRepository gioHangRepository;
     @Autowired
@@ -49,14 +48,17 @@ public class GioHangService {
                 sanPhamCart.setTenSize(sanPhamChiTiet.getSize().getTenSize());
                 sanPhamCart.setGia(sanPhamChiTiet.getGia());
                 sanPhamCart.setQuantity(gioHangChiTiet.getSoLuong());
-                if (sanPhamChiTiet.getSoLuong() - gioHangChiTiet.getSoLuong() <= 0) {
+                //Trừ đi số lượng sản phẩm có trong hd chờ xác nhận của khách hàng
+                Integer soLuongTrongHDChoXacNhan = hoaDonChiTietRepository.getSoLuongSanPhamTheoCacHoaDonChoXacNhanCuaKhachHang(sanPhamChiTiet, "Hoạt động", "Chờ xác nhận", khachHangRepository.findById(idKhachHang).get());
+                if (sanPhamChiTiet.getSoLuong() - gioHangChiTiet.getSoLuong() - soLuongTrongHDChoXacNhan <= 0) {
                     if (sanPhamChiTiet.getSoLuong() <= 0) {
                         sanPhamCart.setQuantity(0);
                         //Lưu số lượng
                         gioHangChiTiet.setSoLuong(0);
                     } else {
-                        sanPhamCart.setQuantity(sanPhamChiTiet.getSoLuong());
-                        gioHangChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong());
+                        //Trừ đi số lượng sản phẩm có trong hd chờ xác nhận của khách hàng
+                        sanPhamCart.setQuantity(sanPhamChiTiet.getSoLuong() - soLuongTrongHDChoXacNhan);
+                        gioHangChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuongTrongHDChoXacNhan);
                     }
                 }
                 //save sản phẩm cart
@@ -137,7 +139,9 @@ public class GioHangService {
                 sanPhamCart.setTenMauSac(sanPhamChiTiet.getMauSac().getTenMauSac());
                 sanPhamCart.setTenSize(sanPhamChiTiet.getSize().getTenSize());
                 sanPhamCart.setGia(sanPhamChiTiet.getGia());
-                sanPhamCart.setQuantity(sanPhamChiTiet.getSoLuong() - gioHangChiTiet.getSoLuong());
+                //Trừ đi số lượng sản phẩm có trong hd chờ xác nhận của khách hàng
+                Integer soLuongTrongHDChoXacNhan = hoaDonChiTietRepository.getSoLuongSanPhamTheoCacHoaDonChoXacNhanCuaKhachHang(sanPhamChiTiet, "Hoạt động", "Chờ xác nhận", khachHangRepository.findById(idKhachHang).get());
+                sanPhamCart.setQuantity(sanPhamChiTiet.getSoLuong() - gioHangChiTiet.getSoLuong() - soLuongTrongHDChoXacNhan);
                 listDanhSachSanPhamCartKhachHang.add(sanPhamCart);
             }
             return listDanhSachSanPhamCartKhachHang;

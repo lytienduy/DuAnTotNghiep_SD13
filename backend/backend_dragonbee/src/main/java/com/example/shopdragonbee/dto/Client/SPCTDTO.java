@@ -35,6 +35,7 @@ public class SPCTDTO {
         private List<String> listAnh;
         private MauSac mauSac;
         private List<SizeCuaPhong> listSize;
+        private Double gia;
     }
 
     @Getter
