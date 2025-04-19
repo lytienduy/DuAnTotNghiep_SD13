@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3285daf9-171e-44be-80b7-eb3a6babbbd3" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/HoaDonService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/HoaDonService.java" afterDir="false" />
-    </list>
+    <list default="true" id="3285daf9-171e-44be-80b7-eb3a6babbbd3" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -105,7 +102,7 @@
       <workItem from="1744941962863" duration="23510000" />
       <workItem from="1744976760193" duration="621000" />
       <workItem from="1744997945307" duration="173000" />
-      <workItem from="1745024168109" duration="5183000" />
+      <workItem from="1745024168109" duration="5291000" />
     </task>
     <servers />
   </component>
