@@ -6,13 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="3285daf9-171e-44be-80b7-eb3a6babbbd3" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/SPCTDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/dto/Client/SPCTDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/HoaDonChiTietRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/HoaDonChiTietRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/SanPhamChiTietRepositoryP.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/repository/SanPhamChiTietRepositoryP.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/GioHangService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/GioHangService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/HomeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/HomeService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/SanPhamChiTietClientService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/SanPhamChiTietClientService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/SanPhamClientService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/Client/SanPhamClientService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/HoaDonService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/HoaDonService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,7 +105,7 @@
       <workItem from="1744941962863" duration="23510000" />
       <workItem from="1744976760193" duration="621000" />
       <workItem from="1744997945307" duration="173000" />
-      <workItem from="1745024168109" duration="3959000" />
+      <workItem from="1745024168109" duration="5183000" />
     </task>
     <servers />
   </component>

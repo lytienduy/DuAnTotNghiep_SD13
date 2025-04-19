@@ -1741,7 +1741,7 @@ const HoaDonChiTiet = () => {
                   // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
                 }}
               >
-                {(soTienDaThanhToan ?? 0).toLocaleString()} VNĐ
+                {(tongTienDaThanhToanVaDaHoanTienCuaOnline ?? 0).toLocaleString()} VNĐ
               </Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -1756,7 +1756,7 @@ const HoaDonChiTiet = () => {
                   // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
                 }}
               >
-                {(hoaDon.tongTienThanhToan - soTienDaThanhToan ?? 0).toLocaleString()} VNĐ
+                {(hoaDon.tongTienThanhToan - tongTienDaThanhToanVaDaHoanTienCuaOnline ?? 0).toLocaleString()} VNĐ
               </Typography>
             </Box>
           </>}

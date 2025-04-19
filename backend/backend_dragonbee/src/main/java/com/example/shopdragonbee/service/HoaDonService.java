@@ -200,7 +200,10 @@ public class HoaDonService {
         if (trangThai.equalsIgnoreCase("Đã giao hàng")) {
             double soTienKhachDaThanhToan = hoaDon.getListThanhToanHoaDon()
                     .stream()
-                    .mapToDouble(ThanhToanHoaDon::getSoTienThanhToan)
+                    .mapToDouble(tt ->
+                            tt.getLoai().equalsIgnoreCase("Hoàn tiền")
+                                    ? -tt.getSoTienThanhToan()
+                                    : tt.getSoTienThanhToan())
                     .sum();
             if (soTienKhachDaThanhToan >= hoaDon.getTongTien()) {
                 trangThai = "Đã thanh toán";

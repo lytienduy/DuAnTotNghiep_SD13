@@ -107,6 +107,18 @@ const HoaDonChiTietClient = () => {
     fetchHoaDon();
   }, []);
 
+  const listThanhToan = (hoaDon?.listThanhToanHoaDon || [])
+    .filter(tt => tt?.loai !== "Hoàn tiền")
+
+  const listHoanTien = (hoaDon?.listThanhToanHoaDon || [])
+    .filter(tt => tt?.loai === "Hoàn tiền") // Lọc chỉ lấy các phần tử có id = 3
+
+  const soTienDaThanhToan = listThanhToan?.reduce((tong, tt) => tong + tt?.soTien, 0);
+
+
+  const tongTienDaThanhToanVaDaHoanTienCuaOnline = soTienDaThanhToan - listHoanTien?.reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tiền cần hoàn lấy tiền đã thanh toán trừ đi tiền đã hoàn so sánh với số tiền cần thanh toán của hóa đơn
+
+
   //Hàm lọcThemSanPhamHoaDonTaiQuay
   const getSanPhamThem = async () => {
     let apiUrl = "http://localhost:8080/hdctClient/layListCacSanPhamHienThiThem";
@@ -512,11 +524,7 @@ const HoaDonChiTietClient = () => {
     setOpenConfirmModal(true);
   }
 
-  const listThanhToan = (hoaDon?.listThanhToanHoaDon || [])
-    .filter(tt => tt?.loai !== "Hoàn tiền")
 
-  const listHoanTien = (hoaDon?.listThanhToanHoaDon || [])
-    .filter(tt => tt?.loai === "Hoàn tiền") // Lọc chỉ lấy các phần tử có id = 3
   return (
     <div>
       {/* Modal thông báo lỗi */}
@@ -1050,7 +1058,41 @@ const HoaDonChiTietClient = () => {
           >
             {(hoaDon.tongTienThanhToan ?? 0).toLocaleString()} VNĐ
           </Typography>
+
         </Box>
+        {(soTienDaThanhToan > 0 && tongTienDaThanhToanVaDaHoanTienCuaOnline < hoaDon?.tongTienThanhToan) &&
+          <>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" fontWeight="bold" color="primary">
+                Đã thanh toán:
+              </Typography>
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                sx={{
+                  color: "#D32F2F",
+                  // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
+                }}
+              >
+                {(tongTienDaThanhToanVaDaHoanTienCuaOnline ?? 0).toLocaleString()} VNĐ
+              </Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" fontWeight="bold" color="primary">
+                Số tiền cần thanh toán còn lại:
+              </Typography>
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                sx={{
+                  color: "#D32F2F",
+                  // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
+                }}
+              >
+                {(hoaDon.tongTienThanhToan - tongTienDaThanhToanVaDaHoanTienCuaOnline ?? 0).toLocaleString()} VNĐ
+              </Typography>
+            </Box>
+          </>}
       </Box>
       <ToastContainer /> {/* Quan trọng để hiển thị toast */}
       {/* Modal sản phẩm*/}
