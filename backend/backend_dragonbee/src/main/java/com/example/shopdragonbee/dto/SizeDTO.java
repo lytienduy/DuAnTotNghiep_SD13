@@ -14,4 +14,9 @@ public class SizeDTO {
     private String tenSize;
     private String moTa;
     private String trangThai;
+
+    public SizeDTO(Integer id, String tenSize) {
+        this.id = id;
+        this.tenSize = tenSize;
+    }
 }

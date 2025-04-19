@@ -2,7 +2,7 @@ package com.example.shopdragonbee.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
+
 
 
 
@@ -14,7 +14,7 @@ import org.springframework.data.annotation.Id;
 @Builder
 public class ChatLieu {
 
-    @jakarta.persistence.Id
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

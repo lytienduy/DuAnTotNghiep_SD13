@@ -3,7 +3,7 @@ import axios from "axios"; // Import axios
 import {
   Box, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Typography, Button, Chip, Paper, Container, CircularProgress, Grid, Divider, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Stack, InputAdornment
-  , Modal, Slider, FormControl, Select, MenuItem
+  , Modal, Slider, FormControl, Select, MenuItem, InputLabel
 } from "@mui/material";
 import { Delete, History, Close, ArrowBack, ArrowForward } from '@mui/icons-material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -43,6 +43,30 @@ const HoaDonChiTiet = () => {
   const [errorTienKhachChuyen, setErrorTienKhachChuyen] = useState("");
   const [errorTienKhachDua, setErrorTienKhachDua] = useState("");
 
+  //Thay đổi địa chỉ nhận hàng
+  const [openModal, setOpenModal] = useState(false);
+  const [hoTen, setHoTen] = useState(hoaDon.tenNguoiNhanHang);
+  const [sdt, setSdt] = useState(hoaDon.sdtNguoiNhanHang);
+  const [email, setEmail] = useState(hoaDon.emailNguoiNhanHang);
+  const [diaChiCuThe, setDiaChiCuThe] = useState("");
+  const [phiVanChuyen, setPhiVanChuyen] = useState("");
+
+  // Khai báo Thành phố huyện xã
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
+  const [ward, setWard] = useState("");
+
+  // State để lưu thông báo lỗi
+  const [errorMessage, setErrorMessage] = useState({
+    hoTen: "",
+    sdt: "",
+    email: "",
+    phiShip: "",
+    diaChi: "",
+  });
 
   const [openSPModal, setOpenSPModal] = useState(false); //giá trị mở đống modal add sản paharm
   const [value, setValue] = useState([100000, 3200000]);//giá trị slider khoảng giá
@@ -60,7 +84,7 @@ const HoaDonChiTiet = () => {
   const [danhMuc, setDanhMuc] = useState(0); // Giá trị của bộ lọc danh mục
   const [mauSac, setMauSac] = useState(0); // Giá trị của bộ lọc màu sắc
   const [chatLieu, setChatLieu] = useState(0); // Giá trị của bộ lọc chất liệu
-  const [kichCo, setKichCo] = useState(0); // Giá trị của bộ lọc sizw
+  const [kichCo, setKichCo] = useState(0); // Giá trị của bộ lọc size
   const [kieuDang, setKieuDang] = useState(0); // Giá trị của bộ lọc kiểu dáng
   const [thuongHieu, setThuongHieu] = useState(0); // Giá trị của bộ lọc thương hiệu
   const [phongCach, setPhongCach] = useState(0); // Giá trị của bộ lọc phong cách
@@ -73,9 +97,247 @@ const HoaDonChiTiet = () => {
   const [listPhongCach, setListPhongCach] = useState([]);
   const [listThuongHieu, setListThuongHieu] = useState([]);
   const [errorSoLuongThemVaoGioHang, setErrorSoLuongThemVaoGioHang] = useState("");
+  const [openConfirmRefund, setOpenConfirmRefund] = useState(false);
+
+  const [tienGiam, setTienGiam] = useState(0);
+  const [phieuGiamGia, setPhieuGiamGia] = useState(null);
+
+  useEffect(() => {
+    const fetchGiamGia = async () => {
+      if (hoaDon.maVoucher && hoaDon.tongTienSanPham) {
+        try {
+          const res = await axios.get(`http://localhost:8080/dragonbee/giam-gia`, {
+            params: {
+              ma: hoaDon.maVoucher,
+              tongTienSanPham: hoaDon.tongTienSanPham,
+            },
+          });
+          setTienGiam(res.data.tienGiam);
+          setPhieuGiamGia(res.data.phieuGiamGia);
+
+          // Optional: cập nhật lại tổng tiền thanh toán nếu muốn
+          setHoaDon(prev => ({
+            ...prev,
+            tongTienThanhToan:
+              prev.tongTienSanPham + (prev.phiVanChuyen ?? 0) - res.data.tienGiam,
+          }));
+        } catch (error) {
+          console.error("Lỗi khi gọi API giảm giá:", error);
+        }
+      }
+    };
+
+    fetchGiamGia();
+  }, [hoaDon.maVoucher, hoaDon.tongTienSanPham]);
+
+  useEffect(() => {
+    if (hoaDon.diaChiNguoiNhanHang) {
+      const addressParts = hoaDon.diaChiNguoiNhanHang.split(", ");
+      if (addressParts.length >= 4) {
+        const cityFromAddress = addressParts[addressParts.length - 1];
+        const districtFromAddress = addressParts[addressParts.length - 2];
+        const wardFromAddress = addressParts[addressParts.length - 3];
+        setCity(cityFromAddress);
+        setDistrict(districtFromAddress);
+        setWard(wardFromAddress);  // Cập nhật xã/phường từ địa chỉ
+        setDiaChiCuThe(addressParts.slice(0, addressParts.length - 3).join(", "));
+      }
+    }
+  }, [hoaDon.diaChiNguoiNhanHang]);
+
+  const handleChangeAddress = () => {
+    // Khi bấm nút Thay đổi địa chỉ, mở modal và cập nhật thông tin từ địa chỉ hiện tại
+    setCity(city);
+    setDistrict(district);
+    setWard(ward);
+    setDiaChiCuThe(diaChiCuThe);
+    setOpenModal(true); // Mở modal thay đổi địa chỉ
+  };
+
+  // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
+  useEffect(() => {
+    axios.get("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json")
+      .then(response => {
+        const normalizedCities = response.data.map(city => ({
+          ...city,
+          Name: city.Name.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
+        }));
+        setCities(normalizedCities);
+      })
+      .catch(error => console.error("Error fetching data:", error));
+  }, []);
+
+  const handleCityChange = (event) => {
+    const cityName = event.target.value;
+    setCity(cityName);  // Cập nhật giá trị thành phố
+    setDistrict("");  // Reset quận/huyện
+    setWard("");  // Reset xã/phường khi thay đổi thành phố
+
+    // Cập nhật danh sách quận/huyện dựa trên thành phố đã chọn
+    const city = cities.find(city => city.Name === cityName);
+    if (city) {
+      setDistricts(city.Districts);  // Cập nhật danh sách quận/huyện từ thành phố đã chọn
+      setWards([]);  // Reset danh sách xã/phường
+    }
+  };
+
+  const handleDistrictChange = (event) => {
+    const districtName = event.target.value;
+    setDistrict(districtName);  // Cập nhật giá trị quận/huyện
+    setWard("");  // Reset xã/phường khi thay đổi quận/huyện
+
+    // Cập nhật danh sách xã/phường cho quận/huyện đã chọn
+    const selectedDistrict = districts.find(d => d.Name === districtName);
+    if (selectedDistrict) {
+      setWards(selectedDistrict.Wards);  // Cập nhật danh sách xã/phường
+    } else {
+      setWards([]);  // Nếu không tìm thấy quận, reset danh sách xã/phường
+    }
+  };
+
+  const handleWardChange = (event) => {
+    setWard(event.target.value);
+  };
+  useEffect(() => {
+    // Khi thành phố thay đổi, cập nhật danh sách quận/huyện và reset xã/phường
+    if (city) {
+      const selectedCity = cities.find(c => c.Name === city);
+      if (selectedCity) {
+        setDistricts(selectedCity.Districts);  // Cập nhật danh sách quận/huyện
+        setDistrict(district);  // Reset quận/huyện
+        setWard(ward);  // Reset xã/phường
+        setWards([]);  // Reset danh sách xã/phường
+      }
+    }
+  }, [city, cities]); // Theo dõi sự thay đổi của thành phố
+
+  useEffect(() => {
+    if (district) {
+      const selectedDistrict = districts.find(d => d.Name === district);
+      if (selectedDistrict) {
+        setWards(selectedDistrict.Wards);  // Cập nhật danh sách xã/phường cho quận/huyện
+      }
+    }
+  }, [district, districts]); // Theo dõi sự thay đổi của quận/huyện  
+
+  useEffect(() => {
+    // Khi xã/phường thay đổi, cập nhật trạng thái xã/phường
+    if (ward) {
+      // Có thể thực hiện thêm logic khi xã/phường thay đổi (nếu cần)
+      console.log("Xã/Phường đã thay đổi:", ward);
+    }
+  }, [ward]); // Theo dõi sự thay đổi của xã/phường
+
+  const handlePhiVanChuyenChange = (e) => {
+    const value = e.target.value;
+    setHoaDon((prev) => ({
+      ...prev,
+      phiVanChuyen: value,
+    }));
+  };
+
+  const handleSave = async () => {
+    const storedUserData = JSON.parse(localStorage.getItem('userData'));
+    if (!storedUserData || !storedUserData.nhanVien) {
+      setErrorMessage((prev) => ({ ...prev, hoTen: "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại." }));
+      return;
+    }
+
+    // Kiểm tra các trường không được để null hoặc rỗng
+    let formIsValid = true;
+    const newError = { hoTen: "", sdt: "", email: "", phiShip: "", diaChi: "" };
+
+    if (!hoaDon.tenNguoiNhanHang || !hoaDon.sdtNguoiNhanHang || !hoaDon.emailNguoiNhanHang || !diaChiCuThe) {
+      formIsValid = false;
+      if (!hoaDon.tenNguoiNhanHang) newError.hoTen = "Họ tên không được để trống.";
+      if (!hoaDon.sdtNguoiNhanHang) newError.sdt = "Số điện thoại không được để trống.";
+      if (!hoaDon.emailNguoiNhanHang) newError.email = "Email không được để trống.";
+      if (!diaChiCuThe) newError.diaChi = "Địa chỉ không được để trống.";
+    }
+
+    // Kiểm tra số điện thoại hợp lệ
+    const phonePattern = /^(03|05|07|08|09)\d{7}$/;
+    if (hoaDon.sdtNguoiNhanHang && !phonePattern.test(hoaDon.sdtNguoiNhanHang)) {
+      formIsValid = false;
+      newError.sdt = "Số điện thoại không hợp lệ. Đầu số phải thuộc các nhà mạng Viettel, Mobifone, Vinaphone hoặc Vietnamobile và có 9 chữ số.";
+    }
+
+    // Kiểm tra email hợp lệ
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (hoaDon.emailNguoiNhanHang && !emailPattern.test(hoaDon.emailNguoiNhanHang)) {
+      formIsValid = false;
+      newError.email = "Email không hợp lệ.";
+    }
+
+    // Kiểm tra phí vận chuyển hợp lệ (đảm bảo phiVanChuyen không phải undefined)
+    let phiShip = hoaDon.phiVanChuyen ? hoaDon.phiVanChuyen.replace(/,/g, '') : ''; // Loại bỏ dấu phẩy
+
+    // Kiểm tra nếu phiShip không phải là số hợp lệ
+    if (phiShip === '' || isNaN(parseFloat(phiShip))) {
+      formIsValid = false;
+      newError.phiShip = "Phí vận chuyển không hợp lệ.";
+    } else {
+      phiShip = parseFloat(phiShip); // Chuyển đổi sang kiểu số thực
+    }
+
+    // Cập nhật lỗi vào state
+    setErrorMessage(newError);
+
+    if (!formIsValid) return;
+
+    // Xây dựng địa chỉ đầy đủ từ các thông tin nhận hàng
+    const diaChiNhanHang = `${diaChiCuThe}, ${ward}, ${district}, ${city}`;
+
+    const data = {
+      tenNguoiNhan: hoaDon.tenNguoiNhanHang,  // Họ tên
+      sdt: hoaDon.sdtNguoiNhanHang,           // Số điện thoại
+      emailNguoiNhan: hoaDon.emailNguoiNhanHang,  // Email
+      diaChiNhanHang: diaChiNhanHang,           // Địa chỉ nhận hàng đầy đủ
+      phiShip: phiShip,                        // Phí vận chuyển đã chuyển thành số
+      nguoiSua: storedUserData.nhanVien.tenNhanVien,  // Người sửa
+    };
+
+    try {
+      const response = await fetch(`http://localhost:8080/hoa-don/cap-nhat-thong-tin-nhan-hang/${hoaDon.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result) {
+          setHoaDon(prevHoaDon => ({
+            ...prevHoaDon,
+            tenNguoiNhanHang: hoaDon.tenNguoiNhanHang,
+            sdtNguoiNhanHang: hoaDon.sdtNguoiNhanHang,
+            emailNguoiNhanHang: hoaDon.emailNguoiNhanHang,
+            diaChiNguoiNhanHang: diaChiNhanHang,
+          }));
+
+          setOpenModal(false); // Đóng modal nếu thành công
+          alert("Cập nhật thông tin nhận hàng thành công!");
+        } else {
+          alert("Cập nhật thất bại!");
+        }
+      } else {
+        const errorMessage = await response.text();
+        alert(`Lỗi từ server: ${errorMessage}`);
+      }
+    } catch (errorMessage) {
+      console.error("Lỗi khi cập nhật thông tin:", errorMessage);
+      alert("Đã có lỗi xảy ra, vui lòng thử lại!");
+    }
+  };
 
   const xoaSanPham = async (id) => {
-    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/xoaSanPham/${id}/${hoaDon.id}`;
+    if (hoaDon?.listDanhSachSanPham.length === 1) {
+      showSuccessToast("Hóa đơn không được để trống sản phẩm");
+      return;
+    }
+    let apiUrl = `http://localhost:8080/ban-hang-tai-quay/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
       if (response.data === true) {
@@ -512,8 +774,7 @@ const HoaDonChiTiet = () => {
       if (response.data === true) {
         fetchHoaDon();
       } else {
-        setSelectedProductId(id);// Lấy id được chọn để confirm thao tác với sản phẩm
-        setOpenConfirmModal(true);
+        clickDeleteIcon(id);
       }
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -535,7 +796,7 @@ const HoaDonChiTiet = () => {
     const newValue = Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
-    } else {
+    } else if (newValue < 1) {//Không được để else
       setSelectedProductId(id);
       setOpenConfirmModal(true);
     }
@@ -595,7 +856,7 @@ const HoaDonChiTiet = () => {
     }
     setTimeout(() => {
       setQuantity(newValue);
-    }, 100);
+    }, 50);
     if (newValue === "" || Number(newValue) <= 0) {
       setErrorSoLuongThemVaoGioHang("Không hợp lệ");
     } else {
@@ -609,7 +870,7 @@ const HoaDonChiTiet = () => {
   const handleCloseConfirmModal = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8080/ban-hang-tai-quay/addSanPhamVaoGioHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
+        `http://localhost:8080/ban-hang-tai-quay/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
       );
       if (response.data) {
         setSelectedProduct(null);
@@ -626,6 +887,67 @@ const HoaDonChiTiet = () => {
     }
   };
 
+  const clickDeleteIcon = (id) => {
+    if (hoaDon?.listDanhSachSanPham?.length === 1) {
+      showErrorToast("Hóa đơn không được để trống sản phẩm");
+      return;
+    }
+    setSelectedProductId(id);
+    setOpenConfirmModal(true);
+  }
+
+  const listThanhToan = (hoaDon?.listThanhToanHoaDon || [])
+    .filter(tt => tt?.loai !== "Hoàn tiền")
+
+  const soTienDaThanhToan = listThanhToan?.reduce((tong, tt) => tong + tt?.soTien, 0);
+
+  const listHoanTien = (hoaDon?.listThanhToanHoaDon || [])
+    .filter(tt => tt?.loai === "Hoàn tiền") // Lọc chỉ lấy các phần tử có id = 3
+
+  const tongTienDaThanhToanVaDaHoanTienCuaOnline = soTienDaThanhToan - listHoanTien?.reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tiền cần hoàn lấy tiền đã thanh toán trừ đi tiền đã hoàn so sánh với số tiền cần thanh toán của hóa đơn
+
+  const handleNextCheckHoanTienVaMoModal = () => {
+
+    if (hoaDon?.trangThai === "Đã thanh toán" && tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon?.tongTienThanhToan) {
+      showErrorToast("Bạn chưa hoàn tiền cho khách hàng");
+      return;
+    }
+    setOpenGhiChuNext(true);
+  }
+  const handleHuyCheckHoanTienVaMoModal = () => {
+    if (tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon?.tongTienThanhToan) {
+      showErrorToast("Bạn chưa hoàn tiền cho khách hàng");
+      return;
+    }
+    handleOpenLyDo();
+  }
+
+  const handleHoanTien = async () => {
+    // Gửi API hoàn tiền hoặc thực hiện xử lý tại đây
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/hoa-don-chi-tiet/hoanTien/${id}`, null,
+        {
+          params: {
+            soTienCanHoan: tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan
+          }
+        });//Gọi api bằng  
+      if (response.data) {
+        setOpenConfirmRefund(false);
+        fetchHoaDon();
+        showSuccessToast("Xác nhận hoàn tiền thành công");
+      } else {
+        setOpenConfirmRefund(false);
+        showErrorToast("Xác nhận hoàn tiền thất bại");
+
+      }
+    } catch (error) {
+      showErrorToast("Xác nhận oàn tiền thất bại. Vui lòng thử lại!");
+      console.error(error.response || error.message);
+    }
+  };
+  const listDanhSachSanPhamHoatDong = (hoaDon?.listDanhSachSanPham || [])
+    .filter(tt => tt?.trangThai === "Hoạt động") // Lọc chỉ lấy các phần tử có id = 3
   return (
     <div>
       {/* Xác nhận xóa sản phẩm */}
@@ -648,6 +970,7 @@ const HoaDonChiTiet = () => {
         </DialogActions>
       </Dialog>
       <Dialog open={openTT} onClose={() => setOpenTT(false)} maxWidth="sm" fullWidth>
+
         {/* Tiêu đề có nút đóng */}
         <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center', fontSize: '25px', color: '#1976D2', position: 'relative' }}>
           THANH TOÁN
@@ -665,6 +988,12 @@ const HoaDonChiTiet = () => {
         </DialogTitle>
 
         <DialogContent>
+          {(hoaDon.tongTienThanhToan - tongTienDaThanhToanVaDaHoanTienCuaOnline) > 0 &&
+            <Grid container justifyContent="space-between" sx={{ mb: 2 }}>
+              <Typography variant="h6">Thanh toán còn lại</Typography>
+              <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>{(hoaDon.tongTienThanhToan - tongTienDaThanhToanVaDaHoanTienCuaOnline)?.toLocaleString()} VNĐ</Typography>
+            </Grid>
+          }
           {/* Tổng tiền hàng */}
           {/* Nút Chuyển Khoản - Tiền Mặt - Cả Hai */}
           <Grid container justifyContent="center" spacing={1} sx={{ mb: 2 }}>
@@ -890,7 +1219,7 @@ const HoaDonChiTiet = () => {
             onClick={() => setOpenGhiChuPrevious(true)}
             disabled={currentStep === 0 || isCanceled || isComplete} // Vô hiệu hóa khi ở trạng thái đầu tiên hoặc khi hóa đơn đã hủy hoặc hoàn thành
           >
-            Previous
+            Hoàn tác
           </Button>
           <Dialog open={openGhiChuPrevious} onClose={() => setOpenGhiChuPrevious(false)}>
             <DialogTitle>Nhập lý do hoàn tác trạng thái</DialogTitle>
@@ -943,19 +1272,19 @@ const HoaDonChiTiet = () => {
               background: "#3498EA",
               "&:hover": { background: "#3498EA" },
             }}
-            onClick={() => setOpenGhiChuNext(true)}
+            onClick={() => handleNextCheckHoanTienVaMoModal()}
             disabled={isCanceled || isComplete ||
               (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Chờ thanh toán"
                 (!hoaDon.listThanhToanHoaDon ||              // Nếu danh sách lịch sử thanh toán không tồn tại
                   hoaDon.listThanhToanHoaDon.length === 0 ||  // Hoặc danh sách rỗng
-                  hoaDon.listThanhToanHoaDon.reduce((sum, item) => sum + item.soTien, 0) < hoaDon.tongTienThanhToan)) ||
+                  tongTienDaThanhToanVaDaHoanTienCuaOnline < hoaDon.tongTienThanhToan)) ||
               (hoaDon.trangThai === "Đã xác nhận" &&  // Nếu trạng thái là "Đã xác nhận"
                 (!hoaDon.listDanhSachSanPham || hoaDon.listDanhSachSanPham.length === 0)) ||  // Nếu danh sách sản phẩm rỗng thì vô hiệu hóa
-              (hoaDon.trangThai === "Chờ thanh toán" &&  // Nếu trạng thái là "Đã xác nhận"
+              (hoaDon.trangThai === "Chờ thanh toán" &&
                 (!hoaDon.listDanhSachSanPham || hoaDon.listDanhSachSanPham.length === 0))
             }
           >
-            Next
+            Xác nhận
           </Button>
           <Dialog open={openGhiChuNext} onClose={() => setOpenGhiChuNext(false)}>
             <DialogTitle>Nhập lý do thay đổi trạng thái</DialogTitle>
@@ -999,7 +1328,7 @@ const HoaDonChiTiet = () => {
           </Dialog>
         </Stack>
 
-        <Button disabled={isCanceled || isComplete || (hoaDon.trangThai !== "Chờ xác nhận")} variant="outlined" color="error" startIcon={<Delete />} sx={{ borderRadius: 3, px: 3 }} onClick={() => handleOpenLyDo()}>
+        <Button disabled={isCanceled || isComplete || (hoaDon.trangThai !== "Chờ xác nhận")} variant="outlined" color="error" startIcon={<Delete />} sx={{ borderRadius: 3, px: 3 }} onClick={() => handleHuyCheckHoanTienVaMoModal()}>
           Hủy hóa đơn
         </Button>
         <Dialog open={openLyDo} onClose={() => setOpenLyDo(false)}>
@@ -1145,9 +1474,29 @@ const HoaDonChiTiet = () => {
           {/* Cột 2: Thông tin nhận hàng */}
           {hoaDon.sdtNguoiNhanHang && (
             <Grid item xs={12} md={6}>
-              <Typography variant="h7" gutterBottom sx={{ fontWeight: "bold", color: "#E65100" }}>
-                Thông tin nhận hàng
-              </Typography>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="h7" gutterBottom sx={{ fontWeight: "bold", color: "#E65100" }}>
+                  Thông tin nhận hàng
+                </Typography>
+                {hoaDon.trangThai === "Chờ xác nhận" &&
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      backgroundColor: "white",
+                      color: "#0077ff", // Màu chữ xanh
+                      borderColor: "#0077ff", // Màu viền xanh
+                      "&:hover": {
+                        backgroundColor: "#e3f2fd",
+                        borderColor: "#1565c0",
+                        color: "#1565c0",
+                      },
+                    }}
+                    onClick={handleChangeAddress} // Sử dụng hàm để mở modal
+                  >
+                    Thay đổi địa chỉ
+                  </Button>
+                }
+              </Box>
               <Typography>
                 <b>Tên người nhận:</b> {hoaDon.tenNguoiNhanHang}
               </Typography>
@@ -1200,6 +1549,7 @@ const HoaDonChiTiet = () => {
           >
             Lịch sử thanh toán
           </Typography>
+
           {(hoaDon.trangThai != "Đã thanh toán" && hoaDon.trangThai != "Hoàn thành" && hoaDon.trangThai != "Đã hủy" && hoaDon.tongTienSanPham > 0) &&
             <Button
               variant="outlined" // Đặt kiểu viền
@@ -1218,7 +1568,8 @@ const HoaDonChiTiet = () => {
                 }
               }}
             >
-              <CreditCardIcon style={{ color: 'black' }} /> {/* Icon ví */}
+              <CreditCardIcon style={{ color: 'black', marginRight: '5px' }} /> {/* Icon ví */}
+              Thanh toán
             </Button>
           }
         </Box>
@@ -1234,8 +1585,8 @@ const HoaDonChiTiet = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {hoaDon?.listThanhToanHoaDon?.length > 0 ? (
-              hoaDon?.listThanhToanHoaDon?.map((payment, index) => (
+            {listThanhToan?.length > 0 ? (
+              listThanhToan?.map((payment, index) => (
                 <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
                   <TableCell align="center">{index + 1}</TableCell>
                   <TableCell align="center">{payment.phuongThuc}</TableCell>
@@ -1255,7 +1606,91 @@ const HoaDonChiTiet = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {(listHoanTien?.length > 0 || (hoaDon?.loaiHoaDon === "Online" && tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon?.tongTienThanhToan)) &&
+        <>
+          <Dialog
+            open={openConfirmRefund}
+            onClose={() => setOpenConfirmRefund(false)}
+          >
+            <DialogTitle fontWeight="bold">Xác nhận hoàn tiền</DialogTitle>
+            <DialogContent>
+              <Typography>Bạn có chắc chắn muốn xác nhận đã hoàn tiền {(tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan)?.toLocaleString()} cho khách hàng?</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenConfirmRefund(false)} color="inherit">
+                Hủy
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => {
+                  // TODO: Xử lý hoàn tiền ở đây
+                  handleHoanTien(); // Giả sử bạn có hàm này xử lý hoàn tiền
 
+                }}
+              >
+                Xác nhận
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: "hidden", flex: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1 }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "1.2rem", flex: 1, textAlign: "center" }}
+              >
+                Lịch sử hoàn tiền
+              </Typography>
+              {(hoaDon.loaiHoaDon === "Online" && tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon.tongTienThanhToan) &&
+                <Button
+                  variant="outlined" // Đặt kiểu viền 
+                  onClick={() => setOpenConfirmRefund(true)} // Khi nhấn mở modal
+                  sx={{
+                    borderColor: 'black', // Viền màu đen
+                    color: 'black', // Màu chữ đen
+                    backgroundColor: 'white', // Nền trắng
+                    borderRadius: '8px', // Bo góc
+                    padding: '3px 13px', // Khoảng cách trong button
+                    minWidth: '130px', // Kích thước tối thiểu cho button không bị co lại
+                    // marginRight: "10px",
+                    '&:hover': {
+                      backgroundColor: '#f5f5f5', // Màu nền nhạt hơn khi hover
+                      borderColor: 'black' // Giữ viền màu đen khi hover
+                    }
+                  }}
+                >
+                  <CreditCardIcon style={{ color: 'black', marginRight: '5px' }} /> {/* Icon ví */}
+                  Xác nhận hoàn tiền {(tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan)?.toLocaleString()}
+                </Button>
+              }
+            </Box>
+            <Table sx={{ border: "1px solid #ddd" }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>#</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Phương Thức</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số Tiền</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thời Gian</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Nhân Viên Xác Nhận</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {listHoanTien?.map((payment, index) => (
+                  <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
+                    <TableCell align="center">{index + 1}</TableCell>
+                    <TableCell align="center">{payment.phuongThuc}</TableCell>
+                    <TableCell align="center">{payment.soTien.toLocaleString()} VND</TableCell>
+                    <TableCell align="center">{new Date(payment.ngayTao).toLocaleString("vi-VN")}</TableCell>
+                    <TableCell align="center">{payment.nhanVienXacNhan}</TableCell>
+                    <TableCell align="center">{payment.ghiChu}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      }
 
 
       <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: "hidden" }}>
@@ -1296,7 +1731,7 @@ const HoaDonChiTiet = () => {
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số lượng</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Đơn giá</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số tiền</TableCell>
-              {(hoaDon.trangThai === "Chờ xác nhận") && <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>}
+              {(hoaDon.trangThai === "Chờ xác nhận" && listDanhSachSanPhamHoatDong?.length > 1) && <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}></TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -1427,8 +1862,8 @@ const HoaDonChiTiet = () => {
                     <TableCell align="center">{product.donGia?.toLocaleString()} VNĐ</TableCell>
                     <TableCell align="center">{product.soTien?.toLocaleString()} VNĐ</TableCell>
                     <TableCell align="center">
-                      {(hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động") &&
-                        <IconButton color="error" onClick={() => { setSelectedProductId(product.id); setOpenConfirmModal(true) }}>
+                      {(hoaDon.trangThai === "Chờ xác nhận" && product.trangThai === "Hoạt động" && listDanhSachSanPhamHoatDong?.length > 1) &&
+                        <IconButton color="error" onClick={() => clickDeleteIcon(product.id)}>
                           <DeleteIcon />
                         </IconButton>
                       }
@@ -1443,7 +1878,7 @@ const HoaDonChiTiet = () => {
       <Box sx={{ p: 2, borderRadius: 2 }}>
         {/* Tổng tiền hàng */}
         <Box display="flex" justifyContent="space-between" mb={1}>
-          <Typography variant="body1" fontWeight={500}>Tổng tiền hàng:</Typography>
+          <Typography variant="body1" fontWeight={500}>Tổng tiền sản phẩm:</Typography>
           <Typography variant="body1" fontWeight={500}>{hoaDon.tongTienSanPham?.toLocaleString()} VNĐ</Typography>
         </Box>
 
@@ -1456,11 +1891,11 @@ const HoaDonChiTiet = () => {
         )}
 
         {/* Mã voucher */}
-        {hoaDon.maVoucher && (
+        {phieuGiamGia && (
           <Box display="flex" justifyContent="space-between" mb={2}>
             <Typography variant="body1" fontWeight={500}>Mã giảm giá:</Typography>
             <Typography variant="body1" fontWeight={500} color="error">
-              {hoaDon.maVoucher} - {(hoaDon.tongTienSanPham + (hoaDon?.phiVanChuyen ?? 0) - (hoaDon?.tongTienThanhToan ?? 0)).toLocaleString()} đ
+              {phieuGiamGia.ma} - {Math.round(tienGiam).toLocaleString()} VNĐ
             </Typography>
           </Box>
         )}
@@ -1482,7 +1917,41 @@ const HoaDonChiTiet = () => {
           >
             {(hoaDon.tongTienThanhToan ?? 0).toLocaleString()} VNĐ
           </Typography>
+
         </Box>
+        {(soTienDaThanhToan > 0 && tongTienDaThanhToanVaDaHoanTienCuaOnline < hoaDon?.tongTienThanhToan) &&
+          <>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" fontWeight="bold" color="primary">
+                Đã thanh toán:
+              </Typography>
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                sx={{
+                  color: "#D32F2F",
+                  // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
+                }}
+              >
+                {(soTienDaThanhToan ?? 0).toLocaleString()} VNĐ
+              </Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" fontWeight="bold" color="primary">
+                Số tiền cần thanh toán còn lại:
+              </Typography>
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                sx={{
+                  color: "#D32F2F",
+                  // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
+                }}
+              >
+                {(hoaDon.tongTienThanhToan - soTienDaThanhToan ?? 0).toLocaleString()} VNĐ
+              </Typography>
+            </Box>
+          </>}
       </Box>
       <ToastContainer /> {/* Quan trọng để hiển thị toast */}
       {/* Modal sản phẩm*/}
@@ -1864,6 +2333,122 @@ const HoaDonChiTiet = () => {
           </Box>
         </Box>
       </Modal>
+
+      {/* Modal thay đổi địa chỉ nhận hàng */}
+      <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+        <DialogTitle>Thay đổi địa chỉ</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                label="Họ và Tên"
+                fullWidth
+                value={hoaDon.tenNguoiNhanHang}
+                onChange={(e) => setHoaDon({ ...hoaDon, tenNguoiNhanHang: e.target.value })}
+                variant="outlined"
+                margin="normal"
+                size="small"
+              />
+              {errorMessage.hoTen && <Typography color="error" variant="body2">{errorMessage.hoTen}</Typography>}
+            </Grid>
+
+            <Grid item xs={12} marginTop={-2}>
+              <TextField
+                label="Số Điện Thoại"
+                fullWidth
+                value={hoaDon.sdtNguoiNhanHang}
+                onChange={(e) => setHoaDon({ ...hoaDon, sdtNguoiNhanHang: e.target.value })}
+                variant="outlined"
+                margin="normal"
+                size="small"
+              />
+              {errorMessage.sdt && <Typography color="error" variant="body2">{errorMessage.sdt}</Typography>}
+            </Grid>
+
+            <Grid item xs={12} marginTop={-2}>
+              <TextField
+                label="Email"
+                fullWidth
+                value={hoaDon.emailNguoiNhanHang}
+                onChange={(e) => setHoaDon({ ...hoaDon, emailNguoiNhanHang: e.target.value })}
+                variant="outlined"
+                margin="normal"
+                size="small"
+              />
+              {errorMessage.email && <Typography color="error" variant="body2">{errorMessage.email}</Typography>}
+            </Grid>
+
+            <Grid item xs={12} marginTop={-2}>
+              <TextField
+                label="Địa Chỉ Cụ Thể"
+                fullWidth
+                value={diaChiCuThe}
+                onChange={(e) => setDiaChiCuThe(e.target.value)}
+                variant="outlined"
+                margin="normal"
+                size="small"
+              />
+              {errorMessage.diaChi && <Typography color="error" variant="body2">{errorMessage.diaChi}</Typography>}
+            </Grid>
+
+            {/* Các trường Thành phố, Quận, Xã... */}
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth size="small" sx={{ height: '100%' }}>
+                <InputLabel>Tỉnh/Thành phố</InputLabel>
+                <Select value={city} onChange={handleCityChange} label="Tỉnh/Thành phố">
+                  {cities.map((city) => (
+                    <MenuItem key={city.Id} value={city.Name}>{city.Name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth size="small" sx={{ height: '100%' }}>
+                <InputLabel>Quận/Huyện</InputLabel>
+                <Select value={district} onChange={handleDistrictChange} label="Quận/Huyện">
+                  {districts.map((district) => (
+                    <MenuItem key={district.Id} value={district.Name}>{district.Name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth size="small" sx={{ height: '100%' }}>
+                <InputLabel>Xã/Phường</InputLabel>
+                <Select value={ward} onChange={handleWardChange} label="Xã/Phường">
+                  {wards.length > 0 ? (
+                    wards.map((ward) => (
+                      <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>No wards available</MenuItem>
+                  )}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Phí vận chuyển */}
+            <Grid item xs={12} marginTop={-1}>
+              <TextField
+                label="Phí vận chuyển"
+                fullWidth
+                value={hoaDon.phiVanChuyen}
+                onChange={handlePhiVanChuyenChange}  // Sử dụng hàm thay đổi riêng cho phí vận chuyển
+                variant="outlined"
+                margin="normal"
+                size="small"
+              />
+              {errorMessage.phiShip && <Typography color="error" variant="body2">{errorMessage.phiShip}</Typography>}
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenModal(false)}>Hủy</Button>
+          <Button onClick={handleSave} color="primary">Lưu</Button>
+        </DialogActions>
+      </Dialog>
     </div>
 
 

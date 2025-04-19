@@ -3,7 +3,6 @@ package com.example.shopdragonbee.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 
 
 import java.time.LocalDateTime;
@@ -17,7 +16,7 @@ import java.util.List;
 @Builder
 public class SanPhamChiTiet {
 
-    @jakarta.persistence.Id
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

@@ -47,4 +47,7 @@ public class ThanhToanHoaDon {
 
     @Column(name = "ghi_chu")
     private String ghiChu;
+
+    @Column(name = "loai")
+    private String loai;
 }

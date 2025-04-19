@@ -9,6 +9,8 @@ import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,6 +53,8 @@ public class BanHangTaiQuayService {
     private KhachHangRepository khachHangRepository;
     @Autowired
     private PhieuGiamGiaRepository phieuGiamGiaRepository;
+    @Autowired
+    private LichSuHoaDonRepository lichSuHoaDonRepository;
 
     @Autowired
     private HoaDonService hoaDonService;
@@ -66,10 +70,27 @@ public class BanHangTaiQuayService {
             //Chú lại đoạn này nên set 0 hay set null
             hoaDon.setTongTien(null);
             hoaDon.setPhiShip(null);
-            return hoaDonRepository.save(hoaDon);
+            HoaDon hoaDonDuocLuu = hoaDonRepository.save(hoaDon);
+            LichSuHoaDon lichSuHoaDon = new LichSuHoaDon();
+            lichSuHoaDon.setHoaDon(hoaDonDuocLuu);
+            lichSuHoaDon.setHanhDong("Khởi tạo");
+            lichSuHoaDon.setGhiChu("Khởi tạo hóa đơn");
+            lichSuHoaDon.setNgayTao(LocalDateTime.now());
+            return hoaDonDuocLuu;
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public void luuLichSuHoaDon(HoaDon hoaDon, String hanhDong, SanPhamChiTiet sanPhamChiTiet) {
+        LichSuHoaDon lichSuHoaDon = new LichSuHoaDon();
+        lichSuHoaDon.setHoaDon(hoaDon);
+        lichSuHoaDon.setHanhDong(hanhDong);
+        lichSuHoaDon.setGhiChu(hanhDong + sanPhamChiTiet.getSanPham().getTenSanPham() + sanPhamChiTiet.getMauSac().getTenMauSac() + " size " + sanPhamChiTiet.getSize().getTenSize());
+        lichSuHoaDon.setNgayTao(LocalDateTime.now());
+        //Chưa làm lưu người hành động
+//    lichSuHoaDon.setNguoiTao();
+        lichSuHoaDonRepository.save(lichSuHoaDon);
     }
 
     //Tăng số lượng
@@ -84,7 +105,7 @@ public class BanHangTaiQuayService {
                 hoaDonChiTiet.setSoLuong(hoaDonChiTiet.getSoLuong() + 1);
                 hoaDonChiTietRepository.save(hoaDonChiTiet);
                 HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
-                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động") + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
                 hoaDonRepository.save(hoaDon);
                 return true;
             } else {
@@ -92,6 +113,31 @@ public class BanHangTaiQuayService {
             }
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    @Transactional
+    public String tangSoLuongOnline(Integer id) {
+        HoaDonChiTiet hoaDonChiTiet = hoaDonChiTietRepository.findById(id).get();
+        SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(hoaDonChiTiet.getSanPhamChiTiet().getId()).get();
+        int soLuongConLai = (sanPhamChiTiet.getSoLuong() + hoaDonChiTiet.getSoLuong()) - (hoaDonChiTiet.getSoLuong() + 1);
+        if (soLuongConLai >= 0) {
+            sanPhamChiTiet.setSoLuong(soLuongConLai);
+            sanPhamChiTietRepository.save(sanPhamChiTiet);
+            hoaDonChiTiet.setSoLuong(hoaDonChiTiet.getSoLuong() + 1);
+            if (hoaDonChiTietRepository.save(hoaDonChiTiet).getSoLuong() > 30) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return "Có mặt hàng vượt quá số lượng 30";
+            }
+            HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
+            hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động") + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+            if (hoaDonRepository.save(hoaDon).getTongTien() > 20000000) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return "Đơn hàng vượt quá 20tr";
+            }
+            return "Ok";
+        } else {
+            return "Hết sản phẩm";
         }
     }
 
@@ -108,7 +154,7 @@ public class BanHangTaiQuayService {
                 hoaDonChiTiet.setSoLuong(soLuong);
                 hoaDonChiTietRepository.save(hoaDonChiTiet);
                 HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
-                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động") + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
                 hoaDonRepository.save(hoaDon);
             } else {
                 // Phải cập nhật hóa đơn chi tiết trước sản phẩm chi tiết
@@ -117,7 +163,7 @@ public class BanHangTaiQuayService {
                 sanPhamChiTiet.setSoLuong(0);
                 sanPhamChiTietRepository.save(sanPhamChiTiet);
                 HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
-                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động") + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
                 hoaDonRepository.save(hoaDon);
                 return false;
             }
@@ -126,6 +172,49 @@ public class BanHangTaiQuayService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    //Nhập số lượng từ bàn phím
+    @Transactional
+    public String nhapSoLuongOnline(Integer id, Integer soLuong) {
+        HoaDonChiTiet hoaDonChiTiet = hoaDonChiTietRepository.findById(id).get();
+        SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(hoaDonChiTiet.getSanPhamChiTiet().getId()).get();
+//            if(soLuong > 0){
+        int soLuongConLai = (sanPhamChiTiet.getSoLuong() + hoaDonChiTiet.getSoLuong()) - soLuong;
+        if (soLuongConLai >= 0) {
+            sanPhamChiTiet.setSoLuong(soLuongConLai);
+            sanPhamChiTietRepository.save(sanPhamChiTiet);
+            hoaDonChiTiet.setSoLuong(soLuong);
+            if (soLuong > 30) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return "Có mặt hàng vượt quá số lượng 30";
+            }
+            HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
+            hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động") + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+            if (hoaDonRepository.save(hoaDon).getTongTien() > 20000000) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return "Đơn hàng vượt quá 20tr";
+            }
+        } else {
+            // Phải cập nhật hóa đơn chi tiết trước sản phẩm chi tiết
+            hoaDonChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() + hoaDonChiTiet.getSoLuong());
+            if (hoaDonChiTietRepository.save(hoaDonChiTiet).getSoLuong() > 30) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return "Có mặt hàng vượt quá số lượng 30";
+            }
+            sanPhamChiTiet.setSoLuong(0);
+            sanPhamChiTietRepository.save(sanPhamChiTiet);
+            HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
+            hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động") + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+            if (hoaDonRepository.save(hoaDon).getTongTien() > 20000000) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return "Đơn hàng vượt quá 20tr";
+            }
+            return "Số lượng không đủ cung cấp mong muốn";
+        }
+        return "Ok";
+
+
     }
 
     //Giảm số lượng
@@ -139,7 +228,7 @@ public class BanHangTaiQuayService {
                 hoaDonChiTiet.setSoLuong(hoaDonChiTiet.getSoLuong() - 1);
                 hoaDonChiTietRepository.save(hoaDonChiTiet);
                 HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
-                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động") + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
                 hoaDonRepository.save(hoaDon);
                 return true;
             } else {
@@ -164,15 +253,24 @@ public class BanHangTaiQuayService {
                 hoaDon.setTrangThai("Chờ thêm sản phẩm");
                 hoaDonRepository.save(hoaDon); // Lưu lại trạng thái mới
 //                HoaDon hoaDon = hoaDonRepository.findById(hoaDonChiTiet.getHoaDon().getId()).get();
-                hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
-                hoaDonRepository.save(hoaDon);
             }
+            hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động") + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+            hoaDonRepository.save(hoaDon);
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
+    public Boolean xoaSanPhamSauKhiDatHang(Integer id, Integer idHoaDon) {
+        try {
+            xoaSanPham(id, idHoaDon);
+            luuLichSuHoaDon(hoaDonRepository.findById(idHoaDon).get(), "Xóa sản phẩm", hoaDonChiTietRepository.findById(id).get().getSanPhamChiTiet());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     //Chuyển đổi lấy list url hình ảnh theo listAnhSanPham
     public List<String> listURLAnhSanPhamChiTiet(List<AnhSanPham> list) {
@@ -300,17 +398,21 @@ public class BanHangTaiQuayService {
 
 
     //Add sản phẩm vào giỏ hàng
+    @Transactional
     public Boolean addSanPhamVaoGioHang(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia) {
         try {
             SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(idSanPhamChiTiet).get();
-            HoaDonChiTiet kiemTraHDCTDaCoChua = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGiaAndTrangThai(hoaDonRepository.findById(idHoaDon).get(), sanPhamChiTietRepository.findById(idSanPhamChiTiet).get(), donGia,"Hoạt động");
-
+            HoaDonChiTiet kiemTraHDCTDaCoChua = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGiaAndTrangThai(hoaDonRepository.findById(idHoaDon).get(), sanPhamChiTietRepository.findById(idSanPhamChiTiet).get(), donGia, "Hoạt động");
             if (kiemTraHDCTDaCoChua == null) {
                 HoaDonChiTiet hoaDonChiTiet = new HoaDonChiTiet();
                 hoaDonChiTiet.setMa("HDCT" + (System.currentTimeMillis() % 100000));
                 hoaDonChiTiet.setHoaDon(hoaDonRepository.findById(idHoaDon).get());
                 hoaDonChiTiet.setSanPhamChiTiet(sanPhamChiTietRepository.findById(idSanPhamChiTiet).get());
                 sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
+                if (sanPhamChiTiet.getSoLuong() - soLuong < 0) {
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return false;
+                }
                 hoaDonChiTiet.setSoLuong(soLuong);
                 hoaDonChiTiet.setDonGia(donGia);
                 hoaDonChiTiet.setNgayTao(LocalDateTime.now());
@@ -320,19 +422,85 @@ public class BanHangTaiQuayService {
             } else {
                 kiemTraHDCTDaCoChua.setSoLuong(kiemTraHDCTDaCoChua.getSoLuong() + soLuong);
                 sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
+                if (sanPhamChiTiet.getSoLuong() - soLuong < 0) {
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return false;
+                }
                 kiemTraHDCTDaCoChua.setDonGia(donGia);
                 kiemTraHDCTDaCoChua.setNgaySua(LocalDateTime.now());
                 hoaDonChiTietRepository.save(kiemTraHDCTDaCoChua);//lưu hóa đơn chi tiết
                 sanPhamChiTietRepository.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
             }
             HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
-//            hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+            hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động") + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
             hoaDonRepository.save(hoaDon);
             return true;
         } catch (Exception e) {
             return false;
         }
     }
+
+    //Add sản phẩm vào giỏ hàng
+    @Transactional
+    public String addSanPhamVaoGioHangOnlineSauKhiDatHang(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia) {
+
+        SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepository.findById(idSanPhamChiTiet).get();
+        HoaDonChiTiet kiemTraHDCTDaCoChua = hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndSanPhamChiTietAndDonGiaAndTrangThai(hoaDonRepository.findById(idHoaDon).get(), sanPhamChiTietRepository.findById(idSanPhamChiTiet).get(), donGia, "Hoạt động");
+        if (kiemTraHDCTDaCoChua == null) {
+            HoaDonChiTiet hoaDonChiTiet = new HoaDonChiTiet();
+            hoaDonChiTiet.setMa("HDCT" + (System.currentTimeMillis() % 100000));
+            hoaDonChiTiet.setHoaDon(hoaDonRepository.findById(idHoaDon).get());
+            hoaDonChiTiet.setSanPhamChiTiet(sanPhamChiTietRepository.findById(idSanPhamChiTiet).get());
+            if (sanPhamChiTiet.getSoLuong() - soLuong < 0) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return "Rất tiếc! không đủ số lượng sản phẩm";
+            }
+            sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);//Sản phẩm chi tiết
+            hoaDonChiTiet.setSoLuong(soLuong);
+            hoaDonChiTiet.setDonGia(donGia);
+            hoaDonChiTiet.setNgayTao(LocalDateTime.now());
+            hoaDonChiTiet.setTrangThai("Hoạt động");
+            if (hoaDonChiTietRepository.save(hoaDonChiTiet).getSoLuong() > 30) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return "Có mặt hàng vượt quá số lượng 30";
+            }
+            sanPhamChiTietRepository.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
+        } else {
+            kiemTraHDCTDaCoChua.setSoLuong(kiemTraHDCTDaCoChua.getSoLuong() + soLuong);
+            if (sanPhamChiTiet.getSoLuong() - soLuong < 0) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return "Lỗi số lượng âm";
+            }
+            sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);//sản phẩm chi tiết
+            kiemTraHDCTDaCoChua.setDonGia(donGia);
+            kiemTraHDCTDaCoChua.setNgaySua(LocalDateTime.now());
+            if (hoaDonChiTietRepository.save(kiemTraHDCTDaCoChua).getSoLuong() > 30) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return "Có mặt hàng vượt quá số lượng 30";
+            }
+            sanPhamChiTietRepository.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
+        }
+        HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
+        hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId(), "Hoạt động") + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
+        if (hoaDonRepository.save(hoaDon).getTongTien() > 20000000) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return "Đơn hàng vượt quá 20tr";
+        }
+        luuLichSuHoaDon(hoaDonRepository.findById(idHoaDon).get(), "Thêm sản phẩm", sanPhamChiTietRepository.findById(idSanPhamChiTiet).get());
+        return "Ok";
+
+    }
+
+    public Boolean addSanPhamSauKhiDatHang(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia) {
+        try {
+            addSanPhamVaoGioHang(idHoaDon, idSanPhamChiTiet, soLuong, donGia);
+            luuLichSuHoaDon(hoaDonRepository.findById(idHoaDon).get(), "Thêm sản phẩm", sanPhamChiTietRepository.findById(idSanPhamChiTiet).get());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 
     public Boolean thanhToanHoaDon(Integer idHoaDon, String pttt, Float tienMat, Float chuyenKhoan) {
         try {
@@ -342,7 +510,7 @@ public class BanHangTaiQuayService {
             thanhToanHoaDonTienMat.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(1).get());
             thanhToanHoaDonTienMat.setSoTienThanhToan(tienMat);
             thanhToanHoaDonTienMat.setNgayTao(LocalDateTime.now());
-
+            thanhToanHoaDonTienMat.setLoai("Thanh toán");
 
             ThanhToanHoaDon thanhToanHoaDonChuyenKhoan = new ThanhToanHoaDon();
             thanhToanHoaDonChuyenKhoan.setMa("TTHD" + (System.currentTimeMillis() % 100000));
@@ -350,6 +518,7 @@ public class BanHangTaiQuayService {
             thanhToanHoaDonChuyenKhoan.setPhuongThucThanhToan(phuongThucThanhToanRepository.findById(2).get());//Chuyển khoản
             thanhToanHoaDonChuyenKhoan.setSoTienThanhToan(chuyenKhoan);
             thanhToanHoaDonChuyenKhoan.setNgayTao(LocalDateTime.now());
+            thanhToanHoaDonChuyenKhoan.setLoai("Thanh toán");
 
 
             if (pttt.equalsIgnoreCase("cash")) {
@@ -382,7 +551,7 @@ public class BanHangTaiQuayService {
                 hoaDon.setSdt(sdtNguoiNhan);
                 hoaDon.setDiaChiNhanHang(diaChiNhanHang);
                 hoaDon.setPhiShip(phiShip);
-                hoaDon.setTrangThai("Chờ xác nhận");
+                hoaDon.setTrangThai("Chờ giao hàng");
             } else {
                 hoaDon.setTrangThai("Hoàn thành");
             }

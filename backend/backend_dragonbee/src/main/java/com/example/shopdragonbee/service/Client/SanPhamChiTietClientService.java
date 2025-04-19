@@ -5,6 +5,8 @@ import com.example.shopdragonbee.dto.Client.SPCTDTO;
 import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,6 +21,12 @@ public class SanPhamChiTietClientService {
 
     @Autowired
     private SanPhamRepositoryP sanPhamRepositoryP;
+    @Autowired
+    private GioHangRepository gioHangRepository;
+    @Autowired
+    private GioHangChiTietRepository gioHangChiTietRepository;
+    @Autowired
+    private HomeService homeService;
 
     private Map<Integer, SPCTDTO.SanPhamCart> idSet = new HashMap<>();
 
@@ -48,8 +56,40 @@ public class SanPhamChiTietClientService {
         );
     }
 
-    public SPCTDTO.SanPhamChiTietClient getSanPhamChiTietClient(Integer idSanPham, List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCart) {
-        idSet = listDanhSachSanPhamCart.stream().collect(Collectors.toMap(SPCTDTO.SanPhamCart::getIdSPCT, sp -> sp));
+    public SPCTDTO.SanPhamCart convertSangSanPhamCart(GioHangChiTiet gioHangChiTiet) {
+        SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
+        SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
+        sanPhamCart.setId(sanPhamChiTiet.getSanPham().getId());
+        sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
+        if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
+            sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
+        }
+        sanPhamCart.setTenSPCT(sanPhamChiTiet.getSanPham().getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
+        sanPhamCart.setTenMauSac(sanPhamChiTiet.getMauSac().getTenMauSac());
+        sanPhamCart.setTenSize(sanPhamChiTiet.getSize().getTenSize());
+        sanPhamCart.setGia(sanPhamChiTiet.getGia());
+        sanPhamCart.setQuantity(gioHangChiTiet.getSoLuong());
+        return sanPhamCart;
+    }
+
+    public SPCTDTO.SanPhamChiTietClient getSanPhamChiTietClient(Integer idSanPham, Integer idKhachHang, List<SPCTDTO.SanPhamCart> listDanhSachSanPhamCart) {
+        //Nếu khách hàng không đăng nhập thì dựa trên local
+        if (sanPhamRepositoryP.findById(idSanPham).get().getTrangThai().equalsIgnoreCase("Hoạt động") == false) {
+            return null;
+        }
+        if (idKhachHang == null) {
+            idSet = listDanhSachSanPhamCart.stream().collect(Collectors.toMap(SPCTDTO.SanPhamCart::getIdSPCT, sp -> sp));
+        } else {//nếu khách có đăng nhập
+            Optional<GioHang> gioHang = gioHangRepository.findById(idKhachHang);
+            if (gioHang.isPresent()) {
+                List<SPCTDTO.SanPhamCart> listChuyenDoiGioHangChiTietSangSanPhamCart = gioHangChiTietRepository.findByGioHangOrderByNgayTaoDesc(gioHang.get()).stream()
+                        .map(this::convertSangSanPhamCart) // Gọi hàm convert từng phần tử
+                        .collect(Collectors.toList());
+                idSet = listChuyenDoiGioHangChiTietSangSanPhamCart.stream().collect(Collectors.toMap(SPCTDTO.SanPhamCart::getIdSPCT, sp -> sp));
+            } else {
+                idSet = Collections.emptyMap();
+            }
+        }
         SPCTDTO.SanPhamChiTietClient tongQuanSanPhamCTClient = new SPCTDTO.SanPhamChiTietClient();//Tạo ra đối tượng lưu thông tin sanPhamChiTiet
         List<SPCTDTO.MauSacAndHinhAnhAndSize> listMauSacAndSizeCuaSp = new ArrayList<>();//Tạo ra list để lưu những sản phẩm màu sắc của đối tượng
         List<MauSac> listMauSac = sanPhamChiTietRepositoryP.getMauSacTheoIDSanPhamAndTrangThai(idSanPham, "Hoạt động");//Lấy những sản phẩm chi tiết phân biệt theo màu sắc
@@ -70,6 +110,9 @@ public class SanPhamChiTietClientService {
                     tongQuanSanPhamCTClient.setGia(sanPhamChiTiet.getGia());
                     tongQuanSanPhamCTClient.setKieuDang(sanPhamChiTiet.getKieuDang());
                     tongQuanSanPhamCTClient.setChatLieu(sanPhamChiTiet.getChatLieu());
+                    tongQuanSanPhamCTClient.setDanhMuc(sanPhamChiTiet.getDanhMuc());
+                    tongQuanSanPhamCTClient.setThuongHieu(sanPhamChiTiet.getThuongHieu());
+                    tongQuanSanPhamCTClient.setXuatXu(sanPhamChiTiet.getXuatXu());
                 }
                 if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                     mauSacAndHinhAnhAndSize.setListAnh(listURLAnhSanPham(sanPhamChiTiet.getListAnh()));
@@ -84,5 +127,17 @@ public class SanPhamChiTietClientService {
         return tongQuanSanPhamCTClient;
     }
 
+
+
+    public List<HomeDTO.SanPhamClient> getListSanPhamTuongTu(Integer idSanPham, String tenDanhMuc) {
+        List<HomeDTO.SanPhamClient> listTraVe = new ArrayList<>();
+        listTraVe.addAll(homeService.getListSanPhamQuanAuNamDanhMucTheoDanhMucTop3(tenDanhMuc, idSanPham));
+        List<HomeDTO.SanPhamClient> listBanChay = homeService.getListSanPhamQuanAuNamDanhMucTopBanChay()
+                .stream()
+                .filter(sp -> sp.getId() != idSanPham) // Lọc bỏ sản phẩm có id = 1
+                .collect(Collectors.toList());
+        listTraVe.addAll(listBanChay);
+        return  listTraVe;
+    }
 
 }

@@ -1,73 +1,133 @@
 import React, { forwardRef } from "react";
-import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Divider, Container } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Divider,
+  Container,
+} from "@mui/material";
 
 const hoaDonPrint = forwardRef(({ hoaDon }, ref) => {
   return (
     <Container sx={{ textAlign: "center" }}>
-      <Box ref={ref} p={3} width="500px">
-        <Typography variant="h4" align="center">
-          Shop Quần Âu DRAGONBEE
-        </Typography>
-        <Typography variant="h5">Mã hóa đơn: {hoaDon?.ma}</Typography>
-        {/* <Typography variant="body1"><strong>Khách hàng nhận hàng:</strong> {hoaDon?.tenNguoiNhanHang} - {hoaDon?.sdtNguoiNhanHang}</Typography> */}
-        {hoaDon?.sdtNguoiNhanHang && (
-          <Box item xs={12} md={6}>
-            <Typography variant="h5"><strong>Thông tin nhận hàng</strong> </Typography>
-            <Typography component="p" sx={{ fontSize: "1.5rem" }}>
-              Người nhận: {hoaDon?.tenNguoiNhanHang} - {hoaDon?.sdtNguoiNhanHang} - {hoaDon?.emailNguoiNhanHang}
+      <Box
+        ref={ref}
+        p={3}
+        width="600px"
+        mx="auto"
+        border="1px solid #ddd"
+        borderRadius={2}
+        bgcolor="#fff"
+      >
+        {/* Logo + tên shop */}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2}
+        >
+          {/* Logo bên trái */}
+          <Box>
+            <img
+              src="https://raw.githubusercontent.com/lytienduy/DuAnTotNghiep_SD13/refs/heads/main/frontend/dragonbee/src/img/dragonbee_logo_v1.png"
+              alt="Logo cửa hàng"
+              style={{
+                height: "60px",
+                maxWidth: "100px",
+                objectFit: "contain",
+              }}
+            />
+          </Box>
+
+          {/* Thông tin shop bên phải */}
+          <Box textAlign="right" sx={{ flex: 1, ml: 2 }}>
+            <Typography variant="h6" fontWeight="bold">
+              SHOP QUẦN ÂU DRAGONBEE
             </Typography>
-            <Typography component="p" sx={{ fontSize: "1.5rem" }}>
-              Địa chỉ: {hoaDon?.diaChiNguoiNhanHang}
+            <Typography sx={{ fontSize: "0.9rem" }}>
+              Địa chỉ: 123 Nguyễn Trãi, Thanh Xuân, Hà Nội
+            </Typography>
+            <Typography sx={{ fontSize: "0.9rem" }}>
+              SĐT: 0987 654 321
+            </Typography>
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Mã hóa đơn */}
+        <Typography variant="h6" gutterBottom>
+          HÓA ĐƠN BÁN HÀNG - Mã: {hoaDon?.ma}
+        </Typography>
+
+        {/* Thông tin nhận hàng */}
+        {hoaDon?.sdtNguoiNhanHang && (
+          <Box mb={2} textAlign="left">
+            <Typography fontWeight="bold">Thông tin người nhận:</Typography>
+            <Typography>Họ tên: {hoaDon?.tenNguoiNhanHang}</Typography>
+            <Typography>SĐT: {hoaDon?.sdtNguoiNhanHang}</Typography>
+            <Typography>Email: {hoaDon?.emailNguoiNhanHang}</Typography>
+            <Typography>Địa chỉ: {hoaDon?.diaChiNguoiNhanHang}</Typography>
+          </Box>
+        )}
+
+        {/* Thông tin khách hàng */}
+        {hoaDon?.maKhachHang && (
+          <Box textAlign="left" mb={2}>
+            <Typography>
+              <strong>Khách hàng:</strong> {hoaDon?.tenKhachHang} -{" "}
+              {hoaDon?.sdtKhachHang}
             </Typography>
           </Box>
         )}
-        {hoaDon?.maKhachHang && (<Typography sx={{ fontSize: "1.5rem" }}>
-          <Typography component="span" variant="h5">Khách hàng:</Typography> {hoaDon?.tenKhachHang} {hoaDon?.sdtKhachHang}
-        </Typography>
-        )}
 
-        <Typography sx={{ fontSize: "1.5rem" }}>
-          <Typography component="span" variant="h5">Ngày tạo:</Typography> {new Date(hoaDon?.ngayTao)?.toLocaleString("vi-VN")}
+        {/* Ngày tạo */}
+        <Typography textAlign="left" mb={2}>
+          <strong>Ngày tạo:</strong>{" "}
+          {new Date(hoaDon?.ngayTao)?.toLocaleString("vi-VN")}
         </Typography>
 
-
-        <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, overflow: "hidden" }}>
-          <Typography
-            variant="h5"
-            gutterBottom
-            align="center"
-          >
-            Danh sách sản phẩm
-          </Typography>
-          <Table sx={{ border: "1px solid #ddd" }}>
-            <TableHead>
+        {/* Bảng sản phẩm */}
+        <TableContainer component={Paper} sx={{ mt: 2 }}>
+          <Table sx={{ minWidth: 500 }} size="small" aria-label="a dense table">
+            <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
               <TableRow>
-                <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>#</TableCell>
-                <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>Sản phẩm</TableCell>
-                <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>Đơn giá</TableCell>
-                <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>Số lượng</TableCell>
-                <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>Số tiền</TableCell>
+                <TableCell align="center">#</TableCell>
+                <TableCell align="center">Sản phẩm</TableCell>
+                <TableCell align="center">Đơn giá</TableCell>
+                <TableCell align="center">Số lượng</TableCell>
+                <TableCell align="center">Thành tiền</TableCell>
               </TableRow>
             </TableHead>
-            <TableBody >
+            <TableBody>
               {hoaDon?.listDanhSachSanPham?.length > 0 ? (
-                hoaDon?.listDanhSachSanPham?.map((product, index) => {
-                  return (
-                    <TableRow key={index} sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}>
-                      <TableCell align="center" sx={{ fontSize: "1.5rem" }}>{index + 1}</TableCell>
-                      <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
-                        <Typography sx={{}}>{product.tenMauSize}</Typography>
-                        <Typography sx={{ color: "gray", fontSize: "0.85rem" }}>{product.maSanPhamChiTiet}</Typography>
-                      </TableCell>
-                      <TableCell align="center" sx={{ fontSize: "1.5rem" }}>{product.donGia?.toLocaleString()}₫</TableCell>
-                      <TableCell align="center" sx={{ fontSize: "1.5rem" }}>{product.soLuong}</TableCell>
-                      <TableCell align="center" sx={{ fontSize: "1.5rem" }}>{product.soTien?.toLocaleString()}₫</TableCell>
-                    </TableRow>
-                  );
-                })
+                hoaDon.listDanhSachSanPham.map((product, index) => (
+                  <TableRow key={index}>
+                    <TableCell align="center">{index + 1}</TableCell>
+                    <TableCell align="left">
+                      <Typography>{product.tenMauSize}</Typography>
+                      <Typography sx={{ color: "gray", fontSize: "0.8rem" }}>
+                        {product.maSanPhamChiTiet}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      {product.donGia?.toLocaleString()}₫
+                    </TableCell>
+                    <TableCell align="center">{product.soLuong}</TableCell>
+                    <TableCell align="center">
+                      {product.soTien?.toLocaleString()}₫
+                    </TableCell>
+                  </TableRow>
+                ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 2, fontStyle: "italic", color: "gray" }}>
+                  <TableCell colSpan={5} align="center">
                     Không có dữ liệu
                   </TableCell>
                 </TableRow>
@@ -76,50 +136,44 @@ const hoaDonPrint = forwardRef(({ hoaDon }, ref) => {
           </Table>
         </TableContainer>
 
-        <Box sx={{ p: 2, borderRadius: 2 }}>
-          {/* Tổng tiền hàng */}
-
-          <Typography sx={{ fontSize: "1.5rem" }}>
-            <Typography component="span" variant="h5">Tổng tiền hàng:</Typography> {` ${hoaDon?.tongTienSanPham?.toLocaleString()} đ`}
+        {/* Tổng kết */}
+        <Box mt={3} textAlign="right">
+          <Typography>
+            <strong>Tổng tiền hàng:</strong>{" "}
+            {hoaDon?.tongTienSanPham?.toLocaleString()}₫
           </Typography>
 
-
-
-
           {hoaDon?.phiVanChuyen && (
-            <Typography sx={{ fontSize: "1.5rem" }}>
-              <Typography component="span" variant="h5">Phí vận chuyển:</Typography> {` ${hoaDon?.phiVanChuyen?.toLocaleString()} đ`}
-            </Typography>)}
+            <Typography>
+              <strong>Phí vận chuyển:</strong>{" "}
+              {hoaDon?.phiVanChuyen?.toLocaleString()}₫
+            </Typography>
+          )}
 
-
-
-          {/* Mã voucher */}
           {hoaDon?.maVoucher && (
-            <Typography variant="h5" fontWeight={500}>
-              <strong>Mã giảm giá:</strong>   {hoaDon?.maVoucher} - {(hoaDon?.tongTienSanPham + hoaDon?.phiVanChuyen - hoaDon?.tongTienThanhToan)?.toLocaleString()} đ
+            <Typography>
+              <strong>Mã giảm giá:</strong> {hoaDon?.maVoucher} -{" "}
+              {(
+                hoaDon?.tongTienSanPham +
+                hoaDon?.phiVanChuyen -
+                hoaDon?.tongTienThanhToan
+              )?.toLocaleString()}
+              ₫
             </Typography>
-          )
-          }
+          )}
 
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 1 }} />
 
-          {/* Tổng tiền thanh toán */}
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h5" fontWeight="bold" color="primary">
-              Tổng thanh toán:
-            </Typography>
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              sx={{
-                color: "#D32F2F",
-              }}
-            >
-              {(hoaDon?.tongTienSanPham + hoaDon?.phiVanChuyen)?.toLocaleString()} VNĐ
-            </Typography>
-          </Box>
-
+          <Typography variant="h6" color="error" fontWeight="bold">
+            Tổng thanh toán: {hoaDon?.tongTienThanhToan?.toLocaleString()} VNĐ
+          </Typography>
         </Box>
+
+        {/* Footer */}
+        <Divider sx={{ my: 2 }} />
+        <Typography fontStyle="italic" sx={{ fontSize: "0.9rem" }}>
+          Cảm ơn quý khách đã mua hàng!
+        </Typography>
       </Box>
     </Container>
   );

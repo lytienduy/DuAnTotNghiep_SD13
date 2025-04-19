@@ -39,6 +39,7 @@ public class GioHangService {
             ) {
                 SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
                 SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
+                sanPhamCart.setId(sanPhamChiTiet.getSanPham().getId());
                 sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
                 if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                     sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
@@ -94,6 +95,7 @@ public class GioHangService {
                 } else {
                     SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
                     SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
+                    sanPhamCart.setId(sanPhamChiTiet.getSanPham().getId());
                     sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
                     if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                         sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
@@ -101,7 +103,7 @@ public class GioHangService {
                     sanPhamCart.setTenSPCT(sanPhamChiTiet.getSanPham().getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
                     sanPhamCart.setTenMauSac(sanPhamChiTiet.getMauSac().getTenMauSac());
                     sanPhamCart.setTenSize(sanPhamChiTiet.getSize().getTenSize());
-                    sanPhamCart.setGia(sanPhamChiTiet.getGia());
+                    sanPhamCart.setGia(sanPhamChiTiet.getGia());//Cập nhật giá rồi
                     sanPhamCart.setQuantity(gioHangChiTiet.getSoLuong());
                     listDanhSachSanPhamCartKhachHang.add(sanPhamCart);
                 }
@@ -123,6 +125,7 @@ public class GioHangService {
             ) {
                 SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
                 SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
+                sanPhamCart.setId(sanPhamChiTiet.getSanPham().getId());
                 sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
                 if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                     sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());

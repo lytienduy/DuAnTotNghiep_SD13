@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     Box, Grid, Typography, Button, Card, CardContent, CardMedia, Container,
-    Tabs, Tab, Breadcrumbs, Link, Dialog, DialogTitle, DialogContent, DialogActions, TextField,TableRow,TableCell
+    Tabs, Tab, Breadcrumbs, Link, Dialog, DialogTitle, DialogContent, DialogActions, TextField, TableRow, TableCell
 } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,7 +23,7 @@ const DonMua = () => {
     const [openConfirm, setOpenConfirm] = useState(false); // Mở modal xác nhận
     const [ghiChuTrangThai, setGhiChuTrangThai] = useState("");
     const [error, setError] = useState(false);//Biến báo lỗi
-    const [idHoaDonCanThaoTac, setIdHoaDonCanThaoTac] = useState(null);//Biến báo lỗi
+    const [idHoaDonCanThaoTac, setIdHoaDonCanThaoTac] = useState(null);
     const userKH = JSON.parse(localStorage.getItem("userKH"));
 
 
@@ -94,7 +94,6 @@ const DonMua = () => {
                 }
             });
             setOrders(response.data);
-
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu:", error);
         }
@@ -236,7 +235,6 @@ const DonMua = () => {
                             {tabLabels.map((label, index) => (
                                 <Tab key={index} label={label} />
                             ))}
-
                         </Tabs>
                         {orders.length === 0 ? (
                             <TableRow>
@@ -254,89 +252,98 @@ const DonMua = () => {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            orders.map((order) => (
-                                <Box
-                                    key={order.id}
-                                    sx={{
-                                        border: '1px solid #e0e0e0',
-                                        borderRadius: 2,
-                                        padding: 2,
-                                        boxShadow: 2,
-                                        marginTop: 3,
-                                        backgroundColor: '#fff',
-                                    }}
-                                >
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: 1 }}>
-                                        <Typography sx={{ fontWeight: 'bold', fontSize: 18 }}>
-                                            Mã đơn: {order.maHoaDon}
-                                        </Typography>
-                                        <Typography sx={{ fontWeight: 'bold', fontSize: 18, color: '#1976D2' }}>
-                                            Trạng thái: {order.trangThai}
-                                        </Typography>
-                                    </Box>
-                                    {order?.sanPhams?.map((product, index) => (
-                                        <Card
-                                            key={index}
-                                            sx={{
-                                                marginTop: 0,
-                                                borderRadius: 0,
-                                                border: 'none',
-                                            }}
-                                        >
-                                            <CardContent>
-                                                <Grid container spacing={2}>
-                                                    <Grid item xs={2}>
-                                                        <CardMedia
-                                                            component="img"
-                                                            sx={{ width: 70, height: 70, objectFit: 'cover' }}
-                                                            image={product.hinhAnh}
-                                                            alt={product.tenSanPham}
-                                                        />
-                                                    </Grid>
-                                                    <Grid item xs={9}>
-                                                        <Typography variant="body1" component="div">
-                                                            <strong>{product.tenSanPham}</strong>
-                                                        </Typography>
-                                                        <Grid container spacing={2} sx={{ marginTop: 0 }}>
-                                                            <Grid item>
-                                                                <Typography variant="body2">Màu sắc: {product.mauSac}</Typography>
-                                                            </Grid>
-                                                            <Grid item>
-                                                                <Typography variant="body2">Số lượng: {product.soLuong}</Typography>
-                                                            </Grid>
-                                                            <Grid item>
-                                                                <Typography variant="body2">Kích thước: {product.size}</Typography>
-                                                            </Grid>
-                                                            <Grid item>
-                                                                <Typography variant="body2">
-                                                                    Giá: {(product.gia * product.soLuong)?.toLocaleString()} VNĐ
-                                                                </Typography>
+                            orders.map((order) => {
+                                const listThanhToan = (order?.listThanhToanHoaDon || [])
+                                    .filter(tt => tt?.loai !== "Hoàn tiền")
+
+                                const listHoanTien = (order?.listThanhToanHoaDon || [])
+                                    .filter(tt => tt?.loai === "Hoàn tiền") // Lọc chỉ lấy các phần tử có id = 3
+
+                                const tongTienDaThanhToanVaDaHoanTienCuaOnline = listThanhToan?.reduce((tong, tt) => tong + tt?.soTien, 0) - listHoanTien?.reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tiền cần hoàn lấy tiền đã thanh toán trừ đi tiền đã hoàn so sánh với số tiền cần thanh toán của hóa đơn                           
+                                return (
+                                    <Box
+                                        key={order.id}
+                                        sx={{
+                                            border: '1px solid #e0e0e0',
+                                            borderRadius: 2,
+                                            padding: 2,
+                                            boxShadow: 2,
+                                            marginTop: 3,
+                                            backgroundColor: '#fff',
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: 1 }}>
+                                            <Typography sx={{ fontWeight: 'bold', fontSize: 18 }}>
+                                                Mã đơn: {order.maHoaDon}
+                                            </Typography>
+                                            <Typography sx={{ fontWeight: 'bold', fontSize: 18, color: '#1976D2' }}>
+                                                Trạng thái: {(tongTienDaThanhToanVaDaHoanTienCuaOnline === order?.tongTienThanhToan && listHoanTien?.length > 0 && (tabValue === 4 || tabValue === 5)) ? "Đã hoàn tiền" : order?.trangThai}
+                                            </Typography>
+                                        </Box>
+                                        {order?.sanPhams?.map((product, index) => (
+                                            <Card
+                                                key={index}
+                                                sx={{
+                                                    marginTop: 0,
+                                                    borderRadius: 0,
+                                                    border: 'none',
+                                                }}
+                                            >
+                                                <CardContent>
+                                                    <Grid container spacing={2}>
+                                                        <Grid item xs={2}>
+                                                            <CardMedia
+                                                                component="img"
+                                                                sx={{ width: 70, height: 70, objectFit: 'cover' }}
+                                                                image={product.hinhAnh}
+                                                                alt={product.tenSanPham}
+                                                            />
+                                                        </Grid>
+                                                        <Grid item xs={9}>
+                                                            <Typography variant="body1" component="div">
+                                                                <strong>{product.tenSanPham}</strong>
+                                                            </Typography>
+                                                            <Grid container spacing={2} sx={{ marginTop: 0 }}>
+                                                                <Grid item>
+                                                                    <Typography variant="body2">Màu sắc: {product.mauSac}</Typography>
+                                                                </Grid>
+                                                                <Grid item>
+                                                                    <Typography variant="body2">Số lượng: {product.soLuong}</Typography>
+                                                                </Grid>
+                                                                <Grid item>
+                                                                    <Typography variant="body2">Kích thước: {product.size}</Typography>
+                                                                </Grid>
+                                                                <Grid item>
+                                                                    <Typography variant="body2">
+                                                                        Giá: {(product.gia * product.soLuong)?.toLocaleString()} VNĐ
+                                                                    </Typography>
+                                                                </Grid>
                                                             </Grid>
                                                         </Grid>
                                                     </Grid>
-                                                </Grid>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
+                                                </CardContent>
+                                            </Card>
+                                        ))}
 
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                            Thành tiền: {getTotalPrice(order.sanPhams)?.toLocaleString()} VNĐ
-                                        </Typography>
-                                        <Box>
-                                            {order?.trangThai === "Chờ xác nhận" &&
-                                                <Button variant="contained" sx={{ marginRight: 2 }} onClick={() => handleOpenLyDo(order?.id)}>
-                                                    Hủy đơn
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+                                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                                Thành tiền: {getTotalPrice(order.sanPhams)?.toLocaleString()} VNĐ
+                                            </Typography>
+                                            <Box>
+                                                {order?.trangThai === "Chờ xác nhận" &&
+                                                    <Button variant="contained" sx={{ marginRight: 2 }} onClick={() => handleOpenLyDo(order?.id)}>
+                                                        Hủy đơn
+                                                    </Button>
+                                                }
+                                                <Button variant="outlined" sx={{ color: 'black' }} onClick={() => navigate(`/donMuaChiTiet/${order?.id}`)}>
+                                                    <ShoppingCartIcon sx={{ marginRight: 1 }} />
+                                                    Xem đơn hàng
                                                 </Button>
-                                            }
-                                            <Button variant="outlined" sx={{ color: 'black' }} onClick={() => navigate(`/donMuaChiTiet/${order?.id}`)}>
-                                                <ShoppingCartIcon sx={{ marginRight: 1 }} />
-                                                Xem đơn hàng
-                                            </Button>
+                                            </Box>
                                         </Box>
                                     </Box>
-                                </Box>
-                            )))}
+                                )
+                            }))}
                     </Grid>
                 </Grid>
             </Box>

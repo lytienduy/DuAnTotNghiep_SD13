@@ -21,15 +21,18 @@ const GioHang = () => {
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [productsCapNhatSoLuong, setProductsCapNhatSoLuong] = useState([]);
     const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
+    const [tenSanPhamThongBao, setTenSanPhamThongBao] = useState("");
     const [dialogMessage, setDialogMessage] = useState("");
     const userKH = JSON.parse(localStorage.getItem("userKH"));
 
-    const handleDialogOpen = (message) => {
+    const handleDialogOpen = (message, tenSanPhamThongBao) => {
         setDialogMessage(message);
+        setTenSanPhamThongBao(tenSanPhamThongBao);
         setOpenDialogThongBaoHetHangHoacKDuSoLuong(true);
     };
 
     const handleDialogClose = () => {
+        setTenSanPhamThongBao("");
         setOpenDialogThongBaoHetHangHoacKDuSoLuong(false);
     };
     //Thông báo Toast
@@ -90,15 +93,16 @@ const GioHang = () => {
                     if (cart[index]) {
                         cart[index].quantity = 0;
                     }
-                    handleDialogOpen("Sản phẩm đã hết hàng, bạn có thể tham khảo sản phẩm khác");
+                    handleDialogOpen("Sản phẩm đã hết hàng, bạn có thể tham khảo sản phẩm khác", cart[index].tenSPCT + " - " + cart[index].tenMauSac + " - size" + cart[index].tenSize);
                 } else if (item?.quantity !== response.data?.[index]?.quantity) {
                     if (cart[index]) {
                         cart[index].quantity = response.data?.[index]?.quantity;
                     }
-                    handleDialogOpen("Sản phẩm không còn đủ số lượng bạn mong muốn");
+                    handleDialogOpen("Sản phẩm không còn đủ số lượng bạn mong muốn", cart[index].tenSPCT + " - " + cart[index].tenMauSac + " - size" + cart[index].tenSize);
                 }
                 if (item.gia !== response.data?.[index]?.gia) {
                     if (cart[index]) {
+                        showSuccessToast("Giá sản phẩm " + index + " đã có thay đổi giá cũ " + cart[index].gia + " giá mới " + response.data?.[index]?.gia)
                         cart[index].gia = response.data?.[index]?.gia;
                     }
                 }
@@ -157,6 +161,14 @@ const GioHang = () => {
             showErrorToast("Bạn chưa chọn sản phẩm cần thanh toán");
             return;
         } else {
+            if (totalAmount > 20000000) {
+                handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+                return;
+            }
+            if (checkCoSanPhamCoSoLuongMuaLonHon30 === true) {
+                handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+                return;
+            }
             navigate('/thanhToan', { state: { selectedProducts } });
         }
     };
@@ -180,9 +192,9 @@ const GioHang = () => {
 
     useEffect(() => {
         layDuLieuCart();
-        getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         const interval = setInterval(() => {
             getListDanhSachCapNhatSoLuongSanPhamGioHang();
+            getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         }, 5000); // 60 giây
 
         return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
@@ -239,7 +251,7 @@ const GioHang = () => {
         // Cập nhật lại giỏ hàng trong Local Storage
         localStorage.setItem("cart", JSON.stringify(cart));
         if (userKH?.khachHang?.id) {
-            const response = await axios.post(`http://localhost:8080/gioHang/tangSoLuongSanPhamCoDangNhap`, null,
+            await axios.post(`http://localhost:8080/gioHang/tangSoLuongSanPhamCoDangNhap`, null,
                 {
                     params: {
                         idSanPhamChiTiet: idspct,
@@ -252,7 +264,7 @@ const GioHang = () => {
         layDuLieuCart();
         getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         //Nên cho hàm check nào vào getListDanhSach luôn check vs respone
-        if (productsCapNhatSoLuong[index].quantity === 1) {//Fix lỗi chậm một nhịp  
+        if (productsCapNhatSoLuong[index]?.quantity === 1) {//Fix lỗi chậm một nhịp  
             showSuccessToast("Bạn đã mua tối đa sản phẩm thứ " + index);
         }
     };
@@ -312,6 +324,12 @@ const GioHang = () => {
         return sum + product.gia * product?.quantity;
     }, 0);
 
+    // Check số lượng mua sản phẩm
+    const checkCoSanPhamCoSoLuongMuaLonHon30 = selectedProducts.some(index => {
+        const product = products[index];
+        return product?.quantity > 30;
+    }, false);
+
     const handleBackHome = () => {
         navigate("/home"); // Điều hướng về trang phiếu giảm giá
     };
@@ -320,6 +338,7 @@ const GioHang = () => {
         <Container>
             <Dialog open={openDialogThongBaoHetHangHoacKDuSoLuong} onClose={handleDialogClose}>
                 <DialogTitle>Thông Báo</DialogTitle>
+                {tenSanPhamThongBao && <DialogContent ><strong>{tenSanPhamThongBao}</strong></DialogContent>}
                 <DialogContent>{dialogMessage}</DialogContent>
                 <DialogActions>
                     <Button onClick={handleDialogClose} color="primary">Đóng</Button>
@@ -378,7 +397,7 @@ const GioHang = () => {
                                         </TableRow>
                                     ) : (
                                         products.map((product, index) => (
-                                            <TableRow key={index} disabled={product.quantity === 0}>
+                                            <TableRow key={index} disabled={product.quantity === 0} >
                                                 <TableCell padding="checkbox" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
                                                     <Checkbox
                                                         checked={selectedProducts.includes(index)}
@@ -386,7 +405,7 @@ const GioHang = () => {
                                                         color="primary"
                                                     />
                                                 </TableCell>
-                                                <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
+                                                <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px', cursor: 'pointer' }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                                                     <Grid container spacing={2} alignItems="center" sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                                                         <Grid item>
                                                             <img src={product.anhSPCT} alt={product.tenSPCT} width={80} height={80} />
@@ -450,7 +469,7 @@ const GioHang = () => {
                                                                 ),
                                                                 endAdornment: (
                                                                     <IconButton
-                                                                        onClick={() => { console.log("product.idSPCT trước khi truyền:", product?.idSPCT); handleIncrement(index, product?.idSPCT) }}
+                                                                        onClick={() => handleIncrement(index, product?.idSPCT)}
                                                                         size="small"
                                                                         style={{ padding: '2px', marginRight: -10 }}
                                                                         disabled={productsCapNhatSoLuong?.[index]?.quantity === 0}

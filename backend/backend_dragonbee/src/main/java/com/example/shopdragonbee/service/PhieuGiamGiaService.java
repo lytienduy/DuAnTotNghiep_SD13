@@ -5,6 +5,7 @@ import com.example.shopdragonbee.entity.PhieuGiamGia;
 import com.example.shopdragonbee.entity.PhieuGiamGiaKhachHang;
 import com.example.shopdragonbee.repository.PhieuGiamGiaRepository;
 import com.example.shopdragonbee.repository.PhieuGiamGiaKhachHangRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PhieuGiamGiaService {
 
     @Autowired
@@ -207,4 +209,28 @@ public class PhieuGiamGiaService {
         // Nếu không có phiếu giảm giá hoặc hết số lượng, trả về null
         return null;
     }
+
+    public double tinhTienGiam(PhieuGiamGia phieu, double tongTienSanPham) {
+        if (tongTienSanPham < phieu.getSoTienToiThieu()) {
+            return 0;
+        }
+
+        if ("Cố định".equals(phieu.getLoaiPhieuGiamGia())) {
+            return Math.round(phieu.getGiaTriGiam());
+        } else if ("Phần trăm".equals(phieu.getLoaiPhieuGiamGia())) {
+            double tienGiam = tongTienSanPham * (phieu.getGiaTriGiam() / 100);
+            if (phieu.getSoTienGiamToiDa() != null && tienGiam > phieu.getSoTienGiamToiDa()) {
+                tienGiam = phieu.getSoTienGiamToiDa();
+            }
+            return Math.round(tienGiam);
+        }
+
+        return 0;
+    }
+
+    public PhieuGiamGia getByMa(String ma) {
+        return phieuGiamGiaRepository.findByMa(ma)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy mã phiếu giảm giá: " + ma));
+    }
+
 }

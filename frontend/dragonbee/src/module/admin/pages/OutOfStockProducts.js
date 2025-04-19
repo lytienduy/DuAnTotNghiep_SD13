@@ -75,7 +75,7 @@ const OutOfStockProducts = () => {
       {/* Header: Tiêu đề và chọn ngưỡng */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h6" fontWeight="bold">
-          Danh sách sản phẩm sắp hết hàng
+          Danh sách sản phẩm sắp hết hàng hôm nay
         </Typography>
         {/* Chọn ngưỡng (quantity) */}
         <FormControl size="small" sx={{ width: 120 }}>

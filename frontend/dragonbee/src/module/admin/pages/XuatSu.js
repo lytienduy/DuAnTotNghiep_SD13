@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { 
-  Container, Typography, Button, Table, TableBody, TableCell, 
+  Container, Typography, Button, Table, TableBody, TableCell, Box,
   TableContainer, TableHead, TableRow, Paper, IconButton, CircularProgress 
 } from "@mui/material";
 import { Add, Visibility, Edit, Delete } from "@mui/icons-material";
@@ -24,7 +24,7 @@ const XuatSu = () => {
   }, []);
 
   return (
-    <Container maxWidth="lg">
+    <Box>
       {/* Header */}
       <Typography variant="h4" gutterBottom>
         Quản Lý Xuất Xứ
@@ -69,11 +69,6 @@ const XuatSu = () => {
                     <IconButton color="primary">
                       <Visibility />
                     </IconButton>
-                    
-                    {/* Nút sửa */}
-                   
-
-                    {/* Nút xóa */}
                    
                   </TableCell>
                 </TableRow>
@@ -82,7 +77,7 @@ const XuatSu = () => {
           </Table>
         </TableContainer>
       )}
-    </Container>
+    </Box>
   );
 };
 

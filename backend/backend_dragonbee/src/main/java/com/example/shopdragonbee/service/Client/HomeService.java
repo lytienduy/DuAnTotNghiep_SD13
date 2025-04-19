@@ -56,6 +56,45 @@ public class HomeService {
         );
     }
 
+    public List<HomeDTO.SanPhamClient> getListSanPhamQuanAuNamDanhMucTheoDanhMucTop3(String tenDanhMuc,Integer idSanPham) {
+        List<HomeDTO.SanPhamClient> listTraVe = new ArrayList<>();
+        List<SanPham> listSP = sanPhamChiTietRepositoryP.getListSanPhamTheoTenDanhMucVaDangHoatDongTop3(tenDanhMuc,idSanPham);
+        for (SanPham sanPham : listSP
+        ) {
+            HomeDTO.SanPhamClient tongQuanSanPhamCTClient = new HomeDTO.SanPhamClient();//Tạo ra đối tượng của listTraVe
+            tongQuanSanPhamCTClient.setId(sanPham.getId());
+            List<HomeDTO.MauSacAndHinhAnhAndSize> listCacBienTheMauSacCuaSP = new ArrayList<>();//Tạo ra list để lưu những sản phẩm màu sắc, hình ảnh và size của sản phẩm
+            List<MauSac> listMauSac = sanPhamChiTietRepositoryP.getMauSacTheoIDSanPhamAndTrangThaiAndDanhMuc(sanPham.getId(), "Hoạt động", tenDanhMuc);//Lấy những sản phẩm chi tiết phân biệt theo màu sắc
+            int index = 0;
+            for (MauSac mauSac : listMauSac//Chạy foreach lấy list size theo màu
+            ) {
+                HomeDTO.MauSacAndHinhAnhAndSize mauSacAndHinhAnhAndSize = new HomeDTO.MauSacAndHinhAnhAndSize();
+                mauSacAndHinhAnhAndSize.setMauSac(mauSac);
+                List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThaiAndDanhMuc_TenDanhMuc(sanPham, mauSac, "Hoạt động", tenDanhMuc);
+                for (SanPhamChiTiet sanPhamChiTiet : listSPCT
+                ) {
+                    if (index == 0) {
+                        tongQuanSanPhamCTClient.setTen(sanPham.getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
+                        tongQuanSanPhamCTClient.setGia(sanPhamChiTiet.getGia());
+                    }
+                    if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
+                        mauSacAndHinhAnhAndSize.setListAnh(listURLAnhSanPham(sanPhamChiTiet.getListAnh()));
+                        break;
+                    }
+                    ++index;
+                }
+                mauSacAndHinhAnhAndSize.setListSize(listSPCT.stream().map(this::convertSangListSizeCuaPhong).collect(Collectors.toList()));
+                listCacBienTheMauSacCuaSP.add(mauSacAndHinhAnhAndSize);
+            }
+            tongQuanSanPhamCTClient.setListHinhAnhAndMauSacAndSize(listCacBienTheMauSacCuaSP);
+            tongQuanSanPhamCTClient.setIsNew(ChronoUnit.DAYS.between(sanPham.getNgayTao(), LocalDateTime.now()) <= 30);
+            //Kiểm trâ nếu không có biến thể nào
+            if (tongQuanSanPhamCTClient.getListHinhAnhAndMauSacAndSize().size() > 0) {
+                listTraVe.add(tongQuanSanPhamCTClient);
+            }
+        }
+        return listTraVe;
+    }
     public List<HomeDTO.SanPhamClient> getListSanPhamQuanAuNamDanhMucTheoDanhMuc(String tenDanhMuc) {
         List<HomeDTO.SanPhamClient> listTraVe = new ArrayList<>();
         List<SanPham> listSP = sanPhamChiTietRepositoryP.getListSanPhamTheoTenDanhMucVaDangHoatDong(tenDanhMuc);
