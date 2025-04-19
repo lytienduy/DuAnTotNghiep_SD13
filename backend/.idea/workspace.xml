@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="3285daf9-171e-44be-80b7-eb3a6babbbd3" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/HoaDonChiTietClient.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/dragonbee/src/module/client/pages/HoaDonChiTietClient.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/HoaDonService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend_dragonbee/src/main/java/com/example/shopdragonbee/service/HoaDonService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +50,8 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.example.shopdragonbee.service.Client" />
+      <recent name="com.example.shopdragonbee.controller.Client" />
       <recent name="com.example.shopdragonbee.repository" />
       <recent name="com.example.shopdragonbee.service" />
       <recent name="com.example.shopdragonbee.controller" />
@@ -94,7 +96,16 @@
       <workItem from="1743995521624" duration="5440000" />
       <workItem from="1744074282263" duration="9399000" />
       <workItem from="1744104671935" duration="1241000" />
-      <workItem from="1744389309572" duration="892000" />
+      <workItem from="1744389309572" duration="1110000" />
+      <workItem from="1744438234229" duration="596000" />
+      <workItem from="1744505140331" duration="1787000" />
+      <workItem from="1744625224644" duration="1456000" />
+      <workItem from="1744678186479" duration="15515000" />
+      <workItem from="1744871061362" duration="10525000" />
+      <workItem from="1744941962863" duration="23510000" />
+      <workItem from="1744976760193" duration="621000" />
+      <workItem from="1744997945307" duration="173000" />
+      <workItem from="1745024168109" duration="5183000" />
     </task>
     <servers />
   </component>

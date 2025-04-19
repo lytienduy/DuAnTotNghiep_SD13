@@ -46,6 +46,7 @@ public class GioHangController {
         return gioHangService.xoaSanPhamKhoiGioHangCoDangNhap(
                 Integer.parseInt(idSanPhamChiTiet), Integer.parseInt(idKhachHang));
     }
+
     @PostMapping("/tangSoLuongSanPhamCoDangNhap")
     public Boolean tangSoLuongSanPhamCoDangNhap(@RequestParam(required = false) String idSanPhamChiTiet, @RequestParam(required = false) String idKhachHang) {
         return gioHangService.tangSoLuongSanPhamCoDangNhap(

@@ -107,7 +107,7 @@ public class SanPhamClientService {
             ) {
                 SanPhamDTO.MauSacAndHinhAnhAndSize mauSacAndHinhAnhAndSize = new SanPhamDTO.MauSacAndHinhAnhAndSize();
                 mauSacAndHinhAnhAndSize.setMauSac(ms);
-                List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThai(sanPham, ms, "Hoạt động");
+                List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThaiOrderBySize_TenSize(sanPham, ms, "Hoạt động");
                 for (SanPhamChiTiet sanPhamChiTiet : listSPCT
                 ) {
                     if (index == 0) {

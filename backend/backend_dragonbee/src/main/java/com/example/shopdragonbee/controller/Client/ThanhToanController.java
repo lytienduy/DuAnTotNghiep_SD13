@@ -16,8 +16,8 @@ public class ThanhToanController {
     ThanhToanService thanhToanService;
 
     @PostMapping("/xacNhanDatHang")
-    public String xacNhanDatHangKhongDangNhap(@RequestBody ThanhToanDTO request) {
-        return thanhToanService.xacNhanDatHangKhongDangNhap(
+    public String xacNhanDatHang(@RequestBody ThanhToanDTO request) {
+        return thanhToanService.xacNhanDatHang(
                 request.getMaHoaDon(),
                 request.getPgg(),
                 request.getTenNguoiNhan(),

@@ -496,7 +496,7 @@ const BanTaiQuay = () => {
                 },
               }
             );
-            setDiscount(serviceFeeResponse.data.data.service_fee);
+            setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
           };
           fetchGHNServiceFee();
         }
@@ -713,7 +713,7 @@ const BanTaiQuay = () => {
           },
         }
       );
-      setDiscount(serviceFeeResponse.data.data.service_fee);
+      setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
     };
     fetchGHNServiceFee();
   };
@@ -1538,7 +1538,7 @@ const BanTaiQuay = () => {
         printWindow.print();
       }, 500);
       // }
-    } catch (error) { 
+    } catch (error) {
       showErrorToast("Lỗi khi tải hóa đơn, vui lòng thử lại!");
       console.error("Lỗi khi lấy dữ liệu hóa đơn:", error);
     }
@@ -1656,7 +1656,7 @@ const BanTaiQuay = () => {
                   },
                 }
               );
-              setDiscount(serviceFeeResponse.data.data.service_fee);
+              setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
             };
             await fetchGHNServiceFee();
           };
@@ -3878,26 +3878,24 @@ const BanTaiQuay = () => {
                             <TableCell align="center">
                               {product.soLuong === 0 ? (
                                 // Nếu hết hàng, hiển thị ảnh Sold Out
-                                <img
-                                  src={soldOutImg} // Đổi link ảnh nếu cần
-                                  alt="Sold Out"
-                                  style={{
-                                    width: "100px",
-                                    height: "50px",
-                                    objectFit: "contain",
-                                  }}
-                                />
+                                // <img
+                                //   src={soldOutImg}  // Đổi link ảnh nếu cần
+                                //   alt="Sold Out"
+                                //   style={{ width: "100px", height: "50px", objectFit: "contain" }}
+                                // />
+                                <Typography color="error" fontWeight="bold">
+                                  Hết hàng
+                                </Typography>
                               ) : product.trangThai !== "Hoạt động" ? (
                                 // Nếu không hoạt động, hiển thị ảnh Ngừng Hoạt Động
-                                <img
-                                  src={inactiveImg} // Đổi link ảnh nếu cần
-                                  alt="Ngừng Hoạt Động"
-                                  style={{
-                                    width: "100px",
-                                    height: "40px",
-                                    objectFit: "contain",
-                                  }}
-                                />
+                                // <img
+                                //   src={inactiveImg}  // Đổi link ảnh nếu cần
+                                //   alt="Ngừng Hoạt Động"
+                                //   style={{ width: "100px", height: "40px", objectFit: "contain" }}
+                                // />
+                                <Typography color="error" fontWeight="bold">
+                                  Ngừng hoạt động
+                                </Typography>
                               ) : (
                                 // Nếu còn hàng và đang hoạt động, hiển thị nút Chọn
                                 <Button

@@ -288,7 +288,7 @@ const ThanhToan = () => {
                     },
                 }
             );
-            setDiscount(serviceFeeResponse.data.data.service_fee);
+            setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
         };
         fetchGHNServiceFee();
     };
@@ -598,7 +598,7 @@ const ThanhToan = () => {
                                 },
                             }
                         );
-                        setDiscount(feeResponse.data.data.service_fee);
+                        setDiscount(Math.round(feeResponse.data.data.service_fee));
                     }
                 })
                 .catch((error) => console.error("Error fetching addresses:", error));
@@ -764,7 +764,7 @@ const ThanhToan = () => {
                                     },
                                 }
                             );
-                            setDiscount(serviceFeeResponse.data.data.service_fee);
+                            setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
                         };
                         await fetchGHNServiceFee();
                     };

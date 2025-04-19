@@ -28,7 +28,7 @@ const ChiTietSanPham = () => {
     const [selectedColor, setSelectedColor] = useState(0);
     const [openSizeGuide, setOpenSizeGuide] = useState(false);
     const [selectedSize, setSelectedSize] = useState(-1);
-    const [selectedIDSize, setSelectedIDSize] = useState(null);
+    // const [selectedIDSize, setSelectedIDSize] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [productData, setProductData] = useState([]);
@@ -94,10 +94,10 @@ const ChiTietSanPham = () => {
                     },
                 });//Gọi api bằng axiosGet
             setProduct(response.data);
-            if (selectedIDSize !== null) {
+            if (selectedSize !== -1) {
                 //Check nếu không còn đủ số lượng cung cấp
                 if (response.data?.listHinhAnhAndMauSacAndSize?.[selectedColor]?.listSize?.[selectedSize]?.soLuong <= 0) {
-                    setSelectedIDSize(null);
+                    setSelectedSize(-1);
                 }
             }
         } catch (error) {
@@ -126,6 +126,7 @@ const ChiTietSanPham = () => {
         if (product && isFirstLoad) {
             getListSanPhamTuongTu();
         }
+
     }, [product]);
 
     //Hàm khởi tạo
@@ -339,7 +340,7 @@ const ChiTietSanPham = () => {
                         {/* Thông tin sản phẩm */}
                         <Grid item xs={12} md={6} sx={{marginTop:-7}}>
                             <Typography variant="h5" fontWeight="bold">{product.ten}</Typography>
-                            <Typography variant="h6" color="primary" mt={1}>{product?.gia?.toLocaleString()} VND</Typography>
+                            <Typography variant="h6" color="primary" mt={1}>{selectedColorReuse?.gia?.toLocaleString()} VND</Typography>
 
                             {/* Chọn màu */}
                             <Box mt={2}>
@@ -385,7 +386,7 @@ const ChiTietSanPham = () => {
                                     {selectedColorReuse?.listSize?.map((size, index) => (
                                         <Button
                                             variant={selectedSizeReuse?.id === size?.id ? "contained" : "outlined"}
-                                            onClick={() => { setSelectedSize(index); setSelectedIDSize(size.id) }}
+                                            onClick={() => { setSelectedSize(index); }}
                                             sx={{
                                                 minWidth: 50,
                                                 borderRadius: 2,

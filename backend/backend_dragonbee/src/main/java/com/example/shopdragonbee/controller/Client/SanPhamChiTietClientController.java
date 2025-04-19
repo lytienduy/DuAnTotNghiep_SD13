@@ -26,8 +26,6 @@ import java.util.stream.Collectors;
 public class SanPhamChiTietClientController {
     @Autowired
     private SanPhamChiTietClientService sanPhamChiTietClientService;
-    @Autowired
-    private HomeService homeService;
 
     @PostMapping("/getListSanPhamChiTietTheoMau/{idSanPham}")
     public SPCTDTO.SanPhamChiTietClient getListHienThiTrongSanPhamChiTiet(@PathVariable Integer idSanPham, @RequestBody GioHangDTO.DuLieuDataBodyTrongGioHang requestData) {

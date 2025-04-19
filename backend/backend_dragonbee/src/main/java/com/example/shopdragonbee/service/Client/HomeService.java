@@ -154,7 +154,7 @@ public class HomeService {
                 HomeDTO.MauSacAndHinhAnhAndSize mauSacAndHinhAnhAndSize = new HomeDTO.MauSacAndHinhAnhAndSize();
 
                 mauSacAndHinhAnhAndSize.setMauSac(mauSac);
-                List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThai(sanPham, mauSac, "Hoạt động");
+                List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThaiOrderBySize_TenSize(sanPham, mauSac, "Hoạt động");
                 for (SanPhamChiTiet sanPhamChiTiet : listSPCT //Lấy các biến thể size của màu
                 ) {
                     if (index == 0) {

@@ -8,6 +8,8 @@ import com.example.shopdragonbee.repository.*;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -162,22 +164,43 @@ public class HoaDonService {
     }
 
     //Cập nhật trạng thái hóa đơn bên Hóa Đơn Chi Tiết
+    @Transactional
     public Boolean capNhatTrangThaiHoaDon(Integer idHoaDon, String trangThai, String hanhDong, String lyDo) {
 //        List<String> cacTrangThaiCanCapNhat = new ArrayList<>();
 //        cacTrangThaiCanCapNhat.add(trangThai);
         HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
         if (trangThai.equalsIgnoreCase("Đã hủy")) {
-            for (HoaDonChiTiet hoaDonChiTiet : hoaDon.getListHoaDonChiTiet()
-            ) {
-                SanPhamChiTiet sanPhamChiTiet = sanPhamChiTietRepositoryP.findById(hoaDonChiTiet.getSanPhamChiTiet().getId()).get();
-                sanPhamChiTiet.setSoLuong((sanPhamChiTiet.getSoLuong() + hoaDonChiTiet.getSoLuong()));
-                sanPhamChiTietRepositoryP.save(sanPhamChiTiet);
+            if (hoaDon.getLoaiDon().equalsIgnoreCase("Tại quầy")) {
+                for (HoaDonChiTiet hoaDonChiTiet : hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndTrangThaiOrderByNgayTaoDesc(hoaDon, "Hoạt động")
+                ) {
+                    SanPhamChiTiet sanPhamChiTiet = hoaDonChiTiet.getSanPhamChiTiet();
+                    sanPhamChiTiet.setSoLuong((sanPhamChiTiet.getSoLuong() + hoaDonChiTiet.getSoLuong()));
+                    sanPhamChiTietRepositoryP.save(sanPhamChiTiet);
+                }
+            }
+        }
+//        ĐÃ FIX
+        if (trangThai.equalsIgnoreCase("Đã xác nhận")) {
+            if (hoaDon.getLoaiDon().equalsIgnoreCase("Online")) {
+                for (HoaDonChiTiet hoaDonChiTiet : hoaDonChiTietRepository.getHoaDonChiTietByHoaDonAndTrangThaiOrderByNgayTaoDesc(hoaDon, "Hoạt động")
+                ) {
+                    SanPhamChiTiet sanPhamChiTiet = hoaDonChiTiet.getSanPhamChiTiet();
+                    if (sanPhamChiTiet.getSoLuong() < hoaDonChiTiet.getSoLuong()) {
+                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                        return false;
+                    }
+                    sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - hoaDonChiTiet.getSoLuong());
+                    sanPhamChiTietRepositoryP.save(sanPhamChiTiet);
+                }
             }
         }
         if (trangThai.equalsIgnoreCase("Đã giao hàng")) {
             double soTienKhachDaThanhToan = hoaDon.getListThanhToanHoaDon()
                     .stream()
-                    .mapToDouble(ThanhToanHoaDon::getSoTienThanhToan)
+                    .mapToDouble(tt ->
+                            tt.getLoai().equalsIgnoreCase("Hoàn tiền")
+                                    ? -tt.getSoTienThanhToan()
+                                    : tt.getSoTienThanhToan())
                     .sum();
             if (soTienKhachDaThanhToan >= hoaDon.getTongTien()) {
                 trangThai = "Đã thanh toán";
