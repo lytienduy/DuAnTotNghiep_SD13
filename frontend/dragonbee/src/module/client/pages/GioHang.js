@@ -261,7 +261,7 @@ const GioHang = () => {
         getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         //Nên cho hàm check nào vào getListDanhSach luôn check vs respone
         if (productsCapNhatSoLuong[index]?.quantity === 1) {//Fix lỗi chậm một nhịp  
-            showSuccessToast("Bạn đã mua tối đa sản phẩm thứ " + index);
+            showSuccessToast("Bạn đã mua tối đa số lượng sản phẩm này");
         }
     };
 
