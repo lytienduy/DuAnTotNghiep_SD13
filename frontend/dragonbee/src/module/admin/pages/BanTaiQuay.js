@@ -429,20 +429,20 @@ const BanTaiQuay = () => {
     setDescription("");
     setDistricts([]);
     setWards([]);
-
+  
     setKeyword(`${customer.tenKhachHang} - ${customer.sdt}`);
     setSelectedCustomerId(customer.id);
     setOpenKH(false);
-
+  
     setRecipientName(customer.tenKhachHang);
     setRecipientPhone(customer.sdt);
     setAddresses(customer.diaChis || []);
-
+  
     if (customer.diaChis && customer.diaChis.length > 0) {
       const address = customer.diaChis[0];
       setSelectedCity(address.thanhPho);
       setCity(address.thanhPho); // Cập nhật vào giá trị của form
-
+  
       const city = cities.find((c) => c.Name === address.thanhPho);
       let districts;
       if (city) {
@@ -460,8 +460,10 @@ const BanTaiQuay = () => {
           districts = districtResponse.data.data;
         };
         await fetchDistricts();
+  
         setSelectedDistrict(address.huyen);
         setDistrict(address.huyen);
+  
         const district = districts.find(
           (d) => d.DistrictName === address.huyen
         );
@@ -469,44 +471,59 @@ const BanTaiQuay = () => {
         if (district) {
           const fetchWards = async () => {
             const wardsResponse = await axios.get(
-              `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=` +
-                district.DistrictID,
+              `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=${district.DistrictID}`,
               {
                 headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
               }
             );
             wards = wardsResponse.data.data;
-            setWards(wardsResponse.data.data);
+            setWards(wards);
           };
           await fetchWards();
+  
           setSelectedWard(address.xa);
           setWard(address.xa);
+  
           const ward = wards.find((d) => d.WardName === address.xa);
-          const fetchGHNServiceFee = async () => {
-            const serviceFeeResponse = await axios.get(
-              `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
-              {
-                headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
-                params: {
-                  service_type_id: 2,
-                  to_district_id: district.DistrictID,
-                  to_ward_code: ward.WardCode,
-                  weight: 3000,
-                  insurance_value: 0,
-                },
-              }
-            );
-            setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
-          };
-          fetchGHNServiceFee();
+          setSelectedGHNDistrict(district.DistrictID);
+          setselectedGHNWard(ward.WardCode);
+          if (showLeftPanel) {
+            // Nếu đang bật giao hàng, thì mới tính phí
+            const fetchGHNServiceFee = async () => {
+              const serviceFeeResponse = await axios.get(
+                `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+                {
+                  headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                  params: {
+                    service_type_id: 2,
+                    to_district_id: district.DistrictID,
+                    to_ward_code: ward.WardCode,
+                    weight: 3000,
+                    insurance_value: 0,
+                  },
+                }
+              );
+              setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
+            };
+            await fetchGHNServiceFee();
+          } else {
+            setDiscount(0); // Giao hàng đang tắt => phí = 0
+          }
         }
       }
+  
       setSpecificAddress(`${address.soNha}, ${address.duong}`);
       setDescription(address.moTa || "");
     } else {
       setDescription("");
     }
-  };
+  };  
+
+  useEffect(() => {
+    if (showLeftPanel && selectedGHNDistrict && selectedGHNWard) {
+      fetchGHNServiceFee(selectedGHNDistrict, selectedGHNWard);
+    }
+  }, [showLeftPanel, selectedGHNDistrict, selectedGHNWard]);  
 
   // Hiển thị 5 khách hàng đầu tiên khi vừa mở trang (ngay khi chưa nhập gì)
   useEffect(() => {
@@ -682,7 +699,7 @@ const BanTaiQuay = () => {
     const fetchWards = async () => {
       const wardsResponse = await axios.get(
         `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=` +
-          id,
+        id,
         {
           headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
         }
@@ -754,7 +771,7 @@ const BanTaiQuay = () => {
     const fetchWards = async () => {
       const wardsResponse = await axios.get(
         `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=` +
-          id,
+        id,
         {
           headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
         }
@@ -813,7 +830,7 @@ const BanTaiQuay = () => {
       const fetchWards = async () => {
         const wardsResponse = await axios.get(
           `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=` +
-            district.DistrictID,
+          district.DistrictID,
           {
             headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
           }
@@ -831,8 +848,40 @@ const BanTaiQuay = () => {
 
   //Hàm mở giao hàng
   const handleSwitchChange = (event) => {
-    setShowLeftPanel(event.target.checked);
+    const isChecked = event.target.checked;
+    setShowLeftPanel(isChecked);
+  
+    if (!isChecked) {
+      setDiscount(0); // Tắt giao hàng => phí = 0
+    } else {
+      // Bật giao hàng => Nếu đã có đủ địa chỉ thì tính phí
+      if (selectedGHNDistrict && selectedGHNWard) {
+        fetchGHNServiceFee(selectedGHNDistrict, selectedGHNWard);
+      }
+    }
   };
+
+  const fetchGHNServiceFee = async (districtId, wardCode) => {
+  try {
+    const response = await axios.get(
+      `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+      {
+        headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+        params: {
+          service_type_id: 2,
+          to_district_id: districtId,
+          to_ward_code: wardCode,
+          weight: 3000,
+          insurance_value: 0,
+        },
+      }
+    );
+    setDiscount(Math.round(response.data.data.service_fee));
+  } catch (error) {
+    console.error("Error calculating GHN fee:", error);
+  }
+};
+
   // Thêm mới địa chỉ cho khách hàng được chọn
   const handleSaveAddress = () => {
     const detailedAddress = document
@@ -1633,7 +1682,7 @@ const BanTaiQuay = () => {
           const fetchWards = async () => {
             const wardsResponse = await axios.get(
               `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=` +
-                selectedDistrict.DistrictID,
+              selectedDistrict.DistrictID,
               {
                 headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
               }
@@ -2133,12 +2182,12 @@ const BanTaiQuay = () => {
                                             "0px 0px 8px rgba(0,0,0,0.15)",
                                         }}
                                         onMouseOver={(e) =>
-                                          (e.target.style.transform =
-                                            "scale(1.1)")
+                                        (e.target.style.transform =
+                                          "scale(1.1)")
                                         }
                                         onMouseOut={(e) =>
-                                          (e.target.style.transform =
-                                            "scale(1)")
+                                        (e.target.style.transform =
+                                          "scale(1)")
                                         }
                                       />
                                     )}
@@ -2223,10 +2272,10 @@ const BanTaiQuay = () => {
                                                 { border: "none" },
                                             },
                                             "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                                              {
-                                                WebkitAppearance: "none",
-                                                margin: 0,
-                                              },
+                                            {
+                                              WebkitAppearance: "none",
+                                              margin: 0,
+                                            },
                                           }}
                                         />
                                         <IconButton
@@ -2299,7 +2348,7 @@ const BanTaiQuay = () => {
                           marginRight: 3,
                         }}
                       >
-                        {tongTienPhaiTra?.toLocaleString()} VNĐ
+                        {selectedOrder?.tongTienSanPham?.toLocaleString()} VNĐ
                       </Typography>
                     </Box>
                   </Box>
@@ -2857,8 +2906,8 @@ const BanTaiQuay = () => {
                         <span style={{ color: "red" }}>
                           {tongTienKhachDaThanhToan - tongTienPhaiTra < 0
                             ? Math.abs(
-                                tongTienKhachDaThanhToan - tongTienPhaiTra
-                              ).toLocaleString()
+                              tongTienKhachDaThanhToan - tongTienPhaiTra
+                            ).toLocaleString()
                             : "0"}
                           <span style={{ color: "red" }}> VNĐ</span>
                         </span>
@@ -2876,8 +2925,8 @@ const BanTaiQuay = () => {
                         <span style={{ color: "red" }}>
                           {tongTienKhachDaThanhToan - tongTienPhaiTra > 0
                             ? (
-                                tongTienKhachDaThanhToan - tongTienPhaiTra
-                              ).toLocaleString()
+                              tongTienKhachDaThanhToan - tongTienPhaiTra
+                            ).toLocaleString()
                             : "0"}
                           <span style={{ color: "red" }}> VNĐ</span>
                         </span>
@@ -2984,7 +3033,7 @@ const BanTaiQuay = () => {
           <Grid container justifyContent="space-between" sx={{ mb: 2 }}>
             <Typography variant="h6">Tổng tiền hàng</Typography>
             <Typography variant="h6" sx={{ color: "red", fontWeight: "bold" }}>
-              {selectedOrder?.tongTienSanPham?.toLocaleString()} VNĐ
+              {tongTienPhaiTra?.toLocaleString()} VNĐ
             </Typography>
           </Grid>
 
@@ -3452,16 +3501,14 @@ const BanTaiQuay = () => {
                   <Typography variant="body1" sx={{ color: "white" }}>
                     Giảm:{" "}
                     {voucher.giaTriGiam < 100
-                      ? `${voucher.giaTriGiam}${
-                          voucher.loaiPhieuGiamGia === "Phần trăm"
-                            ? "%"
-                            : " VNĐ"
-                        }`
-                      : `${new Intl.NumberFormat().format(voucher.giaTriGiam)}${
-                          voucher.loaiPhieuGiamGia === "Phần trăm"
-                            ? "%"
-                            : " VNĐ"
-                        }`}
+                      ? `${voucher.giaTriGiam}${voucher.loaiPhieuGiamGia === "Phần trăm"
+                        ? "%"
+                        : " VNĐ"
+                      }`
+                      : `${new Intl.NumberFormat().format(voucher.giaTriGiam)}${voucher.loaiPhieuGiamGia === "Phần trăm"
+                        ? "%"
+                        : " VNĐ"
+                      }`}
                   </Typography>
                 </Box>
 
@@ -4053,10 +4100,10 @@ const BanTaiQuay = () => {
                       },
                     },
                     "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                      {
-                        WebkitAppearance: "none",
-                        margin: 0,
-                      },
+                    {
+                      WebkitAppearance: "none",
+                      margin: 0,
+                    },
                   }}
                 />
                 <IconButton

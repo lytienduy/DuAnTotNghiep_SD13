@@ -63,6 +63,12 @@ const HoaDonChiTietClient = () => {
   const [productsCapNhatSoLuong, setProductsCapNhatSoLuong] = useState([]);
   const [tenSanPhamThongBao, setTenSanPhamThongBao] = useState("");
 
+  const [preDistrict, setPreDistrict] = useState("");
+  const [preWard, setPreWard] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [selectedGHNDistrict, setSelectedGHNDistrict] = useState("");
+  const [selectedGHNWard, setselectedGHNWard] = useState("");
+
   useEffect(() => {
     const fetchGiamGia = async () => {
       if (hoaDon.maVoucher && hoaDon.tongTienSanPham) {
@@ -123,10 +129,16 @@ const HoaDonChiTietClient = () => {
         const cityFromAddress = addressParts[addressParts.length - 1];
         const districtFromAddress = addressParts[addressParts.length - 2];
         const wardFromAddress = addressParts[addressParts.length - 3];
-        setCity(cityFromAddress);
-        setDistrict(districtFromAddress);
-        setWard(wardFromAddress);  // Cập nhật xã/phường từ địa chỉ
+
+        // Cập nhật địa chỉ cụ thể
         setDiaChiCuThe(addressParts.slice(0, addressParts.length - 3).join(", "));
+
+        // Lưu tạm để xử lý sau khi dữ liệu thành phố có sẵn
+        setTimeout(() => {
+          setCity(cityFromAddress);
+          setPreDistrict(districtFromAddress);
+          setPreWard(wardFromAddress);
+        }, 0);
       }
     }
   }, [hoaDon.diaChiNguoiNhanHang]);
@@ -140,79 +152,251 @@ const HoaDonChiTietClient = () => {
     setOpenModal(true); // Mở modal thay đổi địa chỉ
   };
 
+  useEffect(() => {
+    if (preDistrict && districts.length > 0) {
+      const districtExists = districts.some(
+        (d) => d.DistrictName === preDistrict
+      );
+      if (districtExists) {
+        setDistrict(preDistrict);
+        setPreDistrict(""); // reset sau khi đã set
+      }
+    }
+  }, [districts, preDistrict]);
+
+  useEffect(() => {
+    if (preWard && wards.length > 0) {
+      const wardExists = wards.some((w) => w.WardName === preWard);
+      if (wardExists) {
+        setWard(preWard);
+        setPreWard(""); // reset sau khi đã set
+      }
+    }
+  }, [wards, preWard]);
+
   // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
   useEffect(() => {
-    axios.get("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json")
-      .then(response => {
-        const normalizedCities = response.data.map(city => ({
+    // axios
+    //   .get(
+    //     "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json"
+    //   )
+    axios
+      .get(
+        `https://online-gateway.ghn.vn/shiip/public-api/master-data/province`,
+        {
+          headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+        }
+      )
+      .then((response) => {
+        const normalizedCities = response.data.data.map((city) => ({
           ...city,
-          Name: city.Name.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
+          Name: city.ProvinceName.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
         }));
-        setCities(normalizedCities);
+        setCities(normalizedCities); // Cập nhật citiess thay vì setCities
       })
-      .catch(error => console.error("Error fetching data:", error));
+      .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
   const handleCityChange = (event) => {
     const cityName = event.target.value;
-    setCity(cityName);  // Cập nhật giá trị thành phố
-    setDistrict("");  // Reset quận/huyện
-    setWard("");  // Reset xã/phường khi thay đổi thành phố
-
-    // Cập nhật danh sách quận/huyện dựa trên thành phố đã chọn
-    const city = cities.find(city => city.Name === cityName);
-    if (city) {
-      setDistricts(city.Districts);  // Cập nhật danh sách quận/huyện từ thành phố đã chọn
-      setWards([]);  // Reset danh sách xã/phường
-    }
+    setCity(cityName); // Cập nhật giá trị của city
+    setDistrict(""); // Reset quận/huyện khi thay đổi tỉnh thành
+    setWard(""); // Reset xã/phường khi thay đổi quận/huyện
+    const id = cities.find((c) => c.Name === cityName).ProvinceID;
+    setSelectedGHNDistrict(id);
+    const fetchDistricts = async () => {
+      const districtResponse = await axios.get(
+        `https://online-gateway.ghn.vn/shiip/public-api/master-data/district`,
+        {
+          headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+          params: {
+            province_id: id,
+          },
+        }
+      );
+      setDistricts(districtResponse.data.data);
+    };
+    fetchDistricts();
+    setWards([]); // Reset xã/phường
   };
 
   const handleDistrictChange = (event) => {
     const districtName = event.target.value;
-    setDistrict(districtName);  // Cập nhật giá trị quận/huyện
-    setWard("");  // Reset xã/phường khi thay đổi quận/huyện
+    setDistrict(districtName); // Cập nhật giá trị của district
+    setWard(""); // Reset xã/phường khi thay đổi quận/huyện
 
-    // Cập nhật danh sách xã/phường cho quận/huyện đã chọn
-    const selectedDistrict = districts.find(d => d.Name === districtName);
-    if (selectedDistrict) {
-      setWards(selectedDistrict.Wards);  // Cập nhật danh sách xã/phường
-    } else {
-      setWards([]);  // Nếu không tìm thấy quận, reset danh sách xã/phường
-    }
+    const id = districts.find(
+      (d) => d.DistrictName === districtName
+    ).DistrictID;
+    setSelectedGHNDistrict(id);
+    const fetchWards = async () => {
+      const wardsResponse = await axios.get(
+        `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=` +
+        id,
+        {
+          headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+        }
+      );
+      setWards(wardsResponse.data.data);
+    };
+    fetchWards();
   };
 
   const handleWardChange = (event) => {
     setWard(event.target.value);
+
+    const id = wards.find((d) => d.WardName === event.target.value).WardCode;
+    setselectedGHNWard(id);
+
+    // Lấy phí dịch vụ của giao hàng nhanh dựa trên huyện và xã đã chọn
+    const fetchGHNServiceFee = async () => {
+      const serviceFeeResponse = await axios.get(
+        `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+        {
+          headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+          params: {
+            service_type_id: 2,
+            to_district_id: selectedGHNDistrict,
+            to_ward_code: selectedGHNWard,
+            weight: 3000,
+            insurance_value: 0,
+          },
+        }
+      );
+      setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
+    };
+    fetchGHNServiceFee();
   };
+
   useEffect(() => {
-    // Khi thành phố thay đổi, cập nhật danh sách quận/huyện và reset xã/phường
+    const fetchGHNServiceFee = async () => {
+      if (selectedGHNDistrict && selectedGHNWard) {
+        try {
+          const response = await axios.get(
+            `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+            {
+              headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+              params: {
+                service_type_id: 2,
+                to_district_id: selectedGHNDistrict,
+                to_ward_code: selectedGHNWard,
+                weight: 3000,
+                insurance_value: 0,
+              },
+            }
+          );
+          const fee = Math.round(response.data.data.service_fee);
+          setHoaDon((prev) => ({
+            ...prev,
+            phiVanChuyen: fee,
+          }));
+        } catch (error) {
+          console.error("Error fetching GHN service fee:", error);
+        }
+      }
+    };
+
+    fetchGHNServiceFee();
+  }, [selectedGHNDistrict, selectedGHNWard]);
+
+  useEffect(() => {
+    // Khi thành phố thay đổi, gọi API để lấy danh sách quận/huyện
     if (city) {
-      const selectedCity = cities.find(c => c.Name === city);
+      const selectedCity = cities.find((c) => c.Name === city);
       if (selectedCity) {
-        setDistricts(selectedCity.Districts);  // Cập nhật danh sách quận/huyện
-        setDistrict(district);  // Reset quận/huyện
-        setWard(ward);  // Reset xã/phường
-        setWards([]);  // Reset danh sách xã/phường
+        const id = selectedCity.ProvinceID;
+        setSelectedGHNDistrict(id);
+        setDistrict(""); // Reset quận/huyện
+        setWard(""); // Reset xã/phường
+        setWards([]); // Reset danh sách xã/phường
+
+        const fetchDistricts = async () => {
+          try {
+            const response = await axios.get(
+              `https://online-gateway.ghn.vn/shiip/public-api/master-data/district`,
+              {
+                headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                params: {
+                  province_id: id,
+                },
+              }
+            );
+            setDistricts(response.data.data);
+          } catch (error) {
+            console.error("Error fetching districts:", error);
+          }
+        };
+
+        fetchDistricts();
       }
     }
-  }, [city, cities]); // Theo dõi sự thay đổi của thành phố
+  }, [city]);
 
   useEffect(() => {
+    // Khi quận/huyện thay đổi, gọi API để lấy danh sách xã/phường
     if (district) {
-      const selectedDistrict = districts.find(d => d.Name === district);
+      const selectedDistrict = districts.find(
+        (d) => d.DistrictName === district
+      );
       if (selectedDistrict) {
-        setWards(selectedDistrict.Wards);  // Cập nhật danh sách xã/phường cho quận/huyện
+        const id = selectedDistrict.DistrictID;
+        setSelectedGHNDistrict(id);
+        setWard(""); // Reset xã/phường
+
+        const fetchWards = async () => {
+          try {
+            const response = await axios.get(
+              `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward`,
+              {
+                headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                params: {
+                  district_id: id,
+                },
+              }
+            );
+            setWards(response.data.data);
+          } catch (error) {
+            console.error("Error fetching wards:", error);
+          }
+        };
+
+        fetchWards();
       }
     }
-  }, [district, districts]); // Theo dõi sự thay đổi của quận/huyện  
+  }, [district]);
 
   useEffect(() => {
-    // Khi xã/phường thay đổi, cập nhật trạng thái xã/phường
     if (ward) {
-      // Có thể thực hiện thêm logic khi xã/phường thay đổi (nếu cần)
-      console.log("Xã/Phường đã thay đổi:", ward);
+      const selectedWard = wards.find((w) => w.WardName === ward);
+      if (selectedWard) {
+        setselectedGHNWard(selectedWard.WardCode);
+
+        // Gọi API tính phí vận chuyển
+        const fetchGHNServiceFee = async () => {
+          try {
+            const response = await axios.get(
+              `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+              {
+                headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                params: {
+                  service_type_id: 2,
+                  to_district_id: selectedGHNDistrict,
+                  to_ward_code: selectedWard.WardCode,
+                  weight: 3000,
+                  insurance_value: 0,
+                },
+              }
+            );
+            setDiscount(Math.round(response.data.data.service_fee));
+          } catch (error) {
+            console.error("Error fetching GHN service fee:", error);
+          }
+        };
+
+        fetchGHNServiceFee();
+      }
     }
-  }, [ward]); // Theo dõi sự thay đổi của xã/phường
+  }, [ward]);
 
   const handlePhiVanChuyenChange = (e) => {
     const value = e.target.value;
@@ -1822,9 +2006,15 @@ const HoaDonChiTietClient = () => {
               <Grid item xs={12} md={4}>
                 <FormControl fullWidth size="small" sx={{ height: '100%' }}>
                   <InputLabel>Tỉnh/Thành phố</InputLabel>
-                  <Select value={city} onChange={handleCityChange} label="Tỉnh/Thành phố">
+                  <Select
+                    value={city}
+                    onChange={handleCityChange}
+                    label="Tỉnh/Thành phố"
+                  >
                     {cities.map((city) => (
-                      <MenuItem key={city.Id} value={city.Name}>{city.Name}</MenuItem>
+                      <MenuItem key={city.Id} value={city.Name}>
+                        {city.Name}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -1833,9 +2023,18 @@ const HoaDonChiTietClient = () => {
               <Grid item xs={12} md={4}>
                 <FormControl fullWidth size="small" sx={{ height: '100%' }}>
                   <InputLabel>Quận/Huyện</InputLabel>
-                  <Select value={district} onChange={handleDistrictChange} label="Quận/Huyện">
+                  <Select
+                    value={district}
+                    onChange={handleDistrictChange}
+                    label="Quận/Huyện"
+                  >
                     {districts.map((district) => (
-                      <MenuItem key={district.Id} value={district.Name}>{district.Name}</MenuItem>
+                      <MenuItem
+                        key={district.DistrictID}
+                        value={district.DistrictName}
+                      >
+                        {district.DistrictName}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -1844,13 +2043,22 @@ const HoaDonChiTietClient = () => {
               <Grid item xs={12} md={4}>
                 <FormControl fullWidth size="small" sx={{ height: '100%' }}>
                   <InputLabel>Xã/Phường</InputLabel>
-                  <Select value={ward} onChange={handleWardChange} label="Xã/Phường">
+                  <Select
+                    value={ward}
+                    onChange={handleWardChange}
+                    label="Xã/Phường"
+                  >
                     {wards.length > 0 ? (
                       wards.map((ward) => (
-                        <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
+                        <MenuItem
+                          key={ward.WardCode}
+                          value={ward.WardName}
+                        >
+                          {ward.WardName}
+                        </MenuItem>
                       ))
                     ) : (
-                      <MenuItem disabled>No wards available</MenuItem>
+                      <MenuItem disabled>Không có dữ liệu</MenuItem>
                     )}
                   </Select>
                 </FormControl>
