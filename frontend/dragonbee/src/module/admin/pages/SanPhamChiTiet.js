@@ -60,7 +60,27 @@ const SanPhamChiTiet = () => {
   const [openModalAnh, setOpenModalAnh] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [productDetails, setProductDetails] = useState([]);
-  const [filteredList, setFilteredList] = useState([]);
+  const [size, setSize] = useState(5); // Hoặc giá trị mặc định phù hợp
+  const [commonPrice, setCommonPrice] = useState("");
+  const [commonQuantity, setCommonQuantity] = useState("");
+  const [showAllDetails, setShowAllDetails] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState(5); // Mặc định là 5 item mỗi trang
+  const [selectedItems, setSelectedItems] = useState([]); // Dùng để lưu trữ các sản phẩm được chọn
+  const [sanPhams, setSanPhams] = useState([]);
+  const [danhMucs, setDanhMucs] = useState("");
+  const [thuongHieus, setThuongHieus] = useState("");
+  const [phongCachs, setPhongCachs] = useState("");
+  const [chatLieus, setChatLieus] = useState("");
+  const [kieuDangs, setKieuDangs] = useState("");
+  const [kieuDaiQuans, setKieuDaiQuans] = useState("");
+  const [xuatXus, setXuatXus] = useState("");
+  const [colors, setColors] = useState("");
+  const [sizes, setSizes] = useState("");
+  const [openSnackbarUpdate, setOpenSnackbarUpdate] = useState(false); // Điều khiển Snackbar
+  const [snackbarMessageUpdate, setSnackbarMessageUpdate] = useState(""); // Thông báo hiển thị trong Snackbar
   const [filters, setFilters] = useState({
     tenSanPham: "",
     tenThuongHieu: "",
@@ -74,30 +94,6 @@ const SanPhamChiTiet = () => {
     tenKieuDaiQuan: "",
     priceRange: [100000, 5000000],
   });
-  
- 
-  const [size, setSize] = useState(5); // Hoặc giá trị mặc định phù hợp
-  const [commonPrice, setCommonPrice] = useState("");
-  const [commonQuantity, setCommonQuantity] = useState("");
-  const [showAllDetails, setShowAllDetails] = useState(false);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [open, setOpen] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(5); // Mặc định là 5 item mỗi trang
-  const [selectedItems, setSelectedItems] = useState([]); // Dùng để lưu trữ các sản phẩm được chọn
-  const [sanPhams, setSanPhams] = useState([]);
-
-  const [danhMucs, setDanhMucs] = useState("");
-  const [thuongHieus, setThuongHieus] = useState("");
-  const [phongCachs, setPhongCachs] = useState("");
-  const [chatLieus, setChatLieus] = useState("");
-  const [kieuDangs, setKieuDangs] = useState("");
-  const [kieuDaiQuans, setKieuDaiQuans] = useState("");
-  const [xuatXus, setXuatXus] = useState("");
-  const [colors, setColors] = useState("");
-  const [sizes, setSizes] = useState("");
-  const [openSnackbarUpdate, setOpenSnackbarUpdate] = useState(false); // Điều khiển Snackbar
-  const [snackbarMessageUpdate, setSnackbarMessageUpdate] = useState(""); // Thông báo hiển thị trong Snackbar
   // Hàm tải mã QR cho sản phẩm chi tiết
   const handleDownloadQRCode = async (productDetailId) => {
     try {
@@ -128,92 +124,8 @@ const SanPhamChiTiet = () => {
       alert("Có lỗi khi tải mã QR.");
     }
   };
-  const fetchSanPhamChiTietById = async (id) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8080/api/sanpham/by-san-pham/${id}`,
-        {
-          params: {
-            page: page - 1,
-            size: itemsPerPage,
-          },
-        }
-      );
-  
-      setChiTietList(response.data.content);  // Cập nhật danh sách sản phẩm chi tiết
-      setTotalPages(response.data.totalPages);  // Cập nhật tổng số trang
-    } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết theo ID:", error);
-    }
-  };
-  
-
-  // Hàm lấy tất cả sản phẩm chi tiết
-  const fetchAllSanPhamChiTiet = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:8080/api/sanpham/chi-tiet/all",
-        {
-          params: {
-            page: page - 1,
-            size: itemsPerPage,
-          },
-        }
-      );
-      setChiTietList(response.data.content);
-      setTotalPages(response.data.totalPages);
-    } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
-    }
-  };
-
-  // useEffect để gọi API khi id, page, hoặc itemsPerPage thay đổi
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        if (!showAllDetails) {
-          // Nếu không hiển thị toàn bộ sản phẩm, lấy theo ID sản phẩm cha
-          await fetchSanPhamChiTietById(id);
-        } else {
-          // Nếu hiển thị toàn bộ, lấy tất cả sản phẩm chi tiết
-          await fetchAllSanPhamChiTiet();
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
-        setChiTietList([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    console.log("danh sách:", chiTietList);
-    fetchData();
-  }, [id, page, itemsPerPage, showAllDetails]); // Gọi lại khi id, page, itemsPerPage, showAllDetails thay đổi
-
-  const handleShowAllToggle = () => {
-    setShowAllDetails(!showAllDetails);
-    setPage(1); // Khi đổi trạng thái, reset lại trang về 1
-
-    setSnackbarMessage(
-      !showAllDetails
-        ? "Đang hiển thị toàn bộ sản phẩm chi tiết."
-        : "Đã ẩn sản phẩm chi tiết."
-    );
-    setOpenSnackbar(true);
-  };
-  const fieldLabels = {
-    thuongHieu: "Thương Hiệu",
-    danhMuc: "Danh Mục",
-    phongCach: "Phong Cách",
-    chatLieu: "Chất Liệu",
-    xuatXu: "Xuất Xứ",
-    mauSac: "Màu Sắc",
-    size: "Kích Cỡ",
-    kieuDang: "Kiểu Dáng",
-    kieuDaiQuan: "Kiểu Đai Quần",
-  };
-  // đổ sản phẩm
-  useEffect(() => {
+   // đổ sản phẩm
+   useEffect(() => {
     axios
       .get("http://localhost:8080/api/sanpham")
       .then((res) => {
@@ -360,6 +272,112 @@ const SanPhamChiTiet = () => {
       })
       .catch((error) => console.error(error));
   }, []);
+
+  const fetchSanPhamChiTietById = async (id) => {
+    const response = await axios.get(
+      `http://localhost:8080/api/sanpham/by-san-pham/${id}`,
+      {
+        params: {
+          page: page - 1,
+          size: rowsPerPage,
+        },
+      }
+    );
+    setChiTietList(response.data.content);
+    setTotalPages(response.data.totalPages);
+  };
+  
+  const fetchAllSanPhamChiTiet = async () => {
+    const response = await axios.get(
+      "http://localhost:8080/api/sanpham/chi-tiet/all",
+      {
+        params: {
+          page: page - 1,
+          size: rowsPerPage,
+        },
+      }
+    );
+    setChiTietList(response.data.content);
+    setTotalPages(response.data.totalPages);
+  };
+  
+  const fetchFilteredSanPhamChiTiet = async () => {
+    const params = {
+      tenSanPham: filters.tenSanPham || undefined,
+      tenDanhMuc: filters.tenDanhMuc || undefined,
+      tenThuongHieu: filters.tenThuongHieu || undefined,
+      tenPhongCach: filters.tenPhongCach || undefined,
+      tenChatLieu: filters.tenChatLieu || undefined,
+      tenKieuDang: filters.tenKieuDang || undefined,
+      tenKieuDaiQuan: filters.tenKieuDaiQuan || undefined,
+      tenMauSac: filters.tenMauSac || undefined,
+      tenSize: filters.tenSize || undefined,
+      tenXuatXu: filters.tenXuatXu || undefined,
+      minPrice: filters.priceRange[0],
+      maxPrice: filters.priceRange[1],
+      page: page - 1,
+      size: rowsPerPage,
+    };
+  
+    const response = await axios.get(
+      "http://localhost:8080/api/san-pham-chi-tiet/tim-kiem",
+      { params }
+    );
+    setChiTietList(response.data.content);
+    setTotalPages(response.data.totalPages);
+  };
+  
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        if (id && !showAllDetails) {
+          // Trường hợp đang xem theo sản phẩm cha
+          await fetchSanPhamChiTietById(id);
+        } else if (showAllDetails && isFilteringEmpty(filters)) {
+          // Trường hợp hiển thị toàn bộ và KHÔNG LỌC
+          await fetchAllSanPhamChiTiet();
+        } else {
+          // Trường hợp lọc
+          await fetchFilteredSanPhamChiTiet();
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
+        setChiTietList([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [id, showAllDetails, filters, page, rowsPerPage]);
+  
+  
+
+  const handleShowAllToggle = () => {
+    setShowAllDetails(!showAllDetails);
+    setPage(1); // Khi đổi trạng thái, reset lại trang về 1
+
+    setSnackbarMessage(
+      !showAllDetails
+        ? "Đang hiển thị toàn bộ sản phẩm chi tiết."
+        : "Đã ẩn sản phẩm chi tiết."
+    );
+    setOpenSnackbar(true);
+  };
+  const fieldLabels = {
+    thuongHieu: "Thương Hiệu",
+    danhMuc: "Danh Mục",
+    phongCach: "Phong Cách",
+    chatLieu: "Chất Liệu",
+    xuatXu: "Xuất Xứ",
+    mauSac: "Màu Sắc",
+    size: "Kích Cỡ",
+    kieuDang: "Kiểu Dáng",
+    kieuDaiQuan: "Kiểu Đai Quần",
+  };
+ 
 
   // update
   // Hàm xử lý thay đổi số lượng và giá
@@ -646,55 +664,6 @@ const handleSave = async () => {
   const handleClose = () => {
     setOpen(false); // Chỉ đóng khi người dùng nhấn "Hủy"
   };
-  // tìm kiếm
-  // Gọi API khi tìm kiếm
-  const handleSearch = () => {
-    const lowercasedSearchTerm = filters.tenSanPham.toLowerCase();
-    // Tìm kiếm trong toàn bộ danh sách sản phẩm chi tiết
-    const filtered = chiTietList.filter((item) =>
-      item.tenSanPham.toLowerCase().includes(lowercasedSearchTerm)
-    );
-    setFilteredList(filtered);
- 
-  };
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        if (!showAllDetails) {
-          // Nếu không hiển thị toàn bộ sản phẩm, lấy theo ID sản phẩm cha
-          await fetchSanPhamChiTietById(id);
-        } else {
-          // Nếu hiển thị toàn bộ, lấy tất cả sản phẩm chi tiết
-          await fetchAllSanPhamChiTiet();
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
-        setChiTietList([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id, page, itemsPerPage, showAllDetails]); // Gọi lại khi id, page, itemsPerPage, showAllDetails thay đổi
-  
-  // useEffect để gọi hàm tìm kiếm mỗi khi searchTerm thay đổi
-  useEffect(() => {
-    if (filters.tenSanPham) {
-      handleSearch();
-    } else {
-      setFilteredList(chiTietList); // Nếu không có tìm kiếm, hiển thị toàn bộ sản phẩm
-    }
-  }, [chiTietList]); // Thay đổi khi tìm kiếm hoặc danh sách sản phẩm chi tiết thay đổi
-  
-  // Phân trang các kết quả tìm kiếm
-  const paginatedList = filteredList.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
-  
-
   // cập nhật số lượng và giá
   const handleUpdateProducts = async () => {
     // Khởi tạo đối tượng updatedProducts chỉ chứa các trường thay đổi
@@ -783,38 +752,15 @@ const handleSave = async () => {
       alert("Có lỗi xảy ra khi thay đổi trạng thái sản phẩm chi tiết!");
     }
   };
-// tìm kiếm và bộ lọc sản phẩm chi tiết 
-const fetchData = async () => {
-  try {
-    const params = {
-      tenSanPham: filters.tenSanPham || undefined,
-      tenDanhMuc: filters.tenDanhMuc || undefined,
-      tenThuongHieu: filters.tenThuongHieu || undefined,
-      tenPhongCach: filters.tenPhongCach || undefined,
-      tenChatLieu: filters.tenChatLieu || undefined,
-      tenKieuDang: filters.tenKieuDang || undefined,
-      tenKieuDaiQuan: filters.tenKieuDaiQuan || undefined,
-      tenMauSac: filters.tenMauSac || undefined,
-      tenSize: filters.tenSize || undefined,
-      tenXuatXu: filters.tenXuatXu || undefined,
-      minPrice: filters.priceRange[0],
-      maxPrice: filters.priceRange[1],
-      page: page - 1,
-      size: rowsPerPage,
-    };
 
-    const response = await axios.get("http://localhost:8080/api/san-pham-chi-tiet/tim-kiem", { params });
+  const isFilteringEmpty = (filters) => {
+    const { priceRange, ...rest } = filters;
+    const hasFilter = Object.values(rest).some((val) => val && val.trim() !== "");
+    const isPriceChanged = priceRange[0] !== 100000 || priceRange[1] !== 5000000;
+    return !hasFilter && !isPriceChanged;
+  };
+  
 
-    setChiTietList(response.data.content);
-    setTotalPages(response.data.totalPages);
-  } catch (error) {
-    console.error("Lỗi khi tìm kiếm:", error);
-  }
-};
-
-useEffect(() => {
-  fetchData();
-}, [filters, page, rowsPerPage]);
 
 const handleFilterChange = (event) => {
   const { name, value } = event.target;
@@ -1158,12 +1104,12 @@ const handlePriceChange = (event, newValue) => {
       </TableRow>
     </TableHead>
     <TableBody>
-      {filteredList.length === 0 ? (
+      {chiTietList.length === 0 ? (
         <TableRow>
           <TableCell colSpan={18} align="center">Không có dữ liệu phù hợp</TableCell>
         </TableRow>
       ) : (
-        filteredList.map((item, index) => (
+        chiTietList.map((item, index) => (
           <TableRow key={item.id}>
             <TableCell>
               <input
@@ -1172,7 +1118,7 @@ const handlePriceChange = (event, newValue) => {
                 onChange={() => handleCheckboxChange(item.id)}
               />
             </TableCell>
-            <TableCell>{(page - 1) * 5 + index + 1}</TableCell>
+            <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
             <TableCell>{item.ma}</TableCell>
             <TableCell>{item.sanPham?.tenSanPham || "Chưa có tên sản phẩm"}</TableCell>
             <TableCell>{item.danhMuc?.tenDanhMuc || "Chưa có danh mục"}</TableCell>

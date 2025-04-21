@@ -40,9 +40,8 @@ const SanPham = () => {
   const [trangThai, setTrangThai] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false); // Mở đóng Snackbar
   const [snackbarMessage, setSnackbarMessage] = useState(""); // Nội dung thông báo
-  const [size, setSize] = useState(5);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-const [chiTietList, setChiTietList] = useState([]); 
+  const [chiTietList, setChiTietList] = useState([]); 
   const [itemsPerPage, setItemsPerPage] = useState(5); 
   const navigate = useNavigate();
 
@@ -51,16 +50,15 @@ const [chiTietList, setChiTietList] = useState([]);
     setLoading(true);
 
     axios
-      .get(`http://localhost:8080/api/sanpham/search`, {
+      .get("http://localhost:8080/api/sanpham/search", {
         params: {
           page: page - 1,
-          size: size,
+          size: rowsPerPage,
           tenSanPham: search.trim() || null,
           trangThai: trangThai || null,
         },
       })
       .then((response) => {
-        console.log(response.data); // Kiểm tra dữ liệu trả về
         setSanPhams(response.data.content);
         setTotalPages(response.data.totalPages);
         setLoading(false);
@@ -69,22 +67,26 @@ const [chiTietList, setChiTietList] = useState([]);
         console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
         setLoading(false);
       });
-  }, [page, search, trangThai, size]);
+  }, [page, search, trangThai, rowsPerPage]);
 
-  // Gọi API khi search, trangThai hoặc page thay đổi
+  // Debounce fetch
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
+    const delay = setTimeout(() => {
       fetchData();
-    }, 500); // Debounce để tránh gọi API quá nhiều lần
-
-    return () => clearTimeout(delayDebounce);
-  }, [fetchData]); // 🔥 Đảm bảo gọi lại khi `fetchData` thay đổi
+    }, 500);
+    return () => clearTimeout(delay);
+  }, [fetchData]);
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
     setPage(1); // 🔥 Reset về trang đầu khi tìm kiếm
   };
-const renderPageNumbers = () => {
+  const handleChangeRowsPerPage = (e) => {
+    setRowsPerPage(e.target.value);
+    setPage(1); // reset về trang đầu
+  };
+
+  const renderPageNumbers = () => {
     let pages = [];
     for (let i = 1; i <= totalPages; i++) {
       if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
@@ -350,131 +352,110 @@ const renderPageNumbers = () => {
         <CircularProgress />
       ) : (
         <>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
+           <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell><strong>STT</strong></TableCell>
+              <TableCell><strong>Mã Sản Phẩm</strong></TableCell>
+              <TableCell><strong>Tên Sản Phẩm</strong></TableCell>
+              <TableCell><strong>Số Lượng</strong></TableCell>
+              <TableCell><strong>Ngày Tạo</strong></TableCell>
+              <TableCell><strong>Trạng Thái</strong></TableCell>
+              <TableCell align="center"><strong>Hành Động</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sanPhams.length > 0 ? (
+              sanPhams.map((sp, index) => (
+                <TableRow key={sp.id}>
+                  <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
+                  <TableCell>{sp.ma}</TableCell>
+                  <TableCell>{sp.tenSanPham}</TableCell>
+                  <TableCell>{sp.tongSoLuong ?? "0"}</TableCell>
                   <TableCell>
-                    <strong>STT</strong>
+                    {new Date(sp.ngayTao).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>
-                    <strong>Mã Sản Phẩm</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Tên Sản Phẩm</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Số Lượng</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Ngày Tạo</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Trạng Thái</strong>
+                  <TableCell
+                    sx={{
+                      color:
+                        sp.tongSoLuong === 0
+                          ? "red"
+                          : sp.trangThai === "Hoạt động"
+                          ? "green"
+                          : "red",
+                    }}
+                  >
+                    {sp.tongSoLuong === 0 ? "Hết hàng" : sp.trangThai}
                   </TableCell>
                   <TableCell align="center">
-                    <strong>Hành Động</strong>
+                    <Button
+                      color="primary"
+                      onClick={() => navigate(`/admin/sanpham/${sp.id}`)}
+                    >
+                      <Visibility />
+                    </Button>
+                    <Switch
+                      checked={sp.trangThai === "Hoạt động"}
+                      onChange={() => toggleTrangThai(sp.id)}
+                      color="success"
+                      disabled={
+                        sp.tongSoLuong === 0 || sp.trangThai === "Hết hàng"
+                      }
+                    />
                   </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {sanPhams.length > 0 ? (
-                  sanPhams.map((sp, index) => (
-                    <TableRow key={sp.id}>
-                      <TableCell>{(page - 1) * 5 + index + 1}</TableCell>
-                      <TableCell>{sp.ma}</TableCell>
-                      <TableCell>{sp.tenSanPham}</TableCell>
-                      <TableCell>{sp.tongSoLuong ?? "0"}</TableCell>
-                      <TableCell>
-                        {new Date(sp.ngayTao).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          color:
-                            sp.tongSoLuong === 0
-                              ? "red"
-                              : sp.trangThai === "Hoạt động"
-                              ? "green"
-                              : "red",
-                        }}
-                      >
-                        {sp.tongSoLuong === 0 ? "Hết hàng" : sp.trangThai}
-                      </TableCell>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  Không tìm thấy sản phẩm nào!
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-                      <TableCell align="center">
-                        <Button
-                          color="primary"
-                          onClick={() => navigate(`/admin/sanpham/${sp.id}`)}
-                        >
-                          <Visibility />
-                        </Button>
-                        <Switch
-                          checked={sp.trangThai === "Hoạt động"}
-                          onChange={() => toggleTrangThai(sp.id)}
-                          color="success"
-                          disabled={
-                            sp.tongSoLuong === 0 || sp.trangThai === "Hết hàng"
-                          }
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center">
-                      Không tìm thấy sản phẩm nào!
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            p={2}
-            mt={2}
+      {/* Phân trang */}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        p={2}
+        mt={2}
+      >
+        <Box display="flex" alignItems="center">
+          <Typography mr={2}>Xem</Typography>
+          <Select
+            value={rowsPerPage}
+            onChange={handleChangeRowsPerPage}
+            sx={{
+              height: "32px",
+              minWidth: "60px",
+              borderRadius: "8px",
+            }}
           >
-            <Box display="flex" alignItems="center">
-              <Typography mr={2}>Xem</Typography>
-              <Select
-                value={rowsPerPage}
-                onChange={(e) => setRowsPerPage(e.target.value)}
-                sx={{
-                  height: "32px", // Giảm chiều cao
-                  minWidth: "60px",
-                  borderRadius: "8px",
-                  "&.Mui-focused": {
-                    borderColor: "#1976D2", // Màu xanh dương khi chọn
-                    borderWidth: "2px",
-                  },
-                }}
-              >
-                <MenuItem value={5}>5</MenuItem>
-                <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={25}>25</MenuItem>
-              </Select>
-
-              <Typography ml={2}>Sản phẩm</Typography>
-            </Box>
-            <Box display="flex" alignItems="center">
-              <IconButton
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              >
-                <ChevronLeft />
-              </IconButton>
-              {renderPageNumbers()}
-              <IconButton
-                onClick={() =>
-                  setPage((prev) => Math.min(prev + 1, totalPages))
-                }
-              >
-                <ChevronRight />
-              </IconButton>
-            </Box>
-          </Box>
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={25}>25</MenuItem>
+          </Select>
+          <Typography ml={2}>Sản phẩm</Typography>
+        </Box>
+        <Box display="flex" alignItems="center">
+          <IconButton onClick={() => setPage((prev) => Math.max(prev - 1, 1))}>
+            <ChevronLeft />
+          </IconButton>
+          {renderPageNumbers()}
+          <IconButton
+            onClick={() =>
+              setPage((prev) => Math.min(prev + 1, totalPages))
+            }
+          >
+            <ChevronRight />
+          </IconButton>
+        </Box>
+      </Box>
         </>
       )}
       
