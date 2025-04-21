@@ -120,6 +120,7 @@ const BanTaiQuay = () => {
 
   //khai báo voucher
   const [openVoucherModal, setOpenVoucherModal] = useState(false);
+  const [bestVoucher, setBestVoucher] = useState(null);
   const [voucherCode, setVoucherCode] = useState("");
   const [vouchers, setVouchers] = useState([]);
   const [selectedVoucherCode, setSelectedVoucherCode] = useState("");
@@ -270,6 +271,9 @@ const BanTaiQuay = () => {
       if (bestVoucher) {
         setSelectedVoucherCode(bestVoucher.ma);
         setDiscountAmount(bestDiscount);
+        setBestVoucher(bestVoucher); // Lưu bestVoucher vào state
+      } else {
+        setBestVoucher(null); // Đề phòng trường hợp không có phiếu nào phù hợp
       }
 
       // Cập nhật danh sách phiếu giảm giá
@@ -336,16 +340,31 @@ const BanTaiQuay = () => {
   // Hàm để hiển thị thông báo thiếu tiền
   const renderAdditionalAmountMessage = (voucher) => {
     const amountToSpend = calculateAmountToSpend(voucher);
-    if (amountToSpend > 0) {
-      return (
-        <Typography sx={{ color: "red", marginTop: 1, fontSize: 12 }}>
-          Bạn cần chi tiêu thêm {amountToSpend.toLocaleString()} VNĐ để áp dụng
-          phiếu giảm giá này.
-        </Typography>
-      );
-    }
-    return null;
-  };
+    const isBest = bestVoucher?.id === voucher.id;
+  
+    return (
+      <>
+        {amountToSpend > 0 && (
+          <Typography sx={{ color: "red", marginTop: 1, fontSize: 12 }}>
+            Bạn cần chi tiêu thêm {amountToSpend.toLocaleString()} VNĐ để áp dụng
+            phiếu giảm giá này.
+          </Typography>
+        )}
+        {isBest && (
+          <Typography
+            sx={{
+              color: "green",
+              marginTop: 1,
+              fontSize: 12,
+              fontWeight: "bold",
+            }}
+          >
+            Đây là phiếu giảm giá tốt nhất!
+          </Typography>
+        )}
+      </>
+    );
+  };  
 
   const checkVoucherAvailability = async (voucherCode) => {
     try {
@@ -429,20 +448,20 @@ const BanTaiQuay = () => {
     setDescription("");
     setDistricts([]);
     setWards([]);
-  
+
     setKeyword(`${customer.tenKhachHang} - ${customer.sdt}`);
     setSelectedCustomerId(customer.id);
     setOpenKH(false);
-  
+
     setRecipientName(customer.tenKhachHang);
     setRecipientPhone(customer.sdt);
     setAddresses(customer.diaChis || []);
-  
+
     if (customer.diaChis && customer.diaChis.length > 0) {
       const address = customer.diaChis[0];
       setSelectedCity(address.thanhPho);
       setCity(address.thanhPho); // Cập nhật vào giá trị của form
-  
+
       const city = cities.find((c) => c.Name === address.thanhPho);
       let districts;
       if (city) {
@@ -460,10 +479,10 @@ const BanTaiQuay = () => {
           districts = districtResponse.data.data;
         };
         await fetchDistricts();
-  
+
         setSelectedDistrict(address.huyen);
         setDistrict(address.huyen);
-  
+
         const district = districts.find(
           (d) => d.DistrictName === address.huyen
         );
@@ -480,10 +499,10 @@ const BanTaiQuay = () => {
             setWards(wards);
           };
           await fetchWards();
-  
+
           setSelectedWard(address.xa);
           setWard(address.xa);
-  
+
           const ward = wards.find((d) => d.WardName === address.xa);
           setSelectedGHNDistrict(district.DistrictID);
           setselectedGHNWard(ward.WardCode);
@@ -503,7 +522,8 @@ const BanTaiQuay = () => {
                   },
                 }
               );
-              setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
+              const rawFee = serviceFeeResponse.data.data.service_fee;
+              setDiscount(roundToNearestThousand(rawFee));
             };
             await fetchGHNServiceFee();
           } else {
@@ -511,19 +531,19 @@ const BanTaiQuay = () => {
           }
         }
       }
-  
+
       setSpecificAddress(`${address.soNha}, ${address.duong}`);
       setDescription(address.moTa || "");
     } else {
       setDescription("");
     }
-  };  
+  };
 
   useEffect(() => {
     if (showLeftPanel && selectedGHNDistrict && selectedGHNWard) {
       fetchGHNServiceFee(selectedGHNDistrict, selectedGHNWard);
     }
-  }, [showLeftPanel, selectedGHNDistrict, selectedGHNWard]);  
+  }, [showLeftPanel, selectedGHNDistrict, selectedGHNWard]);
 
   // Hiển thị 5 khách hàng đầu tiên khi vừa mở trang (ngay khi chưa nhập gì)
   useEffect(() => {
@@ -561,7 +581,20 @@ const BanTaiQuay = () => {
 
   // Mở hoặc đóng modal khach hàng
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  // Hàm xử lý đóng modal và reset form
+  const handleClose = () => {
+    setName('');
+    setPhone('');
+    setDob('');
+    setGender('');
+    setEmail('');
+    setCityKH('');
+    setDistrictKH('');
+    setWardKH('');
+    setAddress('');
+    // Đóng modal
+    setOpen(false);
+  };
 
   // //fake data cho lịch sử thanh toán hóa đơn
   const data = [
@@ -622,6 +655,10 @@ const BanTaiQuay = () => {
     } else {
       setErrorTienKhachChuyen(""); // Xóa lỗi nếu nhập đúng
     }
+  };
+
+  const roundToNearestThousand = (number) => {
+    return Math.round(number / 1000) * 1000;
   };
 
   // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
@@ -730,7 +767,8 @@ const BanTaiQuay = () => {
           },
         }
       );
-      setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
+      const rawFee = serviceFeeResponse.data.data.service_fee;
+      setDiscount(roundToNearestThousand(rawFee));
     };
     fetchGHNServiceFee();
   };
@@ -850,7 +888,7 @@ const BanTaiQuay = () => {
   const handleSwitchChange = (event) => {
     const isChecked = event.target.checked;
     setShowLeftPanel(isChecked);
-  
+
     if (!isChecked) {
       setDiscount(0); // Tắt giao hàng => phí = 0
     } else {
@@ -862,25 +900,26 @@ const BanTaiQuay = () => {
   };
 
   const fetchGHNServiceFee = async (districtId, wardCode) => {
-  try {
-    const response = await axios.get(
-      `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
-      {
-        headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
-        params: {
-          service_type_id: 2,
-          to_district_id: districtId,
-          to_ward_code: wardCode,
-          weight: 3000,
-          insurance_value: 0,
-        },
-      }
-    );
-    setDiscount(Math.round(response.data.data.service_fee));
-  } catch (error) {
-    console.error("Error calculating GHN fee:", error);
-  }
-};
+    try {
+      const response = await axios.get(
+        `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+        {
+          headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+          params: {
+            service_type_id: 2,
+            to_district_id: districtId,
+            to_ward_code: wardCode,
+            weight: 3000,
+            insurance_value: 0,
+          },
+        }
+      );
+      const rawFee = response.data.data.service_fee;
+      setDiscount(roundToNearestThousand(rawFee));
+    } catch (error) {
+      console.error("Error calculating GHN fee:", error);
+    }
+  };
 
   // Thêm mới địa chỉ cho khách hàng được chọn
   const handleSaveAddress = () => {
@@ -922,19 +961,19 @@ const BanTaiQuay = () => {
             // Đóng modal thêm địa chỉ sau khi lưu thành công
             setOpenChonDC(false); // Đóng modal thêm địa chỉ
 
-            alert("Thêm địa chỉ thành công!");
+            showSuccessToast("Thêm địa chỉ thành công!");
             setNewCity(""); // Reset thành phố
             setNewDistrict(""); // Reset quận/huyện
             setNewWard(""); // Reset xã/phường
           })
           .catch((error) => {
             console.error("Lỗi khi lấy danh sách địa chỉ:", error);
-            alert("Có lỗi khi lấy danh sách địa chỉ.");
+            showErrorToast("Có lỗi khi lấy danh sách địa chỉ.");
           });
       })
       .catch((error) => {
         console.error("Có lỗi khi thêm địa chỉ:", error);
-        alert("Có lỗi khi thêm địa chỉ.");
+        showErrorToast("Có lỗi khi thêm địa chỉ.");
       });
   };
 
@@ -968,17 +1007,26 @@ const BanTaiQuay = () => {
         "http://localhost:8080/dragonbee/them-khach-hang",
         customerData
       );
-      alert("Thêm khách hàng thành công");
+      showSuccessToast("Thêm khách hàng thành công!");
       fetchDefaultCustomers();
       // Sau khi thêm thành công, gọi hàm để lấy thông tin khách hàng mới nhất
       fetchNewestCustomer();
-
+      // Sau khi thêm khách hàng thành công, reset form
+      setName('');
+      setPhone('');
+      setDob('');
+      setGender('');
+      setEmail('');
+      setCityKH('');
+      setDistrictKH('');
+      setWardKH('');
+      setAddress('');
       // Đóng pop-up hoặc modal
       setOpenKH(false);
       setOpen(false);
     } catch (error) {
       console.error("Có lỗi xảy ra khi thêm khách hàng:", error);
-      alert("Có lỗi xảy ra khi thêm khách hàng!");
+      showErrorToast("Có lỗi xảy ra khi thêm khách hàng!");
     }
   };
 
@@ -1637,7 +1685,7 @@ const BanTaiQuay = () => {
 
   // Lấy ngày hiện tại và cộng thêm 3 ngày
   const currentDate = new Date();
-  currentDate.setDate(currentDate.getDate() + 3);
+  currentDate.setDate(currentDate.getDate() + 5);
 
   // Format ngày thành dd/MM/yyyy
   const formattedDate = currentDate.toLocaleDateString("vi-VN");
@@ -1705,7 +1753,8 @@ const BanTaiQuay = () => {
                   },
                 }
               );
-              setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
+              const rawFee = serviceFeeResponse.data.data.service_fee;
+              setDiscount(roundToNearestThousand(rawFee));
             };
             await fetchGHNServiceFee();
           };
@@ -2700,64 +2749,77 @@ const BanTaiQuay = () => {
                           display: "flex",
                           justifyContent: "space-between",
                           marginTop: 2,
-                          alignItems: "center",
+                          alignItems: "flex-start", // Chuyển từ center sang flex-start để các box con có thể giãn theo chiều dọc
                         }}
                       >
-                        <Typography variant="body1">Phiếu giảm giá:</Typography>
-                        <Box
-                          sx={{
-                            position: "relative",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Input
-                            value={selectedVoucherCode} // Hiển thị mã voucher đã chọn
-                            sx={{ color: "#5e5e5ede", width: 140 }} // Tăng padding phải để đủ chỗ cho icon
-                            endAdornment={
-                              <InputAdornment
-                                position="end"
-                                sx={{ position: "relative" }}
-                              >
-                                {/* CloseIcon - Xóa voucher */}
-                                {selectedVoucherCode && (
-                                  <CloseIcon
-                                    sx={{
-                                      color: "red",
-                                      fontSize: 14,
-                                      cursor: "pointer",
-                                      position: "absolute",
-                                      left: -13, // Dịch sang phải thêm 5px
-                                      top: "-3px", // Đưa lên cao hơn
-                                      transform: "translateY(-50%)",
-                                      backgroundColor: "white", // Đảm bảo không bị che khuất
-                                      borderRadius: "50%",
-                                      boxShadow: "0 0 4px rgba(0,0,0,0.2)", // Thêm hiệu ứng nổi
-                                    }}
-                                    onClick={() => {
-                                      setSelectedVoucherCode(""); // Xóa mã voucher
-                                      setDiscountAmount(0); // Đặt giảm giá về 0 để cập nhật lại tổng tiền
-                                    }}
-                                  />
-                                )}
-                                {/* EditIcon - Mở modal chọn voucher */}
-                                <EditIcon
-                                  sx={{
-                                    color: "gray",
-                                    fontSize: 18,
-                                    cursor: "pointer",
-                                  }}
-                                  onClick={handleOpenVoucherModal}
-                                />
-                              </InputAdornment>
-                            }
-                            inputProps={{
-                              style: {
-                                textAlign: "right",
-                                fontWeight: "bold",
-                              },
+                        <Typography variant="body1" sx={{ marginTop: "6px" }}>
+                          Phiếu giảm giá:
+                        </Typography>
+
+                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                          <Box
+                            sx={{
+                              position: "relative",
+                              display: "flex",
+                              alignItems: "center",
                             }}
-                          />
+                          >
+                            <Input
+                              value={selectedVoucherCode}
+                              sx={{ color: "#5e5e5ede", width: 140 }}
+                              endAdornment={
+                                <InputAdornment position="end" sx={{ position: "relative" }}>
+                                  {selectedVoucherCode && (
+                                    <CloseIcon
+                                      sx={{
+                                        color: "red",
+                                        fontSize: 14,
+                                        cursor: "pointer",
+                                        position: "absolute",
+                                        left: -13,
+                                        top: "-3px",
+                                        transform: "translateY(-50%)",
+                                        backgroundColor: "white",
+                                        borderRadius: "50%",
+                                        boxShadow: "0 0 4px rgba(0,0,0,0.2)",
+                                      }}
+                                      onClick={() => {
+                                        setSelectedVoucherCode("");
+                                        setDiscountAmount(0);
+                                      }}
+                                    />
+                                  )}
+                                  <EditIcon
+                                    sx={{
+                                      color: "gray",
+                                      fontSize: 18,
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={handleOpenVoucherModal}
+                                  />
+                                </InputAdornment>
+                              }
+                              inputProps={{
+                                style: {
+                                  textAlign: "right",
+                                  fontWeight: "bold",
+                                },
+                              }}
+                            />
+                          </Box>
+
+                          {selectedVoucherCode === bestVoucher?.ma && (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: "green",
+                                marginTop: "4px",
+                                fontStyle: "italic",
+                              }}
+                            >
+                              Phiếu giảm giá tốt nhất!
+                            </Typography>
+                          )}
                         </Box>
                       </Box>
                       <Typography
@@ -3333,8 +3395,8 @@ const BanTaiQuay = () => {
                     onChange={(e) => setGender(e.target.value)}
                     label="Giới tính"
                   >
-                    <MenuItem value="male">Nam</MenuItem>
-                    <MenuItem value="female">Nữ</MenuItem>
+                    <MenuItem value="Nam">Nam</MenuItem>
+                    <MenuItem value="Nữ">Nữ</MenuItem>
                     <MenuItem value="other">Khác</MenuItem>
                   </Select>
                 </FormControl>

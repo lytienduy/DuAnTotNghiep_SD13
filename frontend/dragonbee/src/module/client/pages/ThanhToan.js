@@ -104,6 +104,18 @@ const ThanhToan = () => {
         });
     };
 
+    const getEstimatedDeliveryDate = () => {
+        const today = new Date();
+        const estimatedDate = new Date();
+        estimatedDate.setDate(today.getDate() + 5); // Cộng thêm 5 ngày
+
+        // Format về dạng dd/mm/yyyy
+        const day = estimatedDate.getDate().toString().padStart(2, '0');
+        const month = (estimatedDate.getMonth() + 1).toString().padStart(2, '0');
+        const year = estimatedDate.getFullYear();
+
+        return `${day}/${month}/${year}`;
+    };
 
     //Lấy dữ liệu cart
     const layDuLieuCart = () => {
@@ -197,6 +209,9 @@ const ThanhToan = () => {
         setSelectedPaymentMethod(event.target.value);
     };
 
+    const roundToNearestThousand = (number) => {
+        return Math.round(number / 1000) * 1000;
+    };
     // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
     useEffect(() => {
         // axios
@@ -288,7 +303,8 @@ const ThanhToan = () => {
                     },
                 }
             );
-            setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
+            const rawFee = serviceFeeResponse.data.data.service_fee;
+            setDiscount(roundToNearestThousand(rawFee));
         };
         fetchGHNServiceFee();
     };
@@ -598,7 +614,8 @@ const ThanhToan = () => {
                                 },
                             }
                         );
-                        setDiscount(Math.round(feeResponse.data.data.service_fee));
+                        const rawFee = feeResponse.data.data.service_fee;
+                        setDiscount(roundToNearestThousand(rawFee));
                     }
                 })
                 .catch((error) => console.error("Error fetching addresses:", error));
@@ -687,19 +704,19 @@ const ThanhToan = () => {
                         // Đóng modal thêm địa chỉ sau khi lưu thành công
                         setOpenChonDC(false); // Đóng modal thêm địa chỉ
 
-                        alert("Thêm địa chỉ thành công!");
+                        showSuccessToast("Thêm địa chỉ thành công!");
                         setNewCity(""); // Reset thành phố
                         setNewDistrict(""); // Reset quận/huyện
                         setNewWard(""); // Reset xã/phường
                     })
                     .catch((error) => {
                         console.error("Lỗi khi lấy danh sách địa chỉ:", error);
-                        alert("Có lỗi khi lấy danh sách địa chỉ.");
+                        showErrorToast("Có lỗi khi lấy danh sách địa chỉ.");
                     });
             })
             .catch((error) => {
                 console.error("Có lỗi khi thêm địa chỉ:", error);
-                alert("Có lỗi khi thêm địa chỉ.");
+                showErrorToast("Có lỗi khi thêm địa chỉ.");
             });
     };
 
@@ -764,7 +781,8 @@ const ThanhToan = () => {
                                     },
                                 }
                             );
-                            setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
+                            const rawFee = serviceFeeResponse.data.data.service_fee;
+                            setDiscount(roundToNearestThousand(rawFee));
                         };
                         await fetchGHNServiceFee();
                     };
@@ -1215,17 +1233,17 @@ const ThanhToan = () => {
                             </Box>
                         )}
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 1.5,marginTop:1 }}>
                             <Typography>Giảm giá</Typography>
-                            <Typography>{discountAmount.toLocaleString()} đ</Typography>
+                            <Typography>{discountAmount.toLocaleString()} VNĐ</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
                             <Typography>Tổng số tiền cần thanh toán</Typography>
-                            <Typography color="error">{tongTienThanhToan.toLocaleString()} đ</Typography>
+                            <Typography color="error">{tongTienThanhToan.toLocaleString()} VNĐ</Typography>
                         </Box>
 
                         <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
-                            Ngày nhận dự kiến: 31/03/2025
+                            Ngày nhận dự kiến: {getEstimatedDeliveryDate()}
                         </Typography>
                     </Grid>
                 </Grid>
