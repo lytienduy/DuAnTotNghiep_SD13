@@ -1197,7 +1197,7 @@ const HoaDonChiTiet = () => {
 
       }
     } catch (error) {
-      showErrorToast("Xác nhận oàn tiền thất bại. Vui lòng thử lại!");
+      showErrorToast("Xác nhận hoàn tiền thất bại. Vui lòng thử lại!");
       console.error(error.response || error.message);
     }
   };
@@ -1574,10 +1574,10 @@ const HoaDonChiTiet = () => {
             </DialogActions>
           </Dialog>
           <Dialog open={openConfirmNext} onClose={() => setOpenConfirmNext(false)}>
-            <DialogTitle>Xác nhận hoàn tác trạng thái hóa đơn</DialogTitle>
+            <DialogTitle>Xác nhận cập nhật trạng thái hóa đơn</DialogTitle>
             <DialogContent>
-              <p><b>Lý do hoàn tác trạng thái:</b> {ghiChuTrangThai}</p>
-              <p>Bạn có chắc chắn muốn hoàn tác trạng thái hóa đơn này không?</p>
+              <p><b>Lý do cập nhật trạng thái:</b> {ghiChuTrangThai}</p>
+              <p>Bạn có chắc chắn muốn cập nhật trạng thái hóa đơn này không?</p>
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setOpenConfirmNext(false)} color="primary">
