@@ -3098,7 +3098,6 @@ const BanTaiQuay = () => {
               {tongTienPhaiTra?.toLocaleString()} VNĐ
             </Typography>
           </Grid>
-
           {/* Nút Chuyển Khoản - Tiền Mặt - Cả Hai */}
           <Grid container justifyContent="center" spacing={1} sx={{ mb: 2 }}>
             <Grid item xs={4}>
