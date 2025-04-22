@@ -67,7 +67,7 @@ const Footer = () => {
                         height: 25
                     }}
                 >
-                    Trụ sở chính Tòa nhà FPT Polytechnic, Phố Trịnh Văn Bô, Nam Từ Liêm, Hà Nội
+                    123 Nguyễn Trãi, Thanh Xuân, Hà nội
                 </Box>
 
                 {/* Line kẻ phía dưới */}

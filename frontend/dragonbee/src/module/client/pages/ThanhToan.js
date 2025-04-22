@@ -22,6 +22,7 @@ const ThanhToan = () => {
     const [discount, setDiscount] = useState(0);
     const [selectedGHNDistrict, setSelectedGHNDistrict] = useState("");
     const [selectedGHNWard, setselectedGHNWard] = useState("");
+    const [bestVoucher, setBestVoucher] = useState(null);
     //Khai báo Thành phố huyện xã
     const navigate = useNavigate();
     const [cities, setCities] = useState([]);
@@ -434,6 +435,9 @@ const ThanhToan = () => {
             if (bestVoucher) {
                 setSelectedVoucherCode(bestVoucher.ma);
                 setDiscountAmount(bestDiscount);
+                setBestVoucher(bestVoucher); // Lưu bestVoucher vào state
+            } else {
+                setBestVoucher(null); // Đề phòng trường hợp không có phiếu nào phù hợp
             }
 
             // Cập nhật danh sách phiếu giảm giá
@@ -498,14 +502,30 @@ const ThanhToan = () => {
     // Hàm để hiển thị thông báo thiếu tiền
     const renderAdditionalAmountMessage = (voucher) => {
         const amountToSpend = calculateAmountToSpend(voucher);
-        if (amountToSpend > 0) {
-            return (
-                <Typography sx={{ color: 'red', marginTop: 1, fontSize: 12 }}>
-                    Bạn cần chi tiêu thêm {amountToSpend.toLocaleString()} VNĐ để áp dụng phiếu giảm giá này.
-                </Typography>
-            );
-        }
-        return null;
+        const isBest = bestVoucher?.id === voucher.id;
+
+        return (
+            <>
+                {amountToSpend > 0 && (
+                    <Typography sx={{ color: "red", marginTop: 1, fontSize: 12 }}>
+                        Bạn cần chi tiêu thêm {amountToSpend.toLocaleString()} VNĐ để áp dụng
+                        phiếu giảm giá này.
+                    </Typography>
+                )}
+                {isBest && (
+                    <Typography
+                        sx={{
+                            color: "green",
+                            marginTop: 1,
+                            fontSize: 12,
+                            fontWeight: "bold",
+                        }}
+                    >
+                        Đây là phiếu giảm giá tốt nhất!
+                    </Typography>
+                )}
+            </>
+        );
     };
 
     const checkVoucherAvailability = async (voucherCode) => {
@@ -1138,53 +1158,82 @@ const ThanhToan = () => {
                             </Typography>
                         </Box>
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2, alignItems: 'center' }}>
-                            <Typography variant="body1">Phiếu giảm giá:</Typography>
-                            <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                <Input
-                                    value={selectedVoucherCode} // Hiển thị mã voucher đã chọn
-                                    sx={{ color: '#5e5e5ede', width: 140 }} // Tăng padding phải để đủ chỗ cho icon
-                                    endAdornment={
-                                        <InputAdornment position="end" sx={{ position: 'relative' }}>
-                                            {/* CloseIcon - Xóa voucher */}
-                                            {selectedVoucherCode && (
-                                                <CloseIcon
-                                                    sx={{
-                                                        color: 'red',
-                                                        fontSize: 14,
-                                                        cursor: 'pointer',
-                                                        position: 'absolute',
-                                                        left: -13, // Dịch sang phải thêm 5px
-                                                        top: '-3px', // Đưa lên cao hơn
-                                                        transform: 'translateY(-50%)',
-                                                        backgroundColor: 'white', // Đảm bảo không bị che khuất
-                                                        borderRadius: '50%',
-                                                        boxShadow: '0 0 4px rgba(0,0,0,0.2)' // Thêm hiệu ứng nổi
-                                                    }}
-                                                    onClick={() => {
-                                                        setSelectedVoucherCode(''); // Xóa mã voucher
-                                                        setDiscountAmount(0); // Đặt giảm giá về 0 để cập nhật lại tổng tiền
-                                                    }}
-                                                />
-                                            )}
-                                            {/* EditIcon - Mở modal chọn voucher */}
-                                            <EditIcon
-                                                sx={{
-                                                    color: 'gray',
-                                                    fontSize: 18,
-                                                    cursor: 'pointer',
-                                                }}
-                                                onClick={handleOpenVoucherModal}
-                                            />
-                                        </InputAdornment>
-                                    }
-                                    inputProps={{
-                                        style: {
-                                            textAlign: 'right',
-                                            fontWeight: 'bold',
-                                        },
+                        <Box
+                            sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                marginTop: 2,
+                                alignItems: "flex-start", // Chuyển từ center sang flex-start để các box con có thể giãn theo chiều dọc
+                            }}
+                        >
+                            <Typography variant="body1" sx={{ marginTop: "6px" }}>
+                                Phiếu giảm giá:
+                            </Typography>
+
+                            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                                <Box
+                                    sx={{
+                                        position: "relative",
+                                        display: "flex",
+                                        alignItems: "center",
                                     }}
-                                />
+                                >
+                                    <Input
+                                        value={selectedVoucherCode}
+                                        sx={{ color: "#5e5e5ede", width: 140 }}
+                                        endAdornment={
+                                            <InputAdornment position="end" sx={{ position: "relative" }}>
+                                                {selectedVoucherCode && (
+                                                    <CloseIcon
+                                                        sx={{
+                                                            color: "red",
+                                                            fontSize: 14,
+                                                            cursor: "pointer",
+                                                            position: "absolute",
+                                                            left: -13,
+                                                            top: "-3px",
+                                                            transform: "translateY(-50%)",
+                                                            backgroundColor: "white",
+                                                            borderRadius: "50%",
+                                                            boxShadow: "0 0 4px rgba(0,0,0,0.2)",
+                                                        }}
+                                                        onClick={() => {
+                                                            setSelectedVoucherCode("");
+                                                            setDiscountAmount(0);
+                                                        }}
+                                                    />
+                                                )}
+                                                <EditIcon
+                                                    sx={{
+                                                        color: "gray",
+                                                        fontSize: 18,
+                                                        cursor: "pointer",
+                                                    }}
+                                                    onClick={handleOpenVoucherModal}
+                                                />
+                                            </InputAdornment>
+                                        }
+                                        inputProps={{
+                                            style: {
+                                                textAlign: "right",
+                                                fontWeight: "bold",
+                                            },
+                                        }}
+                                    />
+                                </Box>
+
+                                {selectedVoucherCode === bestVoucher?.ma && (
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: "green",
+                                            marginTop: "4px",
+                                            fontStyle: "italic",
+                                        }}
+                                    >
+                                        Phiếu giảm giá tốt nhất!
+                                    </Typography>
+                                )}
                             </Box>
                         </Box>
                         {showLeftPanel && (
@@ -1233,7 +1282,7 @@ const ThanhToan = () => {
                             </Box>
                         )}
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 1.5,marginTop:1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 1.5, marginTop: 1 }}>
                             <Typography>Giảm giá</Typography>
                             <Typography>{discountAmount.toLocaleString()} VNĐ</Typography>
                         </Box>
