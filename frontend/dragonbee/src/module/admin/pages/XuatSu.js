@@ -12,7 +12,7 @@ const XuatSu = () => {
 
   // Gọi API lấy danh sách Xuất Xứ từ Spring Boot
   useEffect(() => {
-    axios.get("http://localhost:8080/api/xuatsu")
+    axios.get("http://localhost:8080/api/xuatxu")
       .then(response => {
         setXuatSuList(response.data);
         setLoading(false);
@@ -59,7 +59,7 @@ const XuatSu = () => {
               {xuatSuList.map((xuatSu, index) => (
                 <TableRow key={xuatSu.id}>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{xuatSu.tenXuatSu}</TableCell>
+                  <TableCell>{xuatSu.tenXuatXu}</TableCell>
                   <TableCell>{xuatSu.moTa || "Không có mô tả"}</TableCell>
                   <TableCell sx={{ color: xuatSu.trangThai ? "green" : "red" }}>
                     {xuatSu.trangThai ? "Hoạt động" : "Ngừng hoạt động"}

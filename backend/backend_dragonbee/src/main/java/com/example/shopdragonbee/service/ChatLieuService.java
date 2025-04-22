@@ -80,4 +80,25 @@ public class ChatLieuService {
     public Page<ChatLieuDTO> searchChatLieu(String tenChatLieu, String trangThai, Pageable pageable) {
         return chatLieuRepository.searchChatLieu(tenChatLieu, trangThai,pageable);
     }
+
+    // chuyển trạng thái
+    public ChatLieuDTO toggleTrangThai(Integer id) {
+        Optional<ChatLieu> optional = chatLieuRepository.findById(id);
+        if (!optional.isPresent()) {
+            throw new RuntimeException("Không tìm thấy chất liệu với id: " + id);
+        }
+
+        ChatLieu chatLieu = optional.get();
+        String trangThaiHienTai = chatLieu.getTrangThai();
+
+        if ("Hoạt động".equalsIgnoreCase(trangThaiHienTai)) {
+            chatLieu.setTrangThai("Ngừng hoạt động");
+        } else {
+            chatLieu.setTrangThai("Hoạt động");
+        }
+
+        chatLieuRepository.save(chatLieu);
+
+        return new ChatLieuDTO(chatLieu);
+    }
 }

@@ -4,6 +4,7 @@ import com.example.shopdragonbee.dto.ChatLieuDTO;
 import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.dto.SanPhamDTO;
 import com.example.shopdragonbee.entity.ChatLieu;
+import com.example.shopdragonbee.repository.ChatLieuRepository;
 import com.example.shopdragonbee.service.ChatLieuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatLieuController {
     private final ChatLieuService chatLieuService;
-
+    private  final ChatLieuRepository chatLieuRepository;
 
     // lấy tất cả chất liệu
     @GetMapping("/all")
@@ -72,5 +74,29 @@ public class ChatLieuController {
 
         return ResponseEntity.ok(result);
 
+    }
+
+    // chuyển trạng thái
+    @PutMapping("/doi-trang-thai/{id}")
+    public ResponseEntity<ChatLieuDTO> doiTrangThai(@PathVariable Integer id) {
+        ChatLieuDTO updated = chatLieuService.toggleTrangThai(id);
+        return ResponseEntity.ok(updated);
+    }
+
+    // cập nhật chất liệu
+    @PutMapping("/cap-nhat/{id}")
+    public ResponseEntity<?> capNhatChatLieu(@PathVariable Integer id, @RequestBody ChatLieuDTO dto) {
+        Optional<ChatLieu> optionalChatLieu = chatLieuRepository.findById(id);
+        if (!optionalChatLieu.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        ChatLieu chatLieu = optionalChatLieu.get();
+        chatLieu.setTenChatLieu(dto.getTenChatLieu());
+        chatLieu.setMoTa(dto.getMoTa());
+        chatLieu.setTrangThai(dto.getTrangThai());
+
+        chatLieuRepository.save(chatLieu);
+        return ResponseEntity.ok(new ChatLieuDTO(chatLieu));
     }
 }

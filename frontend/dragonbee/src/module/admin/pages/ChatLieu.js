@@ -20,6 +20,12 @@ import {
   IconButton,
   CircularProgress,
   Grid,
+  Alert, Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Snackbar,
 } from "@mui/material";
 import {
   Add,
@@ -27,6 +33,8 @@ import {
   ChevronRight,
   Visibility,
 } from "@mui/icons-material";
+import { Autorenew } from "@mui/icons-material";
+import { Sync } from "@mui/icons-material"; // hoặc bất kỳ icon nào bạn thích
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const ChatLieu = () => {
@@ -42,6 +50,13 @@ const ChatLieu = () => {
   const [moTa, setMoTa] = useState("");
   const [trangThai, setTrangThai] = useState("");
   const [message, setMessage] = useState(""); // Thông báo thêm chất liệu thành công
+  const [selectedId, setSelectedId] = useState(null);
+const [confirmOpen, setConfirmOpen] = useState(false);
+const [snackbarOpen, setSnackbarOpen] = useState(false);
+const [snackbarMessage, setSnackbarMessage] = useState("");
+const [openEdit, setOpenEdit] = useState(false);
+const [selectedChatLieu, setSelectedChatLieu] = useState(null);
+const [snackbar, setSnackbar] = useState({ open: false, message: "" });
 
   const navigate = useNavigate();
   // Gọi API từ Spring Boot
@@ -128,6 +143,73 @@ const ChatLieu = () => {
       setMessage("Có lỗi xảy ra, vui lòng thử lại.");
     }
   };
+  // chuyển đổi trạng thái
+  const handleOpenConfirm = (id) => {
+    setSelectedId(id);
+    setConfirmOpen(true);
+  };
+  
+  const handleCloseConfirm = () => {
+    setConfirmOpen(false);
+    setSelectedId(null);
+  };
+  
+  const handleToggleTrangThai = async () => {
+    try {
+      const response = await axios.put(`http://localhost:8080/api/chatlieu/doi-trang-thai/${selectedId}`);
+  
+      // Cập nhật lại danh sách
+      const updatedList = chatLieuList.map((item) =>
+        item.id === selectedId ? response.data : item
+      );
+      setChatLieuList(updatedList);
+  
+      // Đóng confirm & hiện thông báo
+      setConfirmOpen(false);
+      setSnackbarMessage("Chuyển đổi trạng thái thành công!");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Lỗi khi đổi trạng thái:", error);
+      alert("Có lỗi xảy ra khi đổi trạng thái chất liệu.");
+    }
+  };
+  // cập nhật chất liệu 
+  const handleOpenEdit = (chatLieu) => {
+    setSelectedChatLieu({ ...chatLieu }); // clone object
+    setOpenEdit(true);
+  };
+
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
+    setSelectedChatLieu(null);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedChatLieu((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const res = await axios.put(
+        `http://localhost:8080/api/chatlieu/cap-nhat/${selectedChatLieu.id}`,
+        selectedChatLieu
+      );
+      const updated = res.data;
+
+      // Cập nhật lại danh sách
+      setChatLieuList((prev) =>
+        prev.map((cl) => (cl.id === updated.id ? updated : cl))
+      );
+
+      setSnackbar({ open: true, message: "Cập nhật chất liệu thành công!" });
+      handleCloseEdit();
+    } catch (err) {
+      console.error("Lỗi cập nhật:", err);
+      alert("Đã xảy ra lỗi khi cập nhật chất liệu.");
+    }
+  };
+  
   return (
     <Box>
       {/* Header */}
@@ -287,7 +369,7 @@ const ChatLieu = () => {
                     <strong>Trạng Thái</strong>
                   </TableCell>
                   <TableCell align="center">
-                    <strong>Action</strong>
+                    <strong>Hoạt động</strong>
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -311,9 +393,18 @@ const ChatLieu = () => {
                           : "Ngừng hoạt động"}
                       </TableCell>
                       <TableCell align="center">
-                        <IconButton color="primary">
+                        <IconButton  color="primary" onClick={() => handleOpenEdit(chatLieu)}>
                           <Visibility />
                         </IconButton>
+                        <IconButton
+  color="secondary"
+  onClick={() => handleOpenConfirm(chatLieu.id)}
+  title="Chuyển đổi trạng thái"
+>
+  <Sync />
+</IconButton>
+
+
                       </TableCell>
                     </TableRow>
                   ))
@@ -327,6 +418,81 @@ const ChatLieu = () => {
               </TableBody>
             </Table>
           </TableContainer>
+            {/* Dialog chỉnh sửa chất liệu */}
+      <Dialog open={openEdit} onClose={handleCloseEdit}>
+        <DialogTitle>Chỉnh sửa chất liệu</DialogTitle>
+        <DialogContent sx={{ minWidth: 400, display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+          <TextField
+            label="Tên chất liệu"
+            name="tenChatLieu"
+            value={selectedChatLieu?.tenChatLieu || ""}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            label="Mô tả"
+            name="moTa"
+            value={selectedChatLieu?.moTa || ""}
+            onChange={handleChange}
+            fullWidth
+            multiline
+          />
+          <TextField
+            select
+            label="Trạng thái"
+            name="trangThai"
+            value={selectedChatLieu?.trangThai || ""}
+            onChange={handleChange}
+            fullWidth
+          >
+            <MenuItem value="Hoạt động">Hoạt động</MenuItem>
+            <MenuItem value="Ngừng hoạt động">Ngừng hoạt động</MenuItem>
+          </TextField>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEdit}>Hủy</Button>
+          <Button onClick={handleUpdate} variant="contained">Cập nhật</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar thông báo */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ open: false, message: "" })}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="success" sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+          <Dialog
+  open={confirmOpen}
+  onClose={handleCloseConfirm}
+>
+  <DialogTitle>Xác nhận chuyển đổi trạng thái</DialogTitle>
+  <DialogContent>
+    <DialogContentText>
+      Bạn có chắc muốn chuyển đổi trạng thái chất liệu này không?
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleCloseConfirm} color="error">Hủy</Button>
+    <Button onClick={handleToggleTrangThai} color="primary" autoFocus>
+      Đồng ý
+    </Button>
+  </DialogActions>
+</Dialog>
+<Snackbar
+  open={snackbarOpen}
+  autoHideDuration={3000}
+  onClose={() => setSnackbarOpen(false)}
+  anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+>
+  <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+    {snackbarMessage}
+  </Alert>
+</Snackbar>
 
           {/* Phân trang */}
           <Box

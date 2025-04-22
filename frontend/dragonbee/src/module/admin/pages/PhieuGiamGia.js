@@ -27,6 +27,8 @@ import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const DiscountCoupons = () => {
   const navigate = useNavigate();
@@ -144,6 +146,39 @@ const DiscountCoupons = () => {
       }, 3000); // Snackbar duration
     }
   }, [location]);
+  // hàm xuất excel
+  const handleExportExcel = () => {
+    console.log("Dữ liệu cần xuất:", data);
+  
+    // Kiểm tra dữ liệu có tồn tại không
+    if (!Array.isArray(data) || data.length === 0) {
+      alert("Không có dữ liệu để xuất!");
+      return;
+    }
+  
+    if (!window.confirm("Bạn có muốn xuất file Excel không?")) return;
+  
+    const excelData = data.map((row, index) => ({
+      "STT": index + 1,
+      "Mã": row.ma,
+      "Tên": row.tenPhieuGiamGia,
+      "Kiểu": row.kieuGiamGia,
+      "Loại": row.formattedGiaTriGiam,
+      "Số lượng": row.soLuong,
+      "Ngày bắt đầu": new Date(row.ngayBatDau).toLocaleString("vi-VN"),
+      "Ngày kết thúc": new Date(row.ngayKetThuc).toLocaleString("vi-VN"),
+      "Trạng thái": row.trangThai,
+    }));
+  
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Danh sách");
+  
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const file = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(file, "DanhSachPhieuGiamGia.xlsx");
+  };
+  
   
   return (
     <Box >
@@ -187,14 +222,15 @@ const DiscountCoupons = () => {
           Phiếu Giảm Giá
         </Typography>
         <Box>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ marginRight: 2 }}
-            onClick={() => alert("Xuất Excel")}
-          >
-            Xuất Excel
-          </Button>
+        <Button
+  variant="contained"
+  color="primary"
+  sx={{ marginRight: 2 }}
+  onClick={handleExportExcel}
+>
+  Xuất Excel
+</Button>
+
           <Button
             variant="outlined"
             sx={{

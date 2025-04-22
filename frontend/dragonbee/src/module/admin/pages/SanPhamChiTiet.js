@@ -60,22 +60,6 @@ const SanPhamChiTiet = () => {
   const [openModalAnh, setOpenModalAnh] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [productDetails, setProductDetails] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredList, setFilteredList] = useState([]);
-  const [filters, setFilters] = useState({
-    search: "",
-    trangThai: "",
-    thuongHieu: "",
-    danhMuc: "",
-    phongCach: "",
-    chatLieu: "",
-    xuatXu: "",
-    mauSac: "",
-    size: "",
-    kieuDang: "",
-    kieuDaiQuan: "",
-    priceRange: [100000, 5000000],
-  });
   const [size, setSize] = useState(5); // Hoặc giá trị mặc định phù hợp
   const [commonPrice, setCommonPrice] = useState("");
   const [commonQuantity, setCommonQuantity] = useState("");
@@ -85,6 +69,7 @@ const SanPhamChiTiet = () => {
   const [open, setOpen] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(5); // Mặc định là 5 item mỗi trang
   const [selectedItems, setSelectedItems] = useState([]); // Dùng để lưu trữ các sản phẩm được chọn
+  const [sanPhams, setSanPhams] = useState([]);
   const [danhMucs, setDanhMucs] = useState("");
   const [thuongHieus, setThuongHieus] = useState("");
   const [phongCachs, setPhongCachs] = useState("");
@@ -96,6 +81,19 @@ const SanPhamChiTiet = () => {
   const [sizes, setSizes] = useState("");
   const [openSnackbarUpdate, setOpenSnackbarUpdate] = useState(false); // Điều khiển Snackbar
   const [snackbarMessageUpdate, setSnackbarMessageUpdate] = useState(""); // Thông báo hiển thị trong Snackbar
+  const [filters, setFilters] = useState({
+    tenSanPham: "",
+    tenThuongHieu: "",
+    tenDanhMuc: "",
+    tenPhongCach: "",
+    tenChatLieu: "",
+    tenXuatXu: "",
+    tenMauSac: "",
+    tenSize: "",
+    tenKieuDang: "",
+    tenKieuDaiQuan: "",
+    priceRange: [100000, 5000000],
+  });
   // Hàm tải mã QR cho sản phẩm chi tiết
   const handleDownloadQRCode = async (productDetailId) => {
     try {
@@ -126,95 +124,25 @@ const SanPhamChiTiet = () => {
       alert("Có lỗi khi tải mã QR.");
     }
   };
-  const fetchSanPhamChiTietById = async (id) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8080/api/sanpham/by-san-pham/${id}`,
-        {
-          params: {
-            page: page - 1,
-            size: itemsPerPage,
-          },
-        }
-      );
-  
-      setChiTietList(response.data.content);  // Cập nhật danh sách sản phẩm chi tiết
-      setTotalPages(response.data.totalPages);  // Cập nhật tổng số trang
-    } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết theo ID:", error);
-    }
-  };
-  
-
-  // Hàm lấy tất cả sản phẩm chi tiết
-  const fetchAllSanPhamChiTiet = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:8080/api/sanpham/chi-tiet/all",
-        {
-          params: {
-            page: page - 1,
-            size: itemsPerPage,
-          },
-        }
-      );
-      setChiTietList(response.data.content);
-      setTotalPages(response.data.totalPages);
-    } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
-    }
-  };
-
-  // useEffect để gọi API khi id, page, hoặc itemsPerPage thay đổi
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        if (!showAllDetails) {
-          // Nếu không hiển thị toàn bộ sản phẩm, lấy theo ID sản phẩm cha
-          await fetchSanPhamChiTietById(id);
+   // đổ sản phẩm
+   useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/sanpham")
+      .then((res) => {
+        console.log("Danh Mục API Response:", res.data); // Kiểm tra dữ liệu API
+        if (Array.isArray(res.data)) {
+          setSanPhams(res.data); // Đảm bảo res.data là một mảng
         } else {
-          // Nếu hiển thị toàn bộ, lấy tất cả sản phẩm chi tiết
-          await fetchAllSanPhamChiTiet();
+          console.error("Dữ liệu trả về không phải là mảng:", res.data);
         }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
-        setChiTietList([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    console.log("danh sách:", chiTietList);
-    fetchData();
-  }, [id, page, itemsPerPage, showAllDetails]); // Gọi lại khi id, page, itemsPerPage, showAllDetails thay đổi
-
-  const handleShowAllToggle = () => {
-    setShowAllDetails(!showAllDetails);
-    setPage(1); // Khi đổi trạng thái, reset lại trang về 1
-
-    setSnackbarMessage(
-      !showAllDetails
-        ? "Đang hiển thị toàn bộ sản phẩm chi tiết."
-        : "Đã ẩn sản phẩm chi tiết."
-    );
-    setOpenSnackbar(true);
-  };
-  const handleFilterChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
-    setPage(1);
-  };
-
-  const fieldLabels = {
-    thuongHieu: "Thương Hiệu",
-    danhMuc: "Danh Mục",
-    phongCach: "Phong Cách",
-    chatLieu: "Chất Liệu",
-    xuatXu: "Xuất Xứ",
-    mauSac: "Màu Sắc",
-    size: "Kích Cỡ",
-    kieuDang: "Kiểu Dáng",
-    kieuDaiQuan: "Kiểu Đai Quần",
-  };
+      })
+      .catch((error) => {
+        console.error(
+          "Lỗi API Danh Mục:",
+          error.response ? error.response.data : error.message
+        );
+      });
+  }, []);
   // đổ danh mục
   useEffect(() => {
     axios
@@ -345,11 +273,113 @@ const SanPhamChiTiet = () => {
       .catch((error) => console.error(error));
   }, []);
 
-  // update
-  const handlePriceChange = (event, newValue) => {
-    setFilters({ ...filters, priceRange: newValue });
-    setPage(1);
+  const fetchSanPhamChiTietById = async (id) => {
+    const response = await axios.get(
+      `http://localhost:8080/api/sanpham/by-san-pham/${id}`,
+      {
+        params: {
+          page: page - 1,
+          size: rowsPerPage,
+        },
+      }
+    );
+    setChiTietList(response.data.content);
+    setTotalPages(response.data.totalPages);
   };
+  
+  const fetchAllSanPhamChiTiet = async () => {
+    const response = await axios.get(
+      "http://localhost:8080/api/sanpham/chi-tiet/all",
+      {
+        params: {
+          page: page - 1,
+          size: rowsPerPage,
+        },
+      }
+    );
+    setChiTietList(response.data.content);
+    setTotalPages(response.data.totalPages);
+  };
+  
+  const fetchFilteredSanPhamChiTiet = async () => {
+    const params = {
+      tenSanPham: filters.tenSanPham || undefined,
+      tenDanhMuc: filters.tenDanhMuc || undefined,
+      tenThuongHieu: filters.tenThuongHieu || undefined,
+      tenPhongCach: filters.tenPhongCach || undefined,
+      tenChatLieu: filters.tenChatLieu || undefined,
+      tenKieuDang: filters.tenKieuDang || undefined,
+      tenKieuDaiQuan: filters.tenKieuDaiQuan || undefined,
+      tenMauSac: filters.tenMauSac || undefined,
+      tenSize: filters.tenSize || undefined,
+      tenXuatXu: filters.tenXuatXu || undefined,
+      minPrice: filters.priceRange[0],
+      maxPrice: filters.priceRange[1],
+      page: page - 1,
+      size: rowsPerPage,
+    };
+  
+    const response = await axios.get(
+      "http://localhost:8080/api/san-pham-chi-tiet/tim-kiem",
+      { params }
+    );
+    setChiTietList(response.data.content);
+    setTotalPages(response.data.totalPages);
+  };
+  
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        if (id && !showAllDetails) {
+          // Trường hợp đang xem theo sản phẩm cha
+          await fetchSanPhamChiTietById(id);
+        } else if (showAllDetails && isFilteringEmpty(filters)) {
+          // Trường hợp hiển thị toàn bộ và KHÔNG LỌC
+          await fetchAllSanPhamChiTiet();
+        } else {
+          // Trường hợp lọc
+          await fetchFilteredSanPhamChiTiet();
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
+        setChiTietList([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [id, showAllDetails, filters, page, rowsPerPage]);
+  
+  
+
+  const handleShowAllToggle = () => {
+    setShowAllDetails(!showAllDetails);
+    setPage(1); // Khi đổi trạng thái, reset lại trang về 1
+
+    setSnackbarMessage(
+      !showAllDetails
+        ? "Đang hiển thị toàn bộ sản phẩm chi tiết."
+        : "Đã ẩn sản phẩm chi tiết."
+    );
+    setOpenSnackbar(true);
+  };
+  const fieldLabels = {
+    thuongHieu: "Thương Hiệu",
+    danhMuc: "Danh Mục",
+    phongCach: "Phong Cách",
+    chatLieu: "Chất Liệu",
+    xuatXu: "Xuất Xứ",
+    mauSac: "Màu Sắc",
+    size: "Kích Cỡ",
+    kieuDang: "Kiểu Dáng",
+    kieuDaiQuan: "Kiểu Đai Quần",
+  };
+ 
+
+  // update
   // Hàm xử lý thay đổi số lượng và giá
   // Hàm xử lý khi thay đổi checkbox "Chọn tất cả"
   const handleSelectAllChange = (event) => {
@@ -489,8 +519,7 @@ const SanPhamChiTiet = () => {
       setOpenSnackbar(true);
     }
   };
-
-  const handleSave = async () => {
+const handleSave = async () => {
     const anhUrlsCurrent = selectedItem.anhUrls || [];
     const anhUrlsOriginal = selectedItem.anhUrlsOriginal || [];
     const anhSanPhamList = selectedItem.anhSanPhams || [];
@@ -635,55 +664,6 @@ const SanPhamChiTiet = () => {
   const handleClose = () => {
     setOpen(false); // Chỉ đóng khi người dùng nhấn "Hủy"
   };
-  // tìm kiếm
-  // Gọi API khi tìm kiếm
-  const handleSearch = () => {
-    const lowercasedSearchTerm = searchTerm.toLowerCase();
-    // Tìm kiếm trong toàn bộ danh sách sản phẩm chi tiết
-    const filtered = chiTietList.filter((item) =>
-      item.tenSanPham.toLowerCase().includes(lowercasedSearchTerm)
-    );
-    setFilteredList(filtered);
- 
-  };
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        if (!showAllDetails) {
-          // Nếu không hiển thị toàn bộ sản phẩm, lấy theo ID sản phẩm cha
-          await fetchSanPhamChiTietById(id);
-        } else {
-          // Nếu hiển thị toàn bộ, lấy tất cả sản phẩm chi tiết
-          await fetchAllSanPhamChiTiet();
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu sản phẩm chi tiết:", error);
-        setChiTietList([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id, page, itemsPerPage, showAllDetails]); // Gọi lại khi id, page, itemsPerPage, showAllDetails thay đổi
-  
-  // useEffect để gọi hàm tìm kiếm mỗi khi searchTerm thay đổi
-  useEffect(() => {
-    if (searchTerm) {
-      handleSearch();
-    } else {
-      setFilteredList(chiTietList); // Nếu không có tìm kiếm, hiển thị toàn bộ sản phẩm
-    }
-  }, [searchTerm, chiTietList]); // Thay đổi khi tìm kiếm hoặc danh sách sản phẩm chi tiết thay đổi
-  
-  // Phân trang các kết quả tìm kiếm
-  const paginatedList = filteredList.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
-  
-
   // cập nhật số lượng và giá
   const handleUpdateProducts = async () => {
     // Khởi tạo đối tượng updatedProducts chỉ chứa các trường thay đổi
@@ -772,13 +752,34 @@ const SanPhamChiTiet = () => {
       alert("Có lỗi xảy ra khi thay đổi trạng thái sản phẩm chi tiết!");
     }
   };
-  
-  
+
+  const isFilteringEmpty = (filters) => {
+    const { priceRange, ...rest } = filters;
+    const hasFilter = Object.values(rest).some((val) => val && val.trim() !== "");
+    const isPriceChanged = priceRange[0] !== 100000 || priceRange[1] !== 5000000;
+    return !hasFilter && !isPriceChanged;
+  };
   
 
-  
-  
-  
+
+const handleFilterChange = (event) => {
+  const { name, value } = event.target;
+  setFilters((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+  setPage(1);
+};
+
+const handlePriceChange = (event, newValue) => {
+  setFilters((prev) => ({
+    ...prev,
+    priceRange: newValue,
+  }));
+  setPage(1);
+};
+
+
   return (
     <Box>
       <Grid
@@ -798,62 +799,206 @@ const SanPhamChiTiet = () => {
       </Button>
 
       {/* Bộ lọc */}
-      <Paper sx={{ padding: 2, mb: 2 }}>
-        <Grid container spacing={1} alignItems="center">
-          <Grid item xs={12} md={3}>
-            {/* Thêm ô tìm kiếm */}
-            <TextField
-              label="Tìm kiếm sản phẩm"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </Grid>
+      <Paper sx={{ p: 2, mb: 3 }}>
+      <Grid container spacing={2}>
+        {/* Tên sản phẩm */}
+        <Grid item xs={12} sm={6} md={3}>
+        <TextField
+  label="Tên sản phẩm"
+  name="tenSanPham"
+  value={filters.tenSanPham}
+  onChange={handleFilterChange}
+  fullWidth
+/>
 
-          {Object.keys(fieldLabels).map((field) => (
-            <Grid item xs={6} md={2} key={field}>
-              <FormControl fullWidth size="small">
-                <Typography variant="caption">{fieldLabels[field]}</Typography>
-                <Select
-                  name={field}
-                  value={filters[field]}
-                  onChange={handleFilterChange}
-                  displayEmpty
-                >
-                  <MenuItem value="">Tất cả</MenuItem>
-                  {Array.isArray(chiTietList) &&
-                    chiTietList.length > 0 &&
-                    Array.from(
-                      new Set(chiTietList.map((item) => item[field]))
-                    ).map((value) => (
-                      <MenuItem key={value} value={value}>
-                        {value}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          ))}
-
-          <Grid item xs={5} md={3}>
-            <Typography variant="body2">
-              Khoảng giá: {filters.priceRange[0].toLocaleString()} VNĐ -{" "}
-              {filters.priceRange[1].toLocaleString()} VNĐ
-            </Typography>
-            <Slider
-              value={filters.priceRange}
-              onChange={handlePriceChange}
-              valueLabelDisplay="auto"
-              min={100000}
-              max={5000000}
-              step={100000}
-              sx={{ mt: -1 }}
-            />
-          </Grid>
         </Grid>
-      </Paper>
+
+        {/* Dropdowns */}
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            select
+            fullWidth
+            label="Danh mục"
+            name="tenDanhMuc"
+            value={filters.danhMuc}
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            {Array.isArray(danhMucs) &&
+              danhMucs.map((dm) => (
+                <MenuItem key={dm.id} value={dm.tenDanhMuc}>
+                  {dm.tenDanhMuc}
+                </MenuItem>
+              ))}
+          </TextField>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            select
+            fullWidth
+            label="Thương hiệu"
+            name="tenThuongHieu"
+            value={filters.thuongHieu}
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            {Array.isArray(thuongHieus) &&
+              thuongHieus.map((th) => (
+                <MenuItem key={th.id} value={th.tenThuongHieu}>
+                  {th.tenThuongHieu}
+                </MenuItem>
+              ))}
+          </TextField>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            select
+            fullWidth
+            label="Phong cách"
+            name="tenPhongCach"
+            value={filters.phongCach}
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            {Array.isArray(phongCachs) &&
+              phongCachs.map((pc) => (
+                <MenuItem key={pc.id} value={pc.tenPhongCach}>
+                  {pc.tenPhongCach}
+                </MenuItem>
+              ))}
+          </TextField>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            select
+            fullWidth
+            label="Chất liệu"
+            name="tenChatLieu"
+            value={filters.chatLieu}
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            {Array.isArray(chatLieus) &&
+              chatLieus.map((cl) => (
+                <MenuItem key={cl.id} value={cl.tenChatLieu}>
+                  {cl.tenChatLieu}
+                </MenuItem>
+              ))}
+          </TextField>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            select
+            fullWidth
+            label="Kiểu dáng"
+            name="tenKieuDang"
+            value={filters.kieuDang}
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            {Array.isArray(kieuDangs) &&
+              kieuDangs.map((kd) => (
+                <MenuItem key={kd.id} value={kd.tenKieuDang}>
+                  {kd.tenKieuDang}
+                </MenuItem>
+              ))}
+          </TextField>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            select
+            fullWidth
+            label="Kiểu đai quần"
+            name="tenKieuDaiQuan"
+            value={filters.kieuDaiQuan}
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            {Array.isArray(kieuDaiQuans) &&
+              kieuDaiQuans.map((dq) => (
+                <MenuItem key={dq.id} value={dq.tenKieuDaiQuan}>
+                  {dq.tenKieuDaiQuan}
+                </MenuItem>
+              ))}
+          </TextField>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            select
+            fullWidth
+            label="Xuất xứ"
+            name="tenXuatXu"
+            value={filters.xuatXu}
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            {Array.isArray(xuatXus) &&
+              xuatXus.map((xx) => (
+                <MenuItem key={xx.id} value={xx.tenXuatXu}>
+                  {xx.tenXuatXu}
+                </MenuItem>
+              ))}
+          </TextField>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            select
+            fullWidth
+            label="Màu sắc"
+            name="tenMauSac"
+            value={filters.mauSac}
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            {Array.isArray(colors) &&
+              colors.map((mau) => (
+                <MenuItem key={mau.id} value={mau.tenMauSac}>
+                  {mau.tenMauSac}
+                </MenuItem>
+              ))}
+          </TextField>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            select
+            fullWidth
+            label="Size"
+            name="tenSize"
+            value={filters.tenSize}
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="">Tất cả</MenuItem>
+            {Array.isArray(sizes) &&
+              sizes.map((sz) => (
+                <MenuItem key={sz.id} value={sz.tenSize}>
+                  {sz.tenSize}
+                </MenuItem>
+              ))}
+          </TextField>
+        </Grid>
+
+        {/* Khoảng giá */}
+        <Grid item xs={12} md={6}>
+          <Typography gutterBottom>Khoảng giá (VNĐ)</Typography>
+          <Slider
+            value={filters.priceRange}
+            onChange={handlePriceChange}
+            valueLabelDisplay="auto"
+            min={0}
+            max={10000000}
+            step={50000}
+          />
+        </Grid>
+      </Grid>
+    </Paper>
       {/* Toggle Button */}
       <Paper sx={{ padding: 2, mb: 2 }}>
         <div
@@ -959,12 +1104,12 @@ const SanPhamChiTiet = () => {
       </TableRow>
     </TableHead>
     <TableBody>
-      {filteredList.length === 0 ? (
+      {chiTietList.length === 0 ? (
         <TableRow>
           <TableCell colSpan={18} align="center">Không có dữ liệu phù hợp</TableCell>
         </TableRow>
       ) : (
-        filteredList.map((item, index) => (
+        chiTietList.map((item, index) => (
           <TableRow key={item.id}>
             <TableCell>
               <input
@@ -973,9 +1118,9 @@ const SanPhamChiTiet = () => {
                 onChange={() => handleCheckboxChange(item.id)}
               />
             </TableCell>
-            <TableCell>{(page - 1) * 5 + index + 1}</TableCell>
+            <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
             <TableCell>{item.ma}</TableCell>
-            <TableCell>{item.tenSanPham || "Chưa có tên sản phẩm"}</TableCell>
+            <TableCell>{item.sanPham?.tenSanPham || "Chưa có tên sản phẩm"}</TableCell>
             <TableCell>{item.danhMuc?.tenDanhMuc || "Chưa có danh mục"}</TableCell>
             <TableCell>{item.thuongHieu?.tenThuongHieu || "Chưa có thương hiệu"}</TableCell>
             <TableCell>{item.phongCach?.tenPhongCach || "Chưa có phong cách"}</TableCell>

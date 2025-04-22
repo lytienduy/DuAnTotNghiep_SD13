@@ -127,7 +127,7 @@ public class SanPhamService {
         return new SanPhamChiTietRespone(
                 entity.getId(),
                 entity.getMa(),
-                entity.getSanPham() != null ? entity.getSanPham().getTenSanPham() : null,
+                entity.getSanPham() != null ? new SanPhamDTO(entity.getSanPham().getId(), entity.getSanPham().getTenSanPham()) : null,
 
                 entity.getDanhMuc() != null ? new DanhMucDTO(entity.getDanhMuc().getId(), entity.getDanhMuc().getTenDanhMuc()) : null,
                 entity.getThuongHieu() != null ? new ThuongHieuDTO(entity.getThuongHieu().getId(), entity.getThuongHieu().getTenThuongHieu()) : null,

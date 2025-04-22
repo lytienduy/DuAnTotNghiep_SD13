@@ -443,7 +443,12 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       console.log("Dữ liệu ảnh từ API:", data); // Kiểm tra dữ liệu ảnh
 
       if (data && Array.isArray(data.resources)) {
-        setCloudinaryImages(data.resources); // Cập nhật ảnh từ API
+        // Sắp xếp ảnh theo created_at (ảnh mới hơn xuống cuối cùng)
+        const sortedImages = data.resources.sort(
+          (a, b) => new Date(a.created_at) - new Date(b.created_at)
+        );
+
+        setCloudinaryImages(sortedImages); // Cập nhật ảnh đã sắp xếp vào state
       }
 
       setSelectedProductId(id);
@@ -502,11 +507,24 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
     }
 
     // Kiểm tra từng sản phẩm chi tiết có ảnh không
-    const isValid = productDetails.every(
+    const isValidImages = productDetails.every(
       (detail) => detail.images && detail.images.length > 0
     );
-    if (!isValid) {
+    if (!isValidImages) {
       alert("Vui lòng chọn ít nhất một ảnh cho mỗi sản phẩm chi tiết.");
+      return;
+    }
+
+    // Kiểm tra số lượng và giá phải lớn hơn 0
+    const invalidDetail = productDetails.find(
+      (detail) =>
+        !detail.quantity ||
+        detail.quantity <= 0 ||
+        !detail.price ||
+        detail.price <= 0
+    );
+    if (invalidDetail) {
+      alert("Số lượng và giá của mỗi sản phẩm phải lớn hơn 0.");
       return;
     }
 
@@ -526,7 +544,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       kieuDangId: selectedKieuDang,
       kieuDaiQuanId: selectedKieuDaiQuan,
       xuatXuId: selectedXuatXus,
-      anhUrls: detail.images || [], // Đảm bảo gửi đúng danh sách ảnh
+      anhUrls: detail.images || [],
     }));
 
     try {
@@ -2473,7 +2491,29 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
           </div>
         </Modal>
 
-        <Button onClick={handleSave}>Lưu</Button>
+        <Box display="flex" justifyContent="flex-end" mt={2}>
+          <Button
+            variant="outlined"
+            onClick={handleSave}
+            sx={{
+              border: "1px solid lightblue",
+              px: 3,
+              py: 1,
+              backgroundColor: "#f9f9f9",
+              borderRadius: "8px",
+              transition: "all 0.2s",
+              "&:hover": {
+                backgroundColor: "lightblue",
+              },
+              "&:active": {
+                backgroundColor: "#d5d5d5",
+                boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)",
+              },
+            }}
+          >
+            Lưu
+          </Button>
+        </Box>
       </Paper>
     </div>
   );

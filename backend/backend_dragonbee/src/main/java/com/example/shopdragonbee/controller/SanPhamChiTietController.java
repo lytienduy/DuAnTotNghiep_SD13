@@ -11,6 +11,9 @@ import com.example.shopdragonbee.repository.SanPhamChiTietRepository;
 import com.example.shopdragonbee.service.SanPhamChiTietService;
 import com.example.shopdragonbee.service.SanPhamService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -132,12 +135,7 @@ public class SanPhamChiTietController {
             return new ResponseEntity<>("❌ Lỗi khi thêm sản phẩm chi tiết: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    //tìm kiếm
-    @GetMapping("/search")
-    public ResponseEntity<List<SanPhamChiTiet>> searchSanPhamChiTiet(@RequestParam("ten") String ten) {
-        List<SanPhamChiTiet> sanPhamChiTietList = sanPhamChiTietService.searchSanPhamChiTietByTen(ten);
-        return ResponseEntity.ok(sanPhamChiTietList);
-    }
+    
     /// update số lượng và giá
     @PutMapping("/batch")
     public ResponseEntity<List<SanPhamChiTiet>> updateSanPhamChiTietBatch(
@@ -154,7 +152,7 @@ public class SanPhamChiTietController {
     }
 
     @GetMapping("/tim-kiem")
-    public ResponseEntity<List<SanPhamChiTiet>> searchSanPhamChiTiet(
+    public ResponseEntity<Page<SanPhamChiTiet>> searchSanPhamChiTiet(
             @RequestParam(required = false) String tenSanPham,
             @RequestParam(required = false) String tenDanhMuc,
             @RequestParam(required = false) String tenThuongHieu,
@@ -165,14 +163,19 @@ public class SanPhamChiTietController {
             @RequestParam(required = false) String tenMauSac,
             @RequestParam(required = false) String tenSize,
             @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice) {
-
-        List<SanPhamChiTiet> result = sanPhamChiTietService.searchSanPhamChiTiet(
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<SanPhamChiTiet> result = sanPhamChiTietService.searchSanPhamChiTiet(
                 tenSanPham, tenDanhMuc, tenThuongHieu, tenPhongCach, tenChatLieu,
-                tenKieuDang, tenKieuDaiQuan, tenMauSac, tenSize, minPrice, maxPrice);
+                tenKieuDang, tenKieuDaiQuan, tenMauSac, tenSize, minPrice, maxPrice, pageable);
 
         return ResponseEntity.ok(result);
     }
+
+
 
     // API chuyển đổi trạng thái giữa "Hoạt động" và "Ngừng hoạt động"
     @PatchMapping("/{id}/trang-thai")

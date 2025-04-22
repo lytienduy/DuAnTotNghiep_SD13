@@ -19,6 +19,8 @@ import com.example.shopdragonbee.repository.ThuongHieuRepository;
 import com.example.shopdragonbee.repository.XuatXuRepository;
 import com.example.shopdragonbee.specification.SanPhamChiTietSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -142,20 +144,21 @@ public class SanPhamChiTietService {
             sanPhamChiTiet.setSize(sizeRepository.findById(sanPhamChiTietUpdateDTO.getSizeId()).orElse(null));
         }
 
+        // Cập nhật số lượng và giá
         sanPhamChiTiet.setSoLuong(sanPhamChiTietUpdateDTO.getSoLuong());
         sanPhamChiTiet.setGia(sanPhamChiTietUpdateDTO.getGia());
 
-        // Cập nhật trạng thái sản phẩm chi tiết
-        if (sanPhamChiTiet.getSoLuong() == 0) {
+// Lưu trạng thái cũ
+        String trangThaiCu = sanPhamChiTiet.getTrangThai();
+
+// Cập nhật trạng thái sản phẩm chi tiết
+        if (sanPhamChiTietUpdateDTO.getSoLuong() == 0) {
             sanPhamChiTiet.setTrangThai("Hết hàng");
         } else {
-            // Kiểm tra nếu sanPhamChiTiet.getSanPham() không bị null
-            if (sanPhamChiTiet.getSanPham() != null) {
-                sanPhamChiTiet.setTrangThai(sanPhamChiTiet.getSanPham().getTrangThai());
-            } else {
-                sanPhamChiTiet.setTrangThai("Chưa xác định");
-            }
+            // Nếu số lượng > 0, giữ nguyên trạng thái cũ
+            sanPhamChiTiet.setTrangThai(trangThaiCu);
         }
+
 
         // Cập nhật ảnh cho sản phẩm chi tiết
         updateAnhSanPham(sanPhamChiTiet, sanPhamChiTietUpdateDTO.getAnhUrlsToAdd(), sanPhamChiTietUpdateDTO.getAnhIdsToDelete());
@@ -256,10 +259,6 @@ public class SanPhamChiTietService {
         return "IMG" + (maxId + 1);  // Tạo mã ảnh
     }
 
-    // tìm kiếm
-    public List<SanPhamChiTiet> searchSanPhamChiTietByTen(String ten) {
-        return sanPhamChiTietRepository.searchByTenSanPham(ten);
-    }
     // update số lượng và giá
     // Cập nhật nhiều sản phẩm chi tiết
     public List<SanPhamChiTiet> updateSanPhamChiTietBatch(List<UpdateSanphamChiTietDTO> updateDTOList) {
@@ -292,25 +291,28 @@ public class SanPhamChiTietService {
 
         return updatedSanPhamChiTietList;
     }
+    // bộ lọc
+    public Page<SanPhamChiTiet> searchSanPhamChiTiet(
+            String tenSanPham, String tenDanhMuc, String tenThuongHieu,
+            String tenPhongCach, String tenChatLieu, String tenKieuDang,
+            String tenKieuDaiQuan, String tenMauSac, String tenSize,
+            Double minPrice, Double maxPrice, Pageable pageable) {
 
-    /// lọc sản phẩm chi tiết
-    public List<SanPhamChiTiet> searchSanPhamChiTiet(String tenSanPham, String tenDanhMuc, String tenThuongHieu,
-                                                     String tenPhongCach, String tenChatLieu, String tenKieuDang,
-                                                     String tenKieuDaiQuan, String tenMauSac, String tenSize,
-                                                     Double minPrice, Double maxPrice) {
+        Specification<SanPhamChiTiet> spec = Specification.where(null);
 
-        Specification<SanPhamChiTiet> spec = Specification.where(
-                SanPhamChiTietSpecification.hasTenSanPhamLike(tenSanPham))
-                .and(SanPhamChiTietSpecification.hasDanhMuc(tenDanhMuc))
-                .and(SanPhamChiTietSpecification.hasThuongHieu(tenThuongHieu))
-                .and(SanPhamChiTietSpecification.hasPhongCach(tenPhongCach))
-                .and(SanPhamChiTietSpecification.hasChatLieu(tenChatLieu))
-                .and(SanPhamChiTietSpecification.hasKieuDang(tenKieuDang))
-                .and(SanPhamChiTietSpecification.hasKieuDaiQuan(tenKieuDaiQuan))
-                .and(SanPhamChiTietSpecification.hasMauSac(tenMauSac))
-                .and(SanPhamChiTietSpecification.hasSize(tenSize))
-                .and(SanPhamChiTietSpecification.isPriceBetween(minPrice, maxPrice));
+        spec = spec.and(SanPhamChiTietSpecification.hasTenSanPhamLike(tenSanPham));
+        spec = spec.and(SanPhamChiTietSpecification.hasDanhMuc(tenDanhMuc));
+        spec = spec.and(SanPhamChiTietSpecification.hasThuongHieu(tenThuongHieu));
+        spec = spec.and(SanPhamChiTietSpecification.hasPhongCach(tenPhongCach));
+        spec = spec.and(SanPhamChiTietSpecification.hasChatLieu(tenChatLieu));
+        spec = spec.and(SanPhamChiTietSpecification.hasKieuDang(tenKieuDang));
+        spec = spec.and(SanPhamChiTietSpecification.hasKieuDaiQuan(tenKieuDaiQuan));
+        spec = spec.and(SanPhamChiTietSpecification.hasMauSac(tenMauSac));
+        spec = spec.and(SanPhamChiTietSpecification.hasSize(tenSize));
+        spec = spec.and(SanPhamChiTietSpecification.isPriceBetween(minPrice, maxPrice));
 
-        return sanPhamChiTietRepository.findAll(spec);
+        return sanPhamChiTietRepository.findAll(spec, pageable);
     }
+
+
 }

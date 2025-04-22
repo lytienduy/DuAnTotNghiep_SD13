@@ -6,6 +6,7 @@ import com.example.shopdragonbee.dto.KieuDaiQuanDTO;
 import com.example.shopdragonbee.dto.KieuDangDTO;
 import com.example.shopdragonbee.dto.MauSacDTO;
 import com.example.shopdragonbee.dto.PhongCachDTO;
+import com.example.shopdragonbee.dto.SanPhamDTO;
 import com.example.shopdragonbee.dto.SizeDTO;
 import com.example.shopdragonbee.dto.ThuongHieuDTO;
 import com.example.shopdragonbee.dto.XuatXuDTO;
@@ -27,7 +28,7 @@ import java.util.List;
 public class SanPhamChiTietRespone {
     private Integer id;
     private String ma;
-    private String tenSanPham;
+    private SanPhamDTO sanPham;
 
     private DanhMucDTO danhMuc;
     private ThuongHieuDTO thuongHieu;
