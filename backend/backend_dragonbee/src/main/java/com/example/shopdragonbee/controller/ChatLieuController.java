@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,10 +36,9 @@ public class ChatLieuController {
     // API lấy danh sách chất liệu
     @GetMapping
     public ResponseEntity<Page<ChatLieuDTO>> getAllChatLieu(
-            @RequestParam(defaultValue = "0") int page,  // Mặc định là trang 0
-            @RequestParam(defaultValue = "5") int size)  // Mặc định là 5 phần tử mỗi trang
-    {
-        // Gọi service để lấy dữ liệu phân trang
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
         Page<ChatLieuDTO> result = chatLieuService.getChatLieuPaginated(page, size);
         return ResponseEntity.ok(result);
     }
@@ -68,13 +68,15 @@ public class ChatLieuController {
             @RequestParam(required = false, defaultValue = "") String trangThai,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-            Pageable pageable = PageRequest.of(page, size);
+
+        // Thêm sort theo id giảm dần
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
         Page<ChatLieuDTO> result = chatLieuService.searchChatLieu(tenChatLieu, trangThai, pageable);
 
         return ResponseEntity.ok(result);
-
     }
+
 
     // chuyển trạng thái
     @PutMapping("/doi-trang-thai/{id}")

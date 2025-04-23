@@ -20,7 +20,8 @@ import {
   IconButton,
   CircularProgress,
   Grid,
-  Alert, Dialog,
+  Alert,
+  Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
@@ -51,12 +52,13 @@ const ChatLieu = () => {
   const [trangThai, setTrangThai] = useState("");
   const [message, setMessage] = useState(""); // Thông báo thêm chất liệu thành công
   const [selectedId, setSelectedId] = useState(null);
-const [confirmOpen, setConfirmOpen] = useState(false);
-const [snackbarOpen, setSnackbarOpen] = useState(false);
-const [snackbarMessage, setSnackbarMessage] = useState("");
-const [openEdit, setOpenEdit] = useState(false);
-const [selectedChatLieu, setSelectedChatLieu] = useState(null);
-const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [openEdit, setOpenEdit] = useState(false);
+  const [selectedChatLieu, setSelectedChatLieu] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const [reload, setReload] = useState(false); // ✅ trigger reload sau khi thêm
 
   const navigate = useNavigate();
   // Gọi API từ Spring Boot
@@ -86,7 +88,7 @@ const [snackbar, setSnackbar] = useState({ open: false, message: "" });
         console.error("Lỗi khi lấy dữ liệu:", error);
         setLoading(false); // Đặt loading là false khi có lỗi
       });
-  }, [page, rowsPerPage, searchTenChatLieu, trangThai]); // Đảm bảo sử dụng searchTenChatLieu trong dependencies
+  }, [page, rowsPerPage, searchTenChatLieu, trangThai,reload]); // Đảm bảo sử dụng searchTenChatLieu trong dependencies
 
   const handleSearchTenChatLieuChange = (e) => {
     setSearchTenChatLieu(e.target.value);
@@ -124,46 +126,51 @@ const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const handleClose = () => setOpen(false);
   // Gọi API thêm chất liệu
   const handleAddChatLieu = async () => {
+    const confirm = window.confirm("Bạn có muốn thêm mới chất liệu không?");
+    if (!confirm) return;
+
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/chatlieu/add",
-        {
-          tenChatLieu,
-          moTa,
-        }
-      );
-      // Hiển thị thông báo thành công
-      setMessage("Thêm chất liệu thành công!");
-      // Reset các ô nhập
+      const response = await axios.post("http://localhost:8080/api/chatlieu/add", {
+        tenChatLieu,
+        moTa,
+      });
+
+      setMessage({ type: "success", text: "Thêm chất liệu thành công!" });
       setTenChatLieu("");
       setMoTa("");
       handleClose();
+
+      setPage(0); // Quay về trang đầu
+      setReload(prev => !prev); // Kích hoạt reload danh sách
     } catch (error) {
-      // Hiển thị thông báo lỗi nếu có
-      setMessage("Có lỗi xảy ra, vui lòng thử lại.");
+      setMessage({ type: "error", text: "Có lỗi xảy ra, vui lòng thử lại." });
     }
   };
+  
+  
   // chuyển đổi trạng thái
   const handleOpenConfirm = (id) => {
     setSelectedId(id);
     setConfirmOpen(true);
   };
-  
+
   const handleCloseConfirm = () => {
     setConfirmOpen(false);
     setSelectedId(null);
   };
-  
+
   const handleToggleTrangThai = async () => {
     try {
-      const response = await axios.put(`http://localhost:8080/api/chatlieu/doi-trang-thai/${selectedId}`);
-  
+      const response = await axios.put(
+        `http://localhost:8080/api/chatlieu/doi-trang-thai/${selectedId}`
+      );
+
       // Cập nhật lại danh sách
       const updatedList = chatLieuList.map((item) =>
         item.id === selectedId ? response.data : item
       );
       setChatLieuList(updatedList);
-  
+
       // Đóng confirm & hiện thông báo
       setConfirmOpen(false);
       setSnackbarMessage("Chuyển đổi trạng thái thành công!");
@@ -173,7 +180,7 @@ const [snackbar, setSnackbar] = useState({ open: false, message: "" });
       alert("Có lỗi xảy ra khi đổi trạng thái chất liệu.");
     }
   };
-  // cập nhật chất liệu 
+  // cập nhật chất liệu
   const handleOpenEdit = (chatLieu) => {
     setSelectedChatLieu({ ...chatLieu }); // clone object
     setOpenEdit(true);
@@ -209,144 +216,148 @@ const [snackbar, setSnackbar] = useState({ open: false, message: "" });
       alert("Đã xảy ra lỗi khi cập nhật chất liệu.");
     }
   };
-  
+
   return (
     <Box>
       {/* Header */}
       <Grid container alignItems="center" justifyContent="space-between">
-  {/* Tiêu đề */}
-  <Grid item>
-    <Typography variant="h4" gutterBottom>
-      Quản Lý Chất Liệu
-    </Typography>
-  </Grid>
+        {/* Tiêu đề */}
+        <Grid item>
+          <Typography variant="h4" gutterBottom>
+            Quản Lý Chất Liệu
+          </Typography>
+        </Grid>
 
-  {/* Nút Tạo Mới */}
-  <Grid item>
-    <Button
-      variant="outlined"
-      sx={{
-        color: "lightblue",
-        backgroundColor: "white",
-        borderColor: "lightblue",
-        "&:hover": {
-          backgroundColor: "lightblue",
-          color: "white",
-          borderColor: "lightblue",
-        },
-      }}
-      startIcon={<Add sx={{ color: "lightblue" }} />}
-      onClick={handleOpen}
-    >
-      Tạo Mới
-    </Button>
-  </Grid>
-</Grid>
-
-
-
+        {/* Nút Tạo Mới */}
+        <Grid item>
+          <Button
+            variant="outlined"
+            sx={{
+              color: "lightblue",
+              backgroundColor: "white",
+              borderColor: "lightblue",
+              "&:hover": {
+                backgroundColor: "lightblue",
+                color: "white",
+                borderColor: "lightblue",
+              },
+            }}
+            startIcon={<Add sx={{ color: "lightblue" }} />}
+            onClick={handleOpen}
+          >
+            Tạo Mới
+          </Button>
+        </Grid>
+      </Grid>
 
       {/* Ô tìm kiếm tên chất liệu */}
       <Paper sx={{ padding: 3, mb: 3 }}>
-  {/* Sử dụng Grid container để thẳng hàng ô tìm kiếm, bộ lọc và nút tạo mới */}
-  <Grid container spacing={2} alignItems="center">
-    {/* Tìm kiếm */}
-    <Grid item xs={12} md={4}>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-        Tìm kiếm
-      </Typography>
-      <TextField
-        label="Tìm kiếm theo tên chất liệu"
-        value={searchTenChatLieu}
-        onChange={handleSearchTenChatLieuChange}
-        fullWidth
-        size="small" // Giảm kích thước của TextField
-      />
-    </Grid>
+        {/* Sử dụng Grid container để thẳng hàng ô tìm kiếm, bộ lọc và nút tạo mới */}
+        <Grid container spacing={2} alignItems="center">
+          {/* Tìm kiếm */}
+          <Grid item xs={12} md={4}>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+              Tìm kiếm
+            </Typography>
+            <TextField
+              label="Tìm kiếm theo tên chất liệu"
+              value={searchTenChatLieu}
+              onChange={handleSearchTenChatLieuChange}
+              fullWidth
+              size="small" // Giảm kích thước của TextField
+            />
+          </Grid>
 
-    {/* Bộ lọc trạng thái */}
-    <Grid item xs={12} md={3}>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-        Trạng thái
-      </Typography>
-      <FormControl fullWidth size="small" variant="outlined">
-        <Select
-          value={trangThai}
-          onChange={(e) => setTrangThai(e.target.value)}
-          displayEmpty
+          {/* Bộ lọc trạng thái */}
+          <Grid item xs={12} md={3}>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+              Trạng thái
+            </Typography>
+            <FormControl fullWidth size="small" variant="outlined">
+              <Select
+                value={trangThai}
+                onChange={(e) => setTrangThai(e.target.value)}
+                displayEmpty
+              >
+                <MenuItem value="">Tất cả</MenuItem>
+                <MenuItem value="Hoạt động">Hoạt động</MenuItem>
+                <MenuItem value="Ngừng hoạt động">Ngừng hoạt động</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Nút tạo mới */}
+        </Grid>
+
+        {/* Modal */}
+        <Modal open={open} onClose={handleClose}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 400,
+              backgroundColor: "white",
+              padding: 3,
+              borderRadius: 2,
+              boxShadow: 24,
+            }}
+          >
+            <Typography variant="h6" component="h2">
+              Thêm Mới Chất Liệu
+            </Typography>
+
+            <TextField
+              label="Tên Chất Liệu"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={tenChatLieu}
+              onChange={(e) => setTenChatLieu(e.target.value)}
+            />
+
+            <TextField
+              label="Mô Tả"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={moTa}
+              onChange={(e) => setMoTa(e.target.value)}
+            />
+            {/* Nút Thêm */}
+            <Button
+              variant="contained"
+              sx={{ marginTop: 2 }}
+              onClick={handleAddChatLieu}
+              disabled={!tenChatLieu || !moTa} // Disable nếu tên hoặc mô tả trống
+            >
+              Thêm
+            </Button>
+          </Box>
+        </Modal>
+        
+        {message && (
+        <Snackbar
+          open={Boolean(message)}
+          autoHideDuration={4000}  // Thông báo tự động ẩn sau 4 giây
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }} // Vị trí góc phải phía trên
+          onClose={() => setMessage(null)}
         >
-          <MenuItem value="">Tất cả</MenuItem>
-          <MenuItem value="Hoạt động">Hoạt động</MenuItem>
-          <MenuItem value="Ngừng hoạt động">Ngừng hoạt động</MenuItem>
-        </Select>
-      </FormControl>
-    </Grid>
-
-    {/* Nút tạo mới */}
-   
-  </Grid>
-
-  {/* Modal */}
-  <Modal open={open} onClose={handleClose}>
-    <Box
-      sx={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 400,
-        backgroundColor: "white",
-        padding: 3,
-        borderRadius: 2,
-        boxShadow: 24,
-      }}
-    >
-      <Typography variant="h6" component="h2">
-        Thêm Mới Chất Liệu
-      </Typography>
-
-      <TextField
-        label="Tên Chất Liệu"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={tenChatLieu}
-        onChange={(e) => setTenChatLieu(e.target.value)}
-      />
-
-      <TextField
-        label="Mô Tả"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={moTa}
-        onChange={(e) => setMoTa(e.target.value)}
-      />
-
-      {/* Thông báo sau khi thêm thành công */}
-      {message && (
-        <Typography variant="body2" color="success.main" sx={{ marginTop: 2 }}>
-          {message}
-        </Typography>
+          <Alert
+            severity={message.type === "success" ? "success" : "error"}
+            sx={{ my: 2 }}
+            onClose={() => setMessage(null)}
+          >
+            {message.text}
+          </Alert>
+        </Snackbar>
       )}
 
-      {/* Nút Thêm */}
-      <Button
-        variant="contained"
-        sx={{ marginTop: 2 }}
-        onClick={handleAddChatLieu}
-        disabled={!tenChatLieu || !moTa} // Disable nếu tên hoặc mô tả trống
-      >
-        Thêm
-      </Button>
-    </Box>
-  </Modal>
-</Paper>
-
-
+      </Paper>
 
       {/* Nút tạo mới */}
-    
+
       {/* Hiển thị loading */}
       {loading ? (
         <CircularProgress />
@@ -393,18 +404,19 @@ const [snackbar, setSnackbar] = useState({ open: false, message: "" });
                           : "Ngừng hoạt động"}
                       </TableCell>
                       <TableCell align="center">
-                        <IconButton  color="primary" onClick={() => handleOpenEdit(chatLieu)}>
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleOpenEdit(chatLieu)}
+                        >
                           <Visibility />
                         </IconButton>
                         <IconButton
-  color="secondary"
-  onClick={() => handleOpenConfirm(chatLieu.id)}
-  title="Chuyển đổi trạng thái"
->
-  <Sync />
-</IconButton>
-
-
+                          color="secondary"
+                          onClick={() => handleOpenConfirm(chatLieu.id)}
+                          title="Chuyển đổi trạng thái"
+                        >
+                          <Sync />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
                   ))
@@ -418,81 +430,94 @@ const [snackbar, setSnackbar] = useState({ open: false, message: "" });
               </TableBody>
             </Table>
           </TableContainer>
-            {/* Dialog chỉnh sửa chất liệu */}
-      <Dialog open={openEdit} onClose={handleCloseEdit}>
-        <DialogTitle>Chỉnh sửa chất liệu</DialogTitle>
-        <DialogContent sx={{ minWidth: 400, display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-          <TextField
-            label="Tên chất liệu"
-            name="tenChatLieu"
-            value={selectedChatLieu?.tenChatLieu || ""}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Mô tả"
-            name="moTa"
-            value={selectedChatLieu?.moTa || ""}
-            onChange={handleChange}
-            fullWidth
-            multiline
-          />
-          <TextField
-            select
-            label="Trạng thái"
-            name="trangThai"
-            value={selectedChatLieu?.trangThai || ""}
-            onChange={handleChange}
-            fullWidth
-          >
-            <MenuItem value="Hoạt động">Hoạt động</MenuItem>
-            <MenuItem value="Ngừng hoạt động">Ngừng hoạt động</MenuItem>
-          </TextField>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseEdit}>Hủy</Button>
-          <Button onClick={handleUpdate} variant="contained">Cập nhật</Button>
-        </DialogActions>
-      </Dialog>
+          {/* Dialog chỉnh sửa chất liệu */}
+          <Dialog open={openEdit} onClose={handleCloseEdit}>
+            <DialogTitle>Chỉnh sửa chất liệu</DialogTitle>
+            <DialogContent
+              sx={{
+                minWidth: 400,
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                mt: 1,
+              }}
+            >
+              <TextField
+                label="Tên chất liệu"
+                name="tenChatLieu"
+                value={selectedChatLieu?.tenChatLieu || ""}
+                onChange={handleChange}
+                fullWidth
+              />
+              <TextField
+                label="Mô tả"
+                name="moTa"
+                value={selectedChatLieu?.moTa || ""}
+                onChange={handleChange}
+                fullWidth
+                multiline
+              />
+              <TextField
+                select
+                label="Trạng thái"
+                name="trangThai"
+                value={selectedChatLieu?.trangThai || ""}
+                onChange={handleChange}
+                fullWidth
+              >
+                <MenuItem value="Hoạt động">Hoạt động</MenuItem>
+                <MenuItem value="Ngừng hoạt động">Ngừng hoạt động</MenuItem>
+              </TextField>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseEdit}>Hủy</Button>
+              <Button onClick={handleUpdate} variant="contained">
+                Cập nhật
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-      {/* Snackbar thông báo */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar({ open: false, message: "" })}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert severity="success" sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-          <Dialog
-  open={confirmOpen}
-  onClose={handleCloseConfirm}
->
-  <DialogTitle>Xác nhận chuyển đổi trạng thái</DialogTitle>
-  <DialogContent>
-    <DialogContentText>
-      Bạn có chắc muốn chuyển đổi trạng thái chất liệu này không?
-    </DialogContentText>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleCloseConfirm} color="error">Hủy</Button>
-    <Button onClick={handleToggleTrangThai} color="primary" autoFocus>
-      Đồng ý
-    </Button>
-  </DialogActions>
-</Dialog>
-<Snackbar
-  open={snackbarOpen}
-  autoHideDuration={3000}
-  onClose={() => setSnackbarOpen(false)}
-  anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
->
-  <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-    {snackbarMessage}
-  </Alert>
-</Snackbar>
+          {/* Snackbar thông báo */}
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={3000}
+            onClose={() => setSnackbar({ open: false, message: "" })}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert severity="success" sx={{ width: "100%" }}>
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
+          <Dialog open={confirmOpen} onClose={handleCloseConfirm}>
+            <DialogTitle>Xác nhận chuyển đổi trạng thái</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Bạn có chắc muốn chuyển đổi trạng thái chất liệu này không?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseConfirm} color="error">
+                Hủy
+              </Button>
+              <Button onClick={handleToggleTrangThai} color="primary" autoFocus>
+                Đồng ý
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={3000}
+            onClose={() => setSnackbarOpen(false)}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert
+              onClose={() => setSnackbarOpen(false)}
+              severity="success"
+              sx={{ width: "100%" }}
+            >
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
 
           {/* Phân trang */}
           <Box
