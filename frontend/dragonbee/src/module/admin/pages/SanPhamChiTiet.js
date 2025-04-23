@@ -124,8 +124,8 @@ const SanPhamChiTiet = () => {
       alert("Có lỗi khi tải mã QR.");
     }
   };
-   // đổ sản phẩm
-   useEffect(() => {
+  // đổ sản phẩm
+  useEffect(() => {
     axios
       .get("http://localhost:8080/api/sanpham")
       .then((res) => {
@@ -286,7 +286,7 @@ const SanPhamChiTiet = () => {
     setChiTietList(response.data.content);
     setTotalPages(response.data.totalPages);
   };
-  
+
   const fetchAllSanPhamChiTiet = async () => {
     const response = await axios.get(
       "http://localhost:8080/api/sanpham/chi-tiet/all",
@@ -300,7 +300,7 @@ const SanPhamChiTiet = () => {
     setChiTietList(response.data.content);
     setTotalPages(response.data.totalPages);
   };
-  
+
   const fetchFilteredSanPhamChiTiet = async () => {
     const params = {
       tenSanPham: filters.tenSanPham || undefined,
@@ -318,7 +318,7 @@ const SanPhamChiTiet = () => {
       page: page - 1,
       size: rowsPerPage,
     };
-  
+
     const response = await axios.get(
       "http://localhost:8080/api/san-pham-chi-tiet/tim-kiem",
       { params }
@@ -326,7 +326,6 @@ const SanPhamChiTiet = () => {
     setChiTietList(response.data.content);
     setTotalPages(response.data.totalPages);
   };
-  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -349,11 +348,9 @@ const SanPhamChiTiet = () => {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, [id, showAllDetails, filters, page, rowsPerPage]);
-  
-  
 
   const handleShowAllToggle = () => {
     setShowAllDetails(!showAllDetails);
@@ -377,7 +374,6 @@ const SanPhamChiTiet = () => {
     kieuDang: "Kiểu Dáng",
     kieuDaiQuan: "Kiểu Đai Quần",
   };
- 
 
   // update
   // Hàm xử lý thay đổi số lượng và giá
@@ -519,7 +515,7 @@ const SanPhamChiTiet = () => {
       setOpenSnackbar(true);
     }
   };
-const handleSave = async () => {
+  const handleSave = async () => {
     const anhUrlsCurrent = selectedItem.anhUrls || [];
     const anhUrlsOriginal = selectedItem.anhUrlsOriginal || [];
     const anhSanPhamList = selectedItem.anhSanPhams || [];
@@ -738,7 +734,7 @@ const handleSave = async () => {
         newStatus = "Hoạt động"; // Giá trị mặc định trong trường hợp không có trạng thái hợp lệ
         break;
     }
-  
+
     try {
       // Gửi yêu cầu PATCH để cập nhật trạng thái sản phẩm chi tiết
       const response = await axios.patch(
@@ -746,7 +742,7 @@ const handleSave = async () => {
         { trangThaiMoi: newStatus }
       );
       alert(response.data.message); // Hiển thị thông báo thành công từ API
-  
+
       // Cập nhật trạng thái trong state frontend
       setChiTietList((prevList) =>
         prevList.map((item) =>
@@ -761,253 +757,242 @@ const handleSave = async () => {
 
   const isFilteringEmpty = (filters) => {
     const { priceRange, ...rest } = filters;
-    const hasFilter = Object.values(rest).some((val) => val && val.trim() !== "");
-    const isPriceChanged = priceRange[0] !== 100000 || priceRange[1] !== 5000000;
+    const hasFilter = Object.values(rest).some(
+      (val) => val && val.trim() !== ""
+    );
+    const isPriceChanged =
+      priceRange[0] !== 100000 || priceRange[1] !== 5000000;
     return !hasFilter && !isPriceChanged;
   };
-  
 
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setPage(1);
+  };
 
-const handleFilterChange = (event) => {
-  const { name, value } = event.target;
-  setFilters((prev) => ({
-    ...prev,
-    [name]: value,
-  }));
-  setPage(1);
-};
-
-const handlePriceChange = (event, newValue) => {
-  setFilters((prev) => ({
-    ...prev,
-    priceRange: newValue,
-  }));
-  setPage(1);
-};
-
+  const handlePriceChange = (event, newValue) => {
+    setFilters((prev) => ({
+      ...prev,
+      priceRange: newValue,
+    }));
+    setPage(1);
+  };
 
   return (
     <Box>
-      <Grid
-      display="flex"
-        container
-        alignItems="center"
-        sx={{ mb: 2 }}
-      >
-        <Button
-        color="black"
-        onClick={() => navigate("/admin/sanpham")}
-      >
-        <ArrowBack />
-      </Button>
+      <Grid display="flex" container alignItems="center" sx={{ mb: 2 }}>
+        <Button color="black" onClick={() => navigate("/admin/sanpham")}>
+          <ArrowBack />
+        </Button>
         <Typography variant="h4">Chi Tiết Sản Phẩm</Typography>
-        
       </Grid>
       {/* Bộ lọc */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Grid item xs={12}>
-                    <Typography variant="h6">Bộ Lọc</Typography>
-                  </Grid>
-      <Grid container spacing={2}>
-
-        {/* Tên sản phẩm */}
-        <Grid item xs={12} sm={6} md={3}>
-        <TextField
-  label="Tên sản phẩm"
-  name="tenSanPham"
-  value={filters.tenSanPham}
-  onChange={handleFilterChange}
-  fullWidth
-/>
-
+          <Typography variant="h6">Bộ Lọc</Typography>
         </Grid>
+        <Grid container spacing={2}>
+          {/* Tên sản phẩm */}
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              label="Tên sản phẩm"
+              name="tenSanPham"
+              value={filters.tenSanPham}
+              onChange={handleFilterChange}
+              fullWidth
+            />
+          </Grid>
 
-        {/* Dropdowns */}
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            select
-            fullWidth
-            label="Danh mục"
-            name="tenDanhMuc"
-            value={filters.danhMuc}
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Array.isArray(danhMucs) &&
-              danhMucs.map((dm) => (
-                <MenuItem key={dm.id} value={dm.tenDanhMuc}>
-                  {dm.tenDanhMuc}
-                </MenuItem>
-              ))}
-          </TextField>
-        </Grid>
+          {/* Dropdowns */}
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              select
+              fullWidth
+              label="Danh mục"
+              name="tenDanhMuc"
+              value={filters.danhMuc}
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {Array.isArray(danhMucs) &&
+                danhMucs.map((dm) => (
+                  <MenuItem key={dm.id} value={dm.tenDanhMuc}>
+                    {dm.tenDanhMuc}
+                  </MenuItem>
+                ))}
+            </TextField>
+          </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            select
-            fullWidth
-            label="Thương hiệu"
-            name="tenThuongHieu"
-            value={filters.thuongHieu}
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Array.isArray(thuongHieus) &&
-              thuongHieus.map((th) => (
-                <MenuItem key={th.id} value={th.tenThuongHieu}>
-                  {th.tenThuongHieu}
-                </MenuItem>
-              ))}
-          </TextField>
-        </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              select
+              fullWidth
+              label="Thương hiệu"
+              name="tenThuongHieu"
+              value={filters.thuongHieu}
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {Array.isArray(thuongHieus) &&
+                thuongHieus.map((th) => (
+                  <MenuItem key={th.id} value={th.tenThuongHieu}>
+                    {th.tenThuongHieu}
+                  </MenuItem>
+                ))}
+            </TextField>
+          </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            select
-            fullWidth
-            label="Phong cách"
-            name="tenPhongCach"
-            value={filters.phongCach}
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Array.isArray(phongCachs) &&
-              phongCachs.map((pc) => (
-                <MenuItem key={pc.id} value={pc.tenPhongCach}>
-                  {pc.tenPhongCach}
-                </MenuItem>
-              ))}
-          </TextField>
-        </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              select
+              fullWidth
+              label="Phong cách"
+              name="tenPhongCach"
+              value={filters.phongCach}
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {Array.isArray(phongCachs) &&
+                phongCachs.map((pc) => (
+                  <MenuItem key={pc.id} value={pc.tenPhongCach}>
+                    {pc.tenPhongCach}
+                  </MenuItem>
+                ))}
+            </TextField>
+          </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            select
-            fullWidth
-            label="Chất liệu"
-            name="tenChatLieu"
-            value={filters.chatLieu}
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Array.isArray(chatLieus) &&
-              chatLieus.map((cl) => (
-                <MenuItem key={cl.id} value={cl.tenChatLieu}>
-                  {cl.tenChatLieu}
-                </MenuItem>
-              ))}
-          </TextField>
-        </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              select
+              fullWidth
+              label="Chất liệu"
+              name="tenChatLieu"
+              value={filters.chatLieu}
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {Array.isArray(chatLieus) &&
+                chatLieus.map((cl) => (
+                  <MenuItem key={cl.id} value={cl.tenChatLieu}>
+                    {cl.tenChatLieu}
+                  </MenuItem>
+                ))}
+            </TextField>
+          </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            select
-            fullWidth
-            label="Kiểu dáng"
-            name="tenKieuDang"
-            value={filters.kieuDang}
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Array.isArray(kieuDangs) &&
-              kieuDangs.map((kd) => (
-                <MenuItem key={kd.id} value={kd.tenKieuDang}>
-                  {kd.tenKieuDang}
-                </MenuItem>
-              ))}
-          </TextField>
-        </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              select
+              fullWidth
+              label="Kiểu dáng"
+              name="tenKieuDang"
+              value={filters.kieuDang}
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {Array.isArray(kieuDangs) &&
+                kieuDangs.map((kd) => (
+                  <MenuItem key={kd.id} value={kd.tenKieuDang}>
+                    {kd.tenKieuDang}
+                  </MenuItem>
+                ))}
+            </TextField>
+          </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            select
-            fullWidth
-            label="Kiểu đai quần"
-            name="tenKieuDaiQuan"
-            value={filters.kieuDaiQuan}
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Array.isArray(kieuDaiQuans) &&
-              kieuDaiQuans.map((dq) => (
-                <MenuItem key={dq.id} value={dq.tenKieuDaiQuan}>
-                  {dq.tenKieuDaiQuan}
-                </MenuItem>
-              ))}
-          </TextField>
-        </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              select
+              fullWidth
+              label="Kiểu đai quần"
+              name="tenKieuDaiQuan"
+              value={filters.kieuDaiQuan}
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {Array.isArray(kieuDaiQuans) &&
+                kieuDaiQuans.map((dq) => (
+                  <MenuItem key={dq.id} value={dq.tenKieuDaiQuan}>
+                    {dq.tenKieuDaiQuan}
+                  </MenuItem>
+                ))}
+            </TextField>
+          </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            select
-            fullWidth
-            label="Xuất xứ"
-            name="tenXuatXu"
-            value={filters.xuatXu}
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Array.isArray(xuatXus) &&
-              xuatXus.map((xx) => (
-                <MenuItem key={xx.id} value={xx.tenXuatXu}>
-                  {xx.tenXuatXu}
-                </MenuItem>
-              ))}
-          </TextField>
-        </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              select
+              fullWidth
+              label="Xuất xứ"
+              name="tenXuatXu"
+              value={filters.xuatXu}
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {Array.isArray(xuatXus) &&
+                xuatXus.map((xx) => (
+                  <MenuItem key={xx.id} value={xx.tenXuatXu}>
+                    {xx.tenXuatXu}
+                  </MenuItem>
+                ))}
+            </TextField>
+          </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            select
-            fullWidth
-            label="Màu sắc"
-            name="tenMauSac"
-            value={filters.mauSac}
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Array.isArray(colors) &&
-              colors.map((mau) => (
-                <MenuItem key={mau.id} value={mau.tenMauSac}>
-                  {mau.tenMauSac}
-                </MenuItem>
-              ))}
-          </TextField>
-        </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              select
+              fullWidth
+              label="Màu sắc"
+              name="tenMauSac"
+              value={filters.mauSac}
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {Array.isArray(colors) &&
+                colors.map((mau) => (
+                  <MenuItem key={mau.id} value={mau.tenMauSac}>
+                    {mau.tenMauSac}
+                  </MenuItem>
+                ))}
+            </TextField>
+          </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            select
-            fullWidth
-            label="Size"
-            name="tenSize"
-            value={filters.tenSize}
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="">Tất cả</MenuItem>
-            {Array.isArray(sizes) &&
-              sizes.map((sz) => (
-                <MenuItem key={sz.id} value={sz.tenSize}>
-                  {sz.tenSize}
-                </MenuItem>
-              ))}
-          </TextField>
-        </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              select
+              fullWidth
+              label="Size"
+              name="tenSize"
+              value={filters.tenSize}
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {Array.isArray(sizes) &&
+                sizes.map((sz) => (
+                  <MenuItem key={sz.id} value={sz.tenSize}>
+                    {sz.tenSize}
+                  </MenuItem>
+                ))}
+            </TextField>
+          </Grid>
 
-        {/* Khoảng giá */}
-        <Grid item xs={12} md={6}>
-          <Typography gutterBottom>Khoảng giá (VNĐ)</Typography>
-          <Slider
-            value={filters.priceRange}
-            onChange={handlePriceChange}
-            valueLabelDisplay="auto"
-            min={0}
-            max={10000000}
-            step={50000}
-          />
+          {/* Khoảng giá */}
+          <Grid item xs={12} md={6}>
+            <Typography gutterBottom>Khoảng giá (VNĐ)</Typography>
+            <Slider
+              value={filters.priceRange}
+              onChange={handlePriceChange}
+              valueLabelDisplay="auto"
+              min={0}
+              max={10000000}
+              step={50000}
+            />
+          </Grid>
         </Grid>
-      </Grid>
-    </Paper>
+      </Paper>
       {/* Toggle Button */}
       <Paper sx={{ padding: 2, mb: 2 }}>
         <div
@@ -1081,136 +1066,213 @@ const handlePriceChange = (event, newValue) => {
           <div>
             {/* Bảng hiển thị sản phẩm */}
             <TableContainer component={Paper}>
-  <Table>
-    <TableHead>
-      <TableRow>
-        <TableCell>
-          <input
-            type="checkbox"
-            checked={isAllSelected} // Đảm bảo checkbox "Chọn tất cả" được chọn nếu tất cả các item được chọn
-            onChange={handleSelectAllChange} // Gọi hàm xử lý "Chọn tất cả"
-          />
-        </TableCell>
-        <TableCell><strong>STT</strong></TableCell>
-        <TableCell><strong>Mã SP Chi Tiết</strong></TableCell>
-        <TableCell><strong>Tên Sản Phẩm</strong></TableCell>
-        <TableCell><strong>Danh Mục</strong></TableCell>
-        <TableCell><strong>Thương Hiệu</strong></TableCell>
-        <TableCell><strong>Phong Cách</strong></TableCell>
-        <TableCell><strong>Chất Liệu</strong></TableCell>
-        <TableCell><strong>Màu Sắc</strong></TableCell>
-        <TableCell><strong>Kích Thước</strong></TableCell>
-        <TableCell><strong>Kiểu Dáng</strong></TableCell>
-        <TableCell><strong>Kiểu Đai Quần</strong></TableCell>
-        <TableCell><strong>Xuất Xứ</strong></TableCell>
-        <TableCell><strong>Số Lượng</strong></TableCell>
-        <TableCell><strong>Giá</strong></TableCell>
-        <TableCell><strong>Trạng Thái</strong></TableCell>
-        <TableCell><strong>Ảnh</strong></TableCell>
-        <TableCell><strong>Hành Động</strong></TableCell>
-        <TableCell>Download QR</TableCell>
-        <TableCell><strong>Chuyển Đổi Trạng Thái</strong></TableCell> {/* Cột mới */}
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {chiTietList.length === 0 ? (
-        <TableRow>
-          <TableCell colSpan={18} align="center">Không có dữ liệu phù hợp</TableCell>
-        </TableRow>
-      ) : (
-        chiTietList.map((item, index) => (
-          <TableRow key={item.id}>
-            <TableCell>
-              <input
-                type="checkbox"
-                checked={selectedItems.includes(item.id)}
-                onChange={() => handleCheckboxChange(item.id)}
-              />
-            </TableCell>
-            <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
-            <TableCell>{item.ma}</TableCell>
-            <TableCell>{item.sanPham?.tenSanPham || "Chưa có tên sản phẩm"}</TableCell>
-            <TableCell>{item.danhMuc?.tenDanhMuc || "Chưa có danh mục"}</TableCell>
-            <TableCell>{item.thuongHieu?.tenThuongHieu || "Chưa có thương hiệu"}</TableCell>
-            <TableCell>{item.phongCach?.tenPhongCach || "Chưa có phong cách"}</TableCell>
-            <TableCell>{item.chatLieu?.tenChatLieu || "Chưa có chất liệu"}</TableCell>
-            <TableCell>{item.mauSac?.tenMauSac || "Chưa có màu sắc"}</TableCell>
-            <TableCell>{item.size?.tenSize || "Chưa có kích cỡ"}</TableCell>
-            <TableCell>{item.kieuDang?.tenKieuDang || "Chưa có kiểu dáng"}</TableCell>
-            <TableCell>{item.kieuDaiQuan?.tenKieuDaiQuan || "Chưa có kiểu đai quần"}</TableCell>
-            <TableCell>{item.xuatXu?.tenXuatXu || "Chưa có xuất xứ"}</TableCell>
-            <TableCell>
-              <input
-                type="number"
-                value={item.soLuong}
-                onChange={(e) => handleInputChange(e, item.id, "soLuong")}
-                style={{ width: "70px", padding: "4px" }}
-              />
-            </TableCell>
-            <TableCell>
-              <input
-                type="number"
-                value={item.gia}
-                onChange={(e) => handleInputChange(e, item.id, "gia")}
-                style={{ width: "90px", padding: "4px" }}
-              />
-            </TableCell>
-            <TableCell>{item.trangThai || item.sanPhamTrangThai || "Không xác định"}</TableCell>
-            <TableCell>
-              <Box display="flex" gap={1}>
-                {item.anhUrls?.slice(0, 3).map((url, i) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt={`Ảnh ${i + 1}`}
-                    style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 4, border: "1px solid #ccc" }}
-                  />
-                ))}
-              </Box>
-            </TableCell>
-            <TableCell>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<Edit />}
-                onClick={() => handleEdit(item.id)}
-              />
-            </TableCell>
-            <TableCell>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => handleDownloadQRCode(item.id)}
-              >
-                Download QR
-              </Button>
-            </TableCell>
-            <TableCell>
-  <IconButton
-    onClick={() => handleChangeStatusChiTiet(item.id, item.trangThai)}
-    style={{
-      backgroundColor:
-        item.trangThai === "Hoạt động"
-          ? "#1976d2"  // Màu xanh khi sản phẩm đang hoạt động
-          : item.trangThai === "Ngừng hoạt động"
-          ? "#bdbdbd"  // Màu xám khi sản phẩm ngừng bán
-          : "#d32f2f", // Màu đỏ khi sản phẩm ngừng hoạt động
-      color: "#fff",
-      borderRadius: "50px",
-      padding: "8px",
-    }}
-  >
-    <Autorenew />
-  </IconButton>
-</TableCell>
-
-
-          </TableRow>
-        ))
-      )}
-    </TableBody>
-  </Table>
-</TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected} // Đảm bảo checkbox "Chọn tất cả" được chọn nếu tất cả các item được chọn
+                        onChange={handleSelectAllChange} // Gọi hàm xử lý "Chọn tất cả"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <strong>STT</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Mã SP Chi Tiết</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Tên Sản Phẩm</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Danh Mục</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Thương Hiệu</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Phong Cách</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Chất Liệu</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Màu Sắc</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Kích Thước</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Kiểu Dáng</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Kiểu Đai Quần</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Xuất Xứ</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Số Lượng</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Giá</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Trạng Thái</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Ảnh</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Hành Động</strong>
+                    </TableCell>
+                    <TableCell>Download QR</TableCell>
+                    <TableCell>
+                      <strong>Chuyển Đổi Trạng Thái</strong>
+                    </TableCell>{" "}
+                    {/* Cột mới */}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {chiTietList.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={18} align="center">
+                        Không có dữ liệu phù hợp
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    chiTietList.map((item, index) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.includes(item.id)}
+                            onChange={() => handleCheckboxChange(item.id)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {(page - 1) * rowsPerPage + index + 1}
+                        </TableCell>
+                        <TableCell>{item.ma}</TableCell>
+                        <TableCell>
+                          {item.sanPham?.tenSanPham || "Chưa có tên sản phẩm"}
+                        </TableCell>
+                        <TableCell>
+                          {item.danhMuc?.tenDanhMuc || "Chưa có danh mục"}
+                        </TableCell>
+                        <TableCell>
+                          {item.thuongHieu?.tenThuongHieu ||
+                            "Chưa có thương hiệu"}
+                        </TableCell>
+                        <TableCell>
+                          {item.phongCach?.tenPhongCach || "Chưa có phong cách"}
+                        </TableCell>
+                        <TableCell>
+                          {item.chatLieu?.tenChatLieu || "Chưa có chất liệu"}
+                        </TableCell>
+                        <TableCell>
+                          {item.mauSac?.tenMauSac || "Chưa có màu sắc"}
+                        </TableCell>
+                        <TableCell>
+                          {item.size?.tenSize || "Chưa có kích cỡ"}
+                        </TableCell>
+                        <TableCell>
+                          {item.kieuDang?.tenKieuDang || "Chưa có kiểu dáng"}
+                        </TableCell>
+                        <TableCell>
+                          {item.kieuDaiQuan?.tenKieuDaiQuan ||
+                            "Chưa có kiểu đai quần"}
+                        </TableCell>
+                        <TableCell>
+                          {item.xuatXu?.tenXuatXu || "Chưa có xuất xứ"}
+                        </TableCell>
+                        <TableCell>
+                          <input
+                            type="number"
+                            value={item.soLuong}
+                            onChange={(e) =>
+                              handleInputChange(e, item.id, "soLuong")
+                            }
+                            style={{ width: "70px", padding: "4px" }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <input
+                            type="number"
+                            value={item.gia}
+                            onChange={(e) =>
+                              handleInputChange(e, item.id, "gia")
+                            }
+                            style={{ width: "90px", padding: "4px" }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {item.trangThai ||
+                            item.sanPhamTrangThai ||
+                            "Không xác định"}
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" gap={1}>
+                            {item.anhUrls?.slice(0, 3).map((url, i) => (
+                              <img
+                                key={i}
+                                src={url}
+                                alt={`Ảnh ${i + 1}`}
+                                style={{
+                                  width: 50,
+                                  height: 50,
+                                  objectFit: "cover",
+                                  borderRadius: 4,
+                                  border: "1px solid #ccc",
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<Edit />}
+                            onClick={() => handleEdit(item.id)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleDownloadQRCode(item.id)}
+                          >
+                            Download QR
+                          </Button>
+                        </TableCell>
+                        <TableCell>
+                          <IconButton
+                            onClick={() =>
+                              handleChangeStatusChiTiet(item.id, item.trangThai)
+                            }
+                            style={{
+                              backgroundColor:
+                                item.trangThai === "Hoạt động"
+                                  ? "#1976d2" // Màu xanh khi sản phẩm đang hoạt động
+                                  : item.trangThai === "Ngừng hoạt động"
+                                  ? "#bdbdbd" // Màu xám khi sản phẩm ngừng bán
+                                  : "#d32f2f", // Màu đỏ khi sản phẩm ngừng hoạt động
+                              color: "#fff",
+                              borderRadius: "50px",
+                              padding: "8px",
+                            }}
+                          >
+                            <Autorenew />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
             {/* Modal chỉnh sửa */}
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
@@ -1514,21 +1576,20 @@ const handlePriceChange = (event, newValue) => {
 
                           {/* Nút Chọn Ảnh nếu chưa đủ 5 ảnh trên hàng */}
                           <Box
-  sx={{
-    width: "100px",
-    height: "100px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: "8px",
-    border: "1px dashed #ccc",
-    cursor: "pointer",
-  }}
-  onClick={() => handleOpenModalAnh(id)}
->
-  <AddIcon />
-</Box>
-
+                            sx={{
+                              width: "100px",
+                              height: "100px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "8px",
+                              border: "1px dashed #ccc",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => handleOpenModalAnh(id)}
+                          >
+                            <AddIcon />
+                          </Box>
                         </Box>
                       </Grid>
                     </Grid>
