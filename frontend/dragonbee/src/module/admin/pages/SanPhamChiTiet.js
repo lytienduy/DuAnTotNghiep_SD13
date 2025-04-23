@@ -649,7 +649,12 @@ const handleSave = async () => {
       console.log("Dữ liệu ảnh từ API:", data); // Kiểm tra dữ liệu ảnh
 
       if (data && Array.isArray(data.resources)) {
-        setCloudinaryImages(data.resources); // Cập nhật ảnh từ API
+        // Sắp xếp ảnh theo created_at (ảnh mới hơn xuống cuối cùng)
+        const sortedImages = data.resources.sort(
+          (a, b) => new Date(a.created_at) - new Date(b.created_at)
+        );
+
+        setCloudinaryImages(sortedImages); // Cập nhật ảnh đã sắp xếp vào state
       }
 
       setSelectedProductId(id);

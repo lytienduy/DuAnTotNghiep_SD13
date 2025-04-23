@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,10 +29,8 @@ public class ChatLieuService {
     }
     // Lấy danh sách chất liệu phân trang và sắp xếp theo id giảm dần
     public Page<ChatLieuDTO> getChatLieuPaginated(int page, int size) {
-        // Tạo Pageable để phân trang với số trang và kích thước trang
-        PageRequest pageRequest = PageRequest.of(page, size);
-        // Trả về danh sách phân trang
-        return chatLieuRepository.getAllChatLieuPaginated(pageRequest);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        return chatLieuRepository.getAllChatLieuPaginated(pageable);
     }
 
     // Hàm tạo mã chất liệu mới
