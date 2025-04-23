@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -37,4 +38,7 @@ public interface PhieuGiamGiaRepository extends JpaRepository<PhieuGiamGia, Inte
 
     boolean existsByMa(String ma);  // Kiểm tra mã đã tồn tại
     Optional<PhieuGiamGia> findTopByOrderByMaDesc();  // Lấy phiếu giảm giá có mã lớn nhất
+
+    List<PhieuGiamGia> findByKieuGiamGiaAndTrangThai(String loai, String trangThai);
+
 }

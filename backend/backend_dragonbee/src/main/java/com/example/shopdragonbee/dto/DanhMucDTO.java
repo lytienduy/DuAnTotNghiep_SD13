@@ -15,4 +15,9 @@ public class DanhMucDTO {
     private String tenDanhMuc;
     private String moTa;
     private String trangThai;
+
+    public DanhMucDTO(Integer id, String tenDanhMuc) {
+        this.id = id;
+        this.tenDanhMuc = tenDanhMuc;
+    }
 }

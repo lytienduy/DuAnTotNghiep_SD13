@@ -1,18 +1,29 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.ChatLieuDTO;
+import com.example.shopdragonbee.dto.DanhMucDTO;
+import com.example.shopdragonbee.dto.KieuDaiQuanDTO;
+import com.example.shopdragonbee.dto.KieuDangDTO;
+import com.example.shopdragonbee.dto.MauSacDTO;
+import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.dto.ProductOutOfStockDTO;
 import com.example.shopdragonbee.dto.SanPhamDTO;
+import com.example.shopdragonbee.dto.SizeDTO;
+import com.example.shopdragonbee.dto.ThuongHieuDTO;
+import com.example.shopdragonbee.dto.XuatXuDTO;
 import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.*;
 import com.example.shopdragonbee.respone.SanPhamChiTietRespone;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,6 +42,7 @@ public class SanPhamService {
     private final KieuDaiQuanRepository kieuDaiQuanRepository;
     private final MauSacRepository mauSacRepository;
     private final SizeRepository sizeRepository;
+    private final AnhSanPhamRepository anhSanPhamRepository;
 
     public List<SanPhamDTO> getAllSanPham() {
         return sanPhamRepository.getAll();
@@ -91,14 +103,66 @@ public class SanPhamService {
     // API lấy tất cả sản phẩm chi tiết có phân trang
     public Page<SanPhamChiTietRespone> getAllSanPhamChiTiet(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return sanPhamChiTietRepository.findAllSanPhamChiTiet(pageable);
+        Page<SanPhamChiTiet> entityPage = sanPhamChiTietRepository.findAllWithJoins(pageable);
+        return mapEntityPageToResponse(entityPage, pageable);
     }
 
-    // API lấy sản phẩm chi tiết theo ID sản phẩm cha có phân trang
     public Page<SanPhamChiTietRespone> getSanPhamChiTietBySanPhamId(Integer id, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return sanPhamChiTietRepository.findBySanPhamId(id, pageable);
+        Page<SanPhamChiTiet> entityPage = sanPhamChiTietRepository.findBySanPhamIdWithJoins(id, pageable);
+        return mapEntityPageToResponse(entityPage, pageable);
     }
+
+    private Page<SanPhamChiTietRespone> mapEntityPageToResponse(Page<SanPhamChiTiet> entityPage, Pageable pageable) {
+        List<SanPhamChiTietRespone> responseList = entityPage.getContent().stream()
+                .map(this::convertToRespone)
+                .collect(Collectors.toList());
+
+        Page<SanPhamChiTietRespone> page = new PageImpl<>(responseList, pageable, entityPage.getTotalElements());
+
+        return addAnhUrlsToResponse(page);
+    }
+
+    private SanPhamChiTietRespone convertToRespone(SanPhamChiTiet entity) {
+        return new SanPhamChiTietRespone(
+                entity.getId(),
+                entity.getMa(),
+                entity.getSanPham() != null ? new SanPhamDTO(entity.getSanPham().getId(), entity.getSanPham().getTenSanPham()) : null,
+
+                entity.getDanhMuc() != null ? new DanhMucDTO(entity.getDanhMuc().getId(), entity.getDanhMuc().getTenDanhMuc()) : null,
+                entity.getThuongHieu() != null ? new ThuongHieuDTO(entity.getThuongHieu().getId(), entity.getThuongHieu().getTenThuongHieu()) : null,
+                entity.getPhongCach() != null ? new PhongCachDTO(entity.getPhongCach().getId(), entity.getPhongCach().getTenPhongCach()) : null,
+                entity.getChatLieu() != null ? new ChatLieuDTO(entity.getChatLieu().getId(), entity.getChatLieu().getTenChatLieu()) : null,
+                entity.getMauSac() != null ? new MauSacDTO(entity.getMauSac().getId(), entity.getMauSac().getTenMauSac()) : null,
+                entity.getSize() != null ? new SizeDTO(entity.getSize().getId(), entity.getSize().getTenSize()) : null,
+                entity.getKieuDang() != null ? new KieuDangDTO(entity.getKieuDang().getId(), entity.getKieuDang().getTenKieuDang()) : null,
+                entity.getKieuDaiQuan() != null ? new KieuDaiQuanDTO(entity.getKieuDaiQuan().getId(), entity.getKieuDaiQuan().getTenKieuDaiQuan()) : null,
+                entity.getXuatXu() != null ? new XuatXuDTO(entity.getXuatXu().getId(), entity.getXuatXu().getTenXuatXu()) : null,
+
+                entity.getSoLuong(),
+                entity.getGia(),
+                entity.getTrangThai(),
+
+                null // anhUrls sẽ được thêm ở bước dưới
+        );
+    }
+
+    private Page<SanPhamChiTietRespone> addAnhUrlsToResponse(Page<SanPhamChiTietRespone> page) {
+        List<Integer> ids = page.getContent().stream().map(SanPhamChiTietRespone::getId).toList();
+        if (ids.isEmpty()) return page;
+
+        List<Object[]> anhData = anhSanPhamRepository.findAnhSanPhamBySanPhamChiTietIds(ids);
+        Map<Integer, List<String>> anhMap = anhData.stream()
+                .collect(Collectors.groupingBy(
+                        row -> (Integer) row[0],
+                        Collectors.mapping(row -> (String) row[1], Collectors.toList())
+                ));
+
+        page.getContent().forEach(spct -> spct.setAnhUrls(anhMap.getOrDefault(spct.getId(), List.of())));
+        return page;
+    }
+
+    // tìm kiếm
     public Page<SanPhamDTO> searchSanPham(String tenSanPham, String trangThai, Pageable pageable) {
         return sanPhamRepository.searchSanPham(tenSanPham, trangThai, pageable);
     }
@@ -108,15 +172,27 @@ public String toggleProductStatus(Integer id) {
     if (optionalSanPham.isPresent()) {
         SanPham sanPham = optionalSanPham.get();
         String oldStatus = sanPham.getTrangThai();
-        String newStatus = oldStatus.equals("Hoạt động") ? "Ngừng bán" : "Hoạt động"; // Chuyển đổi giữa "Đang bán" và "Ngừng bán"
+        String newStatus = oldStatus.equals("Hoạt động") ? "Ngừng bán" : "Hoạt động"; // Chuyển đổi trạng thái sản phẩm cha
 
-        sanPham.setTrangThai(newStatus); // Cập nhật trạng thái
+        // Cập nhật trạng thái sản phẩm cha
+        sanPham.setTrangThai(newStatus);
         sanPhamRepository.save(sanPham); // Lưu vào database
+
+        // Không thay đổi trạng thái các sản phẩm chi tiết con đã bị thay đổi
+        List<SanPhamChiTiet> chiTietList = sanPhamChiTietRepository.findBySanPhamId(id); // Lấy các sản phẩm chi tiết của sản phẩm cha
+        for (SanPhamChiTiet chiTiet : chiTietList) {
+            // Kiểm tra nếu trạng thái của sản phẩm chi tiết chưa bị thay đổi thủ công
+            if (chiTiet.getTrangThai() == null || chiTiet.getTrangThai().equals(oldStatus)) {
+                chiTiet.setTrangThai(newStatus); // Chỉ cập nhật nếu trạng thái của sản phẩm chi tiết chưa bị thay đổi
+                sanPhamChiTietRepository.save(chiTiet); // Lưu các sản phẩm chi tiết đã thay đổi
+            }
+        }
 
         return "Trạng thái đã chuyển từ " + oldStatus + " -> " + newStatus;
     }
     return "Không tìm thấy sản phẩm với ID: " + id;
 }
+
     // add sản phẩm
     public SanPham addSanPham(SanPham sanPham) throws Exception {
         // Kiểm tra trùng tên sản phẩm

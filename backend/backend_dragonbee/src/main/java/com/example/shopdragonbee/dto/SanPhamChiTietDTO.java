@@ -26,5 +26,5 @@ public class SanPhamChiTietDTO {
     private String trangThai;
     private String moTa;
     private List<String> anhUrls; // Thêm trường cho danh sách ảnh
-
+    private List<AnhSanPhamDTO> anhSanPhams; // Dùng cho cập nhật/xóa ảnh chính xác
 }

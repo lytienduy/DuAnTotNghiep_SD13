@@ -56,7 +56,7 @@ public class AuthController {
 
         TaiKhoan taiKhoan = taiKhoanService.findByUsernameAndPassword(username, password);
         if (taiKhoan == null) {
-            return ResponseEntity.status(401).body("Invalid credentials");
+            return ResponseEntity.status(401).body("Có gì đó không đúng!");
         }
 
         // Generate tokens

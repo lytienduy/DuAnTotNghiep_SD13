@@ -14,10 +14,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -365,5 +362,19 @@ public class HoaDonService {
         }).collect(Collectors.toList());
     }
 
+    // Lưu thông tin hóa đơn đã cập nhật
+    public HoaDon saveHoaDon(HoaDon hoaDon) {
+        return hoaDonRepository.save(hoaDon);
+    }
 
+    // Lưu lịch sử hóa đơn
+    public LichSuHoaDon saveLichSuHoaDon(LichSuHoaDon lichSuHoaDon) {
+        return lichSuHoaDonRepository.save(lichSuHoaDon);
+    }
+
+    // Phương thức lấy hóa đơn theo id
+    public HoaDon getHoaDonByIdHD(Integer id) {
+        Optional<HoaDon> hoaDon = hoaDonRepository.findById(id); // Sử dụng findById để tìm hóa đơn theo id
+        return hoaDon.orElse(null); // Trả về null nếu không tìm thấy hóa đơn
+    }
 }

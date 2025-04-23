@@ -3,7 +3,8 @@ import { Container, TextField, Button, Typography, Box, Paper } from '@mui/mater
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/system';  // Hoặc import từ @mui/material
 import backgroundLogin from '../../img/backgroundLogin.png';
-
+import { toast } from "react-toastify";
+import { ToastContainer } from 'react-toastify';
 // Tùy chỉnh màu sắc
 const themeColors = {
   primary: '#1976d2',  // Màu xanh dương
@@ -43,6 +44,45 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+
+  //Thông báo Toast
+    const showSuccessToast = (message) => {
+      toast.success(message, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+        style: {
+          backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+          color: "white", // Chữ trắng nổi bật
+          fontSize: "14px", // Nhỏ hơn một chút
+          fontWeight: "500",
+          borderRadius: "8px",
+        },
+      });
+    };
+    const showErrorToast = (message) => {
+      toast.error(message, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+        style: {
+          backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+          color: "white", // Chữ trắng nổi bật
+          fontSize: "14px", // Nhỏ hơn một chút
+          fontWeight: "500",
+          borderRadius: "8px",
+        },
+      });
+    };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -59,7 +99,7 @@ const Login = () => {
       if (!response.ok) {
         const errorData = await response.text(); // Đọc lỗi nếu có
         console.error("Login failed:", errorData);
-        alert(errorData || 'Đăng nhập không thành công');
+        showErrorToast(errorData || 'Đăng nhập không thành công');
         return;
       }
 
@@ -68,7 +108,7 @@ const Login = () => {
 
       // Kiểm tra xem token có hợp lệ không
       if (!token) {
-        alert("Token không hợp lệ");
+        showErrorToast("Token không hợp lệ");
         return;
       }
 
@@ -84,7 +124,7 @@ const Login = () => {
       if (!userResponse.ok) {
         const userError = await userResponse.text();  // Đọc lỗi nếu có
         console.error("User info fetch failed:", userError);
-        alert('Có lỗi khi lấy thông tin người dùng.');
+        showErrorToast('Có lỗi khi lấy thông tin người dùng.');
         return;
       }
 
@@ -113,7 +153,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Lỗi đăng nhập:', error);  // Log lỗi chi tiết
-      alert('Có lỗi xảy ra, vui lòng thử lại.');
+      showErrorToast('Có lỗi xảy ra, vui lòng thử lại.');
     }
   };
 
@@ -135,7 +175,7 @@ const Login = () => {
       }}
     >
       <Background />
-
+<ToastContainer />
       <LoginPaper sx={{ zIndex: 2, width: '400px', marginBottom: 20 }}>
         <Typography variant="h4" color="primary" gutterBottom marginTop={2} sx={{ fontWeight: 'bold', marginBottom: 4 }}>
           Đăng Nhập

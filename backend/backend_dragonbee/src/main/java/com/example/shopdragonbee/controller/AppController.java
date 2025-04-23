@@ -3,12 +3,10 @@ package com.example.shopdragonbee.controller;
 import com.example.shopdragonbee.dto.KhachHangPGGResponse;
 import com.example.shopdragonbee.dto.PhieuGiamGiaRequest;
 import com.example.shopdragonbee.dto.PhieuGiamGiaResponse;
+import com.example.shopdragonbee.entity.HoaDon;
 import com.example.shopdragonbee.entity.PhieuGiamGia;
 import com.example.shopdragonbee.entity.PhieuGiamGiaKhachHang;
-import com.example.shopdragonbee.repository.KhachHangPGGRepository;
-import com.example.shopdragonbee.repository.PhieuGiamGiaKhachHangRepository;
-import com.example.shopdragonbee.repository.PhieuGiamGiaRepository;
-import com.example.shopdragonbee.repository.PhieuGiamGiaSpecification;
+import com.example.shopdragonbee.repository.*;
 import com.example.shopdragonbee.service.EmailPGGService;
 import com.example.shopdragonbee.service.KhachHangPGGService;
 import com.example.shopdragonbee.service.PhieuGiamGiaService;
@@ -24,7 +22,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -50,6 +50,9 @@ public class AppController {
 
     @Autowired
     private EmailPGGService emailPGGService;
+
+    @Autowired
+    private HoaDonRepository hoaDonRepository;
 
     public void PhieuGiamGiaController(PhieuGiamGiaRepository phieuGiamGiaRepository,
                                        KhachHangPGGRepository khachHangPGGRepository,
@@ -384,6 +387,28 @@ public class AppController {
         return ResponseEntity.ok("Cập nhật phiếu giảm giá thành công!");
     }
 
+    @GetMapping("/giam-gia")
+    public ResponseEntity<?> tinhTienGiamGia(
+            @RequestParam("ma") String ma,
+            @RequestParam("tongTienSanPham") double tongTienSanPham) {
+        PhieuGiamGia phieu = phieuGiamGiaService.getByMa(ma);
+        double tienGiam = phieuGiamGiaService.tinhTienGiam(phieu, tongTienSanPham);
+        Map<String, Object> response = new HashMap<>();
+        response.put("phieuGiamGia", phieu);
+        response.put("tienGiam", tienGiam);
+        return ResponseEntity.ok(response);
+    }
 
+    @PutMapping("/hoa-don/{id}")
+    public ResponseEntity<?> capNhatHoaDon(@PathVariable("id") Integer id, @RequestBody HoaDon hoaDonMoi) {
+        HoaDon hoaDon = hoaDonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn với ID: " + id));
+
+        hoaDon.setTongTien(hoaDonMoi.getTongTien()); // cập nhật tổng tiền sau khi trừ giảm giá
+        // Có thể cập nhật thêm các trường khác nếu cần
+
+        hoaDonRepository.save(hoaDon);
+        return ResponseEntity.ok("Cập nhật hóa đơn thành công");
+    }
 
 }

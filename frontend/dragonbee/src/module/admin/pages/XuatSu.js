@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { 
-  Container, Typography, Button, Table, TableBody, TableCell, 
+  Container, Typography, Button, Table, TableBody, TableCell, Box,
   TableContainer, TableHead, TableRow, Paper, IconButton, CircularProgress 
 } from "@mui/material";
 import { Add, Visibility, Edit, Delete } from "@mui/icons-material";
@@ -12,7 +12,7 @@ const XuatSu = () => {
 
   // Gọi API lấy danh sách Xuất Xứ từ Spring Boot
   useEffect(() => {
-    axios.get("http://localhost:8080/api/xuatsu")
+    axios.get("http://localhost:8080/api/xuatxu")
       .then(response => {
         setXuatSuList(response.data);
         setLoading(false);
@@ -24,7 +24,7 @@ const XuatSu = () => {
   }, []);
 
   return (
-    <Container maxWidth="lg">
+    <Box>
       {/* Header */}
       <Typography variant="h4" gutterBottom>
         Quản Lý Xuất Xứ
@@ -59,7 +59,7 @@ const XuatSu = () => {
               {xuatSuList.map((xuatSu, index) => (
                 <TableRow key={xuatSu.id}>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{xuatSu.tenXuatSu}</TableCell>
+                  <TableCell>{xuatSu.tenXuatXu}</TableCell>
                   <TableCell>{xuatSu.moTa || "Không có mô tả"}</TableCell>
                   <TableCell sx={{ color: xuatSu.trangThai ? "green" : "red" }}>
                     {xuatSu.trangThai ? "Hoạt động" : "Ngừng hoạt động"}
@@ -69,11 +69,6 @@ const XuatSu = () => {
                     <IconButton color="primary">
                       <Visibility />
                     </IconButton>
-                    
-                    {/* Nút sửa */}
-                   
-
-                    {/* Nút xóa */}
                    
                   </TableCell>
                 </TableRow>
@@ -82,7 +77,7 @@ const XuatSu = () => {
           </Table>
         </TableContainer>
       )}
-    </Container>
+    </Box>
   );
 };
 

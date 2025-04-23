@@ -295,7 +295,7 @@ const ChiTietSanPham = () => {
                 </Typography>
             </Breadcrumbs>
             {product ? (
-                <Box sx={{ borderBottom: "1px solid rgba(0, 0, 0, 0.1)", pb: 3, marginTop: 3 }}>
+                <Box sx={{ borderBottom: "1px solid rgba(0, 0, 0, 0.1)", pb: 3, marginTop: 9 }}>
                     <Grid container spacing={4}>
                         {/* Hình ảnh sản phẩm */}
                         <Grid item xs={12} md={6} display="flex" alignItems="center">
@@ -338,7 +338,7 @@ const ChiTietSanPham = () => {
                         </Grid>
 
                         {/* Thông tin sản phẩm */}
-                        <Grid item xs={12} md={6}>
+                        <Grid item xs={12} md={6} sx={{marginTop:-7}}>
                             <Typography variant="h5" fontWeight="bold">{product.ten}</Typography>
                             <Typography variant="h6" color="primary" mt={1}>{selectedColorReuse?.gia?.toLocaleString()} VND</Typography>
 
