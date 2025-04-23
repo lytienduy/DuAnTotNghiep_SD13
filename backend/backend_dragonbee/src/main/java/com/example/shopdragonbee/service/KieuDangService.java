@@ -2,8 +2,13 @@ package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.KieuDangDTO;
+import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.entity.KieuDang;
 import com.example.shopdragonbee.repository.KieuDangRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +23,18 @@ public class KieuDangService {
         this.kieuDangRepository = kieuDangRepository;
     }
 
+    public Page<KieuDangDTO> getAllKieuDangPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<KieuDang> kieuDangPage = kieuDangRepository.findAll(pageable);
+
+        return kieuDangPage.map(kd -> new KieuDangDTO(
+                kd.getId(),
+                kd.getMa(),
+                kd.getTenKieuDang(),
+                kd.getMoTa(),
+                kd.getTrangThai()
+        ));
+    }
     // API lấy danh sách kiểu dáng
     public List<KieuDangDTO> getAllKieuDang() {
         return kieuDangRepository.getAll();

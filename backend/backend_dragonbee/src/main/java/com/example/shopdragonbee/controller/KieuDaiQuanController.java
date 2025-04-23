@@ -1,8 +1,10 @@
 package com.example.shopdragonbee.controller;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.KieuDaiQuanDTO;
 import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.service.KieuDaiQuanService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +22,13 @@ public class KieuDaiQuanController {
         this.kieuDaiQuanService = kieuDaiQuanService;
     }
 
+    @GetMapping("/phan-trang")
+    public Page<KieuDaiQuanDTO> getKieuDaiQuanPhanTrang(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size // <-- thêm dòng này
+    ) {
+        return kieuDaiQuanService.getAllKieuDaiQuanPaged(page, size);
+    }
     // API lấy danh sách kiểu đai quần
     @GetMapping
     public List<KieuDaiQuanDTO> getAllKieuDaiQuan() {

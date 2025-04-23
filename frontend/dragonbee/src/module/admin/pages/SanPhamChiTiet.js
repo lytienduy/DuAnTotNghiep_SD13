@@ -614,6 +614,7 @@ const handleSave = async () => {
     });
 
     setProductDetails(updatedProductDetails); // Cập nhật lại danh sách sản phẩm chi tiết
+    setSelectedImages([]);
     setOpenModalAnh(false); // Đóng modal sau khi lưu ảnh
   };
 
@@ -788,24 +789,27 @@ const handlePriceChange = (event, newValue) => {
   return (
     <Box>
       <Grid
+      display="flex"
         container
-        justifyContent="space-between"
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant="h4">Chi Tiết Sản Phẩm</Typography>
-      </Grid>
-      <Button
+        <Button
         color="black"
-        sx={{ mr: 2 }}
         onClick={() => navigate("/admin/sanpham")}
       >
         <ArrowBack />
       </Button>
-
+        <Typography variant="h4">Chi Tiết Sản Phẩm</Typography>
+        
+      </Grid>
       {/* Bộ lọc */}
       <Paper sx={{ p: 2, mb: 3 }}>
+        <Grid item xs={12}>
+                    <Typography variant="h6">Bộ Lọc</Typography>
+                  </Grid>
       <Grid container spacing={2}>
+
         {/* Tên sản phẩm */}
         <Grid item xs={12} sm={6} md={3}>
         <TextField
@@ -1095,7 +1099,7 @@ const handlePriceChange = (event, newValue) => {
         <TableCell><strong>Phong Cách</strong></TableCell>
         <TableCell><strong>Chất Liệu</strong></TableCell>
         <TableCell><strong>Màu Sắc</strong></TableCell>
-        <TableCell><strong>Kích Cỡ</strong></TableCell>
+        <TableCell><strong>Kích Thước</strong></TableCell>
         <TableCell><strong>Kiểu Dáng</strong></TableCell>
         <TableCell><strong>Kiểu Đai Quần</strong></TableCell>
         <TableCell><strong>Xuất Xứ</strong></TableCell>

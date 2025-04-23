@@ -4,6 +4,7 @@ import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.entity.PhongCach;
 import com.example.shopdragonbee.service.PhongCachService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,13 @@ public class PhongCachController {
     public PhongCachController(PhongCachService phongCachService) {
         this.phongCachService = phongCachService;
     }
-
+    @GetMapping("/phan-trang")
+    public Page<PhongCachDTO> getPhongCachPhanTrang(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size // <-- thêm dòng này
+    ) {
+        return phongCachService.getAllPhongCachPaged(page, size);
+    }
     @GetMapping
     public List<PhongCachDTO> getAllPhongCach() {
         return phongCachService.getAllPhongCach();

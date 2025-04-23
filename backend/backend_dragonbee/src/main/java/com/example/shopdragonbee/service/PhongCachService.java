@@ -2,8 +2,13 @@ package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.PhongCachDTO;
+import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.entity.PhongCach;
 import com.example.shopdragonbee.repository.PhongCachRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,6 +27,18 @@ public class PhongCachService {
         this.phongCachRepository = phongCachRepository;
     }
 
+    public Page<PhongCachDTO> getAllPhongCachPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<PhongCach> phongCachPage = phongCachRepository.findAll(pageable);
+
+        return phongCachPage.map(pc -> new PhongCachDTO(
+                pc.getId(),
+                pc.getMa(),
+                pc.getTenPhongCach(),
+                pc.getMoTa(),
+                pc.getTrangThai()
+        ));
+    }
     public List<PhongCachDTO> getAllPhongCach() {
         return phongCachRepository.findAll().stream().map(pc ->
                 new PhongCachDTO(pc.getId(), pc.getMa(), pc.getTenPhongCach(), pc.getMoTa(), pc.getTrangThai())

@@ -253,6 +253,9 @@ const ChatLieu = () => {
       {/* Ô tìm kiếm tên chất liệu */}
       <Paper sx={{ padding: 3, mb: 3 }}>
         {/* Sử dụng Grid container để thẳng hàng ô tìm kiếm, bộ lọc và nút tạo mới */}
+        <Grid item xs={12}>
+            <Typography variant="h6">Bộ Lọc</Typography>
+          </Grid>
         <Grid container spacing={2} alignItems="center">
           {/* Tìm kiếm */}
           <Grid item xs={12} md={4}>
@@ -380,7 +383,7 @@ const ChatLieu = () => {
                     <strong>Trạng Thái</strong>
                   </TableCell>
                   <TableCell align="center">
-                    <strong>Hoạt động</strong>
+                    <strong>Hoạt Động</strong>
                   </TableCell>
                 </TableRow>
               </TableHead>

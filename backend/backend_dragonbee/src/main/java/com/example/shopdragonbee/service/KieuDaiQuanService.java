@@ -2,8 +2,13 @@ package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.KieuDaiQuanDTO;
+import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.entity.KieuDaiQuan;
 import com.example.shopdragonbee.repository.KieuDaiQuanRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +22,18 @@ public class KieuDaiQuanService {
 //    public KieuDaiQuanService(KieuDaiQuanRepository kieuDaiQuanRepository) {
 //        this.kieuDaiQuanRepository = kieuDaiQuanRepository;
 //    }
+public Page<KieuDaiQuanDTO> getAllKieuDaiQuanPaged(int page, int size) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+    Page<KieuDaiQuan> kieuDaiQuanPage = kieuDaiQuanRepository.findAll(pageable);
+
+    return kieuDaiQuanPage.map(kdq -> new KieuDaiQuanDTO(
+            kdq.getId(),
+            kdq.getMa(),
+            kdq.getTenKieuDaiQuan(),
+            kdq.getMoTa(),
+            kdq.getTrangThai()
+    ));
+}
     public KieuDaiQuanService(KieuDaiQuanRepository kieuDaiQuanRepository){
         this.kieuDaiQuanRepository = kieuDaiQuanRepository;
     }
