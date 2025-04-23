@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState,useCallback } from "react";
 import axios from "axios"; // Import axios
 import {
   Box, Table, TableBody,
@@ -149,6 +149,24 @@ const HoaDonChiTiet = () => {
 
     fetchGiamGia();
   }, [hoaDon.maVoucher, hoaDon.tongTienSanPham]);
+
+  const handleDatHang = useCallback(async () => {
+    try {
+      await axios.put(`http://localhost:8080/dragonbee/hoa-don/${hoaDon.id}`, {
+        ...hoaDon,
+        tongTien: hoaDon.tongTienThanhToan,
+      });
+      console.log("Đã cập nhật tổng tiền hóa đơn");
+    } catch (error) {
+      console.error("Lỗi khi cập nhật hóa đơn:", error);
+    }
+  }, [hoaDon]);
+
+  useEffect(() => {
+    if (hoaDon.id && hoaDon.tongTienThanhToan > 0) {
+      handleDatHang();
+    }
+  }, [hoaDon.tongTienThanhToan]);  
 
   useEffect(() => {
     if (hoaDon.diaChiNguoiNhanHang) {

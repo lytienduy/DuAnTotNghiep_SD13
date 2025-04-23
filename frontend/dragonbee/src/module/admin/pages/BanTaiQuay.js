@@ -3033,7 +3033,7 @@ const BanTaiQuay = () => {
                           setOpenConfirmXacNhanDatHang(true);
                         }}
                       >
-                        Xác nhận đặt hàng
+                        Xác nhận
                       </Button>
                     </Box>
                   </Box>
