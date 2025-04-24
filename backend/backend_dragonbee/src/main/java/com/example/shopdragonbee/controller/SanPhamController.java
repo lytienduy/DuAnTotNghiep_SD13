@@ -89,6 +89,18 @@ public class SanPhamController {
 
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/searchHetHang")
+    public ResponseEntity<Page<SanPhamDTO>> searchSanPhamHetHang(
+            @RequestParam(required = false) String tenSanPham,
+            @RequestParam(required = false) String trangThai,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<SanPhamDTO> result = sanPhamService.searchSanPhamHetHang(tenSanPham, trangThai, pageable);
+
+        return ResponseEntity.ok(result);
+    }
 
 // chuyển đổi trạng thái
 @PutMapping("/{id}/toggle-trang-thai")

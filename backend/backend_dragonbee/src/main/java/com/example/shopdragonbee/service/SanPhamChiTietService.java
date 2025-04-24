@@ -149,15 +149,15 @@ public class SanPhamChiTietService {
         sanPhamChiTiet.setGia(sanPhamChiTietUpdateDTO.getGia());
 
 // Lưu trạng thái cũ
-        String trangThaiCu = sanPhamChiTiet.getTrangThai();
-
-// Cập nhật trạng thái sản phẩm chi tiết
+        // Cập nhật trạng thái sản phẩm chi tiết
         if (sanPhamChiTietUpdateDTO.getSoLuong() == 0) {
             sanPhamChiTiet.setTrangThai("Hết hàng");
         } else {
-            // Nếu số lượng > 0, giữ nguyên trạng thái cũ
-            sanPhamChiTiet.setTrangThai(trangThaiCu);
+            // Nếu số lượng > 0, gán lại trạng thái từ sản phẩm cha
+            String trangThaiSanPhamCha = sanPhamChiTiet.getSanPham().getTrangThai();
+            sanPhamChiTiet.setTrangThai(trangThaiSanPhamCha);
         }
+
 
 
         // Cập nhật ảnh cho sản phẩm chi tiết

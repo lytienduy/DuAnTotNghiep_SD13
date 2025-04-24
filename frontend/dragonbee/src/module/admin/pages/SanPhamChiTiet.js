@@ -519,18 +519,18 @@ const SanPhamChiTiet = () => {
     const anhUrlsCurrent = selectedItem.anhUrls || [];
     const anhUrlsOriginal = selectedItem.anhUrlsOriginal || [];
     const anhSanPhamList = selectedItem.anhSanPhams || [];
-
+  
     // Ảnh mới được thêm
     const anhUrlsToAdd = anhUrlsCurrent.filter(
       (url) => !anhUrlsOriginal.includes(url)
     );
-
+  
     // Ảnh bị xóa
     const anhUrlsToDelete = anhUrlsOriginal.filter(
       (url) => !anhUrlsCurrent.includes(url)
     );
-
-    // Lấy danh sách ID ảnh cần xóa (nếu có danh sách ảnh đầy đủ trong selectedItem)
+  
+    // Lấy danh sách ID ảnh cần xóa
     const anhIdsToDelete = anhSanPhamList
       .filter(
         (anh) =>
@@ -538,36 +538,40 @@ const SanPhamChiTiet = () => {
           anh.sanPhamChiTietId === selectedItem.id
       )
       .map((anh) => anh.id);
-
+  
     const payload = {
       ...selectedItem,
       anhUrlsToAdd,
       anhIdsToDelete,
     };
-
+  
+    // ⚠️ Kiểm tra giá và số lượng
+    if (payload.soLuong < 0 || payload.gia < 0) {
+      setSnackbarMessage1("Số lượng và giá phải lớn hơn hoặc bằng 0!");
+      setOpenSnackbar(true);
+      return; // Dừng hàm
+    }
+  
     console.log("Payload gửi lên:", payload);
-
+  
     try {
-      // Gọi API cập nhật
       await axios.put(
         `http://localhost:8080/api/san-pham-chi-tiet/update/${selectedItem.id}`,
         payload
       );
-
-      // Gọi API lấy lại chi tiết sản phẩm vừa cập nhật
+  
       const detailResponse = await axios.get(
         `http://localhost:8080/api/san-pham-chi-tiet/${selectedItem.id}`
       );
-
+  
       const updatedDetail = detailResponse.data;
-
-      // Cập nhật danh sách sản phẩm chi tiết
+  
       setChiTietList((prevList) =>
         prevList.map((item) =>
           item.id === selectedItem.id ? { ...item, ...updatedDetail } : item
         )
       );
-
+  
       handleClose();
       setSnackbarMessage1("Cập nhật sản phẩm chi tiết thành công!");
       setOpenSnackbar(true);
@@ -577,6 +581,7 @@ const SanPhamChiTiet = () => {
       setOpenSnackbar(true);
     }
   };
+  
 
   const handleDeleteImage = (index) => {
     const updatedAnhUrls = selectedItem.anhUrls.filter((_, i) => i !== index);

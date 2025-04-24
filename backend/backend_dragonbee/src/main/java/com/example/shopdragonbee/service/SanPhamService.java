@@ -163,8 +163,28 @@ public class SanPhamService {
     }
 
     // tìm kiếm
+
     public Page<SanPhamDTO> searchSanPham(String tenSanPham, String trangThai, Pageable pageable) {
-        return sanPhamRepository.searchSanPham(tenSanPham, trangThai, pageable);
+        Page<SanPhamDTO> result = sanPhamRepository.searchSanPhamAll(tenSanPham, pageable);
+
+        if (trangThai == null || trangThai.isBlank()) {
+            return result;
+        }
+
+        List<SanPhamDTO> filteredList = result.getContent().stream()
+                .filter(dto -> {
+                    if ("Hết hàng".equalsIgnoreCase(trangThai)) {
+                        return dto.getTongSoLuong() == 0;
+                    } else {
+                        return trangThai.equalsIgnoreCase(dto.getTrangThai());
+                    }
+                }).toList();
+
+        return new PageImpl<>(filteredList, pageable, filteredList.size());
+    }
+
+    public Page<SanPhamDTO> searchSanPhamHetHang(String tenSanPham, String trangThai, Pageable pageable) {
+        return sanPhamRepository.searchSanPhamHetHang(tenSanPham, trangThai, pageable);
     }
 // chuyển đổi trạng thái
 public String toggleProductStatus(Integer id) {
