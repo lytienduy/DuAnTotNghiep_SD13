@@ -68,7 +68,7 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
     )
     FROM SanPham sp
     LEFT JOIN SanPhamChiTiet spct ON sp.id = spct.sanPham.id
-    WHERE (:tenSanPham IS NULL OR LOWER(sp.tenSanPham) LIKE LOWER(CONCAT('%', :tenSanPham, '%')))
+    WHERE (:tenSanPham IS NULL OR LOWER(sp.tenSanPham) LIKE (CONCAT('%', LOWER(:tenSanPham), '%')))
     AND (:trangThai IS NULL OR LOWER(sp.trangThai) = LOWER(:trangThai))
     GROUP BY sp.id, sp.ma, sp.tenSanPham, sp.ngayTao, sp.trangThai
     ORDER BY sp.ngayTao DESC

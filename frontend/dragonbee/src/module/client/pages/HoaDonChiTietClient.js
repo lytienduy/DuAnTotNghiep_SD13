@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import axios from "axios"; // Import axios
 import {
   Box, Table, TableBody,
@@ -103,7 +103,12 @@ const HoaDonChiTietClient = () => {
   const [sdt, setSdt] = useState(hoaDon.sdtNguoiNhanHang);
   const [email, setEmail] = useState(hoaDon.emailNguoiNhanHang);
   const [diaChiCuThe, setDiaChiCuThe] = useState("");
-  const [phiVanChuyen, setPhiVanChuyen] = useState("");
+
+  useEffect(() => {
+    setHoTen(hoaDon.tenNguoiNhanHang);
+    setSdt(hoaDon.sdtNguoiNhanHang);
+    setEmail(hoaDon.emailNguoiNhanHang);
+  }, [hoaDon]); // Chạy lại mỗi khi hoaDon thay đổi
 
   // Khai báo Thành phố huyện xã
   const [cities, setCities] = useState([]);
@@ -143,13 +148,62 @@ const HoaDonChiTietClient = () => {
     }
   }, [hoaDon.diaChiNguoiNhanHang]);
 
-  const handleChangeAddress = () => {
-    // Khi bấm nút Thay đổi địa chỉ, mở modal và cập nhật thông tin từ địa chỉ hiện tại
-    setCity(city);
-    setDistrict(district);
-    setWard(ward);
-    setDiaChiCuThe(diaChiCuThe);
-    setOpenModal(true); // Mở modal thay đổi địa chỉ
+  const handleChangeAddress = async () => {
+    const addressParts = hoaDon.diaChiNguoiNhanHang?.split(", ");
+    if (addressParts.length >= 4) {
+      const cityFromAddress = addressParts[addressParts.length - 1];
+      const districtFromAddress = addressParts[addressParts.length - 2];
+      const wardFromAddress = addressParts[addressParts.length - 3];
+      const specificAddress = addressParts.slice(0, addressParts.length - 3).join(", ");
+
+      setDiaChiCuThe(specificAddress);
+      setCity(cityFromAddress); // Triggers useEffect to load districts
+
+      const selectedCity = cities.find((c) => c.Name === cityFromAddress);
+      if (selectedCity) {
+        const provinceId = selectedCity.ProvinceID;
+        setSelectedGHNDistrict(provinceId);
+
+        // Fetch districts
+        const districtResponse = await axios.get(
+          `https://online-gateway.ghn.vn/shiip/public-api/master-data/district`,
+          {
+            headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+            params: { province_id: provinceId },
+          }
+        );
+        setDistricts(districtResponse.data.data);
+
+        const matchedDistrict = districtResponse.data.data.find(
+          (d) => d.DistrictName === districtFromAddress
+        );
+
+        if (matchedDistrict) {
+          setDistrict(matchedDistrict.DistrictName);
+          const districtId = matchedDistrict.DistrictID;
+
+          // Fetch wards
+          const wardResponse = await axios.get(
+            `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward`,
+            {
+              headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+              params: { district_id: districtId },
+            }
+          );
+          setWards(wardResponse.data.data);
+
+          const matchedWard = wardResponse.data.data.find(
+            (w) => w.WardName === wardFromAddress
+          );
+          if (matchedWard) {
+            setWard(matchedWard.WardName);
+            setselectedGHNWard(matchedWard.WardCode);
+          }
+        }
+      }
+    }
+
+    setOpenModal(true); // Mở modal sau khi dữ liệu đã set
   };
 
   useEffect(() => {
@@ -173,6 +227,10 @@ const HoaDonChiTietClient = () => {
       }
     }
   }, [wards, preWard]);
+
+  const roundToNearestThousand = (number) => {
+    return Math.round(number / 1000) * 1000;
+  };
 
   // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
   useEffect(() => {
@@ -263,7 +321,8 @@ const HoaDonChiTietClient = () => {
           },
         }
       );
-      setDiscount(Math.round(serviceFeeResponse.data.data.service_fee));
+      const rawFee = serviceFeeResponse.data.data.service_fee;
+      setDiscount(roundToNearestThousand(rawFee));
     };
     fetchGHNServiceFee();
   };
@@ -285,7 +344,7 @@ const HoaDonChiTietClient = () => {
               },
             }
           );
-          const fee = Math.round(response.data.data.service_fee);
+          const fee = roundToNearestThousand(response.data.data.service_fee);
           setHoaDon((prev) => ({
             ...prev,
             phiVanChuyen: fee,
@@ -387,7 +446,8 @@ const HoaDonChiTietClient = () => {
                 },
               }
             );
-            setDiscount(Math.round(response.data.data.service_fee));
+            const rawFee = response.data.data.service_fee;
+            setDiscount(roundToNearestThousand(rawFee));
           } catch (error) {
             console.error("Error fetching GHN service fee:", error);
           }
@@ -406,68 +466,88 @@ const HoaDonChiTietClient = () => {
     }));
   };
 
+  const handleDatHang = useCallback(async () => {
+    try {
+      await axios.put(`http://localhost:8080/dragonbee/hoa-don/${hoaDon.id}`, {
+        ...hoaDon,
+        tongTien: hoaDon.tongTienThanhToan,
+      });
+      console.log("Đã cập nhật tổng tiền hóa đơn");
+    } catch (error) {
+      console.error("Lỗi khi cập nhật hóa đơn:", error);
+    }
+  }, [hoaDon]);
+
+  useEffect(() => {
+    if (hoaDon.id && hoaDon.tongTienThanhToan > 0) {
+      handleDatHang();
+    }
+  }, [hoaDon.tongTienThanhToan]);
+
+  const validateForm = () => {
+    const newError = { hoTen: "", sdt: "", email: "", phiShip: "", diaChi: "" };
+    let isValid = true;
+
+    if (!hoTen) {
+      newError.hoTen = "Họ tên không được để trống.";
+      isValid = false;
+    }
+
+    if (!sdt) {
+      newError.sdt = "Số điện thoại không được để trống.";
+      isValid = false;
+    } else if (!/^(03|05|07|08|09)\d{8}$/.test(sdt)) {
+      newError.sdt = "Số điện thoại không hợp lệ.";
+      isValid = false;
+    }
+
+    if (!email) {
+      newError.email = "Email không được để trống.";
+      isValid = false;
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      newError.email = "Email không hợp lệ.";
+      isValid = false;
+    }
+
+    if (!diaChiCuThe) {
+      newError.diaChi = "Địa chỉ không được để trống.";
+      isValid = false;
+    }
+
+    let phiShip = hoaDon.phiVanChuyen != null ? String(hoaDon.phiVanChuyen).replace(/,/g, '') : '';
+    if (phiShip === '' || isNaN(parseFloat(phiShip))) {
+      newError.phiShip = "Phí vận chuyển không hợp lệ.";
+      isValid = false;
+    }
+
+    setErrorMessage(newError);
+    return isValid;
+  };
+
   const handleSave = async () => {
-    const storedUserData = JSON.parse(localStorage.getItem('userKH'));
-    if (!storedUserData || !storedUserData.khachHang) {
-      setErrorMessage((prev) => ({ ...prev, hoTen: "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại." }));
+    const storedUserData = JSON.parse(localStorage.getItem('userData'));
+    if (!storedUserData || !storedUserData.nhanVien) {
+      setErrorMessage((prev) => ({
+        ...prev,
+        hoTen: "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại."
+      }));
       return;
     }
 
-    // Kiểm tra các trường không được để null hoặc rỗng
-    let formIsValid = true;
-    const newError = { hoTen: "", sdt: "", email: "", phiShip: "", diaChi: "" };
-
-    if (!hoaDon.tenNguoiNhanHang || !hoaDon.sdtNguoiNhanHang || !hoaDon.emailNguoiNhanHang || !diaChiCuThe) {
-      formIsValid = false;
-      if (!hoaDon.tenNguoiNhanHang) newError.hoTen = "Họ tên không được để trống.";
-      if (!hoaDon.sdtNguoiNhanHang) newError.sdt = "Số điện thoại không được để trống.";
-      if (!hoaDon.emailNguoiNhanHang) newError.email = "Email không được để trống.";
-      if (!diaChiCuThe) newError.diaChi = "Địa chỉ không được để trống.";
-    }
-
-    // Kiểm tra số điện thoại hợp lệ
-    const phonePattern = /^(03|05|07|08|09)\d{7}$/;
-    if (hoaDon.sdtNguoiNhanHang && !phonePattern.test(hoaDon.sdtNguoiNhanHang)) {
-      formIsValid = false;
-      newError.sdt = "Số điện thoại không hợp lệ. Đầu số phải thuộc các nhà mạng Viettel, Mobifone, Vinaphone hoặc Vietnamobile và có 9 chữ số.";
-    }
-
-    // Kiểm tra email hợp lệ
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (hoaDon.emailNguoiNhanHang && !emailPattern.test(hoaDon.emailNguoiNhanHang)) {
-      formIsValid = false;
-      newError.email = "Email không hợp lệ.";
-    }
-
-    // Kiểm tra phí vận chuyển hợp lệ (đảm bảo phiVanChuyen không phải undefined)
-    let phiShip = hoaDon.phiVanChuyen != null
-      ? String(hoaDon.phiVanChuyen).replace(/,/g, '')
-      : ''; // Loại bỏ dấu phẩy
-
-    // Kiểm tra nếu phiShip không phải là số hợp lệ
-    if (phiShip === '' || isNaN(parseFloat(phiShip))) {
-      formIsValid = false;
-      newError.phiShip = "Phí vận chuyển không hợp lệ.";
-    } else {
-      phiShip = parseFloat(phiShip); // Chuyển đổi sang kiểu số thực
-    }
-
-
-    // Cập nhật lỗi vào state
-    setErrorMessage(newError);
-
+    // Sử dụng validateForm() để kiểm tra dữ liệu
+    const formIsValid = validateForm();
     if (!formIsValid) return;
 
     // Xây dựng địa chỉ đầy đủ từ các thông tin nhận hàng
     const diaChiNhanHang = `${diaChiCuThe}, ${ward}, ${district}, ${city}`;
 
     const data = {
-      tenNguoiNhan: hoaDon.tenNguoiNhanHang,  // Họ tên
-      sdt: hoaDon.sdtNguoiNhanHang,           // Số điện thoại
-      emailNguoiNhan: hoaDon.emailNguoiNhanHang,  // Email
-      diaChiNhanHang: diaChiNhanHang,           // Địa chỉ nhận hàng đầy đủ
-      phiShip: phiShip,                        // Phí vận chuyển đã chuyển thành số
-      nguoiSua: storedUserData.khachHang.tenKhachHang,  // Người sửa
+      tenNguoiNhan: hoTen,
+      sdt: sdt,
+      emailNguoiNhan: email,
+      diaChiNhanHang: diaChiNhanHang,
+      phiShip: parseFloat(String(hoaDon.phiVanChuyen).replace(/,/g, '')),
+      nguoiSua: storedUserData.nhanVien.tenNhanVien,
     };
 
     try {
@@ -482,15 +562,15 @@ const HoaDonChiTietClient = () => {
       if (response.ok) {
         const result = await response.json();
         if (result) {
-          setHoaDon(prevHoaDon => ({
-            ...prevHoaDon,
-            tenNguoiNhanHang: hoaDon.tenNguoiNhanHang,
-            sdtNguoiNhanHang: hoaDon.sdtNguoiNhanHang,
-            emailNguoiNhanHang: hoaDon.emailNguoiNhanHang,
+          setHoaDon(prev => ({
+            ...prev,
+            tenNguoiNhanHang: hoTen,
+            sdtNguoiNhanHang: sdt,
+            emailNguoiNhanHang: email,
             diaChiNguoiNhanHang: diaChiNhanHang,
           }));
 
-          setOpenModal(false); // Đóng modal nếu thành công
+          setOpenModal(false);
           alert("Cập nhật thông tin nhận hàng thành công!");
         } else {
           alert("Cập nhật thất bại!");
@@ -1954,8 +2034,8 @@ const HoaDonChiTietClient = () => {
                 <TextField
                   label="Họ và Tên"
                   fullWidth
-                  value={hoaDon.tenNguoiNhanHang}
-                  onChange={(e) => setHoaDon({ ...hoaDon, tenNguoiNhanHang: e.target.value })}
+                  value={hoTen}
+                  onChange={(e) => setHoTen(e.target.value)}
                   variant="outlined"
                   margin="normal"
                   size="small"
@@ -1967,8 +2047,8 @@ const HoaDonChiTietClient = () => {
                 <TextField
                   label="Số Điện Thoại"
                   fullWidth
-                  value={hoaDon.sdtNguoiNhanHang}
-                  onChange={(e) => setHoaDon({ ...hoaDon, sdtNguoiNhanHang: e.target.value })}
+                  value={sdt}
+                  onChange={(e) => setSdt(e.target.value)}
                   variant="outlined"
                   margin="normal"
                   size="small"
@@ -1980,8 +2060,8 @@ const HoaDonChiTietClient = () => {
                 <TextField
                   label="Email"
                   fullWidth
-                  value={hoaDon.emailNguoiNhanHang}
-                  onChange={(e) => setHoaDon({ ...hoaDon, emailNguoiNhanHang: e.target.value })}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   variant="outlined"
                   margin="normal"
                   size="small"
