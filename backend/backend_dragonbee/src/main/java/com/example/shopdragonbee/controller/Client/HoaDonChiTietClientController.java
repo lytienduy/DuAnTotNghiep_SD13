@@ -52,14 +52,14 @@ public class HoaDonChiTietClientController {
 
     //Giảm số lượng 1
     @PostMapping("/giamSoLuongOnline/{id}")
-    public Boolean giamSoLuongOnline(@PathVariable Integer id) {
+    public String giamSoLuongOnline(@PathVariable Integer id) {
         return hoaDonChiTietClientService.giamSoLuongOnline(id);
     }
 
     //Xóa sản phẩm khỏi giỏ hàng bán hàng tại quầy
     @PostMapping("/xoaSanPhamSauKhiDatHang/{id}/{idHoaDon}")
-    public Boolean xoaSanPhamSauKhiDatHang(@PathVariable Integer id, @PathVariable Integer idHoaDon) {
-        return hoaDonChiTietClientService.xoaSanPhamSauKhiDatHang(id, idHoaDon);
+    public String xoaSanPhamSauKhiDatHang(@PathVariable Integer id, @PathVariable Integer idHoaDon) {
+        return hoaDonChiTietClientService.xoaSanPhamOnline(id, idHoaDon);
     }
 
     //Nhập số lượng sản phẩm từ bán phím

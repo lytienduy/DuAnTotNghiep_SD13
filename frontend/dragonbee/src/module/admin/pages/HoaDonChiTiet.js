@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState,useCallback } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import axios from "axios"; // Import axios
 import {
   Box, Table, TableBody,
@@ -166,7 +166,7 @@ const HoaDonChiTiet = () => {
     if (hoaDon.id && hoaDon.tongTienThanhToan > 0) {
       handleDatHang();
     }
-  }, [hoaDon.tongTienThanhToan]);  
+  }, [hoaDon.tongTienThanhToan]);
 
   useEffect(() => {
     if (hoaDon.diaChiNguoiNhanHang) {
@@ -175,10 +175,10 @@ const HoaDonChiTiet = () => {
         const cityFromAddress = addressParts[addressParts.length - 1];
         const districtFromAddress = addressParts[addressParts.length - 2];
         const wardFromAddress = addressParts[addressParts.length - 3];
-  
+
         // Cập nhật địa chỉ cụ thể
         setDiaChiCuThe(addressParts.slice(0, addressParts.length - 3).join(", "));
-  
+
         // Lưu tạm để xử lý sau khi dữ liệu thành phố có sẵn
         setTimeout(() => {
           setCity(cityFromAddress);
@@ -187,7 +187,7 @@ const HoaDonChiTiet = () => {
         }, 0);
       }
     }
-  }, [hoaDon.diaChiNguoiNhanHang]);  
+  }, [hoaDon.diaChiNguoiNhanHang]);
 
   const handleChangeAddress = () => {
     // Khi bấm nút Thay đổi địa chỉ, mở modal và cập nhật thông tin từ địa chỉ hiện tại
@@ -218,7 +218,7 @@ const HoaDonChiTiet = () => {
         setPreWard(""); // reset sau khi đã set
       }
     }
-  }, [wards, preWard]);  
+  }, [wards, preWard]);
 
   // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
   useEffect(() => {
@@ -341,9 +341,9 @@ const HoaDonChiTiet = () => {
         }
       }
     };
-  
+
     fetchGHNServiceFee();
-  }, [selectedGHNDistrict, selectedGHNWard]);  
+  }, [selectedGHNDistrict, selectedGHNWard]);
 
   useEffect(() => {
     // Khi thành phố thay đổi, gọi API để lấy danh sách quận/huyện
@@ -487,8 +487,8 @@ const HoaDonChiTiet = () => {
 
     // Kiểm tra phí vận chuyển hợp lệ (đảm bảo phiVanChuyen không phải undefined)
     let phiShip = hoaDon.phiVanChuyen != null
-  ? String(hoaDon.phiVanChuyen).replace(/,/g, '')
-  : '';
+      ? String(hoaDon.phiVanChuyen).replace(/,/g, '')
+      : '';
 
     // Kiểm tra nếu phiShip không phải là số hợp lệ
     if (phiShip === '' || isNaN(parseFloat(phiShip))) {
@@ -559,7 +559,8 @@ const HoaDonChiTiet = () => {
         fetchHoaDon();
         showSuccessToast("Xóa sản phẩm thành công");
       } else {
-        showErrorToast("Xóa thất bại vui lòng thử lại");
+        fetchHoaDon();
+        showErrorToast(response.data);
       }
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -1005,17 +1006,24 @@ const HoaDonChiTiet = () => {
   };
 
   //Hàm giảm số lượng sản phẩm trong giỏ hàng 
-  const giamSoLuong = async (id) => {
-    let apiUrl = `http://localhost:8080/hdctClient/giamSoLuongOnline/${id}`;
+  const giamSoLuong = async (id, soLuong) => {
     try {
-      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
-      if (response.data === true) {
-        fetchHoaDon();
-      } else {
+      if (soLuong === 1) {
         if (hoaDon?.listDanhSachSanPham?.length > 1) {
           clickDeleteIcon(id);
         } else {
           showErrorToast("Hóa đơn không được để rỗng sản phẩm");
+        }
+      } else {
+        let apiUrl = `http://localhost:8080/hdctClient/giamSoLuongOnline/${id}`;
+        const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+        if (response.data === "Ok") {
+          fetchHoaDon();
+        } else if (response.data === "Hóa đơn này đã được xác nhận, không thể thay đổi thông tin") {
+          fetchHoaDon();
+          showErrorToast(response.data);
+        } else {
+          showErrorToast(response.data);
         }
       }
     } catch (error) {
@@ -1066,7 +1074,10 @@ const HoaDonChiTiet = () => {
         handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+      } else if (response.data === "Hết sản phẩm") {
+        showErrorToast(response.data);
       } else {
+        fetchHoaDon();
         showErrorToast(response.data);
       }
     } catch (error) {
@@ -1093,8 +1104,11 @@ const HoaDonChiTiet = () => {
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
         setTempValues({});
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
-      } else {
+      } else if (response.data === "Số lượng trong kho không đủ cung cấp hoàn toàn số lượng bạn muốn") {
         setTempValues({});
+        showErrorToast(response.data);
+      } else {
+        fetchHoaDon();
         showErrorToast(response.data);
       }
     } catch (error) {
@@ -1149,7 +1163,14 @@ const HoaDonChiTiet = () => {
         handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+      } else if (response.data === "Rất tiếc! không đủ số lượng sản phẩm") {
+        showErrorToast(response.data);
       } else {
+        setSelectedProduct(null);
+        setQuantity(1);
+        setOpenConfirmModal(false);
+        setOpenSPModal(false);
+        fetchHoaDon();
         showErrorToast(response.data);
       }
     } catch (error) {
@@ -1170,7 +1191,7 @@ const HoaDonChiTiet = () => {
   }
 
   const listThanhToan = (hoaDon?.listThanhToanHoaDon || [])
-    .filter(tt => tt?.loai !== "Hoàn tiền")
+    .filter(tt => tt?.loai === "Thanh toán" || tt?.loai !== "Hoàn tiền")
 
   const soTienDaThanhToan = listThanhToan?.reduce((tong, tt) => tong + tt?.soTien, 0);
 
@@ -1180,7 +1201,6 @@ const HoaDonChiTiet = () => {
   const tongTienDaThanhToanVaDaHoanTienCuaOnline = soTienDaThanhToan - listHoanTien?.reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tiền cần hoàn lấy tiền đã thanh toán trừ đi tiền đã hoàn so sánh với số tiền cần thanh toán của hóa đơn
 
   const handleNextCheckHoanTienVaMoModal = () => {
-
     if (hoaDon?.trangThai === "Đã thanh toán" && tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon?.tongTienThanhToan) {
       showErrorToast("Bạn chưa hoàn tiền cho khách hàng");
       return;
@@ -2073,7 +2093,7 @@ const HoaDonChiTiet = () => {
                           <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
                             <IconButton
                               size="small"
-                              onClick={() => giamSoLuong(product.id)}
+                              onClick={() => giamSoLuong(product.id, product?.soLuong)}
                               disabled={product.quantity <= 1}
                               sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
                             >

@@ -331,11 +331,10 @@ public class BanHangTaiQuayService {
                 hoaDonChiTiet.setMa("HDCT" + (System.currentTimeMillis() % 100000));
                 hoaDonChiTiet.setHoaDon(hoaDonRepository.findById(idHoaDon).get());
                 hoaDonChiTiet.setSanPhamChiTiet(sanPhamChiTietRepository.findById(idSanPhamChiTiet).get());
-                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 if (sanPhamChiTiet.getSoLuong() - soLuong < 0) {
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                     return false;
-                }
+                }sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 hoaDonChiTiet.setSoLuong(soLuong);
                 hoaDonChiTiet.setDonGia(donGia);
                 hoaDonChiTiet.setNgayTao(LocalDateTime.now());
@@ -344,11 +343,11 @@ public class BanHangTaiQuayService {
                 sanPhamChiTietRepository.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
             } else {
                 kiemTraHDCTDaCoChua.setSoLuong(kiemTraHDCTDaCoChua.getSoLuong() + soLuong);
-                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 if (sanPhamChiTiet.getSoLuong() - soLuong < 0) {
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                     return false;
                 }
+                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 kiemTraHDCTDaCoChua.setDonGia(donGia);
                 kiemTraHDCTDaCoChua.setNgaySua(LocalDateTime.now());
                 hoaDonChiTietRepository.save(kiemTraHDCTDaCoChua);//lưu hóa đơn chi tiết

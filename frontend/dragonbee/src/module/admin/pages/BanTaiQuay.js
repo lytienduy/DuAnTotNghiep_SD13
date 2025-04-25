@@ -1405,6 +1405,10 @@ const BanTaiQuay = () => {
   //Xử lý khi confirm thêm vào giỏ hàng
   const handleCloseConfirmModal = async () => {
     try {
+      console.log(selectedOrder.id)
+      console.log(selectedProduct.id)
+      console.log(quantity)
+      console.log(selectedProduct.gia)
       const response = await axios.post(
         `http://localhost:8080/ban-hang-tai-quay/addSanPhamVaoGioHang`,
         {
