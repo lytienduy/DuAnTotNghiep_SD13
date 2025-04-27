@@ -341,7 +341,7 @@ const BanTaiQuay = () => {
   const renderAdditionalAmountMessage = (voucher) => {
     const amountToSpend = calculateAmountToSpend(voucher);
     const isBest = bestVoucher?.id === voucher.id;
-  
+
     return (
       <>
         {amountToSpend > 0 && (
@@ -364,7 +364,7 @@ const BanTaiQuay = () => {
         )}
       </>
     );
-  };  
+  };
 
   const checkVoucherAvailability = async (voucherCode) => {
     try {
@@ -1505,9 +1505,9 @@ const BanTaiQuay = () => {
   };
 
   //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
-  const handleInputBlur = (id) => {
+  const handleInputBlur = (id,soLuong) => {
     setSelectedProductId(id);
-    const newValue = Number(tempValues[id]);
+    const newValue = (isNaN(Number(tempValues[id]))) ? soLuong : Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
     } else {
@@ -2299,7 +2299,7 @@ const BanTaiQuay = () => {
                                             )
                                           }
                                           onBlur={() =>
-                                            handleInputBlur(product.id)
+                                            handleInputBlur(product.id,product.soLuong)
                                           }
                                           type="number"
                                           inputProps={{

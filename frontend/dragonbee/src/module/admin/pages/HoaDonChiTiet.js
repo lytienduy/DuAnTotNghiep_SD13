@@ -730,8 +730,6 @@ const HoaDonChiTiet = () => {
   }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
 
 
-
-
   //Validate nhập tiền khách đưa
   const handleTienKhachDua = (e) => {
     let newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
@@ -1041,9 +1039,9 @@ const HoaDonChiTiet = () => {
   };
 
   //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
-  const handleInputBlur = (id) => {
+  const handleInputBlur = (id,soLuong) => {
     setSelectedProductId(id);
-    const newValue = Number(tempValues[id]);
+    const newValue = (isNaN(Number(tempValues[id]))) ? soLuong : Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
     } else if (newValue < 1) {//Không được để else  
@@ -2103,7 +2101,7 @@ const HoaDonChiTiet = () => {
                             <TextField
                               value={tempValues[product.id] ?? product.soLuong}
                               onChange={(e) => handleInputChange(product.id, e.target.value)}
-                              onBlur={() => handleInputBlur(product.id)}
+                              onBlur={() => handleInputBlur(product.id,product.soLuong)}
                               type="number"
                               inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
                               size="small"
@@ -2140,8 +2138,8 @@ const HoaDonChiTiet = () => {
                         ) : (
                           <TextField
                             value={tempValues[product.id] ?? product.soLuong}
-                            onChange={(e) => handleInputChange(product.id, e.target.value)}
-                            onBlur={() => handleInputBlur(product.id)}
+                            // onChange={(e) => handleInputChange(product.id, e.target.value)}
+                            // onBlur={() => handleInputBlur(product.id,product.soLuong)}
                             type="number"
                             inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
                             size="small"

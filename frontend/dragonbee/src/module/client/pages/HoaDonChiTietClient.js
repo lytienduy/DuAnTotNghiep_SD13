@@ -837,9 +837,9 @@ const HoaDonChiTietClient = () => {
   };
 
   //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
-  const handleInputBlur = (id) => {
+  const handleInputBlur = (id,soLuong) => {
     setSelectedProductId(id);
-    const newValue = Number(tempValues[id]);
+    const newValue = (isNaN(Number(tempValues[id]))) ? soLuong : Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
     } else if (newValue < 1) {//Không được để else  
@@ -1421,7 +1421,7 @@ const HoaDonChiTietClient = () => {
                               <TextField
                                 value={tempValues[product.id] ?? product.soLuong}
                                 onChange={(e) => handleInputChange(product.id, e.target.value)}
-                                onBlur={() => handleInputBlur(product.id)}
+                                onBlur={() => handleInputBlur(product.id,product.soLuong)}
                                 type="number"
                                 inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
                                 size="small"
@@ -1575,6 +1575,24 @@ const HoaDonChiTietClient = () => {
                   }}
                 >
                   {(hoaDon.tongTienThanhToan - tongTienDaThanhToanVaDaHoanTienCuaOnline ?? 0).toLocaleString()} VNĐ
+                </Typography>
+              </Box>
+            </>}
+          {(soTienDaThanhToan > 0 && tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon?.tongTienThanhToan) &&
+            <>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="h6" fontWeight="bold" color="primary">
+                  Cửa hàng sẽ sớm hoàn lại cho bạn:
+                </Typography>
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  sx={{
+                    color: "#D32F2F",
+                    // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
+                  }}
+                >
+                  {(tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan ?? 0).toLocaleString()} VNĐ
                 </Typography>
               </Box>
             </>}
