@@ -13,6 +13,7 @@ import com.example.shopdragonbee.service.PhieuGiamGiaService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -22,10 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -66,10 +64,40 @@ public class AppController {
     public Page<KhachHangPGGResponse> searchKhachHang(
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(value = "thang", required = false) Integer thang,
+            @RequestParam(value = "nam", required = false) Integer nam
+    ) {
+        // Dùng tháng/năm hiện tại nếu không được truyền từ FE
+        LocalDate today = LocalDate.now();
+        int month = (thang != null) ? thang : today.getMonthValue();
+        int year = (nam != null) ? nam : today.getYear();
 
-        Pageable pageable = PageRequest.of(page, size);
-        return khachHangPGGService.searchKhachHang(keyword, pageable);
+        LocalDateTime startOfMonth = LocalDate.of(year, month, 1).atStartOfDay();
+        LocalDateTime endOfMonth = startOfMonth
+                .withDayOfMonth(startOfMonth.toLocalDate().lengthOfMonth())
+                .withHour(23).withMinute(59).withSecond(59);
+
+        // Lấy toàn bộ danh sách KH phù hợp keyword (không phân trang)
+        List<KhachHangPGGResponse> fullList = khachHangPGGService.searchKhachHang(keyword);
+
+        // Tính chi tiêu và gán vào
+        for (KhachHangPGGResponse customer : fullList) {
+            Double chiTieuThang = hoaDonRepository.tinhTongChiTieuTheoThang(customer.getId(), startOfMonth, endOfMonth);
+            customer.setChiTieuThang(chiTieuThang != null ? chiTieuThang : 0.0);
+        }
+
+        // Sắp xếp theo chi tiêu giảm dần
+        List<KhachHangPGGResponse> sortedList = fullList.stream()
+                .sorted(Comparator.comparingDouble(KhachHangPGGResponse::getChiTieuThang).reversed())
+                .collect(Collectors.toList());
+
+        // Thực hiện phân trang thủ công
+        int start = (int) Math.min(page * size, sortedList.size());
+        int end = (int) Math.min(start + size, sortedList.size());
+        List<KhachHangPGGResponse> pageContent = sortedList.subList(start, end);
+
+        return new PageImpl<>(pageContent, PageRequest.of(page, size), sortedList.size());
     }
 
     @GetMapping("/search-phieu-giam-gia")
@@ -123,8 +151,8 @@ public class AppController {
 
     //show khách hàng trong thêm mới phiếu giảm giá phần "cá nhân"
     @GetMapping("/khach-hang")
-    public Page<KhachHangPGGResponse> getAllKhachHang(Pageable pageable) {
-        return khachHangPGGRepository.getKhachHangList(pageable);
+    public List<KhachHangPGGResponse> getAllKhachHang() {
+        return khachHangPGGRepository.getKhachHangList();
     }
 
     @PostMapping("/add-phieu-giam-gia")

@@ -554,13 +554,13 @@ const HoaDonChiTiet = () => {
 
   const handleSave = async () => {
     const storedUserData = JSON.parse(localStorage.getItem('userData'));
-    if (!storedUserData || !storedUserData.nhanVien) {
-      setErrorMessage((prev) => ({
-        ...prev,
-        hoTen: "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại."
-      }));
-      return;
-    }
+    // if (!storedUserData || !storedUserData.nhanVien) {
+    //   setErrorMessage((prev) => ({
+    //     ...prev,
+    //     hoTen: "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại."
+    //   }));
+    //   return;
+    // }
 
     // Sử dụng validateForm() để kiểm tra dữ liệu
     const formIsValid = validateForm();
@@ -599,6 +599,7 @@ const HoaDonChiTiet = () => {
           }));
 
           setOpenModal(false);
+          fetchHoaDon();
           alert("Cập nhật thông tin nhận hàng thành công!");
         } else {
           alert("Cập nhật thất bại!");

@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -257,5 +258,12 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
     List<Object[]> findOrderStatusStatsCustom(@Param("startDate") String startDate,
                                               @Param("endDate") String endDate);
 
+    @Query("SELECT SUM(h.tongTien) FROM HoaDon h " +
+            "WHERE h.khachHang.id = :idKhachHang " +
+            "AND h.trangThai = 'Hoàn thành' " +
+            "AND h.ngayTao BETWEEN :startDate AND :endDate")
+    Double tinhTongChiTieuTheoThang(@Param("idKhachHang") Integer idKhachHang,
+                                    @Param("startDate") LocalDateTime startDate,
+                                    @Param("endDate") LocalDateTime endDate);
 
 }

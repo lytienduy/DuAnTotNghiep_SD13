@@ -15,4 +15,14 @@ public class KhachHangPGGResponse {
     private String sdt;
     private String email;
     private LocalDate ngaySinh;
+    private Double chiTieuThang;
+
+    // Constructor với tham số phù hợp nếu Spring không nhận diện đúng
+    public KhachHangPGGResponse(Integer id, String tenKhachHang, String sdt, String email, LocalDate ngaySinh) {
+        this.id = id;
+        this.tenKhachHang = tenKhachHang;
+        this.sdt = sdt;
+        this.email = email;
+        this.ngaySinh = ngaySinh;
+    }
 }

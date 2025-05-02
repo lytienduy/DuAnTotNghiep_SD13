@@ -525,14 +525,14 @@ const HoaDonChiTietClient = () => {
   };
 
   const handleSave = async () => {
-    const storedUserData = JSON.parse(localStorage.getItem('userData'));
-    if (!storedUserData || !storedUserData.nhanVien) {
-      setErrorMessage((prev) => ({
-        ...prev,
-        hoTen: "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại."
-      }));
-      return;
-    }
+    const storedUserData = JSON.parse(localStorage.getItem('userKH'));
+    // if (!storedUserData || !storedUserData.nhanVien) {
+    //   setErrorMessage((prev) => ({
+    //     ...prev,
+    //     hoTen: "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại."
+    //   }));
+    //   return;
+    // }
 
     // Sử dụng validateForm() để kiểm tra dữ liệu
     const formIsValid = validateForm();
@@ -547,7 +547,7 @@ const HoaDonChiTietClient = () => {
       emailNguoiNhan: email,
       diaChiNhanHang: diaChiNhanHang,
       phiShip: parseFloat(String(hoaDon.phiVanChuyen).replace(/,/g, '')),
-      nguoiSua: storedUserData.nhanVien.tenNhanVien,
+      nguoiSua: storedUserData.khachHang.tenKhachHang,
     };
 
     try {
@@ -1634,6 +1634,24 @@ const HoaDonChiTietClient = () => {
                   }}
                 >
                   {(hoaDon.tongTienThanhToan - tongTienDaThanhToanVaDaHoanTienCuaOnline ?? 0).toLocaleString()} VNĐ
+                </Typography>
+              </Box>
+            </>}
+          {(soTienDaThanhToan > 0 && tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon?.tongTienThanhToan) &&
+            <>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="h6" fontWeight="bold" color="primary">
+                  Cửa hàng sẽ sớm hoàn lại cho bạn:
+                </Typography>
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  sx={{
+                    color: "#D32F2F",
+                    // textShadow: "0px 0px 5px rgba(211, 47, 47, 0.5)",
+                  }}
+                >
+                  {(tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan ?? 0).toLocaleString()} VNĐ
                 </Typography>
               </Box>
             </>}
