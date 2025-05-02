@@ -56,7 +56,7 @@ const SanPham = () => {
       axios
         .get("http://localhost:8080/api/sanpham/search", {
           params: {
-            page: page - 1,
+            page: page -1,
             size: rowsPerPage,
             tenSanPham: search.trim() || null,
             trangThai: trangThai || null,
