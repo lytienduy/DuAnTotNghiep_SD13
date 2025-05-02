@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.controller;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.MauSacDTO;
 import com.example.shopdragonbee.dto.XuatXuDTO;
 import com.example.shopdragonbee.entity.MauSac;
@@ -9,11 +10,13 @@ import com.example.shopdragonbee.respone.ChatLieuRespone;
 import com.example.shopdragonbee.respone.MauSacRespone;
 import com.example.shopdragonbee.service.MauSacService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -26,7 +29,13 @@ public class MauSacController {
 
     private final MauSacRepository mauSacRepository;
     private final MauSacService mauSacService;
-
+    @GetMapping("/phan-trang")
+    public Page<MauSacDTO> getMauSacPhanTrang(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size // <-- thêm dòng này
+    ) {
+        return mauSacService.getAllMauSacPaged(page, size);
+    }
 
 
     // API lấy danh sách sản phẩm

@@ -1,9 +1,15 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
+import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.entity.ThuongHieu;
 import com.example.shopdragonbee.repository.ThuongHieuRepository;
 import com.example.shopdragonbee.dto.ThuongHieuDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,6 +22,18 @@ public class ThuongHieuService {
     @Autowired
     private ThuongHieuRepository thuongHieuRepository;
 
+    public Page<ThuongHieuDTO> getAllThuongHieuPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<ThuongHieu> thuongHieuPage = thuongHieuRepository.findAll(pageable);
+
+        return thuongHieuPage.map(th -> new ThuongHieuDTO(
+                th.getId(),
+                th.getMa(),
+                th.getTenThuongHieu(),
+                th.getMoTa(),
+                th.getTrangThai()
+        ));
+    }
     // Lấy danh sách tất cả thương hiệu
     public List<ThuongHieuDTO> getAllThuongHieu() {
         return thuongHieuRepository.getAll();

@@ -1,10 +1,16 @@
 package com.example.shopdragonbee.service;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.MauSacDTO;
 import com.example.shopdragonbee.dto.ThuongHieuDTO;
+import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.entity.MauSac;
 import com.example.shopdragonbee.repository.MauSacRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +21,21 @@ public class MauSacService {
     @Autowired
     private MauSacRepository mauSacRepository;
 
+    public Page<MauSacDTO> getAllMauSacPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<MauSac> mauSacPage = mauSacRepository.findAll(pageable);
+
+        return mauSacPage.map(ms -> new MauSacDTO(
+               ms.getId(),
+                ms.getMa(),
+                ms.getTenMauSac(),
+                ms.getMaMau(),
+                ms.getMoTa(),
+                ms.getTrangThai()
+
+
+        ));
+    }
     // show theo trạng thái
     public List<MauSacDTO> getMauSacByTrangThai(String trangThai) {
         return mauSacRepository.findByTrangThai(trangThai);

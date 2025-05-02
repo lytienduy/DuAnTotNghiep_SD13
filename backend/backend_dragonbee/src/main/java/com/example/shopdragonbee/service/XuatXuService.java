@@ -2,9 +2,14 @@ package com.example.shopdragonbee.service;
 
 import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.XuatXuDTO;
+import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.entity.XuatXu;
 import com.example.shopdragonbee.repository.XuatXuRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +26,18 @@ public class XuatXuService {
         this.xuatSuRepository = xuatSuRepository;
     }
 
+    public Page<XuatXuDTO> getAllXuatXuPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<XuatXu> xuatXuPage = xuatSuRepository.findAll(pageable);
+
+        return xuatXuPage.map(xx -> new XuatXuDTO(
+                xx.getId(),
+                xx.getMa(),
+                xx.getTenXuatXu(),
+                xx.getMoTa(),
+                xx.getTrangThai()
+        ));
+    }
     // Lấy danh sách xuất xứ
     public List<XuatXuDTO> getAllXuatXu() {
         return xuatSuRepository.getAll();

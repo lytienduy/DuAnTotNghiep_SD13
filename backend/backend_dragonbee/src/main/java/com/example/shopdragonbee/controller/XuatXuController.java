@@ -1,8 +1,10 @@
 package com.example.shopdragonbee.controller;
 
+import com.example.shopdragonbee.dto.DanhMucDTO;
 import com.example.shopdragonbee.dto.PhongCachDTO;
 import com.example.shopdragonbee.dto.XuatXuDTO;
 import com.example.shopdragonbee.service.XuatXuService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +21,13 @@ public class XuatXuController {  // Đảm bảo từ khóa "public class" đún
         this.xuatXuService = xuatXuService;
     }
 
+    @GetMapping("/phan-trang")
+    public Page<XuatXuDTO> getXuatXuPhanTrang(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size // <-- thêm dòng này
+    ) {
+        return xuatXuService.getAllXuatXuPaged(page, size);
+    }
     // API lấy danh sách xuất xứ
     @GetMapping
     public ResponseEntity<List<XuatXuDTO>> getAllXuatSu() {

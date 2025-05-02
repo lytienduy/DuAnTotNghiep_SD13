@@ -6,6 +6,10 @@ import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.repository.DanhMucRepository;
 import com.example.shopdragonbee.respone.DanhMucRespone;
 import com.example.shopdragonbee.respone.DanhMucRespone2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +25,19 @@ public class DanhMucService {
         this.danhMucRepository = danhMucRepository;
     }
 
+    // lấy danh sách phân trang
+    public Page<DanhMucDTO> getAllDanhMucPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<DanhMuc> danhMucPage = danhMucRepository.findAll(pageable);
+
+        return danhMucPage.map(dm -> new DanhMucDTO(
+                dm.getId(),
+                dm.getMa(),
+                dm.getTenDanhMuc(),
+                dm.getMoTa(),
+                dm.getTrangThai()
+        ));
+    }
     // Lấy danh sách danh mục
     public List<DanhMucRespone> getAllDanhMuc() {
         return danhMucRepository.getAll();

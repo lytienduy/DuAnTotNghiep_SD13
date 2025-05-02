@@ -5,6 +5,7 @@ import com.example.shopdragonbee.entity.DanhMuc;
 import com.example.shopdragonbee.respone.DanhMucRespone;
 import com.example.shopdragonbee.respone.DanhMucRespone2;
 import com.example.shopdragonbee.service.DanhMucService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,15 @@ public class DanhMucController {
     @GetMapping
     public List<DanhMucRespone> getAll() {
         return danhMucService.getAllDanhMuc();
+    }
+
+    // API phân trang, mỗi trang 5 phần tử, mặc định trang 0
+    @GetMapping("/phan-trang")
+    public Page<DanhMucDTO> getDanhMucPhanTrang(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size // <-- thêm dòng này
+    ) {
+        return danhMucService.getAllDanhMucPaged(page, size);
     }
 
     @GetMapping("/dm2")
