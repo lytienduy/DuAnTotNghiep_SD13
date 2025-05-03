@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -92,16 +93,44 @@ public ResponseEntity<?> themMoiNhanVien(
 
     private static final String UPLOAD_DIR = "D:/uploads/";
 
-    // Cập nhật nhân viên
+//    // Cập nhật nhân viên
+//    @PutMapping("/{id}")
+//    public ResponseEntity<NhanVien> updateNhanVien(@PathVariable Integer id, @RequestBody NhanVien nhanVienDetails) {
+//        if (nhanVienRepository.existsById(id)) {
+//            nhanVienDetails.setId(id);
+//            NhanVien updatedNhanVien = nhanVienRepository.save(nhanVienDetails);
+//            return ResponseEntity.ok(updatedNhanVien);
+//        }
+//        return ResponseEntity.notFound().build();
+//    }
+
     @PutMapping("/{id}")
     public ResponseEntity<NhanVien> updateNhanVien(@PathVariable Integer id, @RequestBody NhanVien nhanVienDetails) {
-        if (nhanVienRepository.existsById(id)) {
-            nhanVienDetails.setId(id);
-            NhanVien updatedNhanVien = nhanVienRepository.save(nhanVienDetails);
-            return ResponseEntity.ok(updatedNhanVien);
+        Optional<NhanVien> optionalNhanVien = nhanVienRepository.findById(id);
+        if (optionalNhanVien.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
+
+        NhanVien existingNhanVien = optionalNhanVien.get();
+
+        // Cập nhật các trường cần thiết
+        existingNhanVien.setTenNhanVien(nhanVienDetails.getTenNhanVien());
+        existingNhanVien.setNgaySinh(nhanVienDetails.getNgaySinh());
+        existingNhanVien.setGioiTinh(nhanVienDetails.getGioiTinh());
+        existingNhanVien.setSdt(nhanVienDetails.getSdt());
+        existingNhanVien.setEmail(nhanVienDetails.getEmail());
+        existingNhanVien.setCccd(nhanVienDetails.getCccd());
+        existingNhanVien.setTrangThai(nhanVienDetails.getTrangThai());
+        existingNhanVien.setNguoiTao(nhanVienDetails.getNguoiTao());
+        // Không set lại ID hoặc taiKhoan nếu bạn không thay đổi nó
+
+        existingNhanVien.setAnh(nhanVienDetails.getAnh());
+        // Lưu lại
+        nhanVienRepository.save(existingNhanVien);
+
+        return ResponseEntity.ok(existingNhanVien);
     }
+
 
 
     // API Upload ảnh

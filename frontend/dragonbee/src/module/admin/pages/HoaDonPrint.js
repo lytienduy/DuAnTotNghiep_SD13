@@ -13,8 +13,9 @@ import {
   Container,
 } from "@mui/material";
 
-const hoaDonPrint = forwardRef(({ hoaDon }, ref) => {
+const HoaDonPrint = forwardRef(({ hoaDon }, ref) => {
   return (
+    
     <Container sx={{ textAlign: "center" }}>
       <Box
         ref={ref}
@@ -25,12 +26,12 @@ const hoaDonPrint = forwardRef(({ hoaDon }, ref) => {
         borderRadius={2}
         bgcolor="#fff"
       >
-        {/* Logo + tên shop */}
         <Box
           display="flex"
           justifyContent="space-between"
           alignItems="center"
           mb={2}
+          className="invoice-header" // Đảm bảo thêm class để áp dụng CSS khi in
         >
           {/* Logo bên trái */}
           <Box>
@@ -38,16 +39,22 @@ const hoaDonPrint = forwardRef(({ hoaDon }, ref) => {
               src="https://raw.githubusercontent.com/lytienduy/DuAnTotNghiep_SD13/refs/heads/main/frontend/dragonbee/src/img/dragonbee_logo_v1.png"
               alt="Logo cửa hàng"
               style={{
-                height: "60px",
-                maxWidth: "100px",
+                height: "100px",
+                maxWidth: "150px",
                 objectFit: "contain",
               }}
             />
           </Box>
 
-          {/* Thông tin shop bên phải */}
-          <Box textAlign="right" sx={{ flex: 1, ml: 2 }}>
-            <Typography variant="h6" fontWeight="bold">
+          {/* Thông tin cửa hàng bên phải */}
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="flex-end"
+            ml={2}
+            className="invoice-info" // Đảm bảo thêm class để áp dụng CSS khi in
+          >
+            <Typography variant="h2" fontWeight="bold">
               SHOP QUẦN ÂU DRAGONBEE
             </Typography>
             <Typography sx={{ fontSize: "0.9rem" }}>
@@ -62,11 +69,11 @@ const hoaDonPrint = forwardRef(({ hoaDon }, ref) => {
         <Divider sx={{ my: 2 }} />
 
         {/* Mã hóa đơn */}
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h2" gutterBottom>
           HÓA ĐƠN BÁN HÀNG - Mã: {hoaDon?.ma}
         </Typography>
 
-        {/* Thông tin nhận hàng */}
+        {/* Thông tin người nhận */}
         {hoaDon?.sdtNguoiNhanHang && (
           <Box mb={2} textAlign="left">
             <Typography fontWeight="bold">Thông tin người nhận:</Typography>
@@ -94,40 +101,77 @@ const hoaDonPrint = forwardRef(({ hoaDon }, ref) => {
         </Typography>
 
         {/* Bảng sản phẩm */}
-        <TableContainer component={Paper} sx={{ mt: 2 }}>
-          <Table sx={{ minWidth: 500 }} size="small" aria-label="a dense table">
-            <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+        <TableContainer sx={{ mt: 2, border: "1px solid #000" }}>
+          <Table style={{ borderCollapse: "collapse", width: "100%" }}>
+            <TableHead>
               <TableRow>
-                <TableCell align="center">#</TableCell>
-                <TableCell align="center">Sản phẩm</TableCell>
-                <TableCell align="center">Đơn giá</TableCell>
-                <TableCell align="center">Số lượng</TableCell>
-                <TableCell align="center">Thành tiền</TableCell>
+                <TableCell
+                  style={{ border: "1px solid black", textAlign: "center" }}
+                >
+                  #
+                </TableCell>
+                <TableCell
+                  style={{ border: "1px solid black", textAlign: "center" }}
+                >
+                  Sản phẩm
+                </TableCell>
+                <TableCell
+                  style={{ border: "1px solid black", textAlign: "center" }}
+                >
+                  Đơn giá
+                </TableCell>
+                <TableCell
+                  style={{ border: "1px solid black", textAlign: "center" }}
+                >
+                  Số lượng
+                </TableCell>
+                <TableCell
+                  style={{ border: "1px solid black", textAlign: "center" }}
+                >
+                  Thành tiền
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {hoaDon?.listDanhSachSanPham?.length > 0 ? (
                 hoaDon.listDanhSachSanPham.map((product, index) => (
                   <TableRow key={index}>
-                    <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="left">
+                    <TableCell
+                      style={{ border: "1px solid black", textAlign: "center" }}
+                    >
+                      {index + 1}
+                    </TableCell>
+                    <TableCell
+                      style={{ border: "1px solid black", textAlign: "center" }}
+                    >
                       <Typography>{product.tenMauSize}</Typography>
-                      <Typography sx={{ color: "gray", fontSize: "0.8rem" }}>
+                      <Typography style={{ color: "gray", fontSize: "0.8rem" }}>
                         {product.maSanPhamChiTiet}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
-                      {product.donGia?.toLocaleString()}₫
+                    <TableCell
+                      style={{ border: "1px solid black", textAlign: "center" }}
+                    >
+                      {product.donGia?.toLocaleString()} VNĐ
                     </TableCell>
-                    <TableCell align="center">{product.soLuong}</TableCell>
-                    <TableCell align="center">
-                      {product.soTien?.toLocaleString()}₫
+                    <TableCell
+                      style={{ border: "1px solid black", textAlign: "center" }}
+                    >
+                      {product.soLuong}
+                    </TableCell>
+                    <TableCell
+                      style={{ border: "1px solid black", textAlign: "center" }}
+                    >
+                      {product.soTien?.toLocaleString()} VNĐ
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">
+                  <TableCell
+                    colSpan={5}
+                    style={{ border: "1px solid black", textAlign: "center" }}
+                  >
                     Không có dữ liệu
                   </TableCell>
                 </TableRow>
@@ -137,36 +181,43 @@ const hoaDonPrint = forwardRef(({ hoaDon }, ref) => {
         </TableContainer>
 
         {/* Tổng kết */}
-        <Box mt={3} textAlign="right">
-          <Typography>
-            <strong>Tổng tiền hàng:</strong>{" "}
-            {hoaDon?.tongTienSanPham?.toLocaleString()}₫
-          </Typography>
-
-          {hoaDon?.phiVanChuyen && (
-            <Typography>
-              <strong>Phí vận chuyển:</strong>{" "}
-              {hoaDon?.phiVanChuyen?.toLocaleString()}₫
+        <Box mt={3} display="flex" justifyContent="flex-end">
+          <Box width="200px">
+            <Typography textAlign="right">
+              <strong>Tổng tiền hàng:</strong>{" "}
+              {hoaDon?.tongTienSanPham?.toLocaleString()} VNĐ
             </Typography>
-          )}
 
-          {hoaDon?.maVoucher && (
-            <Typography>
-              <strong>Mã giảm giá:</strong> {hoaDon?.maVoucher} -{" "}
-              {(
-                hoaDon?.tongTienSanPham +
-                hoaDon?.phiVanChuyen -
-                hoaDon?.tongTienThanhToan
-              )?.toLocaleString()}
-              ₫
+            {hoaDon?.phiVanChuyen && (
+              <Typography textAlign="right">
+                <strong>Phí vận chuyển:</strong>{" "}
+                {hoaDon?.phiVanChuyen?.toLocaleString()} VNĐ
+              </Typography>
+            )}
+
+            {hoaDon?.maVoucher && (
+              <Typography textAlign="right">
+                <strong>Mã giảm giá:</strong> {hoaDon?.maVoucher} -{" "}
+                {(
+                  hoaDon?.tongTienSanPham +
+                  hoaDon?.phiVanChuyen -
+                  hoaDon?.tongTienThanhToan
+                )?.toLocaleString()}{" "}
+                 VNĐ
+              </Typography>
+            )}
+
+            <Divider sx={{ my: 1 }} />
+
+            <Typography
+              variant="h2"
+              color="error"
+              fontWeight="bold"
+              textAlign="right"
+            >
+              Tổng thanh toán: {hoaDon?.tongTienThanhToan?.toLocaleString()} VNĐ
             </Typography>
-          )}
-
-          <Divider sx={{ my: 1 }} />
-
-          <Typography variant="h6" color="error" fontWeight="bold">
-            Tổng thanh toán: {hoaDon?.tongTienThanhToan?.toLocaleString()} VNĐ
-          </Typography>
+          </Box>
         </Box>
 
         {/* Footer */}
@@ -179,4 +230,4 @@ const hoaDonPrint = forwardRef(({ hoaDon }, ref) => {
   );
 });
 
-export default hoaDonPrint;
+export default HoaDonPrint;
