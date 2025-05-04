@@ -47,8 +47,22 @@ const SanPham = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [chiTietList, setChiTietList] = useState([]);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [snackMessage, setSnackMessage] = useState("");
+const [snackSeverity, setSnackSeverity] = useState("success");
+const [snackOpen, setSnackOpen] = useState(false);
   const navigate = useNavigate();
-
+  useEffect(() => {
+    const successFlag = localStorage.getItem("sanPhamAddedSuccess");
+  
+    if (successFlag === "true") {
+      setSnackMessage(" Thêm sản phẩm thành công!");
+      setSnackSeverity("success");
+      setSnackOpen(true);
+      localStorage.removeItem("sanPhamAddedSuccess");
+    }
+  }, []);
+  
+  
   // Hàm gọi API với debounce
   const fetchData = useCallback(() => {
     setLoading(true);
@@ -489,6 +503,17 @@ const SanPham = () => {
       >
         <Alert severity="success">{snackbarMessage}</Alert>
       </Snackbar>
+      <Snackbar
+  open={snackOpen}
+  autoHideDuration={4000}
+  onClose={() => setSnackOpen(false)}
+  anchorOrigin={{ vertical: "top", horizontal: "right" }}
+>
+  <Alert onClose={() => setSnackOpen(false)} severity={snackSeverity} sx={{ width: "100%" }}>
+    {snackMessage}
+  </Alert>
+</Snackbar>
+
     </Box>
   );
 };

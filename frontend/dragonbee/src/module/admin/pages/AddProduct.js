@@ -126,6 +126,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   const [snackbarMessageKDQ, setSnackbarMessageKDQ] = useState(""); // Thông báo hiển thị trong Snackbar
   const [openSnackbarXX, setOpenSnackbarXX] = useState(false); // Điều khiển Snackbar
   const [snackbarMessageXX, setSnackbarMessageXX] = useState(""); // Thông báo hiển thị trong Snackbar
+  const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
 
   // Khi bạn muốn mở một modal, hãy gọi handleOpenModal với loại modal cụ thể
   const handleOpenModal = (modalType) => {
@@ -501,28 +502,32 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
 
   const handleSave = async () => {
     console.log("Danh sách productDetails trước khi lưu:", productDetails);
-  
+
     if (!selectedProduct) {
       setSnackMessage("Vui lòng chọn sản phẩm.");
       setSnackSeverity("error");
       setSnackOpen(true);
       return;
     }
-  
+
     const isValidImages = productDetails.every(
       (detail) => detail.images && detail.images.length > 0
     );
     if (!isValidImages) {
-      setSnackMessage("Vui lòng chọn ít nhất một ảnh cho mỗi sản phẩm chi tiết.");
+      setSnackMessage(
+        "Vui lòng chọn ít nhất một ảnh cho mỗi sản phẩm chi tiết."
+      );
       setSnackSeverity("error");
       setSnackOpen(true);
       return;
     }
-  
+
     const invalidDetail = productDetails.find(
       (detail) =>
-        !detail.quantity || detail.quantity <= 0 ||
-        !detail.price || detail.price <= 0
+        !detail.quantity ||
+        detail.quantity <= 0 ||
+        !detail.price ||
+        detail.price <= 0
     );
     if (invalidDetail) {
       setSnackMessage("Số lượng và giá của mỗi sản phẩm phải lớn hơn 0.");
@@ -530,7 +535,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       setSnackOpen(true);
       return;
     }
-  
+
     const requestDataList = productDetails.map((detail) => ({
       sanPhamId: selectedProduct,
       soLuong: detail.quantity || 0,
@@ -541,26 +546,29 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       thuongHieuId: selectedThuongHieu,
       phongCachId: selectedPhongCach,
       chatLieuId: selectedChatLieu,
-      mauSacId: colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
+      mauSacId:
+        colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
       sizeId: sizes.find((s) => s.tenSize === detail.tenSize)?.id || null,
       kieuDangId: selectedKieuDang,
       kieuDaiQuanId: selectedKieuDaiQuan,
       xuatXuId: selectedXuatXus,
       anhUrls: detail.images || [],
     }));
-  
+
     try {
       const response = await axios.post(
         "http://localhost:8080/api/san-pham-chi-tiet/add/chi-tiet",
         requestDataList,
         { headers: { "Content-Type": "application/json" } }
       );
-  
       if (response.status === 200 || response.status === 201) {
-        setSnackMessage("Thêm sản phẩm thành công!");
-        setSnackSeverity("success");
-        setSnackOpen(true);
-        navigate("/admin/sanpham", { replace: true });
+        // Lưu flag để hiển thị thông báo khi quay lại trang sản phẩm
+        localStorage.setItem("sanPhamAddedSuccess", "true");
+
+        // Chờ 1-2 giây rồi chuyển trang (để server chắc chắn cập nhật xong)
+        setTimeout(() => {
+          navigate("/admin/sanpham", { replace: true });
+        }, 1000);
       }
     } catch (error) {
       console.error("Lỗi khi gửi request:", error);
@@ -569,7 +577,6 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       setSnackOpen(true);
     }
   };
-  
 
   // xóa spct
   const removeSanPhamChiTiet = (index) => {
@@ -1051,7 +1058,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   // Cập nhật giá trị của selectedMauSacs (màu sắc đã chọn)
   const handleColorSelect = (color) => {
     if (
-      selectedMauSacs.length < 3 &&
+      selectedMauSacs.length < 10 &&
       !selectedMauSacs.some((existingColor) => existingColor.id === color.id)
     ) {
       setSelectedMauSacs([...selectedMauSacs, color]);
@@ -1141,7 +1148,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
 
   const handleSizeSelect = (size) => {
     if (
-      selectedSizes.length < 3 &&
+      selectedSizes.length < 10 &&
       !selectedSizes.some((existingSize) => existingSize.id === size.id)
     ) {
       setSelectedSizes([...selectedSizes, size]);
@@ -2519,19 +2526,19 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
             Lưu
           </Button>
           <Snackbar
-  open={snackOpen}
-  autoHideDuration={3000}
-  onClose={() => setSnackOpen(false)}
-  anchorOrigin={{ vertical: "top", horizontal: "right" }}
->
-  <Alert
-    onClose={() => setSnackOpen(false)}
-    severity={snackSeverity}
-    sx={{ width: "100%" }}
-  >
-    {snackMessage}
-  </Alert>
-</Snackbar>
+            open={snackOpen}
+            autoHideDuration={3000}
+            onClose={() => setSnackOpen(false)}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          >
+            <Alert
+              onClose={() => setSnackOpen(false)}
+              severity={snackSeverity}
+              sx={{ width: "100%" }}
+            >
+              {snackMessage}
+            </Alert>
+          </Snackbar>
         </Box>
       </Paper>
     </div>
