@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.controller;
 import com.example.shopdragonbee.dto.ProductOutOfStockDTO;
+import com.example.shopdragonbee.respone.SanPhamCTResponse;
 import com.example.shopdragonbee.service.SanPhamService;
 import com.example.shopdragonbee.service.ThongKeSPService;
 import lombok.RequiredArgsConstructor;
@@ -39,5 +40,10 @@ public class ThongKeSPCTController {
     ) {
         Map<String, Object> result = sanPhamService.getSanPhamSapHetHangPaging(quantity, page);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/low-stock")
+    public List<Object[]> getLowStockProducts() {
+        return sanPhamService.getTop2SanPhamSapHetHang();
     }
 }

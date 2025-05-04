@@ -42,7 +42,6 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer>, JpaSpe
             @Param("online") String online
     );
 
-
     List<HoaDon> getHoaDonByTrangThaiInAndLoaiDonOrderByNgayTaoAsc(List<String> trangThaitrangThai, String loaiDon);
 
     HoaDon findHoaDonByMa(String ma);

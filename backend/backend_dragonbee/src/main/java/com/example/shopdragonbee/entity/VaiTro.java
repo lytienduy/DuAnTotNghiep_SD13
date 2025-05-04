@@ -20,7 +20,7 @@ public class VaiTro {
     @Column(name = "ma", nullable = false, unique = true)
     private String ma;
 
-    @Column(name = "ten_vai_tro", nullable = false)
+    @Column(name = "ten_vai_tro", nullable = false, unique = true)
     private String tenVaiTro;
 
     @Column(name = "trang_thai")

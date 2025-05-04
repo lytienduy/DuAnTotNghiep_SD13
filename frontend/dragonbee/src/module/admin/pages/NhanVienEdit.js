@@ -45,6 +45,7 @@ const NhanVienEdit = () => {
     trangThai: "",
     diaChi: "",
     anh: "",
+    idTaiKhoan: "",  // Thêm trường này
   });
 
   const [tinhList, setTinhList] = useState([]);

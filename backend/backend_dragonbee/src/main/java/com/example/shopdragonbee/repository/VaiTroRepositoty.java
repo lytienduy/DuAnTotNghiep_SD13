@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface VaiTroRepositoty extends JpaRepository<VaiTro, Integer> {
     Optional<VaiTro> findByMa(String ma);
+
 }

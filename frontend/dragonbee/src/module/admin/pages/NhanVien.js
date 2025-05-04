@@ -104,84 +104,45 @@ const NhanVien = () => {
     }
   };
 
-  const fetchNhanViensByTrangThai = (selectedTrangThai) => {
+  useEffect(() => {
+    fetchNhanViensFilter();
+  }, [trangThai, gioiTinh]); // Gọi API khi thay đổi trạng thái hoặc giới tính
+  
+  const fetchNhanViensFilter = async () => {
     setLoading(true);
-
-    // Nếu chọn "Tất cả", lấy danh sách nhân viên ban đầu
-    if (selectedTrangThai === "") {
-      fetchNhanViens();
-      return;
+    let url = "http://localhost:8080/api/nhanvien/loc?";
+    if (trangThai) url += `trangThai=${trangThai}&`;
+    if (gioiTinh) url += `gioiTinh=${gioiTinh}`;
+  
+    try {
+      const response = await axios.get(url);
+      setNhanViens(response.data);
+    } catch (error) {
+      console.error("Lỗi khi lấy nhân viên:", error);
+    } finally {
+      setLoading(false);
     }
-
-    axios
-      .get(
-        `http://localhost:8080/api/nhanvien/loc-trang-thai?trangThai=${selectedTrangThai}`
-      )
-      .then((response) => {
-        setNhanViens(response.data);
-      })
-      .catch((error) =>
-        console.error("Lỗi khi lọc nhân viên theo trạng thái:", error)
-      )
-      .finally(() => setLoading(false));
   };
-
-  // Xử lý khi thay đổi trạng thái
-  const handleTrangThaiChange = (event) => {
-    const selectedTrangThai = event.target.value;
-    setTrangThai(selectedTrangThai);
-    fetchNhanViensByTrangThai(selectedTrangThai);
-  };
-
-  const fetchNhanViensByGioiTinh = (selectedGioiTinh) => {
-    setLoading(true);
-
-    // Nếu chọn "Tất cả", lấy danh sách nhân viên ban đầu
-    if (selectedGioiTinh === "") {
-      fetchNhanViens();
-      return;
-    }
-
-    axios
-      .get(
-        `http://localhost:8080/api/nhanvien/loc-gioi-tinh?gioiTinh=${selectedGioiTinh}`
-      )
-      .then((response) => {
-        setNhanViens(response.data);
-      })
-      .catch((error) =>
-        console.error("Lỗi khi lọc nhân viên theo giới tính:", error)
-      )
-      .finally(() => setLoading(false));
-  };
-
-  const handleGioiTinhChange = (event) => {
-    const selectedGioiTinh = event.target.value;
-    setGioiTinh(selectedGioiTinh);
-    fetchNhanViensByGioiTinh(selectedGioiTinh);
-  };
-
-  const fetchNhanViens = (searchKeyword = "") => {
+  
+  const fetchNhanViensSearch = (searchKeyword = "") => {
     setLoading(true);
     axios
-      .get(
-        `http://localhost:8080/api/nhanvien/tim-kiem?keyword=${searchKeyword}`
-      )
+      .get(`http://localhost:8080/api/nhanvien/tim-kiem?keyword=${searchKeyword}`)
       .then((response) => {
         setNhanViens(response.data);
       })
       .catch((error) => console.error("Lỗi khi lấy dữ liệu nhân viên:", error))
       .finally(() => setLoading(false));
   };
-
+  
   const handleSearch = () => {
-    fetchNhanViens(keyword);
+    fetchNhanViensSearch(keyword);
   };
-
+  
   useEffect(() => {
     const delaySearch = setTimeout(async () => {
       if (keyword.trim() !== "") {
-        fetchNhanViens(keyword);
+        fetchNhanViensSearch(keyword);
       } else {
         try {
           const response = await axios.get(
@@ -444,7 +405,7 @@ const NhanVien = () => {
               </Typography>
               <Select
                 value={trangThai}
-                onChange={handleTrangThaiChange}
+                onChange={(e) => setTrangThai(e.target.value)}
                 displayEmpty
                 variant="outlined"
                 size="small"
@@ -463,7 +424,7 @@ const NhanVien = () => {
               </Typography>
               <Select
                 value={gioiTinh}
-                onChange={handleGioiTinhChange}
+                onChange={(e) => setGioiTinh(e.target.value)}
                 displayEmpty
                 variant="outlined"
                 size="small"
@@ -480,11 +441,11 @@ const NhanVien = () => {
 
       <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
         {/* Import Excel */}
-        <Button variant="contained" color="primary">
-          Import Excel
-        </Button>
+        {/* <Button variant="contained" color="primary">
+          Nhập Excel
+        </Button> */}
         <Button variant="contained" color="primary" onClick={exportToExcel}>
-          Export Excel
+          Xuất Excel
         </Button>
         <Button
           variant="outlined"

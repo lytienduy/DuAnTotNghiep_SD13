@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -48,16 +50,6 @@ public class NhanVienController {
         return nhanVien.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-
-//    @PostMapping("/them-moi")
-//    public ResponseEntity<?> themMoiNhanVien(@RequestBody NhanVienRequestDTO dto) {
-//        try {
-//            NhanVien nhanVien = nhanVienService.themMoiNhanVien(dto);
-//            return ResponseEntity.ok(nhanVien);
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//    }
 @PostMapping("/them-moi")
 public ResponseEntity<?> themMoiNhanVien(
         @RequestParam("tenNhanVien") String tenNhanVien,
@@ -99,60 +91,47 @@ public ResponseEntity<?> themMoiNhanVien(
 }
 
 
-//    @PostMapping("/them-moi")
-//    public ResponseEntity<?> themMoiNhanVien(
-//            @RequestParam("tenNhanVien") String tenNhanVien,
-//            @RequestParam("ngaySinh") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngaySinh,
-//            @RequestParam("gioiTinh") String gioiTinh,
-//            @RequestParam("sdt") String sdt,
-//            @RequestParam("email") String email,
-//            @RequestParam("tinhThanh") String tinhThanh,
-//            @RequestParam("quanHuyen") String quanHuyen,
-//            @RequestParam("xaPhuong") String xaPhuong,
-//            @RequestParam("soNha") String soNha,
-//            @RequestParam(value = "anh", required = false) MultipartFile anh,
-//            @RequestParam("cccd") String cccd,
-//            @RequestParam("trangThai") String trangThai,
-//            @RequestParam("nguoiTao") String nguoiTao
-////            @RequestParam("idTaiKhoan") Integer idTaiKhoan
-//    ) {
-//        try {
-//            NhanVienRequestDTO dto = new NhanVienRequestDTO();
-//            dto.setTenNhanVien(tenNhanVien);
-//            dto.setNgaySinh(ngaySinh);
-//            dto.setGioiTinh(gioiTinh);
-//            dto.setSdt(sdt);
-//            dto.setEmail(email);
-//            dto.setTinhThanh(tinhThanh);
-//            dto.setQuanHuyen(quanHuyen);
-//            dto.setXaPhuong(xaPhuong);
-//            dto.setSoNha(soNha);
-//            dto.setAnh(anh);
-//            dto.setCccd(cccd);
-//            dto.setTrangThai(trangThai);
-//            dto.setNguoiTao(nguoiTao);
-////            dto.setIdTaiKhoan(idTaiKhoan);
-//
-//            NhanVien nhanVien = nhanVienService.themMoiNhanVien(dto);
-//            return ResponseEntity.ok(nhanVien);
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//    }
-
-
     private static final String UPLOAD_DIR = "E:/uploads/";
 
-    // Cập nhật nhân viên
+//    // Cập nhật nhân viên
+//    @PutMapping("/{id}")
+//    public ResponseEntity<NhanVien> updateNhanVien(@PathVariable Integer id, @RequestBody NhanVien nhanVienDetails) {
+//        if (nhanVienRepository.existsById(id)) {
+//            nhanVienDetails.setId(id);
+//            NhanVien updatedNhanVien = nhanVienRepository.save(nhanVienDetails);
+//            return ResponseEntity.ok(updatedNhanVien);
+//        }
+//        return ResponseEntity.notFound().build();
+//    }
+
     @PutMapping("/{id}")
     public ResponseEntity<NhanVien> updateNhanVien(@PathVariable Integer id, @RequestBody NhanVien nhanVienDetails) {
-        if (nhanVienRepository.existsById(id)) {
-            nhanVienDetails.setId(id);
-            NhanVien updatedNhanVien = nhanVienRepository.save(nhanVienDetails);
-            return ResponseEntity.ok(updatedNhanVien);
+        Optional<NhanVien> optionalNhanVien = nhanVienRepository.findById(id);
+        if (optionalNhanVien.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
+
+        NhanVien existingNhanVien = optionalNhanVien.get();
+
+        // Cập nhật các trường cần thiết
+        existingNhanVien.setTenNhanVien(nhanVienDetails.getTenNhanVien());
+        existingNhanVien.setNgaySinh(nhanVienDetails.getNgaySinh());
+        existingNhanVien.setGioiTinh(nhanVienDetails.getGioiTinh());
+        existingNhanVien.setSdt(nhanVienDetails.getSdt());
+        existingNhanVien.setEmail(nhanVienDetails.getEmail());
+        existingNhanVien.setCccd(nhanVienDetails.getCccd());
+        existingNhanVien.setTrangThai(nhanVienDetails.getTrangThai());
+        existingNhanVien.setNguoiTao(nhanVienDetails.getNguoiTao());
+        // Không set lại ID hoặc taiKhoan nếu bạn không thay đổi nó
+
+        existingNhanVien.setAnh(nhanVienDetails.getAnh());
+        // Lưu lại
+        nhanVienRepository.save(existingNhanVien);
+
+        return ResponseEntity.ok(existingNhanVien);
     }
+
+
 
     // API Upload ảnh
     @PostMapping("/upload-anh")
@@ -208,17 +187,15 @@ public ResponseEntity<?> themMoiNhanVien(
         return ResponseEntity.ok(nhanViens);
     }
 
-    @GetMapping("/loc-trang-thai")
-    public ResponseEntity<List<NhanVien>> filterByTrangThai(@RequestParam String trangThai) {
-        List<NhanVien> nhanViens = nhanVienRepository.findByTrangThai(trangThai);
+    @GetMapping("/loc")
+    public ResponseEntity<List<NhanVien>> filterNhanVien(
+            @RequestParam(required = false) String trangThai,
+            @RequestParam(required = false) String gioiTinh) {
+        List<NhanVien> nhanViens = nhanVienRepository.findByTrangThaiAndGioiTinh(trangThai, gioiTinh);
         return ResponseEntity.ok(nhanViens);
     }
 
-    @GetMapping("/loc-gioi-tinh")
-    public ResponseEntity<List<NhanVien>> filterByGioiTinh(@RequestParam String gioiTinh) {
-        List<NhanVien> nhanViens = nhanVienRepository.findByGioiTinh(gioiTinh);
-        return ResponseEntity.ok(nhanViens);
-    }
+
 
     @GetMapping("/loc-tuoi")
     public ResponseEntity<List<NhanVien>> filterByAgeRange(
