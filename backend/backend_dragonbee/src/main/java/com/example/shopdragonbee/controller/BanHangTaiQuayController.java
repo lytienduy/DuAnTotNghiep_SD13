@@ -60,13 +60,13 @@ public class BanHangTaiQuayController {
         String idSanPhamChiTiet = body.get("idSanPhamChiTiet");
         String soLuong = body.get("soLuong");
         String donGia = body.get("donGia");
+
         return banHangTaiQuayService.addSanPhamVaoGioHang(
-                java.lang.Integer.parseInt(idHoaDon)
-                , java.lang.Integer.parseInt(idSanPhamChiTiet),
-                java.lang.Integer.parseInt(soLuong),
+                Integer.parseInt(idHoaDon),
+                Integer.parseInt(idSanPhamChiTiet),
+                Integer.parseInt(soLuong),
                 Double.parseDouble(donGia));
     }
-
 
 
     //Tăng số lượng 1
@@ -124,11 +124,13 @@ public class BanHangTaiQuayController {
         String pttt = body.get("pttt");
         String tienMat = body.get("tienMat");
         String chuyenKhoan = body.get("chuyenKhoan");
+        String tenUser = body.get("tenUser");
 
         return banHangTaiQuayService.thanhToanHoaDon(
                 java.lang.Integer.parseInt(idHoaDon), pttt,
                 Float.parseFloat(tienMat),
-                Float.parseFloat(chuyenKhoan));
+                Float.parseFloat(chuyenKhoan),
+                tenUser);
     }
 
     @PostMapping("/xacNhanDatHang")

@@ -595,15 +595,18 @@ const HoaDonChiTietClient = () => {
   };
 
   const xoaSanPham = async (id) => {
+    let tenUser = "Khách hàng";
+    let encodedUser = encodeURIComponent(tenUser); // chuyển thành "kh%C3%A1ch%20h%C3%A0ng"
     //Đang sai đoạn này listDanhSachSanPham này chứa cả hoạt động và không hoạt động
-    let apiUrl = `http://localhost:8080/hdctClient/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}`;
+    let apiUrl = `http://localhost:8080/hdctClient/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}/${encodedUser}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
-      if (response.data === true) {
+      if (response.data === "Ok") {
         fetchHoaDon();
         showSuccessToast("Xóa sản phẩm thành công");
       } else {
-        showErrorToast("Xóa thất bại vui lòng thử lại");
+        fetchHoaDon();
+        showErrorToast(response.data);
       }
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -881,17 +884,24 @@ const HoaDonChiTietClient = () => {
   };
 
   //Hàm giảm số lượng sản phẩm trong giỏ hàng 
-  const giamSoLuong = async (id) => {
-    let apiUrl = `http://localhost:8080/hdctClient/giamSoLuongOnline/${id}`;
+  const giamSoLuong = async (id, soLuong) => {
     try {
-      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
-      if (response.data === true) {
-        fetchHoaDon();
-      } else {
+      if (soLuong === 1) {
         if (hoaDon?.listDanhSachSanPham?.length > 1) {
           clickDeleteIcon(id);
         } else {
           showErrorToast("Hóa đơn không được để rỗng sản phẩm");
+        }
+      } else {
+        let apiUrl = `http://localhost:8080/hdctClient/giamSoLuongOnline/${id}`;
+        const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+        if (response.data === "Ok") {
+          fetchHoaDon();
+        } else if (response.data === "Hóa đơn này đã được xác nhận, không thể thay đổi thông tin") {
+          fetchHoaDon();
+          showErrorToast(response.data);
+        } else {
+          showErrorToast(response.data);
         }
       }
     } catch (error) {
@@ -909,9 +919,9 @@ const HoaDonChiTietClient = () => {
   };
 
   //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
-  const handleInputBlur = (id) => {
+  const handleInputBlur = (id, soLuong) => {
     setSelectedProductId(id);
-    const newValue = Number(tempValues[id]);
+    const newValue = (isNaN(Number(tempValues[id]))) ? soLuong : Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
     } else if (newValue < 1) {//Không được để else  
@@ -942,7 +952,10 @@ const HoaDonChiTietClient = () => {
         handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+      } else if (response.data === "Hết sản phẩm") {
+        showErrorToast(response.data);
       } else {
+        fetchHoaDon();
         showErrorToast(response.data);
       }
     } catch (error) {
@@ -969,8 +982,11 @@ const HoaDonChiTietClient = () => {
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
         setTempValues({});
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
-      } else {
+      } else if (response.data === "Số lượng trong kho không đủ cung cấp hoàn toàn số lượng bạn muốn") {
         setTempValues({});
+        showErrorToast(response.data);
+      } else {
+        fetchHoaDon();
         showErrorToast(response.data);
       }
     } catch (error) {
@@ -1015,7 +1031,7 @@ const HoaDonChiTietClient = () => {
   const handleCloseConfirmModal = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8080/hdctClient/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
+        `http://localhost:8080/hdctClient/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia, tenUser: "Khách hàng" }
       );
       if (response.data === "Ok") {
         setSelectedProduct(null);
@@ -1027,7 +1043,14 @@ const HoaDonChiTietClient = () => {
         handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+      } else if (response.data === "Rất tiếc! không đủ số lượng sản phẩm") {
+        showErrorToast(response.data);
       } else {
+        setSelectedProduct(null);
+        setQuantity(1);
+        setOpenConfirmModal(false);
+        setOpenSPModal(false);
+        fetchHoaDon();
         showErrorToast(response.data);
       }
     } catch (error) {
@@ -1470,7 +1493,7 @@ const HoaDonChiTietClient = () => {
 
                               <IconButton
                                 size="small"
-                                onClick={() => giamSoLuong(product.id)}
+                                onClick={() => giamSoLuong(product.id, product?.soLuong)}
                                 disabled={product.quantity <= 1}
                                 sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
                               >
@@ -1480,7 +1503,7 @@ const HoaDonChiTietClient = () => {
                               <TextField
                                 value={tempValues[product.id] ?? product.soLuong}
                                 onChange={(e) => handleInputChange(product.id, e.target.value)}
-                                onBlur={() => handleInputBlur(product.id)}
+                                onBlur={() => handleInputBlur(product.id, product.soLuong)}
                                 type="number"
                                 inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
                                 size="small"

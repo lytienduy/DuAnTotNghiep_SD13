@@ -112,6 +112,8 @@ const HoaDonChiTiet = () => {
   const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
   const [tenSanPhamThongBao, setTenSanPhamThongBao] = useState("");
   const [dialogMessage, setDialogMessage] = useState("");
+  const tenUser = JSON.parse(localStorage.getItem("userData"))?.nhanVien?.tenNhanVien;
+
 
   const handleDialogOpen = (message, tenSanPhamThongBao) => {
     setDialogMessage(message);
@@ -616,14 +618,15 @@ const HoaDonChiTiet = () => {
 
   const xoaSanPham = async (id) => {
     //Đang sai đoạn này listDanhSachSanPham này chứa cả hoạt động và không hoạt động
-    let apiUrl = `http://localhost:8080/hdctClient/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}`;
+    let apiUrl = `http://localhost:8080/hdctClient/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}/${tenUser}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
-      if (response.data === true) {
+      if (response.data === "Ok") {
         fetchHoaDon();
         showSuccessToast("Xóa sản phẩm thành công");
       } else {
-        showErrorToast("Xóa thất bại vui lòng thử lại");
+        fetchHoaDon();
+        showErrorToast(response.data);
       }
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error);
@@ -793,8 +796,6 @@ const HoaDonChiTiet = () => {
   }, [danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach]);
 
 
-
-
   //Validate nhập tiền khách đưa
   const handleTienKhachDua = (e) => {
     let newValue = e.target.value.replace(/\D/g, ''); // Chỉ cho phép nhập số
@@ -852,7 +853,7 @@ const HoaDonChiTiet = () => {
       setErrorTienKhachDua(errorDua);
       if (!errorChuyen && !errorDua) {
         const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/thanhToanHoaDon`, {
-          idHoaDon: hoaDon.id, pttt: paymentMethod, tienMat: tienKhachDua, chuyenKhoan: tienKhachChuyen
+          idHoaDon: hoaDon.id, pttt: paymentMethod, tienMat: tienKhachDua, chuyenKhoan: tienKhachChuyen, tenUser: tenUser
         })
         if (response.data) {
           setTienKhachDua(0);
@@ -946,7 +947,8 @@ const HoaDonChiTiet = () => {
       const response = await axios.post(`http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, {
         lyDo: ghiChuTrangThai,
         trangThai: "Đã hủy",
-        hanhDong: "Hủy"
+        hanhDong: "Hủy",
+        tenUser: tenUser
       });
       if (response.data) {
         setOpenConfirm(false);
@@ -1026,7 +1028,7 @@ const HoaDonChiTiet = () => {
       const trangThaiCanDoi = steps[currentStep - 1];
       // Gọi API để thay đổi trạng thái
       const response = await axios.post(
-        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: "Hoàn tác", lyDo: ghiChuTrangThai }
+        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: "Hoàn tác", lyDo: ghiChuTrangThai, tenUser: tenUser }
       );
       if (response.data) {
         setGhiChuTrangThai("");
@@ -1050,7 +1052,7 @@ const HoaDonChiTiet = () => {
       const trangThaiCanDoi = steps[currentStep + 1];
       // Gọi API để thay đổi trạng thái
       const response = await axios.post(
-        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: trangThaiCanDoi === "Hoàn thành" ? "Hoàn thành" : "Cập nhật", lyDo: ghiChuTrangThai }
+        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: trangThaiCanDoi === "Hoàn thành" ? "Hoàn thành" : "Cập nhật", lyDo: ghiChuTrangThai, tenUser: tenUser }
       );
       if (response.data) {
         setGhiChuTrangThai("");
@@ -1069,17 +1071,24 @@ const HoaDonChiTiet = () => {
   };
 
   //Hàm giảm số lượng sản phẩm trong giỏ hàng 
-  const giamSoLuong = async (id) => {
-    let apiUrl = `http://localhost:8080/hdctClient/giamSoLuongOnline/${id}`;
+  const giamSoLuong = async (id, soLuong) => {
     try {
-      const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
-      if (response.data === true) {
-        fetchHoaDon();
-      } else {
+      if (soLuong === 1) {
         if (hoaDon?.listDanhSachSanPham?.length > 1) {
           clickDeleteIcon(id);
         } else {
           showErrorToast("Hóa đơn không được để rỗng sản phẩm");
+        }
+      } else {
+        let apiUrl = `http://localhost:8080/hdctClient/giamSoLuongOnline/${id}`;
+        const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
+        if (response.data === "Ok") {
+          fetchHoaDon();
+        } else if (response.data === "Hóa đơn này đã được xác nhận, không thể thay đổi thông tin") {
+          fetchHoaDon();
+          showErrorToast(response.data);
+        } else {
+          showErrorToast(response.data);
         }
       }
     } catch (error) {
@@ -1097,9 +1106,9 @@ const HoaDonChiTiet = () => {
   };
 
   //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
-  const handleInputBlur = (id) => {
+  const handleInputBlur = (id, soLuong) => {
     setSelectedProductId(id);
-    const newValue = Number(tempValues[id]);
+    const newValue = (isNaN(Number(tempValues[id]))) ? soLuong : Number(tempValues[id]);
     if (newValue >= 1) {
       nhapSoLuong(id, newValue); // Gọi API cập nhật số lượng khi mất focus
     } else if (newValue < 1) {//Không được để else  
@@ -1130,7 +1139,10 @@ const HoaDonChiTiet = () => {
         handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+      } else if (response.data === "Hết sản phẩm") {
+        showErrorToast(response.data);
       } else {
+        fetchHoaDon();
         showErrorToast(response.data);
       }
     } catch (error) {
@@ -1157,8 +1169,11 @@ const HoaDonChiTiet = () => {
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
         setTempValues({});
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
-      } else {
+      } else if (response.data === "Số lượng trong kho không đủ cung cấp hoàn toàn số lượng bạn muốn") {
         setTempValues({});
+        showErrorToast(response.data);
+      } else {
+        fetchHoaDon();
         showErrorToast(response.data);
       }
     } catch (error) {
@@ -1201,7 +1216,7 @@ const HoaDonChiTiet = () => {
   const handleCloseConfirmModal = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8080/hdctClient/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
+        `http://localhost:8080/hdctClient/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia, tenUser: tenUser  }
       );
       if (response.data === "Ok") {
         setSelectedProduct(null);
@@ -1213,7 +1228,14 @@ const HoaDonChiTiet = () => {
         handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
       } else if (response.data === "Đơn hàng vượt quá 20tr") {
         handleDialogOpen("Chúng tôi không nhận đơn hàng quá 20 triệu cho đơn online \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+      } else if (response.data === "Rất tiếc! không đủ số lượng sản phẩm") {
+        showErrorToast(response.data);
       } else {
+        setSelectedProduct(null);
+        setQuantity(1);
+        setOpenConfirmModal(false);
+        setOpenSPModal(false);
+        fetchHoaDon();
         showErrorToast(response.data);
       }
     } catch (error) {
@@ -1234,7 +1256,7 @@ const HoaDonChiTiet = () => {
   }
 
   const listThanhToan = (hoaDon?.listThanhToanHoaDon || [])
-    .filter(tt => tt?.loai !== "Hoàn tiền")
+    .filter(tt => tt?.loai === "Thanh toán" || tt?.loai !== "Hoàn tiền")
 
   const soTienDaThanhToan = listThanhToan?.reduce((tong, tt) => tong + tt?.soTien, 0);
 
@@ -1244,7 +1266,6 @@ const HoaDonChiTiet = () => {
   const tongTienDaThanhToanVaDaHoanTienCuaOnline = soTienDaThanhToan - listHoanTien?.reduce((tong, tt) => tong + tt?.soTien, 0); // Tính tiền cần hoàn lấy tiền đã thanh toán trừ đi tiền đã hoàn so sánh với số tiền cần thanh toán của hóa đơn
 
   const handleNextCheckHoanTienVaMoModal = () => {
-
     if (hoaDon?.trangThai === "Đã thanh toán" && tongTienDaThanhToanVaDaHoanTienCuaOnline > hoaDon?.tongTienThanhToan) {
       showErrorToast("Bạn chưa hoàn tiền cho khách hàng");
       return;
@@ -1266,7 +1287,8 @@ const HoaDonChiTiet = () => {
         `http://localhost:8080/hoa-don-chi-tiet/hoanTien/${id}`, null,
         {
           params: {
-            soTienCanHoan: tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan
+            soTienCanHoan: tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan,
+            tenUser: tenUser
           }
         });//Gọi api bằng  
       if (response.data) {
@@ -1925,7 +1947,7 @@ const HoaDonChiTiet = () => {
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số Tiền</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thời Gian</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Nhân Viên Xác Nhận</TableCell>
-              <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell>
+              {/* <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell> */}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -1937,7 +1959,7 @@ const HoaDonChiTiet = () => {
                   <TableCell align="center">{payment.soTien.toLocaleString()} VND</TableCell>
                   <TableCell align="center">{new Date(payment.ngayTao).toLocaleString("vi-VN")}</TableCell>
                   <TableCell align="center">{payment.nhanVienXacNhan}</TableCell>
-                  <TableCell align="center">{payment.ghiChu}</TableCell>
+                  {/* <TableCell align="center">{payment.ghiChu}</TableCell> */}
                 </TableRow>
               ))
             ) : (
@@ -2016,7 +2038,7 @@ const HoaDonChiTiet = () => {
                   <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số Tiền</TableCell>
                   <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thời Gian</TableCell>
                   <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Nhân Viên Xác Nhận</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell>
+                  {/* <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell> */}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -2027,7 +2049,7 @@ const HoaDonChiTiet = () => {
                     <TableCell align="center">{payment.soTien.toLocaleString()} VND</TableCell>
                     <TableCell align="center">{new Date(payment.ngayTao).toLocaleString("vi-VN")}</TableCell>
                     <TableCell align="center">{payment.nhanVienXacNhan}</TableCell>
-                    <TableCell align="center">{payment.ghiChu}</TableCell>
+                    {/* <TableCell align="center">{payment.ghiChu}</TableCell> */}
                   </TableRow>
                 ))}
               </TableBody>
@@ -2137,7 +2159,7 @@ const HoaDonChiTiet = () => {
                           <Box display="flex" sx={{ border: "1px solid #ccc", borderRadius: "5px", overflow: "hidden", width: "120px" }}>
                             <IconButton
                               size="small"
-                              onClick={() => giamSoLuong(product.id)}
+                              onClick={() => giamSoLuong(product.id, product?.soLuong)}
                               disabled={product.quantity <= 1}
                               sx={{ borderRight: "1px solid #ccc", background: "#f5f5f5", borderRadius: 0 }}
                             >
@@ -2147,7 +2169,7 @@ const HoaDonChiTiet = () => {
                             <TextField
                               value={tempValues[product.id] ?? product.soLuong}
                               onChange={(e) => handleInputChange(product.id, e.target.value)}
-                              onBlur={() => handleInputBlur(product.id)}
+                              onBlur={() => handleInputBlur(product.id, product.soLuong)}
                               type="number"
                               inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
                               size="small"
@@ -2179,13 +2201,12 @@ const HoaDonChiTiet = () => {
                             >
                               <AddIcon fontSize="small" />
                             </IconButton>
-
                           </Box>
                         ) : (
                           <TextField
                             value={tempValues[product.id] ?? product.soLuong}
-                            onChange={(e) => handleInputChange(product.id, e.target.value)}
-                            onBlur={() => handleInputBlur(product.id)}
+                            // onChange={(e) => handleInputChange(product.id, e.target.value)}
+                            // onBlur={() => handleInputBlur(product.id,product.soLuong)}
                             type="number"
                             inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
                             size="small"

@@ -1,7 +1,7 @@
-﻿CREATE DATABASE ShopDragonBee;
+﻿CREATE DATABASE ShopDragonBee_v1;
 GO
 
-USE ShopDragonBee;
+USE ShopDragonBee_v1;
 GO
 
 -- Bảng thuong_hieu
@@ -723,3 +723,4 @@ ALTER COLUMN ngay_bat_dau DATETIME;
 ALTER TABLE dot_giam_gia
 ALTER COLUMN ngay_ket_thuc DATETIME;
 
+alter table thanh_toan_hoa_don add loai nvarchar(50) null

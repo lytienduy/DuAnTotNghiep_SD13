@@ -45,7 +45,7 @@ public class HoaDonChiTietService {
         return listUrl;
     }
 
-    public Boolean xacNhanHoanTien(Integer idHoaDon, Float soTienCanHoan) {
+    public Boolean xacNhanHoanTien(Integer idHoaDon, Float soTienCanHoan,String tenUser) {
         try {
             ThanhToanHoaDon thanhToanHoaDonHoanTien = new ThanhToanHoaDon();
             thanhToanHoaDonHoanTien.setMa("TTHD" + (System.currentTimeMillis() % 100000));
@@ -54,6 +54,8 @@ public class HoaDonChiTietService {
             thanhToanHoaDonHoanTien.setSoTienThanhToan(soTienCanHoan);
             thanhToanHoaDonHoanTien.setNgayTao(LocalDateTime.now());
             thanhToanHoaDonHoanTien.setLoai("Hoàn tiền");
+            thanhToanHoaDonHoanTien.setNguoiTao(tenUser);
+            thanhToanHoaDonHoanTien.setNguoiSua(tenUser);
             thanhToanHoaDonRepository.save(thanhToanHoaDonHoanTien);
             return true;
         } catch (Exception e) {

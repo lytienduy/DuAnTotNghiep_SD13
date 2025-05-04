@@ -420,7 +420,7 @@ const HoaDon = () => {
             </Button>
             {/* <Button variant="outlined" color="primary">Quét mã</Button> */}
             <Button variant="outlined" color="success" onClick={handleExportExcel}>
-              Export Excel
+              Xuất Excel
             </Button>
           </Stack>
         </Stack>

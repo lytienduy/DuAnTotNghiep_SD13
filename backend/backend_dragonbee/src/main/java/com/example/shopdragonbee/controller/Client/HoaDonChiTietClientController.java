@@ -37,11 +37,14 @@ public class HoaDonChiTietClientController {
         String idSanPhamChiTiet = body.get("idSanPhamChiTiet");
         String soLuong = body.get("soLuong");
         String donGia = body.get("donGia");
+        String tenUser = body.get("tenUser");
+
         return hoaDonChiTietClientService.addSanPhamVaoGioHangOnlineSauKhiDatHang(
                 java.lang.Integer.parseInt(idHoaDon)
                 , java.lang.Integer.parseInt(idSanPhamChiTiet),
                 java.lang.Integer.parseInt(soLuong),
-                Double.parseDouble(donGia));
+                Double.parseDouble(donGia),
+                tenUser);
     }
 
     //Tăng số lượng 1
@@ -52,14 +55,14 @@ public class HoaDonChiTietClientController {
 
     //Giảm số lượng 1
     @PostMapping("/giamSoLuongOnline/{id}")
-    public Boolean giamSoLuongOnline(@PathVariable Integer id) {
+    public String giamSoLuongOnline(@PathVariable Integer id) {
         return hoaDonChiTietClientService.giamSoLuongOnline(id);
     }
 
     //Xóa sản phẩm khỏi giỏ hàng bán hàng tại quầy
-    @PostMapping("/xoaSanPhamSauKhiDatHang/{id}/{idHoaDon}")
-    public Boolean xoaSanPhamSauKhiDatHang(@PathVariable Integer id, @PathVariable Integer idHoaDon) {
-        return hoaDonChiTietClientService.xoaSanPhamSauKhiDatHang(id, idHoaDon);
+    @PostMapping("/xoaSanPhamSauKhiDatHang/{id}/{idHoaDon}/{tenUser}")
+    public String xoaSanPhamSauKhiDatHang(@PathVariable Integer id, @PathVariable Integer idHoaDon, @PathVariable String tenUser) {
+        return hoaDonChiTietClientService.xoaSanPhamOnline(id, idHoaDon,tenUser);
     }
 
     //Nhập số lượng sản phẩm từ bán phím
@@ -88,7 +91,7 @@ public class HoaDonChiTietClientController {
             @RequestParam(required = false) Integer phongCach,
             @RequestParam(required = false) Integer idHoaDon
     ) {
-        return hoaDonChiTietClientService.getListCacSanPhamHienThiTrongThemBanHangTaiQuay(timKiem, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach,idHoaDon);
+        return hoaDonChiTietClientService.getListCacSanPhamHienThiTrongThemBanHangTaiQuay(timKiem, fromGia, toGia, danhMuc, mauSac, chatLieu, kichCo, kieuDang, thuongHieu, phongCach, idHoaDon);
     }
 
     @GetMapping("/layListDanhMuc")

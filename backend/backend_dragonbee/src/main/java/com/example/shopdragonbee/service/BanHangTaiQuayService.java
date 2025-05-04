@@ -331,11 +331,10 @@ public class BanHangTaiQuayService {
                 hoaDonChiTiet.setMa("HDCT" + (System.currentTimeMillis() % 100000));
                 hoaDonChiTiet.setHoaDon(hoaDonRepository.findById(idHoaDon).get());
                 hoaDonChiTiet.setSanPhamChiTiet(sanPhamChiTietRepository.findById(idSanPhamChiTiet).get());
-                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 if (sanPhamChiTiet.getSoLuong() - soLuong < 0) {
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                     return false;
-                }
+                }sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 hoaDonChiTiet.setSoLuong(soLuong);
                 hoaDonChiTiet.setDonGia(donGia);
                 hoaDonChiTiet.setNgayTao(LocalDateTime.now());
@@ -344,11 +343,11 @@ public class BanHangTaiQuayService {
                 sanPhamChiTietRepository.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
             } else {
                 kiemTraHDCTDaCoChua.setSoLuong(kiemTraHDCTDaCoChua.getSoLuong() + soLuong);
-                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 if (sanPhamChiTiet.getSoLuong() - soLuong < 0) {
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                     return false;
                 }
+                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 kiemTraHDCTDaCoChua.setDonGia(donGia);
                 kiemTraHDCTDaCoChua.setNgaySua(LocalDateTime.now());
                 hoaDonChiTietRepository.save(kiemTraHDCTDaCoChua);//lưu hóa đơn chi tiết
@@ -364,7 +363,7 @@ public class BanHangTaiQuayService {
     }
 
 
-    public Boolean thanhToanHoaDon(Integer idHoaDon, String pttt, Float tienMat, Float chuyenKhoan) {
+    public Boolean thanhToanHoaDon(Integer idHoaDon, String pttt, Float tienMat, Float chuyenKhoan,String tenUser) {
         try {
             ThanhToanHoaDon thanhToanHoaDonTienMat = new ThanhToanHoaDon();
             thanhToanHoaDonTienMat.setMa("TTHD" + (System.currentTimeMillis() % 100000));
@@ -373,6 +372,8 @@ public class BanHangTaiQuayService {
             thanhToanHoaDonTienMat.setSoTienThanhToan(tienMat);
             thanhToanHoaDonTienMat.setNgayTao(LocalDateTime.now());
             thanhToanHoaDonTienMat.setLoai("Thanh toán");
+            thanhToanHoaDonTienMat.setNguoiTao(tenUser);
+            thanhToanHoaDonTienMat.setNguoiSua(tenUser);
 
             ThanhToanHoaDon thanhToanHoaDonChuyenKhoan = new ThanhToanHoaDon();
             thanhToanHoaDonChuyenKhoan.setMa("TTHD" + (System.currentTimeMillis() % 100000));
@@ -381,7 +382,8 @@ public class BanHangTaiQuayService {
             thanhToanHoaDonChuyenKhoan.setSoTienThanhToan(chuyenKhoan);
             thanhToanHoaDonChuyenKhoan.setNgayTao(LocalDateTime.now());
             thanhToanHoaDonChuyenKhoan.setLoai("Thanh toán");
-
+            thanhToanHoaDonChuyenKhoan.setNguoiTao(tenUser);
+            thanhToanHoaDonChuyenKhoan.setNguoiSua(tenUser);
 
             if (pttt.equalsIgnoreCase("cash")) {
                 thanhToanHoaDonRepository.save(thanhToanHoaDonTienMat);
