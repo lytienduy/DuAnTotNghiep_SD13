@@ -136,6 +136,20 @@ public class AuthController {
         }
     }
 
+    private String generateCustomerCode() {
+        // Lấy mã khách hàng lớn nhất hiện tại từ CSDL
+        Integer maxMa = khachHangRepository.getMaxMa();
+
+        // Nếu chưa có khách hàng nào, bắt đầu từ KH0001
+        int newCode = (maxMa == null) ? 1 : maxMa + 1;
+
+        // Tính độ dài của số để đảm bảo định dạng đúng
+        int length = String.format("%d", newCode).length();
+
+        // Đảm bảo mã khách hàng có đủ số chữ số, ví dụ KH000001, KH000002,...
+        return String.format("KH%0" + (4) + "d", newCode);  // Chắc chắn rằng số có 6 chữ số
+    }
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         // Check email tồn tại trong KhachHang
@@ -173,7 +187,7 @@ public class AuthController {
         KhachHang khachHang = KhachHang.builder()
                 .tenKhachHang(request.getTenKhachHang())
                 .email(request.getEmail())
-                .ma("KH" + System.currentTimeMillis()) // Sinh mã tự động
+                .ma(generateCustomerCode()) // Sinh mã tự động
                 .taiKhoan(taiKhoan)
                 .trangThai("Hoạt động")
                 .ngayTao(LocalDateTime.now())

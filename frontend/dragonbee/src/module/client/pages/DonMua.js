@@ -183,15 +183,15 @@ const DonMua = () => {
                                     {tenKhachHang}
                                 </Typography>
 
-                                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                {/* <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
                                     <EditIcon sx={{ fontSize: 16, marginRight: 1 }} />
                                     Sửa hồ sơ
-                                </Typography>
+                                </Typography> */}
                             </Box>
                         </Box>
 
                         <Box sx={{ marginTop: 2, marginLeft: -2 }}>
-                            <Button
+                            {/* <Button
                                 variant="text"
                                 sx={{
                                     textAlign: 'left',
@@ -204,7 +204,7 @@ const DonMua = () => {
                             >
                                 <AccountCircleIcon sx={{ marginRight: 1 }} />
                                 Tài khoản của tôi
-                            </Button>
+                            </Button> */}
                             <Button
                                 variant="text"
                                 sx={{

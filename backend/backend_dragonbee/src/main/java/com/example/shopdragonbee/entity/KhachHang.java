@@ -24,13 +24,13 @@ public class KhachHang {
     @Column(name = "ten_khach_hang", nullable = false)
     private String tenKhachHang;
 
-    @Column(name = "ngay_sinh")
+    @Column(name = "ngay_sinh", nullable = true)
     private LocalDate ngaySinh;
 
-    @Column(name = "gioi_tinh")
+    @Column(name = "gioi_tinh", nullable = true)
     private String gioiTinh;
 
-    @Column(name = "sdt")
+    @Column(name = "sdt", nullable = true)
     private String sdt;
 
     @Column(name = "email", unique = true)

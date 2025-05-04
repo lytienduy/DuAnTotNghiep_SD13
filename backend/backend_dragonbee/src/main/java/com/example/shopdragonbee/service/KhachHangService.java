@@ -90,7 +90,10 @@ public class KhachHangService {
 
     public KhachHangDto addKhachHang(KhachHangDto khachHangDto) {
         List<KhachHang> khachHangs = khachHangRepository.findAll();
-        Boolean isPhoneExisted = khachHangs.stream().anyMatch(kh -> kh.getSdt().equals(khachHangDto.getSdt()));
+        Boolean isPhoneExisted = khachHangDto.getSdt() != null &&
+                khachHangs.stream()
+                        .anyMatch(kh -> kh.getSdt() != null && kh.getSdt().equals(khachHangDto.getSdt()));
+
         if (isPhoneExisted) {
             throw new RuntimeException("Số điện thoại đã tồn tại!");
         }

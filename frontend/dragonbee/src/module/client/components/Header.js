@@ -263,9 +263,9 @@ const Header = () => {
                 {userKH ? (
 
                   <>
-                    <MenuItem onClick={handleClose}>
+                    {/* <MenuItem onClick={handleClose}>
                       <Typography color="textSecondary">Tài khoản của tôi</Typography>
-                    </MenuItem>
+                    </MenuItem> */}
                     <MenuItem onClick={goToDonMua}>
                       <Typography color="textSecondary">Đơn mua</Typography>
                     </MenuItem>
