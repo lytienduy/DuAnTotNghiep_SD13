@@ -25,6 +25,8 @@ public class KhachHangService {
 
     @Autowired
     private TaiKhoanService taiKhoanService;
+    @Autowired
+    private MailService mailService;
 
     public List<KhachHangDto> getAllKhachHang() {
         List<KhachHangDto> khachHangDtoList = new ArrayList<>();
@@ -89,30 +91,33 @@ public class KhachHangService {
     public KhachHangDto addKhachHang(KhachHangDto khachHangDto) {
         List<KhachHang> khachHangs = khachHangRepository.findAll();
         Boolean isPhoneExisted = khachHangs.stream().anyMatch(kh -> kh.getSdt().equals(khachHangDto.getSdt()));
-        if(isPhoneExisted){
+        if (isPhoneExisted) {
             throw new RuntimeException("Số điện thoại đã tồn tại!");
         }
         Boolean isEmailExisted = khachHangs.stream().anyMatch(kh -> kh.getEmail().equals(khachHangDto.getEmail()));
-        if(isEmailExisted){
+        if (isEmailExisted) {
             throw new RuntimeException("Email đã tồn tại!");
         }
+
+        // Tạo mã khách hàng
+        String ma = "KH00";
+        if (khachHangs.size() > 10) ma = "KH0";
+        if (khachHangs.size() > 100) ma = "KH";
+
         KhachHang khachHang = mapToEntity(khachHangDto);
         khachHang.setNguoiTao("system");
-        String ma = "KH00";
-        if(khachHangs.size() > 10){
-            ma = "KH0";
-        }
-        if(khachHangs.size() > 100){
-            ma = "KH";
-        }
         khachHang.setMa(ma + (khachHangs.size() + 1));
+
+        // Tạo tài khoản với mật khẩu mặc định
         TaiKhoan taiKhoan = taiKhoanService.taoTKKhachHang(khachHangDto);
         khachHang.setTaiKhoan(taiKhoan);
+
         KhachHang kh = khachHangRepository.save(khachHang);
-        List<DiaChi> diaChis  = new ArrayList<>();
-        DiaChi diaChi;
-        for(DiaChiDto diaChiDto : khachHangDto.getDiaChiDtos()){
-            diaChi = new DiaChi();
+
+        // Lưu địa chỉ
+        List<DiaChi> diaChis = new ArrayList<>();
+        for (DiaChiDto diaChiDto : khachHangDto.getDiaChiDtos()) {
+            DiaChi diaChi = new DiaChi();
             diaChi.setSoNha(diaChiDto.getSoNha());
             diaChi.setDuong(diaChiDto.getDuong());
             diaChi.setXa(diaChiDto.getXa());
@@ -123,8 +128,41 @@ public class KhachHangService {
             diaChi.setMacDinh(diaChiDto.getMacDinh());
             diaChis.add(diaChiRepository.save(diaChi));
         }
-
         kh.setDiaChis(diaChis);
+
+        // ✅ Gửi email thông báo tài khoản mới
+        String subject = "Thông tin tài khoản khách hàng";
+        String htmlContent = "<html>" +
+                "<head>" +
+                "<style>" +
+                "body { font-family: Arial, sans-serif; background-color: #e0e0e0; padding: 20px; }" +
+                "div.content { max-width: 600px; background: #fff; padding: 30px; border-radius: 10px;" +
+                "box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; margin: auto;" +
+                "border: 1px solid #ddd; }" +
+                "h2 { color: #3498ea; }" +
+                "p { font-size: 16px; color: #333; line-height: 1.6; }" +
+                ".highlight-box { background: #dff0d8; padding: 15px; border-radius: 8px;" +
+                "border: 1px solid #b2dba1; display: inline-block; font-weight: bold; margin: 15px auto; }" +
+                ".footer { font-size: 14px; color: #777; margin-top: 20px; }" +
+                "</style>" +
+                "</head>" +
+                "<body>" +
+                "<div class='content'>" +
+                "<div><img src='https://raw.githubusercontent.com/lytienduy/DuAnTotNghiep_SD13/refs/heads/main/frontend/dragonbee/src/img/dragonbee_logo_v1.png' " +
+                "alt='Logo' style='max-width: 100px; height: auto;' /></div>" +
+                "<h2>Xin chào " + khachHang.getTenKhachHang() + ",</h2>" +
+                "<p>Tài khoản của bạn tại DragonBee đã được tạo thành công!</p>" +
+                "<div class='highlight-box'>" +
+                "<p><strong>Tên đăng nhập:</strong> " + taiKhoan.getTenNguoiDung() + "</p>" +
+                "<p><strong>Mật khẩu:</strong> " + taiKhoan.getMatKhau() + "</p>" +
+                "</div>" +
+                "<p>Vui lòng đổi mật khẩu sau khi đăng nhập.</p>" +
+                "<p class='footer'>Mọi thắc mắc xin vui lòng liên hệ: <strong>dragonbeeshop@gmail.com</strong></p>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
+
+        mailService.sendMail(khachHang.getEmail(), subject, htmlContent);
 
         return mapToDto(kh);
     }

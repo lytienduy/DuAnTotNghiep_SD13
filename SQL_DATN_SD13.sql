@@ -422,11 +422,11 @@ VALUES
 -- Bảng mau_sac
 INSERT INTO mau_sac (ma, ten_mau_sac, ma_mau, mo_ta, trang_thai)
 VALUES
-('MS001', 'Đỏ', '#FF0000', 'Màu đỏ tươi', N'Hoạt động'),
-('MS002', 'Xanh dương', '#0000FF', 'Màu xanh dương mát mẻ', N'Hoạt động'),
-('MS003', 'Vàng', '#FFFF00', 'Màu vàng sáng', N'Hoạt động'),
-('MS004', 'Trắng', '#FFFFFF', 'Màu trắng tinh khiết', N'Hoạt động'),
-('MS005', 'Đen', '#000000', 'Màu đen huyền bí', N'Hoạt động');
+('MS001', N'Đỏ', '#FF0000', N'Màu đỏ tươi', N'Hoạt động'),
+('MS002', 'Xanh dương', '#0000FF', N'Màu xanh dương mát mẻ', N'Hoạt động'),
+('MS003', N'Vàng', '#FFFF00', N'Màu vàng sáng', N'Hoạt động'),
+('MS004', N'Trắng', '#FFFFFF', N'Màu trắng tinh khiết', N'Hoạt động'),
+('MS005', N'Đen', '#000000', N'Màu đen huyền bí', N'Hoạt động');
 
 -- Bảng danh_muc
 INSERT INTO danh_muc (ma, ten_danh_muc, mo_ta, trang_thai)
@@ -483,9 +483,10 @@ VALUES
 -- Bảng san_pham
 INSERT INTO san_pham (ma, ten_san_pham, mo_ta, trang_thai, ngay_tao, nguoi_tao)
 VALUES 
-('SP001', N'Quần Âu Nam', N'Quần âu nam màu đen', N'Hoạt động', GETDATE(), 'Admin'),
-('SP002', N'Quần Âu Nữ', N'Quần âu nam màu xám', N'Hoạt động', GETDATE(), 'Admin'),
-('SP003', N'Quần Âu Unisex', N'Quần âu nam màu xanh đậm', N'Hoạt động', GETDATE(), 'Admin');
+('SP001', N'Quần Âu Nam', N'Quần âu nam', N'Hoạt động', GETDATE(), 'Admin'),
+('SP002', N'Quần Âu Kỉ Yếu', N'Quần âu nam chụp ảnh kỉ yếu', N'Hoạt động', GETDATE(), 'Admin'),
+('SP003', N'Quần Âu Unisex', N'Quần âu nam', N'Hoạt động', GETDATE(), 'Admin'),
+('SP004', N'Quần Âu Party', N'Quần âu nam', N'Hoạt động', GETDATE(), 'Admin');
 
 -- Bảng kieu_dang
 INSERT INTO kieu_dang (ma, ten_kieu_dang, mo_ta, trang_thai)

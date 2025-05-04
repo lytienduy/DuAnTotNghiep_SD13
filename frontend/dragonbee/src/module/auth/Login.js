@@ -39,49 +39,64 @@ const LoginPaper = styled(Paper)(() => ({
   border: '2px solid rgba(229, 229, 229, 0.95)',  // Đặt viền trắng cho form
 }));
 
+const RegisterPaper = styled(Paper)(() => ({
+  padding: '2rem',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderRadius: '8px',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  backgroundColor: 'rgba(229, 229, 229, 0.95)',
+  border: '2px solid rgba(229, 229, 229, 0.95)',
+}));
+
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-
-
+  const [isRegister, setIsRegister] = useState(false);
+  const [usernameDK, setUsernameDK] = useState('');
+  const [emailDK, setEmailDK] = useState('');
+  const [passwordDK, setPasswordDK] = useState('');
+  const [CFpasswordDK, setCFPasswordDK] = useState('');
   //Thông báo Toast
-    const showSuccessToast = (message) => {
-      toast.success(message, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
-        style: {
-          backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
-          color: "white", // Chữ trắng nổi bật
-          fontSize: "14px", // Nhỏ hơn một chút
-          fontWeight: "500",
-          borderRadius: "8px",
-        },
-      });
-    };
-    const showErrorToast = (message) => {
-      toast.error(message, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
-        style: {
-          backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
-          color: "white", // Chữ trắng nổi bật
-          fontSize: "14px", // Nhỏ hơn một chút
-          fontWeight: "500",
-          borderRadius: "8px",
-        },
-      });
-    };
+  const showSuccessToast = (message) => {
+    toast.success(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: {
+        backgroundColor: "#1976D2", // Màu nền xanh đẹp hơn
+        color: "white", // Chữ trắng nổi bật
+        fontSize: "14px", // Nhỏ hơn một chút
+        fontWeight: "500",
+        borderRadius: "8px",
+      },
+    });
+  };
+  const showErrorToast = (message) => {
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      style: {
+        backgroundColor: "#D32F2F", // Màu đỏ cảnh báo
+        color: "white", // Chữ trắng nổi bật
+        fontSize: "14px", // Nhỏ hơn một chút
+        fontWeight: "500",
+        borderRadius: "8px",
+      },
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -157,6 +172,12 @@ const Login = () => {
     }
   };
 
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    // Xử lý logic đăng ký tại đây (gọi API hoặc validate form)
+    console.log('Đăng ký tài khoản...');
+  };
+
   return (
     <Container
       maxWidth={false}
@@ -175,19 +196,30 @@ const Login = () => {
       }}
     >
       <Background />
-<ToastContainer />
-      <LoginPaper sx={{ zIndex: 2, width: '400px', marginBottom: 20 }}>
-        <Typography variant="h4" color="primary" gutterBottom marginTop={2} sx={{ fontWeight: 'bold', marginBottom: 4 }}>
-          Đăng Nhập
-        </Typography>
-        <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-          <Box mb={2}>
+      <ToastContainer />
+      {isRegister ? (
+        <RegisterPaper sx={{ zIndex: 2, width: '400px', marginBottom: 4.2 }}>
+          {/* Nội dung form đăng ký ở đây */}
+          <Typography variant="h4" color="primary" gutterBottom marginTop={2} sx={{ fontWeight: 'bold', marginBottom: 4 }}>
+            Đăng Ký
+          </Typography>
+          <form onSubmit={handleRegisterSubmit} style={{ width: '100%' }}>
+            {/* Các TextField cho đăng ký */}
             <TextField
               variant="outlined"
               label="Tên người dùng"
               fullWidth
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={usernameDK}
+              onChange={(e) => setUsernameDK(e.target.value)}
+              required
+              style={{ marginBottom: '16px' }}
+            />
+            <TextField
+              variant="outlined"
+              label="Email"
+              fullWidth
+              value={emailDK}
+              onChange={(e) => setEmailDK(e.target.value)}
               required
               style={{ marginBottom: '16px' }}
             />
@@ -196,22 +228,90 @@ const Login = () => {
               label="Mật khẩu"
               type="password"
               fullWidth
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={passwordDK}
+              onChange={(e) => setPasswordDK(e.target.value)}
+              required
+              style={{ marginBottom: '16px' }}
+            />
+            <TextField
+              variant="outlined"
+              label="Xác nhận mật khẩu"
+              type="password"
+              fullWidth
+              value={CFpasswordDK}
+              onChange={(e) => setCFPasswordDK(e.target.value)}
               required
             />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              style={{ marginTop: '20px', marginBottom: 10, height: 40 }}
+            >
+              <span style={{ fontWeight: 'bold' }}>Đăng ký</span>
+            </Button>
+          </form>
+          <Box display="flex" justifyContent="flex-end">
+            <Typography
+              variant="body2"
+              color="primary"
+              sx={{ cursor: 'pointer', mt: 1 }}
+              onClick={() => setIsRegister(false)}
+            >
+              Đã có tài khoản? Đăng nhập
+            </Typography>
           </Box>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            style={{ marginTop: '20px', marginBottom: 20, height: 40 }}
-          >
-            <span style={{ fontWeight: 'bold' }}>Đăng nhập</span>
-          </Button>
-        </form>
-      </LoginPaper>
+        </RegisterPaper>
+      ) : (
+        <LoginPaper sx={{ zIndex: 2, width: '400px', marginBottom: 20 }}>
+          <Typography variant="h4" color="primary" gutterBottom marginTop={2} sx={{ fontWeight: 'bold', marginBottom: 4 }}>
+            Đăng Nhập
+          </Typography>
+          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+            <Box mb={2}>
+              <TextField
+                variant="outlined"
+                label="Tên người dùng"
+                fullWidth
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                style={{ marginBottom: '16px' }}
+              />
+              <TextField
+                variant="outlined"
+                label="Mật khẩu"
+                type="password"
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </Box>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              style={{ marginTop: '20px', marginBottom: 10, height: 40 }}
+            >
+              <span style={{ fontWeight: 'bold' }}>Đăng nhập</span>
+            </Button>
+          </form>
+          <Box display="flex" justifyContent="flex-end">
+            <Typography
+              variant="body2"
+              color="primary"
+              sx={{ cursor: 'pointer', mt: 1 }}
+              onClick={() => setIsRegister(true)}
+            >
+              Đăng ký tài khoản
+            </Typography>
+          </Box>
+        </LoginPaper>
+      )}
+
     </Container>
 
   );

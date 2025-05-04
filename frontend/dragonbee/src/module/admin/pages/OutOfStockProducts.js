@@ -19,9 +19,9 @@ import {
 } from "@mui/material";
 
 const OutOfStockProducts = () => {
-  const [quantity, setQuantity] = useState(20);    // Ngưỡng số lượng
-  const [page, setPage] = useState(1);            // Trang hiện tại
-  const [pageSize, setPageSize] = useState(5);    // Số bản ghi mỗi trang
+  const [quantity, setQuantity] = useState(20); // Ngưỡng số lượng
+  const [page, setPage] = useState(1); // Trang hiện tại
+  const [pageSize, setPageSize] = useState(5); // Số bản ghi mỗi trang
   const [totalPages, setTotalPages] = useState(1); // Tổng số trang
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,13 +30,16 @@ const OutOfStockProducts = () => {
   const fetchProductsPaging = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:8080/api/products/page-out-of-stock", {
-        params: {
-          quantity,  // ngưỡng
-          page,      // trang
-          pageSize,  // số bản ghi/trang
-        },
-      });
+      const res = await axios.get(
+        "http://localhost:8080/api/products/page-out-of-stock",
+        {
+          params: {
+            quantity, // ngưỡng
+            page, // trang
+            pageSize, // số bản ghi/trang
+          },
+        }
+      );
       // res.data = { data, currentPage, pageSize, totalPages, ... }
       setProducts(res.data.data);
       setPage(res.data.currentPage);
@@ -73,7 +76,12 @@ const OutOfStockProducts = () => {
   return (
     <Box sx={{ p: 2 }}>
       {/* Header: Tiêu đề và chọn ngưỡng */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h6" fontWeight="bold">
           Danh sách sản phẩm sắp hết hàng hôm nay
         </Typography>
@@ -123,20 +131,31 @@ const OutOfStockProducts = () => {
               <TableBody>
                 {products.map((prod, index) => (
                   <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
                     <TableCell>
+                      <strong>{index + 1}</strong>
+                    </TableCell>
+                    <TableCell align="center">
                       {prod.anhSanPham ? (
-                        <img
-                          src={prod.anhSanPham}
-                          alt="Ảnh"
-                          style={{ width: 50, height: 50 }}
-                        />
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          <img
+                            src={prod.anhSanPham}
+                            alt="Ảnh"
+                            style={{ width: 50, height: 50 }}
+                          />
+                        </div>
                       ) : (
                         "Không có ảnh"
                       )}
                     </TableCell>
+
                     <TableCell>{prod.moTaChiTiet}</TableCell>
-                    <TableCell>{prod.soLuongTon}</TableCell>
+                    <TableCell align="center">{prod.soLuongTon}</TableCell>
                     <TableCell>
                       {new Intl.NumberFormat("vi-VN", {
                         style: "currency",
@@ -150,7 +169,12 @@ const OutOfStockProducts = () => {
           </TableContainer>
 
           {/* Thanh phân trang + chọn số bản ghi */}
-          <Stack direction="row" justifyContent="space-between" alignItems="center" mt={2}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            mt={2}
+          >
             {/* Bên trái: Chọn số bản ghi */}
             <Stack direction="row" alignItems="center" spacing={1}>
               <Typography>Xem</Typography>

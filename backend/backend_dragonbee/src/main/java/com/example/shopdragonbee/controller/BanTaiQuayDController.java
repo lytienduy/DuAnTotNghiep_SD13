@@ -10,6 +10,7 @@ import com.example.shopdragonbee.repository.TaiKhoanRepository;
 import com.example.shopdragonbee.repository.VaiTroRepositoty;
 import com.example.shopdragonbee.service.DiaChiService;
 import com.example.shopdragonbee.service.KhachHangService;
+import com.example.shopdragonbee.service.MailService;
 import com.example.shopdragonbee.service.PhieuGiamGiaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,6 +46,9 @@ public class BanTaiQuayDController {
 
     @Autowired
     private DiaChiRepository diaChiRepository;
+
+    @Autowired
+    private MailService mailService;
 
     @GetMapping("/tim-kiem-khach-hang")
     public List<KhachHangBTQDTO> timKiemKhachHang(@RequestParam String keyword) {
@@ -116,25 +120,26 @@ public class BanTaiQuayDController {
     public ResponseEntity<String> themKhachHang(@RequestBody KhachHangAddBTQDTO khachHangDTO) {
         try {
             // Tạo tài khoản mới
+            String defaultPassword = "password123"; // Mật khẩu mặc định
+
             TaiKhoan taiKhoan = TaiKhoan.builder()
-                    .tenNguoiDung(khachHangDTO.getEmail()) // Sử dụng email làm tên người dùng
-                    .matKhau("password123")  // Mật khẩu mặc định
-                    .trangThai("Hoạt động")  // Trạng thái là "Hoạt động"
-                    .ngayTao(LocalDateTime.now()) // Ngày tạo là hiện tại
-                    .nguoiTao("system") // Bạn có thể thay đổi giá trị này nếu có thông tin người tạo
+                    .tenNguoiDung(khachHangDTO.getEmail())
+                    .matKhau(defaultPassword)
+                    .trangThai("Hoạt động")
+                    .ngayTao(LocalDateTime.now())
+                    .nguoiTao("system")
                     .build();
 
             // Tìm vai trò với id = 3
-            VaiTro vaiTro = vaiTroRepository.findById(3).orElseThrow(() -> new RuntimeException("Vai trò không tồn tại"));
+            VaiTro vaiTro = vaiTroRepository.findById(3)
+                    .orElseThrow(() -> new RuntimeException("Vai trò không tồn tại"));
 
             taiKhoan.setVaiTro(vaiTro);
-
-            // Lưu tài khoản
             taiKhoan = taiKhoanRepository.save(taiKhoan);
 
             // Tạo khách hàng
             KhachHang khachHang = KhachHang.builder()
-                    .ma(generateCustomerCode()) // Gọi hàm để tạo mã khách hàng
+                    .ma(generateCustomerCode())
                     .tenKhachHang(khachHangDTO.getTenKhachHang())
                     .ngaySinh(khachHangDTO.getNgaySinh())
                     .gioiTinh(khachHangDTO.getGioiTinh())
@@ -143,10 +148,9 @@ public class BanTaiQuayDController {
                     .trangThai("Hoạt động")
                     .ngayTao(LocalDateTime.now())
                     .nguoiTao("system")
-                    .taiKhoan(taiKhoan) // Gán tài khoản cho khách hàng
+                    .taiKhoan(taiKhoan)
                     .build();
 
-            // Thêm địa chỉ
             DiaChi diaChi = DiaChi.builder()
                     .soNha(khachHangDTO.getDiaChi().getSoNha())
                     .duong(khachHangDTO.getDiaChi().getDuong())
@@ -155,19 +159,52 @@ public class BanTaiQuayDController {
                     .thanhPho(khachHangDTO.getDiaChi().getThanhPho())
                     .moTa(khachHangDTO.getDiaChi().getMoTa())
                     .trangThai("Hoạt động")
-                    .macDinh(true) // Địa chỉ mặc định
+                    .macDinh(true)
                     .ngayTao(LocalDateTime.now())
                     .build();
 
-            // Thiết lập liên kết khách hàng - địa chỉ
             diaChi.setKhachHang(khachHang);
 
-            // Lưu khách hàng và địa chỉ
             khachHangRepository.save(khachHang);
             diaChiRepository.save(diaChi);
 
+            // Gửi email
+            String subject = "Thông tin tài khoản khách hàng";
+            String htmlContent = "<html>" +
+                    "<head>" +
+                    "<style>" +
+                    "body { font-family: Arial, sans-serif; background-color: #e0e0e0; padding: 20px; }" +
+                    "div.content { max-width: 600px; background: #fff; padding: 30px; border-radius: 10px; " +
+                    "box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; margin: auto; border: 1px solid #ddd; }" +
+                    "h2 { color: #3498ea; }" +
+                    "p { font-size: 16px; color: #333; line-height: 1.6; }" +
+                    ".highlight-box { background: #dff0d8; padding: 15px; border-radius: 8px; " +
+                    "border: 1px solid #b2dba1; display: inline-block; font-weight: bold; margin: 15px auto; }" +
+                    ".footer { font-size: 14px; color: #777; margin-top: 20px; }" +
+                    "</style>" +
+                    "</head>" +
+                    "<body>" +
+                    "<div class='content'>" +
+                    "<div><img src='https://raw.githubusercontent.com/lytienduy/DuAnTotNghiep_SD13/refs/heads/main/frontend/dragonbee/src/img/dragonbee_logo_v1.png' " +
+                    "alt='Logo' style='max-width: 100px; height: auto;' /></div>" +
+                    "<h2>Xin chào " + khachHangDTO.getTenKhachHang() + ",</h2>" +
+                    "<p>Tài khoản của bạn đã được tạo thành công!</p>" +
+                    "<div class='highlight-box'>" +
+                    "<p><strong>Tên đăng nhập:</strong> " + khachHangDTO.getEmail() + "</p>" +
+                    "<p><strong>Mật khẩu:</strong> " + defaultPassword + "</p>" +
+                    "</div>" +
+                    "<p>Vui lòng đổi mật khẩu sau khi đăng nhập.</p>" +
+                    "<p class='footer'>Cảm ơn bạn đã đồng hành cùng chúng tôi!</p>" +
+                    "<p class='footer'>Mọi thắc mắc xin vui lòng liên hệ: <strong>dragonbeeshop@gmail.com</strong></p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
+
+            mailService.sendMail(khachHangDTO.getEmail(), subject, htmlContent);
+
             return ResponseEntity.ok("Thêm khách hàng và tài khoản thành công!");
         } catch (Exception e) {
+            e.printStackTrace(); // Log lỗi chi tiết
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Có lỗi xảy ra khi thêm khách hàng hoặc tài khoản.");
         }
