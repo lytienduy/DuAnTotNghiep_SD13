@@ -60,7 +60,7 @@ public class BanHangTaiQuayService {
     private HoaDonService hoaDonService;
 
     //Tạo hóa đơn tại quầy
-    public HoaDon taoHoaDon() {
+    public HoaDon taoHoaDon(String tenUser) {
         try {
             HoaDon hoaDon = new HoaDon();
             hoaDon.setMa("HD" + (System.currentTimeMillis() % 100000));
@@ -73,9 +73,12 @@ public class BanHangTaiQuayService {
             HoaDon hoaDonDuocLuu = hoaDonRepository.save(hoaDon);
             LichSuHoaDon lichSuHoaDon = new LichSuHoaDon();
             lichSuHoaDon.setHoaDon(hoaDonDuocLuu);
-            lichSuHoaDon.setHanhDong("Khởi tạo");
-            lichSuHoaDon.setGhiChu("Khởi tạo hóa đơn");
+            lichSuHoaDon.setHanhDong("Tạo hóa đơn");
+            lichSuHoaDon.setGhiChu("Tạo hóa đơn");
+            lichSuHoaDon.setNguoiTao(tenUser);
+            lichSuHoaDon.setNguoiSua(tenUser);
             lichSuHoaDon.setNgayTao(LocalDateTime.now());
+            lichSuHoaDonRepository.save(lichSuHoaDon);
             return hoaDonDuocLuu;
         } catch (Exception e) {
             return null;
@@ -334,7 +337,8 @@ public class BanHangTaiQuayService {
                 if (sanPhamChiTiet.getSoLuong() - soLuong < 0) {
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                     return false;
-                }sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
+                }
+                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 hoaDonChiTiet.setSoLuong(soLuong);
                 hoaDonChiTiet.setDonGia(donGia);
                 hoaDonChiTiet.setNgayTao(LocalDateTime.now());
@@ -363,7 +367,7 @@ public class BanHangTaiQuayService {
     }
 
 
-    public Boolean thanhToanHoaDon(Integer idHoaDon, String pttt, Float tienMat, Float chuyenKhoan,String tenUser) {
+    public Boolean thanhToanHoaDon(Integer idHoaDon, String pttt, Float tienMat, Float chuyenKhoan, String tenUser) {
         try {
             ThanhToanHoaDon thanhToanHoaDonTienMat = new ThanhToanHoaDon();
             thanhToanHoaDonTienMat.setMa("TTHD" + (System.currentTimeMillis() % 100000));
@@ -399,7 +403,7 @@ public class BanHangTaiQuayService {
         }
     }
 
-    public HoaDonChiTietResponseDTO.HoaDonChiTietDTO xacNhanDatHang(Integer idHoaDon, Integer idKhachHang, String pgg, Boolean giaoHang, String tenNguoiNhan, String sdtNguoiNhan, String diaChiNhanHang, Float tongTienPhaiTra, Float phiShip) {
+    public HoaDonChiTietResponseDTO.HoaDonChiTietDTO xacNhanDatHang(Integer idHoaDon, Integer idKhachHang, String pgg, Boolean giaoHang, String tenNguoiNhan, String sdtNguoiNhan, String diaChiNhanHang, Float tongTienPhaiTra, Float phiShip, String tenUser) {
         try {
             HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
             if (idKhachHang != null) {
@@ -416,8 +420,23 @@ public class BanHangTaiQuayService {
                 hoaDon.setDiaChiNhanHang(diaChiNhanHang);
                 hoaDon.setPhiShip(phiShip);
                 hoaDon.setTrangThai("Chờ giao hàng");
+                LichSuHoaDon lichSuHoaDon = new LichSuHoaDon();
+                lichSuHoaDon.setHoaDon(hoaDon);
+                lichSuHoaDon.setHanhDong("Cập nhật");
+                lichSuHoaDon.setGhiChu("Cập nhật trạng thái hóa đơn (Chờ giao hàng)");
+                lichSuHoaDon.setNgayTao(LocalDateTime.now());
+                lichSuHoaDon.setNguoiTao(tenUser);
+                lichSuHoaDon.setNguoiSua(tenUser);
+                lichSuHoaDonRepository.save(lichSuHoaDon);
             } else {
                 hoaDon.setTrangThai("Hoàn thành");
+                LichSuHoaDon lichSuHoaDon = new LichSuHoaDon();
+                lichSuHoaDon.setHoaDon(hoaDon);
+                lichSuHoaDon.setHanhDong("Cập nhật");
+                lichSuHoaDon.setGhiChu("Cập nhật trạng thái hóa đơn (Hoàn thành)");
+                lichSuHoaDon.setNgayTao(LocalDateTime.now());
+                lichSuHoaDon.setNguoiTao(tenUser);
+                lichSuHoaDon.setNguoiSua(tenUser);
             }
             hoaDon.setTongTien(tongTienPhaiTra);
 

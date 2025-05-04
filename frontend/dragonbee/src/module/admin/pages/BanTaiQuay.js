@@ -189,6 +189,8 @@ const BanTaiQuay = () => {
     Number(discount || 0) -
     Number(discountAmount || 0);
 
+  const tenUser = JSON.parse(localStorage.getItem("userData"))?.nhanVien?.tenNhanVien;
+
   // Hàm mở và đóng modal voucher
   const handleOpenVoucherModal = () => {
     setOpenVoucherModal(true);
@@ -1268,7 +1270,7 @@ const BanTaiQuay = () => {
       }
       // }
 
-      let apiUrl = "http://localhost:8080/ban-hang-tai-quay/addHoaDonTaiQuay";
+      let apiUrl = `http://localhost:8080/ban-hang-tai-quay/addHoaDonTaiQuay?tenUser=${tenUser}`;
 
       const response = await axios.get(apiUrl); //Gọi api bằng axiosGet
       if (response.data) {
@@ -1295,6 +1297,7 @@ const BanTaiQuay = () => {
           lyDo: ghiChuTrangThai,
           trangThai: "Đã hủy",
           hanhDong: "Hủy",
+          tenUser: tenUser
         }
       );
       if (response.data) {
@@ -1505,7 +1508,7 @@ const BanTaiQuay = () => {
   };
 
   //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
-  const handleInputBlur = (id,soLuong) => {
+  const handleInputBlur = (id, soLuong) => {
     setSelectedProductId(id);
     const newValue = (isNaN(Number(tempValues[id]))) ? soLuong : Number(tempValues[id]);
     if (newValue >= 1) {
@@ -1663,6 +1666,7 @@ const BanTaiQuay = () => {
           diaChiNhanHang: addressParts,
           tongTienPhaiTra: tongTienPhaiTra,
           phiShip: discount,
+          tenUser: tenUser
         }
       );
       if (response.data !== null) {
@@ -2299,7 +2303,7 @@ const BanTaiQuay = () => {
                                             )
                                           }
                                           onBlur={() =>
-                                            handleInputBlur(product.id,product.soLuong)
+                                            handleInputBlur(product.id, product.soLuong)
                                           }
                                           type="number"
                                           inputProps={{
