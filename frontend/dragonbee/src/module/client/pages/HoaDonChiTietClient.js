@@ -515,8 +515,10 @@ const HoaDonChiTietClient = () => {
   };
 
   const xoaSanPham = async (id) => {
+    let tenUser = "Khách hàng";
+    let encodedUser = encodeURIComponent(tenUser); // chuyển thành "kh%C3%A1ch%20h%C3%A0ng"
     //Đang sai đoạn này listDanhSachSanPham này chứa cả hoạt động và không hoạt động
-    let apiUrl = `http://localhost:8080/hdctClient/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}`;
+    let apiUrl = `http://localhost:8080/hdctClient/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}/${encodedUser}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
       if (response.data === "Ok") {
@@ -837,7 +839,7 @@ const HoaDonChiTietClient = () => {
   };
 
   //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
-  const handleInputBlur = (id,soLuong) => {
+  const handleInputBlur = (id, soLuong) => {
     setSelectedProductId(id);
     const newValue = (isNaN(Number(tempValues[id]))) ? soLuong : Number(tempValues[id]);
     if (newValue >= 1) {
@@ -949,7 +951,7 @@ const HoaDonChiTietClient = () => {
   const handleCloseConfirmModal = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8080/hdctClient/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
+        `http://localhost:8080/hdctClient/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia, tenUser: "Khách hàng" }
       );
       if (response.data === "Ok") {
         setSelectedProduct(null);
@@ -1421,7 +1423,7 @@ const HoaDonChiTietClient = () => {
                               <TextField
                                 value={tempValues[product.id] ?? product.soLuong}
                                 onChange={(e) => handleInputChange(product.id, e.target.value)}
-                                onBlur={() => handleInputBlur(product.id,product.soLuong)}
+                                onBlur={() => handleInputBlur(product.id, product.soLuong)}
                                 type="number"
                                 inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
                                 size="small"

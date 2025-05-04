@@ -26,7 +26,7 @@ public class HoaDonChiTietController {
     }
 
     @PostMapping("/hoanTien/{id}")
-    public Boolean xacNhanHoanfTien(@PathVariable Integer id,@RequestParam Float soTienCanHoan) {
-        return hoaDonChiTietService.xacNhanHoanTien(id,soTienCanHoan);
+    public Boolean xacNhanHoanfTien(@PathVariable Integer id, @RequestParam Float soTienCanHoan, @RequestParam String tenUser) {
+        return hoaDonChiTietService.xacNhanHoanTien(id, soTienCanHoan, tenUser);
     }
 }

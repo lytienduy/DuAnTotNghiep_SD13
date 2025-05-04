@@ -363,7 +363,7 @@ public class BanHangTaiQuayService {
     }
 
 
-    public Boolean thanhToanHoaDon(Integer idHoaDon, String pttt, Float tienMat, Float chuyenKhoan) {
+    public Boolean thanhToanHoaDon(Integer idHoaDon, String pttt, Float tienMat, Float chuyenKhoan,String tenUser) {
         try {
             ThanhToanHoaDon thanhToanHoaDonTienMat = new ThanhToanHoaDon();
             thanhToanHoaDonTienMat.setMa("TTHD" + (System.currentTimeMillis() % 100000));
@@ -372,6 +372,8 @@ public class BanHangTaiQuayService {
             thanhToanHoaDonTienMat.setSoTienThanhToan(tienMat);
             thanhToanHoaDonTienMat.setNgayTao(LocalDateTime.now());
             thanhToanHoaDonTienMat.setLoai("Thanh toán");
+            thanhToanHoaDonTienMat.setNguoiTao(tenUser);
+            thanhToanHoaDonTienMat.setNguoiSua(tenUser);
 
             ThanhToanHoaDon thanhToanHoaDonChuyenKhoan = new ThanhToanHoaDon();
             thanhToanHoaDonChuyenKhoan.setMa("TTHD" + (System.currentTimeMillis() % 100000));
@@ -380,7 +382,8 @@ public class BanHangTaiQuayService {
             thanhToanHoaDonChuyenKhoan.setSoTienThanhToan(chuyenKhoan);
             thanhToanHoaDonChuyenKhoan.setNgayTao(LocalDateTime.now());
             thanhToanHoaDonChuyenKhoan.setLoai("Thanh toán");
-
+            thanhToanHoaDonChuyenKhoan.setNguoiTao(tenUser);
+            thanhToanHoaDonChuyenKhoan.setNguoiSua(tenUser);
 
             if (pttt.equalsIgnoreCase("cash")) {
                 thanhToanHoaDonRepository.save(thanhToanHoaDonTienMat);

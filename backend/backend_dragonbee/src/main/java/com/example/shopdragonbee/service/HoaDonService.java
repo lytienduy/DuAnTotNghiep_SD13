@@ -165,7 +165,7 @@ public class HoaDonService {
 
     //Cập nhật trạng thái hóa đơn bên Hóa Đơn Chi Tiết
     @Transactional
-    public Boolean capNhatTrangThaiHoaDon(Integer idHoaDon, String trangThai, String hanhDong, String lyDo) {
+    public Boolean capNhatTrangThaiHoaDon(Integer idHoaDon, String trangThai, String hanhDong, String lyDo,String tenUser) {
 //        List<String> cacTrangThaiCanCapNhat = new ArrayList<>();
 //        cacTrangThaiCanCapNhat.add(trangThai);
         HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
@@ -217,7 +217,8 @@ public class HoaDonService {
                 lichSuHoaDon.setGhiChu(hanhDong + " trạng thái hóa đơn(" + trangThai + ") \n" +
                         "Lý do: " + lyDo);
                 lichSuHoaDon.setNgayTao(LocalDateTime.now());
-                lichSuHoaDon.setNguoiTao("Mai The Phong");
+                lichSuHoaDon.setNguoiTao(tenUser);
+                lichSuHoaDon.setNguoiSua(tenUser);
                 lichSuHoaDonRepository.save(lichSuHoaDon);
                 return true;
             }

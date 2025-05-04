@@ -107,6 +107,8 @@ const HoaDonChiTiet = () => {
   const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
   const [tenSanPhamThongBao, setTenSanPhamThongBao] = useState("");
   const [dialogMessage, setDialogMessage] = useState("");
+  const tenUser = JSON.parse(localStorage.getItem("userData"))?.nhanVien?.tenNhanVien;
+
 
   const handleDialogOpen = (message, tenSanPhamThongBao) => {
     setDialogMessage(message);
@@ -552,10 +554,10 @@ const HoaDonChiTiet = () => {
 
   const xoaSanPham = async (id) => {
     //Đang sai đoạn này listDanhSachSanPham này chứa cả hoạt động và không hoạt động
-    let apiUrl = `http://localhost:8080/hdctClient/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}`;
+    let apiUrl = `http://localhost:8080/hdctClient/xoaSanPhamSauKhiDatHang/${id}/${hoaDon.id}/${tenUser}`;
     try {
       const response = await axios.post(apiUrl);//Gọi api bằng axiosGet
-      if (response.data === true) {
+      if (response.data === "Ok") {
         fetchHoaDon();
         showSuccessToast("Xóa sản phẩm thành công");
       } else {
@@ -787,7 +789,7 @@ const HoaDonChiTiet = () => {
       setErrorTienKhachDua(errorDua);
       if (!errorChuyen && !errorDua) {
         const response = await axios.post(`http://localhost:8080/ban-hang-tai-quay/thanhToanHoaDon`, {
-          idHoaDon: hoaDon.id, pttt: paymentMethod, tienMat: tienKhachDua, chuyenKhoan: tienKhachChuyen
+          idHoaDon: hoaDon.id, pttt: paymentMethod, tienMat: tienKhachDua, chuyenKhoan: tienKhachChuyen, tenUser: tenUser
         })
         if (response.data) {
           setTienKhachDua(0);
@@ -881,7 +883,8 @@ const HoaDonChiTiet = () => {
       const response = await axios.post(`http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, {
         lyDo: ghiChuTrangThai,
         trangThai: "Đã hủy",
-        hanhDong: "Hủy"
+        hanhDong: "Hủy",
+        tenUser: tenUser
       });
       if (response.data) {
         setOpenConfirm(false);
@@ -961,7 +964,7 @@ const HoaDonChiTiet = () => {
       const trangThaiCanDoi = steps[currentStep - 1];
       // Gọi API để thay đổi trạng thái
       const response = await axios.post(
-        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: "Hoàn tác", lyDo: ghiChuTrangThai }
+        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: "Hoàn tác", lyDo: ghiChuTrangThai, tenUser: tenUser }
       );
       if (response.data) {
         setGhiChuTrangThai("");
@@ -985,7 +988,7 @@ const HoaDonChiTiet = () => {
       const trangThaiCanDoi = steps[currentStep + 1];
       // Gọi API để thay đổi trạng thái
       const response = await axios.post(
-        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: trangThaiCanDoi === "Hoàn thành" ? "Hoàn thành" : "Cập nhật", lyDo: ghiChuTrangThai }
+        `http://localhost:8080/hoa-don/cap-nhat-trang-thai-hoa-don/${hoaDon.id}`, { trangThai: trangThaiCanDoi, hanhDong: trangThaiCanDoi === "Hoàn thành" ? "Hoàn thành" : "Cập nhật", lyDo: ghiChuTrangThai, tenUser: tenUser }
       );
       if (response.data) {
         setGhiChuTrangThai("");
@@ -1039,7 +1042,7 @@ const HoaDonChiTiet = () => {
   };
 
   //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
-  const handleInputBlur = (id,soLuong) => {
+  const handleInputBlur = (id, soLuong) => {
     setSelectedProductId(id);
     const newValue = (isNaN(Number(tempValues[id]))) ? soLuong : Number(tempValues[id]);
     if (newValue >= 1) {
@@ -1149,7 +1152,7 @@ const HoaDonChiTiet = () => {
   const handleCloseConfirmModal = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8080/hdctClient/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia }
+        `http://localhost:8080/hdctClient/addSanPhamSauKhiDatHang`, { idHoaDon: hoaDon.id, idSanPhamChiTiet: selectedProduct.id, soLuong: quantity, donGia: selectedProduct.gia, tenUser: tenUser  }
       );
       if (response.data === "Ok") {
         setSelectedProduct(null);
@@ -1220,7 +1223,8 @@ const HoaDonChiTiet = () => {
         `http://localhost:8080/hoa-don-chi-tiet/hoanTien/${id}`, null,
         {
           params: {
-            soTienCanHoan: tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan
+            soTienCanHoan: tongTienDaThanhToanVaDaHoanTienCuaOnline - hoaDon?.tongTienThanhToan,
+            tenUser: tenUser
           }
         });//Gọi api bằng  
       if (response.data) {
@@ -1879,7 +1883,7 @@ const HoaDonChiTiet = () => {
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số Tiền</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thời Gian</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Nhân Viên Xác Nhận</TableCell>
-              <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell>
+              {/* <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell> */}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -1891,7 +1895,7 @@ const HoaDonChiTiet = () => {
                   <TableCell align="center">{payment.soTien.toLocaleString()} VND</TableCell>
                   <TableCell align="center">{new Date(payment.ngayTao).toLocaleString("vi-VN")}</TableCell>
                   <TableCell align="center">{payment.nhanVienXacNhan}</TableCell>
-                  <TableCell align="center">{payment.ghiChu}</TableCell>
+                  {/* <TableCell align="center">{payment.ghiChu}</TableCell> */}
                 </TableRow>
               ))
             ) : (
@@ -1970,7 +1974,7 @@ const HoaDonChiTiet = () => {
                   <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Số Tiền</TableCell>
                   <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Thời Gian</TableCell>
                   <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Nhân Viên Xác Nhận</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell>
+                  {/* <TableCell align="center" sx={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ghi Chú</TableCell> */}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -1981,7 +1985,7 @@ const HoaDonChiTiet = () => {
                     <TableCell align="center">{payment.soTien.toLocaleString()} VND</TableCell>
                     <TableCell align="center">{new Date(payment.ngayTao).toLocaleString("vi-VN")}</TableCell>
                     <TableCell align="center">{payment.nhanVienXacNhan}</TableCell>
-                    <TableCell align="center">{payment.ghiChu}</TableCell>
+                    {/* <TableCell align="center">{payment.ghiChu}</TableCell> */}
                   </TableRow>
                 ))}
               </TableBody>
@@ -2101,7 +2105,7 @@ const HoaDonChiTiet = () => {
                             <TextField
                               value={tempValues[product.id] ?? product.soLuong}
                               onChange={(e) => handleInputChange(product.id, e.target.value)}
-                              onBlur={() => handleInputBlur(product.id,product.soLuong)}
+                              onBlur={() => handleInputBlur(product.id, product.soLuong)}
                               type="number"
                               inputProps={{ min: 1, style: { textAlign: "center" }, step: 1 }}
                               size="small"
@@ -2133,7 +2137,6 @@ const HoaDonChiTiet = () => {
                             >
                               <AddIcon fontSize="small" />
                             </IconButton>
-
                           </Box>
                         ) : (
                           <TextField

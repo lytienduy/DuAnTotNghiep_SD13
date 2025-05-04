@@ -54,7 +54,9 @@ public class HoaDonController {
         String lyDo = body.get("lyDo");
         String trangThai = body.get("trangThai");
         String hanhDong = body.get("hanhDong");
-        return hoaDonService.capNhatTrangThaiHoaDon(id, trangThai, hanhDong,lyDo);
+        String tenUser = body.get("tenUser");
+
+        return hoaDonService.capNhatTrangThaiHoaDon(id, trangThai, hanhDong,lyDo,tenUser);
     }
 
     @GetMapping

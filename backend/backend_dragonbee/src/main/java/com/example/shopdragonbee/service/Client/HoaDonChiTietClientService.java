@@ -47,14 +47,14 @@ public class HoaDonChiTietClientService {
     @Autowired
     private LichSuHoaDonRepository lichSuHoaDonRepository;
 
-    public void luuLichSuHoaDon(HoaDon hoaDon, String hanhDong, SanPhamChiTiet sanPhamChiTiet) {
+    public void luuLichSuHoaDon(HoaDon hoaDon, String hanhDong, SanPhamChiTiet sanPhamChiTiet,String tenUser) {
         LichSuHoaDon lichSuHoaDon = new LichSuHoaDon();
         lichSuHoaDon.setHoaDon(hoaDon);
         lichSuHoaDon.setHanhDong(hanhDong);
         lichSuHoaDon.setGhiChu(hanhDong + sanPhamChiTiet.getSanPham().getTenSanPham() + sanPhamChiTiet.getMauSac().getTenMauSac() + " size " + sanPhamChiTiet.getSize().getTenSize());
         lichSuHoaDon.setNgayTao(LocalDateTime.now());
-        //Chưa làm lưu người hành động
-//    lichSuHoaDon.setNguoiTao();
+        lichSuHoaDon.setNguoiTao(tenUser);
+        lichSuHoaDon.setNguoiSua(tenUser);
         lichSuHoaDonRepository.save(lichSuHoaDon);
     }
 
@@ -157,13 +157,13 @@ public class HoaDonChiTietClientService {
     }
 
     //Đang để xóa luôn không lưu lại gì nữa
-    public String xoaSanPhamOnline(Integer id, Integer idHoaDon) {
+    public String xoaSanPhamOnline(Integer id, Integer idHoaDon,String tenUser) {
         try {
             HoaDonChiTiet hoaDonChiTiet = hoaDonChiTietRepository.findById(id).get();
             if (hoaDonChiTiet.getHoaDon().getTrangThai().equalsIgnoreCase("Chờ xác nhận") == false) {
                 return "Hóa đơn này đã được xác nhận, không thể thay đổi thông tin";
             }
-            luuLichSuHoaDon(hoaDonRepository.findById(idHoaDon).get(), "Xóa sản phẩm", hoaDonChiTietRepository.findById(id).get().getSanPhamChiTiet());
+            luuLichSuHoaDon(hoaDonRepository.findById(idHoaDon).get(), "Xóa sản phẩm", hoaDonChiTietRepository.findById(id).get().getSanPhamChiTiet(),tenUser);
 //            hoaDonChiTiet.setTrangThai("Không hoạt động");
 //            hoaDonChiTietRepository.save(hoaDonChiTiet);
             hoaDonChiTietRepository.delete(hoaDonChiTiet);
@@ -183,7 +183,7 @@ public class HoaDonChiTietClientService {
 
     //Add sản phẩm vào giỏ hàng(ĐÃ FIX)
     @Transactional
-    public String addSanPhamVaoGioHangOnlineSauKhiDatHang(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia) {
+    public String addSanPhamVaoGioHangOnlineSauKhiDatHang(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia,String tenUser) {
         HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
         if (hoaDon.getTrangThai().equalsIgnoreCase("Chờ xác nhận") == false) {
             return "Hóa đơn này đã được xác nhận, không thể thay đổi thông tin";
@@ -229,7 +229,7 @@ public class HoaDonChiTietClientService {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return "Đơn hàng vượt quá 20tr";
         }
-        luuLichSuHoaDon(hoaDonRepository.findById(idHoaDon).get(), "Thêm sản phẩm", sanPhamChiTietRepository.findById(idSanPhamChiTiet).get());
+        luuLichSuHoaDon(hoaDonRepository.findById(idHoaDon).get(), "Thêm sản phẩm", sanPhamChiTietRepository.findById(idSanPhamChiTiet).get(),tenUser);
         return "Ok";
 
     }
