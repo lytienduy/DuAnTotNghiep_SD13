@@ -18,4 +18,5 @@ public interface KhachHangRepository extends JpaRepository<KhachHang, Integer> {
     @Query(value = "SELECT MAX(CAST(SUBSTRING(ma, 3, LEN(ma) - 2) AS INT)) FROM khach_hang", nativeQuery = true)
     Integer getMaxMa();
 
+    boolean existsByEmail(String email);
 }

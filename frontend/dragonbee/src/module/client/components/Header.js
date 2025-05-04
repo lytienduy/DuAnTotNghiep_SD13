@@ -84,11 +84,6 @@ const Header = () => {
     handleClose();
   };
 
-  // Navigate to registration page
-  const goToRegister = () => {
-    navigate('/register');
-    handleClose();
-  };
   // Logout functionality
   const handleLogout = () => {
     localStorage.removeItem('userKH');
@@ -284,9 +279,7 @@ const Header = () => {
                     <MenuItem onClick={goToLogin}>
                       <Typography color="textSecondary">Đăng nhập</Typography>
                     </MenuItem>
-                    <MenuItem onClick={goToRegister}>
-                      <Typography color="textSecondary">Đăng ký</Typography>
-                    </MenuItem>
+                    
                   </>
                 )}
               </Menu>

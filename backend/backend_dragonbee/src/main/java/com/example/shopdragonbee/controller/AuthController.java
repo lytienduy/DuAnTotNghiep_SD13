@@ -1,7 +1,12 @@
 package com.example.shopdragonbee.controller;
 
+import com.example.shopdragonbee.dto.RegisterRequest;
 import com.example.shopdragonbee.entity.KhachHang;
 import com.example.shopdragonbee.entity.NhanVien;
+import com.example.shopdragonbee.entity.VaiTro;
+import com.example.shopdragonbee.repository.KhachHangRepository;
+import com.example.shopdragonbee.repository.TaiKhoanRepository;
+import com.example.shopdragonbee.repository.VaiTroRepository;
 import com.example.shopdragonbee.respone.JwtResponse;
 import com.example.shopdragonbee.security.JwtTokenProvider;
 import com.example.shopdragonbee.entity.TaiKhoan;
@@ -9,9 +14,11 @@ import com.example.shopdragonbee.service.TaiKhoanService;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +54,15 @@ public class AuthController {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private TaiKhoanRepository taiKhoanRepository;
+
+    @Autowired
+    private VaiTroRepository vaiTroRepository;
+
+    @Autowired
+    private KhachHangRepository khachHangRepository;
 
     // Cập nhật phương thức đăng nhập
     @PostMapping("/login")
@@ -118,6 +134,55 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(400).body("Invalid token");
         }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        // Check email tồn tại trong KhachHang
+        if (khachHangRepository.existsByEmail(request.getEmail())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Email này đã được đăng ký");
+        }
+
+        // Kiểm tra xác nhận mật khẩu
+        if (!request.getMatKhau().equals(request.getXacNhanMatKhau())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Mật khẩu và xác nhận mật khẩu không khớp");
+        }
+
+        // Tạo tài khoản
+        VaiTro vaiTroKhachHang = vaiTroRepository.findById(3);
+        if (vaiTroKhachHang == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Không tìm thấy vai trò khách hàng");
+        }
+
+        TaiKhoan taiKhoan = TaiKhoan.builder()
+                .tenNguoiDung(request.getEmail())
+                .matKhau(request.getMatKhau()) // Bạn nên mã hóa mật khẩu ở đây nếu có
+                .vaiTro(vaiTroKhachHang)
+                .trangThai("Hoạt động")
+                .ngayTao(LocalDateTime.now())
+                .nguoiTao("Đăng ký")
+                .build();
+
+        taiKhoan = taiKhoanRepository.save(taiKhoan);
+
+        // Tạo khách hàng
+        KhachHang khachHang = KhachHang.builder()
+                .tenKhachHang(request.getTenKhachHang())
+                .email(request.getEmail())
+                .ma("KH" + System.currentTimeMillis()) // Sinh mã tự động
+                .taiKhoan(taiKhoan)
+                .trangThai("Hoạt động")
+                .ngayTao(LocalDateTime.now())
+                .nguoiTao("Đăng ký")
+                .build();
+
+        khachHangRepository.save(khachHang);
+
+        return ResponseEntity.ok("Đăng ký thành công");
     }
 
 }

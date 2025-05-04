@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from "axios";
 import { Container, TextField, Button, Typography, Box, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/system';  // Hoặc import từ @mui/material
@@ -174,9 +175,31 @@ const Login = () => {
 
   const handleRegisterSubmit = (e) => {
     e.preventDefault();
-    // Xử lý logic đăng ký tại đây (gọi API hoặc validate form)
-    console.log('Đăng ký tài khoản...');
-  };
+  
+    if (!usernameDK || !emailDK || !passwordDK || !CFpasswordDK) {
+      showErrorToast("Vui lòng điền đầy đủ thông tin.");
+      return;
+    }
+  
+    if (passwordDK !== CFpasswordDK) {
+      showErrorToast("Mật khẩu và xác nhận mật khẩu không khớp.");
+      return;
+    }
+  
+    axios.post('http://localhost:8080/api/auth/register', {
+      tenKhachHang: usernameDK,
+      email: emailDK,
+      matKhau: passwordDK,
+      xacNhanMatKhau: CFpasswordDK
+    })
+      .then((res) => {
+        showSuccessToast(res.data); // Đăng ký thành công
+        setIsRegister(false);
+      })
+      .catch((err) => {
+        showErrorToast(err.response.data); // Email đã được đăng ký hoặc lỗi khác
+      });
+  };  
 
   return (
     <Container
@@ -207,7 +230,7 @@ const Login = () => {
             {/* Các TextField cho đăng ký */}
             <TextField
               variant="outlined"
-              label="Tên người dùng"
+              label="Tên khách hàng"
               fullWidth
               value={usernameDK}
               onChange={(e) => setUsernameDK(e.target.value)}
