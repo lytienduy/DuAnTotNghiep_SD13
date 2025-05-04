@@ -437,6 +437,7 @@ public class BanHangTaiQuayService {
                 lichSuHoaDon.setNgayTao(LocalDateTime.now());
                 lichSuHoaDon.setNguoiTao(tenUser);
                 lichSuHoaDon.setNguoiSua(tenUser);
+                lichSuHoaDonRepository.save(lichSuHoaDon);
             }
             hoaDon.setTongTien(tongTienPhaiTra);
 
