@@ -25,7 +25,14 @@ const DonMua = () => {
     const [error, setError] = useState(false);//Biến báo lỗi
     const [idHoaDonCanThaoTac, setIdHoaDonCanThaoTac] = useState(null);
     const userKH = JSON.parse(localStorage.getItem("userKH"));
+    const [tenKhachHang, setTenKhachHang] = useState("");
 
+    useEffect(() => {
+        const userKH = JSON.parse(localStorage.getItem("userKH"));
+        if (userKH && userKH.khachHang && userKH.khachHang.tenKhachHang) {
+            setTenKhachHang(userKH.khachHang.tenKhachHang);
+        }
+    }, []);
 
     //Thông báo thành công
     const showSuccessToast = (message) => {
@@ -168,12 +175,12 @@ const DonMua = () => {
                                 }}
                             >
                                 <Typography variant="body1" fontWeight="bold" color="white" sx={{ fontSize: 30 }}>
-                                    {getLastNameInitial("Lý Tiến Duy")}
+                                    {getLastNameInitial(tenKhachHang)}
                                 </Typography>
                             </Box>
                             <Box sx={{ marginLeft: '10px' }}>
                                 <Typography variant="body1" fontWeight="bold">
-                                    Lý Tiến Duy
+                                    {tenKhachHang}
                                 </Typography>
 
                                 <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>

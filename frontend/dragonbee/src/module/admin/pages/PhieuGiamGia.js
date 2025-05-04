@@ -417,7 +417,7 @@ const DiscountCoupons = () => {
                     </TableCell>
                     <TableCell align="center" sx={{ width: 150, whiteSpace: 'nowrap' }}>
                       <Tooltip title="Chỉnh sửa" arrow>
-                        <IconButton onClick={() => navigate(`/admin/phieu-giam-gia/chinh-sua/${row.ma}`)}>
+                        <IconButton color="primary" onClick={() => navigate(`/admin/phieu-giam-gia/chinh-sua/${row.ma}`)}>
                           <ModeEditOutlineIcon />
                         </IconButton>
                       </Tooltip>

@@ -58,8 +58,15 @@ const KhachHang = () => {
 
     const statusChangeHandler = (event) => { setStatus(event.target.value); }
 
-    const filterKhachHang = khachHang.filter((kh) => (kh.tenKhachHang.includes(key) || kh.sdt.includes(key) || kh.email.includes(key)) && (kh.gioiTinh.includes(gender) || gender === '') && (kh.trangThai.includes(status) || status === ''));
-    const showKhachHang = filterKhachHang.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    const filterKhachHang = khachHang.filter((kh) =>
+        ((kh.tenKhachHang || '').includes(key) ||
+         (kh.sdt || '').includes(key) ||
+         (kh.email || '').includes(key)) &&
+        ((kh.gioiTinh || '').includes(gender) || gender === '') &&
+        ((kh.trangThai || '').includes(status) || status === '')
+      );
+      
+      const showKhachHang = filterKhachHang.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);      
 
     const viewDetailHandler = (id) => {
         navigate(`/admin/khachHang/detail/${id}`);
@@ -181,7 +188,7 @@ const KhachHang = () => {
                                     <TableCell >{kh.gioiTinh}</TableCell>
                                     <TableCell >{kh.trangThai === 'Hoạt động' ? <Chip label="Hoạt động" color="success" /> : <Chip label="Tạm ngưng" color="error" />}</TableCell>
                                     <TableCell onClick={viewDetailHandler.bind(this, kh.ma)}>
-                                        <Tooltip title="Chỉnh sửa" placement="bottom-start"><IconButton><Edit style={{ color: 'orange' }} /></IconButton></Tooltip>
+                                        <Tooltip title="Chỉnh sửa" placement="bottom-start"><IconButton><Edit color="primary" /></IconButton></Tooltip>
                                     </TableCell>
                                 </TableRow>
                             ))}
