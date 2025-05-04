@@ -88,7 +88,7 @@ const OrderStatusPieChart = ({ filter ,customStartDate, customEndDate}) => {
             label: "Số lượng đơn hàng",
             data: values,
             backgroundColor: [
-              "#0D47A1", "#009688", "#FF5722", "#FF4081", "#2196F3",
+              "#0D47A1", "#009688", "#b8e986", "#efadad", "#2196F3",
               "#607D8B", "#FFC107", "#4CAF50", "#F44336"
             ],
             borderWidth: 1,

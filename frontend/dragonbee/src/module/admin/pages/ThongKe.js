@@ -471,15 +471,15 @@ const ThongKe = () => {
                     <TableHead>
                       <TableRow>
                         <TableCell>
-                          <b>#</b>
+                          <b>STT</b>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{textAlign:'center'}}>
                           <b>Ảnh sản phẩm</b>
                         </TableCell>
                         <TableCell>
                           <b>Tên sản phẩm</b>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{textAlign:'center'}}>
                           <b>Số lượng bán</b>
                         </TableCell>
                         <TableCell>

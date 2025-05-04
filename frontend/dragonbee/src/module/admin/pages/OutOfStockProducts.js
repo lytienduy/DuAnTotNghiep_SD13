@@ -121,11 +121,11 @@ const OutOfStockProducts = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>#</TableCell>
-                  <TableCell>Ảnh sản phẩm</TableCell>
-                  <TableCell>Tên sản phẩm</TableCell>
-                  <TableCell>Số lượng tồn</TableCell>
-                  <TableCell>Giá bán</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>STT</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', textAlign:'center' }}>Ảnh sản phẩm</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Tên sản phẩm</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', textAlign:'center' }}>Số lượng tồn</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Giá bán</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
