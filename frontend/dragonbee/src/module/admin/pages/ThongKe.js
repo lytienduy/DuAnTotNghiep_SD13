@@ -150,7 +150,6 @@ const exportToExcel = async () => {
   }
 };
 
-
 const RevenueCard = ({
   label,
   value,
@@ -475,7 +474,7 @@ const ThongKe = () => {
                           <b>#</b>
                         </TableCell>
                         <TableCell>
-                          <b>Ảnh</b>
+                          <b>Ảnh sản phẩm</b>
                         </TableCell>
                         <TableCell>
                           <b>Tên sản phẩm</b>
@@ -492,20 +491,33 @@ const ThongKe = () => {
                       {topProducts && topProducts.length > 0 ? (
                         topProducts.map((product, index) => (
                           <TableRow key={index}>
-                          <TableCell><strong>{index + 1}</strong></TableCell>
                             <TableCell>
-                              <img
-                                src={product.imageUrls}
-                                alt="Ảnh"
-                                style={{
-                                  width: 50,
-                                  height: 50,
-                                  borderRadius: 5,
-                                }}
-                              />
+                              <strong>{index + 1}</strong>
                             </TableCell>
+                            <TableCell align="center">
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <img
+                                  src={product.imageUrls}
+                                  alt="Ảnh"
+                                  style={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: 5,
+                                  }}
+                                />
+                              </div>
+                            </TableCell>
+
                             <TableCell>{product.description}</TableCell>
-                            <TableCell>{product.totalSold}</TableCell>
+                            <TableCell align="center">
+                              {product.totalSold}
+                            </TableCell>
                             <TableCell>
                               {new Intl.NumberFormat("vi-VN").format(
                                 product.price
