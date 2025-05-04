@@ -33,7 +33,10 @@ import AddProduct from "./module/admin/pages/AddProduct";
 import AddChatLieu from "./module/admin/pages/AddChatLieu";
 import HoaDonChiTiet from './module/admin/pages/HoaDonChiTiet';
 import LoginPage from "./module/admin/pages/LoginPage";
-
+import ChatWithClient from './module/admin/pages/ChatWithClient';
+import DotGiamGia from './module/admin/pages/DotGiamGia';
+import AddDiscountEvent from './module/admin/pages/AddDiscountEvent';
+import EditDiscountEvent from './module/admin/pages/EditDiscountEvent';
 // Import Client Components
 import ClientFooter from './module/client/components/Footer';
 import ClientHeader from './module/client/components/Header';
@@ -146,6 +149,12 @@ const MainLayout = () => {
             <Route path="/admin/sanpham/addProduct" element={<PrivateRoute element={<AddProduct />} />} />
             {/* Add Chất liệu */}
             <Route path="/admin/chatlieu/addChatLieu" element={<PrivateRoute element={<AddChatLieu />} />} />
+            {/* Chat với khách hàng  */}
+            <Route path="/admin/chat" element={<PrivateRoute element={<ChatWithClient />} />} />
+            {/* đợt giảm giá
+            <Route path='/admin/dot-giam-gia' element={<PrivateRoute element={<DotGiamGia />} />} />
+            <Route path="/admin/dot-giam-gia/them-moi" element={<PrivateRoute element={<AddDiscountEvent />} />} />
+            <Route path="/admin/dot-giam-gia/chinh-sua/:ma" element={<PrivateRoute element={<EditDiscountEvent />} />} /> */}
             {/* Thêm các route Admin khác... */}
 
             {/* Login Route */}

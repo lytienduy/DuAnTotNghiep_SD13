@@ -57,6 +57,7 @@ public class HoaDonChiTietResponseDTO {
         private String phuongThuc;
         private String nhanVienXacNhan;
         private String ghiChu;
+        private String loai;
     }
 
     @Getter
@@ -74,6 +75,16 @@ public class HoaDonChiTietResponseDTO {
         private Integer soLuong;
         private Double soTien;
         private String trangThai;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SoLuongGocVaConLaiCuaSPCTTrongHDCT {
+        private Integer soLuongGoc;
+        private Integer soLuongConLai;
     }
 
     @Getter

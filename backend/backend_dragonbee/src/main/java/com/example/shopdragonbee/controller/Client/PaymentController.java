@@ -64,6 +64,7 @@ public class PaymentController {
                 // Chuyển đổi sang LocalDateTime
                 LocalDateTime localDateTime = LocalDateTime.parse(vnp_PayDate, formatter);
                 thanhToanHoaDon.setNgayTao(localDateTime);
+                thanhToanHoaDon.setLoai("Thanh toán");
                 thanhToanHoaDonRepository.save(thanhToanHoaDon);
                 return hoaDon.getId();
             } else {

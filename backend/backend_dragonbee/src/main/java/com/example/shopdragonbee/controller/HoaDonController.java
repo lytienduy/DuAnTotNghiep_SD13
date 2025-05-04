@@ -37,9 +37,9 @@ public class HoaDonController {
     public List<Integer> getHoaDonCount( @RequestParam(required = false) String timKiem,
                                          @RequestParam(required = false) String tuNgay,
                                          @RequestParam(required = false) String denNgay,
-                                         @RequestParam(required = false) String loaiDon,
-                                         @RequestParam(required = false) String trangThai) {
-        List<Integer> countMap = hoaDonService.laySoLuongHoaDonTrangThaiVaHoaDon(timKiem, tuNgay, denNgay, loaiDon, trangThai);
+                                         @RequestParam(required = false) String loaiDon
+                                         ) {
+        List<Integer> countMap = hoaDonService.laySoLuongHoaDonTrangThaiVaHoaDon(timKiem, tuNgay, denNgay, loaiDon);
         return countMap;
     }
 

@@ -1,8 +1,6 @@
 package com.example.shopdragonbee.dto.Client;
 
-import com.example.shopdragonbee.entity.ChatLieu;
-import com.example.shopdragonbee.entity.KieuDang;
-import com.example.shopdragonbee.entity.MauSac;
+import com.example.shopdragonbee.entity.*;
 import lombok.*;
 
 import java.util.List;
@@ -22,6 +20,10 @@ public class SPCTDTO {
         private ChatLieu chatLieu;
         private String moTa;
         private Double gia;
+        private DanhMuc danhMuc;
+        private ThuongHieu thuongHieu;
+        private XuatXu xuatXu;
+
     }
 
     @Getter
@@ -33,6 +35,7 @@ public class SPCTDTO {
         private List<String> listAnh;
         private MauSac mauSac;
         private List<SizeCuaPhong> listSize;
+        private Double gia;
     }
 
     @Getter
@@ -56,6 +59,7 @@ public class SPCTDTO {
     @AllArgsConstructor
     @Builder
     public static class SanPhamCart {
+        private Integer id;
         private Integer idSPCT;
         private String anhSPCT;
         private String tenSPCT;

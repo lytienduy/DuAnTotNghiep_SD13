@@ -13,7 +13,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const GioHang = () => {
     const navigate = useNavigate();
@@ -21,15 +20,18 @@ const GioHang = () => {
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [productsCapNhatSoLuong, setProductsCapNhatSoLuong] = useState([]);
     const [openDialogThongBaoHetHangHoacKDuSoLuong, setOpenDialogThongBaoHetHangHoacKDuSoLuong] = useState(false);
+    const [tenSanPhamThongBao, setTenSanPhamThongBao] = useState("");
     const [dialogMessage, setDialogMessage] = useState("");
     const userKH = JSON.parse(localStorage.getItem("userKH"));
 
-    const handleDialogOpen = (message) => {
+    const handleDialogOpen = (message, tenSanPhamThongBao) => {
         setDialogMessage(message);
+        setTenSanPhamThongBao(tenSanPhamThongBao);
         setOpenDialogThongBaoHetHangHoacKDuSoLuong(true);
     };
 
     const handleDialogClose = () => {
+        setTenSanPhamThongBao("");
         setOpenDialogThongBaoHetHangHoacKDuSoLuong(false);
     };
     //Thông báo Toast
@@ -90,17 +92,17 @@ const GioHang = () => {
                     if (cart[index]) {
                         cart[index].quantity = 0;
                     }
-                    handleDialogOpen("Sản phẩm đã hết hàng, bạn có thể tham khảo sản phẩm khác");
+                    handleDialogOpen("Sản phẩm đã hết hàng, bạn có thể tham khảo sản phẩm khác", cart[index].tenSPCT + " - " + cart[index].tenMauSac + " - size" + cart[index].tenSize);
                 } else if (item?.quantity !== response.data?.[index]?.quantity) {
                     if (cart[index]) {
                         cart[index].quantity = response.data?.[index]?.quantity;
                     }
-                    handleDialogOpen("Sản phẩm không còn đủ số lượng bạn mong muốn");
+                    handleDialogOpen("Sản phẩm không còn đủ số lượng bạn mong muốn", cart[index].tenSPCT + " - " + cart[index].tenMauSac + " - size" + cart[index].tenSize);
                 }
                 if (item.gia !== response.data?.[index]?.gia) {
                     if (cart[index]) {
-                        showSuccessToast("Giá sản phẩm "+index+" đã có thay đổi giá cũ "+cart[index].gia+" giá mới "+response.data?.[index]?.gia)
-                        cart[index].gia = response.data?.[index]?.gia;        
+                        showSuccessToast("Giá sản phẩm " + index + " đã có thay đổi giá cũ " + cart[index].gia + " giá mới " + response.data?.[index]?.gia)
+                        cart[index].gia = response.data?.[index]?.gia;
                     }
                 }
             }
@@ -143,11 +145,6 @@ const GioHang = () => {
                     },
                 });
             setProductsCapNhatSoLuong(response.data);
-            // for (const [index, item] of response.data.entries()) {
-            //     if (response.data?.[index]?.quantity === 0) {
-            //         showSuccessToast("Bạn đã mua tối đa sản phẩm thứ " + index);
-            //     }
-            // }
         } catch (error) {
             showErrorToast("Lỗi khi lấy dữ liệu sản phẩm chi tiết")
         }
@@ -189,11 +186,11 @@ const GioHang = () => {
 
     useEffect(() => {
         layDuLieuCart();
-        const interval = setInterval(() => {
-            getListDanhSachCapNhatSoLuongSanPhamGioHang();
+        const interval = setInterval(() => { 
             getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
+            getListDanhSachCapNhatSoLuongSanPhamGioHang();
+           
         }, 5000); // 60 giây
-
         return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
     }, []);
 
@@ -238,13 +235,15 @@ const GioHang = () => {
 
 
     const handleIncrement = async (index, idspct) => {
-        console.log("idspct là:" + idspct);
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        if (cart[index]?.quantity === 30) {
+            handleDialogOpen("Chúng tôi không nhận đơn hàng có sản phẩm trên 30 sản phẩm cho một mặt hàng \n  Với số lượng lớn bạn vui lòng liên hệ với chúng tôi để được nhận giá và trải nghiệm tốt nhất");
+            return;
+        }
         // Cập nhật số lượng sản phẩm trong `cart` dựa vào `index`
         if (index >= 0 && index < cart.length) {
             cart[index].quantity += 1;
         }
-
         // Cập nhật lại giỏ hàng trong Local Storage
         localStorage.setItem("cart", JSON.stringify(cart));
         if (userKH?.khachHang?.id) {
@@ -261,8 +260,8 @@ const GioHang = () => {
         layDuLieuCart();
         getListDanhSachSoLuongSanPhamCapNhatTruVoiSoLuongSanPhamGioHang();
         //Nên cho hàm check nào vào getListDanhSach luôn check vs respone
-        if (productsCapNhatSoLuong[index].quantity === 1) {//Fix lỗi chậm một nhịp  
-            showSuccessToast("Bạn đã mua tối đa sản phẩm thứ " + index);
+        if (productsCapNhatSoLuong[index]?.quantity === 1) {//Fix lỗi chậm một nhịp  
+            showSuccessToast("Bạn đã mua tối đa số lượng sản phẩm này");
         }
     };
 
@@ -335,6 +334,7 @@ const GioHang = () => {
         <Container>
             <Dialog open={openDialogThongBaoHetHangHoacKDuSoLuong} onClose={handleDialogClose}>
                 <DialogTitle>Thông Báo</DialogTitle>
+                {tenSanPhamThongBao && <DialogContent ><strong>{tenSanPhamThongBao}</strong></DialogContent>}
                 <DialogContent>{dialogMessage}</DialogContent>
                 <DialogActions>
                     <Button onClick={handleDialogClose} color="primary">Đóng</Button>
@@ -393,7 +393,7 @@ const GioHang = () => {
                                         </TableRow>
                                     ) : (
                                         products.map((product, index) => (
-                                            <TableRow key={index} disabled={product.quantity === 0}>
+                                            <TableRow key={index} disabled={product.quantity <= 0} >
                                                 <TableCell padding="checkbox" sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
                                                     <Checkbox
                                                         checked={selectedProducts.includes(index)}
@@ -401,7 +401,7 @@ const GioHang = () => {
                                                         color="primary"
                                                     />
                                                 </TableCell>
-                                                <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px' }}>
+                                                <TableCell sx={{ paddingLeft: '10px', paddingRight: '10px', cursor: 'pointer' }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                                                     <Grid container spacing={2} alignItems="center" sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                                                         <Grid item>
                                                             <img src={product.anhSPCT} alt={product.tenSPCT} width={80} height={80} />
@@ -468,7 +468,7 @@ const GioHang = () => {
                                                                         onClick={() => handleIncrement(index, product?.idSPCT)}
                                                                         size="small"
                                                                         style={{ padding: '2px', marginRight: -10 }}
-                                                                        disabled={productsCapNhatSoLuong?.[index]?.quantity === 0}
+                                                                        disabled={productsCapNhatSoLuong[index]?.quantity <= 0}
                                                                     >
                                                                         <AddIcon fontSize="small" />
                                                                     </IconButton>

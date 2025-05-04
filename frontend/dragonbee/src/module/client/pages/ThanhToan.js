@@ -18,6 +18,11 @@ const CODImage = 'https://drive.gianhangvn.com/image/thanh-toan-khi-nhan-hang-21
 
 
 const ThanhToan = () => {
+    const [showLeftPanel, setShowLeftPanel] = useState(true);
+    const [discount, setDiscount] = useState(0);
+    const [selectedGHNDistrict, setSelectedGHNDistrict] = useState("");
+    const [selectedGHNWard, setselectedGHNWard] = useState("");
+    const [bestVoucher, setBestVoucher] = useState(null);
     //Khai báo Thành phố huyện xã
     const navigate = useNavigate();
     const [cities, setCities] = useState([]);
@@ -58,7 +63,7 @@ const ThanhToan = () => {
     const location = useLocation();
     const selectedProducts = location.state?.selectedProducts || []; // Tránh undefined
     const tongTien = products.reduce((tong, item) => tong + item.gia * item.quantity, 0);
-    const tongTienThanhToan = tongTien - discountAmount + phiShip;
+    const tongTienThanhToan = tongTien - discountAmount + Number(discount);
     const [openConfirmDatHang, setOpenConfirmDatHang] = useState(false);
     const userKH = JSON.parse(localStorage.getItem("userKH"));
 
@@ -100,6 +105,18 @@ const ThanhToan = () => {
         });
     };
 
+    const getEstimatedDeliveryDate = () => {
+        const today = new Date();
+        const estimatedDate = new Date();
+        estimatedDate.setDate(today.getDate() + 5); // Cộng thêm 5 ngày
+
+        // Format về dạng dd/mm/yyyy
+        const day = estimatedDate.getDate().toString().padStart(2, '0');
+        const month = (estimatedDate.getMonth() + 1).toString().padStart(2, '0');
+        const year = estimatedDate.getFullYear();
+
+        return `${day}/${month}/${year}`;
+    };
 
     //Lấy dữ liệu cart
     const layDuLieuCart = () => {
@@ -133,7 +150,7 @@ const ThanhToan = () => {
             emailNguoiNhan: emailNguoiNhan,
             diaChiNhanHang: addressParts,
             tongTienPhaiTra: tongTienThanhToan,
-            phiShip: phiShip,
+            phiShip: discount,
             ghiChu: ghiChu,
             danhSachThanhToan: products, //đây là mảng json
             idKhachHang: userKH?.khachHang?.id || null
@@ -193,66 +210,151 @@ const ThanhToan = () => {
         setSelectedPaymentMethod(event.target.value);
     };
 
+    const roundToNearestThousand = (number) => {
+        return Math.round(number / 1000) * 1000;
+    };
     // Hàm sử dụng để gọi tỉnh thành quận huyện xã Việt Nam
     useEffect(() => {
-        axios.get("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json")
-            .then(response => {
-                const normalizedCities = response.data.map(city => ({
+        // axios
+        //   .get(
+        //     "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json"
+        //   )
+        axios
+            .get(
+                `https://online-gateway.ghn.vn/shiip/public-api/master-data/province`,
+                {
+                    headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                }
+            )
+            .then((response) => {
+                const normalizedCities = response.data.data.map((city) => ({
                     ...city,
-                    Name: city.Name.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
+                    Name: city.ProvinceName.replace(/^(Thành phố |Tỉnh )/, ""), // Loại bỏ "Thành phố " và "Tỉnh "
                 }));
-                setCities(normalizedCities);
-                setNewCities(normalizedCities); 
+                setCities(normalizedCities); // Cập nhật citiess thay vì setCities
+                setNewCities(normalizedCities); // Cập nhật citiess thay vì setCities
+
             })
-            .catch(error => console.error("Error fetching data:", error));
+            .catch((error) => console.error("Error fetching data:", error));
     }, []);
 
     const handleCityChange = (event) => {
         const cityName = event.target.value;
-        setCity(cityName);  // Cập nhật giá trị thành phố
-        setDistrict("");  // Reset quận/huyện
-        setWard("");  // Reset xã/phường khi thay đổi thành phố
-
-        // Cập nhật danh sách quận/huyện
-        const city = cities.find(city => city.Name === cityName);
-        setDistricts(city ? city.Districts : []);  // Cập nhật danh sách quận/huyện
-        setWards([]);  // Reset danh sách xã/phường
+        setCity(cityName); // Cập nhật giá trị của city
+        setDistrict(""); // Reset quận/huyện khi thay đổi tỉnh thành
+        setWard(""); // Reset xã/phường khi thay đổi quận/huyện
+        const id = cities.find((c) => c.Name === cityName).ProvinceID;
+        setSelectedGHNDistrict(id);
+        const fetchDistricts = async () => {
+            const districtResponse = await axios.get(
+                `https://online-gateway.ghn.vn/shiip/public-api/master-data/district`,
+                {
+                    headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                    params: {
+                        province_id: id,
+                    },
+                }
+            );
+            setDistricts(districtResponse.data.data);
+        };
+        fetchDistricts();
+        setWards([]); // Reset xã/phường
     };
 
     const handleDistrictChange = (event) => {
         const districtName = event.target.value;
-        setDistrict(districtName);  // Cập nhật giá trị quận/huyện
-        setWard("");  // Reset xã/phường khi thay đổi quận/huyện
+        setDistrict(districtName); // Cập nhật giá trị của district
+        setWard(""); // Reset xã/phường khi thay đổi quận/huyện
 
-        // Cập nhật danh sách xã/phường
-        const district = districts.find(d => d.Name === districtName);
-        setWards(district ? district.Wards : []);  // Cập nhật danh sách xã/phường
+        const id = districts.find(
+            (d) => d.DistrictName === districtName
+        ).DistrictID;
+        setSelectedGHNDistrict(id);
+        const fetchWards = async () => {
+            const wardsResponse = await axios.get(
+                `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=` +
+                id,
+                {
+                    headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                }
+            );
+            setWards(wardsResponse.data.data);
+        };
+        fetchWards();
     };
 
     const handleWardChange = (event) => {
         setWard(event.target.value);
+
+        const id = wards.find((d) => d.WardName === event.target.value).WardCode;
+        setselectedGHNWard(id);
+
+        // Lấy phí dịch vụ của giao hàng nhanh dựa trên huyện và xã đã chọn
+        const fetchGHNServiceFee = async () => {
+            const serviceFeeResponse = await axios.get(
+                `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+                {
+                    headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                    params: {
+                        service_type_id: 2,
+                        to_district_id: selectedGHNDistrict,
+                        to_ward_code: selectedGHNWard,
+                        weight: 3000,
+                        insurance_value: 0,
+                    },
+                }
+            );
+            const rawFee = serviceFeeResponse.data.data.service_fee;
+            setDiscount(roundToNearestThousand(rawFee));
+        };
+        fetchGHNServiceFee();
     };
 
+    // Hàm thay đổi tỉnh thành cho modal
     // Hàm thay đổi tỉnh thành cho modal
     const handleCityChangeModal = (event) => {
         const cityName = event.target.value;
         setNewCity(cityName);
         setNewDistrict(""); // Reset quận/huyện khi thay đổi tỉnh thành
         setNewWard(""); // Reset xã/phường khi thay đổi quận/huyện
-        // Tìm thành phố đã chọn và cập nhật districtss
-        const selectedCity = newCities.find(city => city.Name === cityName);
-        setNewDistricts(selectedCity ? selectedCity.Districts : []);  // Cập nhật quận/huyện
-        setNewWards([]);  // Reset xã/phường
+
+        const city = cities.find((c) => c.Name === cityName);
+        const fetchDistricts = async () => {
+            const districtResponse = await axios.get(
+                `https://online-gateway.ghn.vn/shiip/public-api/master-data/district`,
+                {
+                    headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                    params: {
+                        province_id: city.ProvinceID,
+                    },
+                }
+            );
+            setNewDistricts(districtResponse.data.data);
+        };
+        fetchDistricts();
+        setNewWards([]); // Reset xã/phường
     };
 
     // Hàm thay đổi quận/huyện cho modal
     const handleDistrictChangeModal = (event) => {
         const districtName = event.target.value;
         setNewDistrict(districtName);
-        setNewWard(""); // Reset xã/phường khi thay đổi quận/huyện
-        // Tìm quận/huyện đã chọn và cập nhật wardss
-        const district = newDistricts.find(d => d.Name === districtName);
-        setNewWards(district ? district.Wards : []);  // Cập nhật danh sách xã/phường
+        setNewWard("");
+
+        const id = newDistricts.find(
+            (d) => d.DistrictName === districtName
+        ).DistrictID;
+        const fetchWards = async () => {
+            const wardsResponse = await axios.get(
+                `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=` +
+                id,
+                {
+                    headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                }
+            );
+            setNewWards(wardsResponse.data.data);
+        };
+        fetchWards();
     };
 
     // Hàm thay đổi xã/phường cho modal
@@ -333,6 +435,9 @@ const ThanhToan = () => {
             if (bestVoucher) {
                 setSelectedVoucherCode(bestVoucher.ma);
                 setDiscountAmount(bestDiscount);
+                setBestVoucher(bestVoucher); // Lưu bestVoucher vào state
+            } else {
+                setBestVoucher(null); // Đề phòng trường hợp không có phiếu nào phù hợp
             }
 
             // Cập nhật danh sách phiếu giảm giá
@@ -397,14 +502,30 @@ const ThanhToan = () => {
     // Hàm để hiển thị thông báo thiếu tiền
     const renderAdditionalAmountMessage = (voucher) => {
         const amountToSpend = calculateAmountToSpend(voucher);
-        if (amountToSpend > 0) {
-            return (
-                <Typography sx={{ color: 'red', marginTop: 1, fontSize: 12 }}>
-                    Bạn cần chi tiêu thêm {amountToSpend.toLocaleString()} VNĐ để áp dụng phiếu giảm giá này.
-                </Typography>
-            );
-        }
-        return null;
+        const isBest = bestVoucher?.id === voucher.id;
+
+        return (
+            <>
+                {amountToSpend > 0 && (
+                    <Typography sx={{ color: "red", marginTop: 1, fontSize: 12 }}>
+                        Bạn cần chi tiêu thêm {amountToSpend.toLocaleString()} VNĐ để áp dụng
+                        phiếu giảm giá này.
+                    </Typography>
+                )}
+                {isBest && (
+                    <Typography
+                        sx={{
+                            color: "green",
+                            marginTop: 1,
+                            fontSize: 12,
+                            fontWeight: "bold",
+                        }}
+                    >
+                        Đây là phiếu giảm giá tốt nhất!
+                    </Typography>
+                )}
+            </>
+        );
     };
 
     const checkVoucherAvailability = async (voucherCode) => {
@@ -439,55 +560,90 @@ const ThanhToan = () => {
     const [defaultAddress, setDefaultAddress] = useState(null); // Địa chỉ mặc định
 
     useEffect(() => {
-        // Kiểm tra xem khách hàng có đăng nhập không
-        const user = localStorage.getItem('userKH');
+        const user = localStorage.getItem("userKH");
         if (user) {
             setIsLoggedIn(true);
-            const customerId = JSON.parse(user).khachHang.id; // Lấy customerId từ localStorage
+            const customerId = JSON.parse(user).khachHang.id;
 
-            // Gọi API lấy danh sách địa chỉ của khách hàng
             fetch(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${customerId}`)
-                .then((response) => response.json())
-                .then((data) => {
-                    // Sắp xếp địa chỉ để địa chỉ mặc định luôn lên đầu
+                .then((res) => res.json())
+                .then(async (data) => {
                     const sortedAddresses = data.sort((a, b) => {
-                        if (a.macDinh && !b.macDinh) return -1; // Địa chỉ mặc định lên đầu
+                        if (a.macDinh && !b.macDinh) return -1;
                         if (!a.macDinh && b.macDinh) return 1;
                         return 0;
                     });
 
-                    // Lưu danh sách địa chỉ đã sắp xếp
                     setAddresses(sortedAddresses);
 
-                    // Nếu có địa chỉ mặc định, lưu vào state
-                    const defaultAddr = sortedAddresses.find(addr => addr.macDinh);
+                    const defaultAddr = sortedAddresses.find((addr) => addr.macDinh);
                     if (defaultAddr) {
                         setDefaultAddress(defaultAddr);
-
-                        // Tự động điền các trường theo địa chỉ mặc định
                         setCity(defaultAddr.thanhPho);
                         setDistrict(defaultAddr.huyen);
                         setWard(defaultAddr.xa);
                         setSpecificAddress(`${defaultAddr.soNha}, ${defaultAddr.duong}`);
 
-                        // Gọi lại handleCityChange để cập nhật danh sách quận/huyện
-                        const cityObj = cities.find(city => city.Name === defaultAddr.thanhPho);
-                        if (cityObj) {
-                            setDistricts(cityObj.Districts);  // Cập nhật quận/huyện
+                        // Lấy ID tỉnh/thành từ cities
+                        const selectedCity = cities.find(c => c.Name === defaultAddr.thanhPho);
+                        if (!selectedCity) return;
+
+                        setSelectedGHNDistrict(selectedCity.ProvinceID);
+
+                        // Fetch quận/huyện
+                        const districtResponse = await axios.get(
+                            `https://online-gateway.ghn.vn/shiip/public-api/master-data/district`,
+                            {
+                                headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                                params: { province_id: selectedCity.ProvinceID }
+                            }
+                        );
+                        setDistricts(districtResponse.data.data);
+
+                        const selectedDistrict = districtResponse.data.data.find(d => d.DistrictName === defaultAddr.huyen);
+                        if (!selectedDistrict) return;
+
+                        setSelectedGHNDistrict(selectedDistrict.DistrictID);
+
+                        // Fetch xã/phường
+                        const wardResponse = await axios.get(
+                            `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward`,
+                            {
+                                headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                                params: { district_id: selectedDistrict.DistrictID }
+                            }
+                        );
+                        setWards(wardResponse.data.data);
+
+                        const selectedWard = wardResponse.data.data.find(w => w.WardName === defaultAddr.xa);
+                        if (selectedWard) {
+                            setselectedGHNWard(selectedWard.WardCode);
                         }
 
-                        // Gọi lại handleDistrictChange để cập nhật danh sách xã/phường
-                        const districtObj = cityObj?.Districts.find(district => district.Name === defaultAddr.huyen);
-                        if (districtObj) {
-                            setWards(districtObj.Wards);  // Cập nhật xã/phường
-                        }
+                        // Gọi phí GHN (tuỳ chọn)
+                        const feeResponse = await axios.get(
+                            `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+                            {
+                                headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                                params: {
+                                    service_type_id: 2,
+                                    to_district_id: selectedDistrict.DistrictID,
+                                    to_ward_code: selectedWard?.WardCode,
+                                    weight: 3000,
+                                    insurance_value: 0,
+                                },
+                            }
+                        );
+                        const rawFee = feeResponse.data.data.service_fee;
+                        setDiscount(roundToNearestThousand(rawFee));
                     }
                 })
-                .catch((error) => console.error('Error fetching addresses:', error));
+                .catch((error) => console.error("Error fetching addresses:", error));
         } else {
             setIsLoggedIn(false);
         }
-    }, [cities]);  // Lắng nghe sự thay đổi của cities để cập nhật lại khi cần
+    }, [cities]);
+    // Lắng nghe sự thay đổi của cities để cập nhật lại khi cần
 
     useEffect(() => {
         // Kiểm tra xem khách hàng có đăng nhập không
@@ -526,64 +682,65 @@ const ThanhToan = () => {
 
     // Thêm mới địa chỉ cho khách hàng được chọn
     const handleSaveAddress = () => {
-        const detailedAddress = document.getElementById('detailed-address').value.trim();
-        const description = document.getElementById('description').value.trim();
-        const [soNha, duong] = detailedAddress.split(',');
+        const detailedAddress = document
+            .getElementById("detailed-address")
+            .value.trim();
+        const description = document.getElementById("description").value.trim();
+        const [soNha, duong] = detailedAddress.split(",");
 
         // Lấy customerId từ localStorage
         const user = localStorage.getItem('userKH');
         const selectedCustomerId = user ? JSON.parse(user).khachHang.id : null; // Lấy ID khách hàng từ localStorage
 
-        if (!selectedCustomerId) {
-            alert('Không tìm thấy thông tin khách hàng.');
-            return;
-        }
-
         const newAddress = {
             khachHang: { id: selectedCustomerId },
-            soNha: soNha.trim(),
-            duong: duong.trim(),
+            soNha: soNha?.trim() || "",
+            duong: duong?.trim() || "",
             xa: newWard,
             huyen: newDistrict,
             thanhPho: newCity,
-            moTa: description || '',
-            trangThai: 'Hoạt động',
+            moTa: description || "",
+            trangThai: "Hoạt động",
             macDinh: false,
         };
 
         // Gọi API để thêm địa chỉ mới
-        axios.post('http://localhost:8080/dragonbee/them-dia-chi', newAddress)
-            .then(response => {
+        axios
+            .post("http://localhost:8080/dragonbee/them-dia-chi", newAddress)
+            .then((response) => {
                 // Sau khi thêm địa chỉ, gọi lại API để lấy danh sách địa chỉ mới nhất từ server
-                axios.get(`http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`)
-                    .then(response => {
+                axios
+                    .get(
+                        `http://localhost:8080/dragonbee/danh-sach-dia-chi?customerId=${selectedCustomerId}`
+                    )
+                    .then((response) => {
                         // Cập nhật lại danh sách địa chỉ từ response
                         setAddresses(response.data);
 
                         // Lấy địa chỉ mới nhất (ở cuối danh sách) để tự động chọn
                         const lastAddress = response.data[response.data.length - 1];
-                        handleSelectAddress(lastAddress);  // Chọn địa chỉ cuối cùng trong danh sách
+                        handleSelectAddress(lastAddress); // Chọn địa chỉ cuối cùng trong danh sách
 
                         // Đóng modal thêm địa chỉ sau khi lưu thành công
-                        setOpenChonDC(false);  // Đóng modal thêm địa chỉ
+                        setOpenChonDC(false); // Đóng modal thêm địa chỉ
 
-                        alert('Thêm địa chỉ thành công!');
-                        setNewCity('');  // Reset thành phố
-                        setNewDistrict('');  // Reset quận/huyện
-                        setNewWard('');  // Reset xã/phường
+                        showSuccessToast("Thêm địa chỉ thành công!");
+                        setNewCity(""); // Reset thành phố
+                        setNewDistrict(""); // Reset quận/huyện
+                        setNewWard(""); // Reset xã/phường
                     })
-                    .catch(error => {
-                        console.error('Lỗi khi lấy danh sách địa chỉ:', error);
-                        alert('Có lỗi khi lấy danh sách địa chỉ.');
+                    .catch((error) => {
+                        console.error("Lỗi khi lấy danh sách địa chỉ:", error);
+                        showErrorToast("Có lỗi khi lấy danh sách địa chỉ.");
                     });
             })
-            .catch(error => {
-                console.error('Có lỗi khi thêm địa chỉ:', error);
-                alert('Có lỗi khi thêm địa chỉ.');
+            .catch((error) => {
+                console.error("Có lỗi khi thêm địa chỉ:", error);
+                showErrorToast("Có lỗi khi thêm địa chỉ.");
             });
     };
 
-    const handleSelectAddress = (address) => {
+    const handleSelectAddress = async (address) => {
         // Lấy thông tin người dùng từ localStorage
         const user = localStorage.getItem('userKH');
         const selectedCustomerId = user ? JSON.parse(user).khachHang.id : null;
@@ -598,21 +755,80 @@ const ThanhToan = () => {
         setSpecificAddress(`${address.soNha}, ${address.duong}`);  // Cập nhật địa chỉ cụ thể
 
         // Cập nhật lại danh sách quận/huyện và xã/phường dựa trên thành phố và huyện
-        const city = cities.find(city => city.Name === address.thanhPho);
+        const city = cities.find((city) => city.Name === address.thanhPho);
         if (city) {
-            setDistricts(city.Districts);  // Cập nhật danh sách quận/huyện của thành phố
-            const district = city.Districts.find(d => d.Name === address.huyen);
-            if (district) {
-                setWards(district.Wards);  // Cập nhật danh sách xã/phường của huyện
-            } else {
-                setWards([]);  // Nếu không tìm thấy huyện, reset danh sách xã/phường
-            }
+            setCity(address.thanhPho);
+            const fetchDistricts = async () => {
+                const districtResponse = await axios.get(
+                    `https://online-gateway.ghn.vn/shiip/public-api/master-data/district`,
+                    {
+                        headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                        params: {
+                            province_id: city.ProvinceID,
+                        },
+                    }
+                );
+                const districts = districtResponse.data.data;
+                setDistricts(districts);
+                setDistrict(address.huyen);
+                const selectedDistrict = districts.find(
+                    (d) => d.DistrictName === address.huyen
+                );
+                if (selectedDistrict) {
+                    const fetchWards = async () => {
+                        const wardsResponse = await axios.get(
+                            `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=` +
+                            selectedDistrict.DistrictID,
+                            {
+                                headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                            }
+                        );
+                        const wards = wardsResponse.data.data;
+                        setWards(wards);
+                        setWard(address.xa);
+                        const selectedWard = wards.find((d) => d.WardName === address.xa);
+                        const fetchGHNServiceFee = async () => {
+                            const serviceFeeResponse = await axios.get(
+                                `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+                                {
+                                    headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+                                    params: {
+                                        service_type_id: 2,
+                                        to_district_id: selectedDistrict.DistrictID,
+                                        to_ward_code: selectedWard.WardCode,
+                                        weight: 3000,
+                                        insurance_value: 0,
+                                    },
+                                }
+                            );
+                            const rawFee = serviceFeeResponse.data.data.service_fee;
+                            setDiscount(roundToNearestThousand(rawFee));
+                        };
+                        await fetchGHNServiceFee();
+                    };
+                    await fetchWards();
+                }
+            };
+            await fetchDistricts();
         } else {
-            setDistricts([]);  // Nếu không tìm thấy thành phố, reset danh sách quận/huyện
-            setWards([]);  // Reset xã/phường
+            setDistricts([]); // Nếu không tìm thấy thành phố, reset danh sách quận/huyện
+            setWards([]); // Reset xã/phường
         }
 
-        setOpenDC(false);  // Đóng modal sau khi chọn
+        setOpenDC(false); // Đóng modal sau khi chọn
+    };
+
+    // Hàm để xử lý nhập liệu cho "phí ship"handleDiscountInput
+    const handleDiscountInput = (e) => {
+        var newValue = e.target.value.replace(/\D/g, ""); // Chỉ cho phép nhập số
+
+        if (/^0+$/.test(newValue)) {
+            newValue = "0";
+        } else {
+            newValue = newValue.replace(/^0+/, ""); // Xóa 0 thừa đầu
+        }
+
+        setDiscount(newValue);
     };
 
     return (
@@ -709,22 +925,38 @@ const ThanhToan = () => {
 
                         <Grid container spacing={2} marginTop={0}>
                             <Grid item xs={6}>
-                                <FormControl fullWidth size="small" sx={{ height: '100%' }}>
+                                <FormControl fullWidth size="small">
                                     <InputLabel>Tỉnh/Thành phố</InputLabel>
                                     <Select value={city} onChange={handleCityChange} label="Tỉnh/Thành phố">
-                                        {cities.map((city) => (
-                                            <MenuItem key={city.Id} value={city.Name}>{city.Name}</MenuItem>
-                                        ))}
+                                        {cities.length > 0 ? (
+                                            cities.map((city) => (
+                                                <MenuItem key={city.ProvinceID} value={city.Name}>
+                                                    {city.Name}
+                                                </MenuItem>
+                                            ))
+                                        ) : (
+                                            <MenuItem disabled>Không có dữ liệu</MenuItem>
+                                        )}
                                     </Select>
                                 </FormControl>
                             </Grid>
                             <Grid item xs={6}>
                                 <FormControl fullWidth size="small" sx={{ height: '100%' }}>
                                     <InputLabel>Quận/Huyện</InputLabel>
-                                    <Select value={district} onChange={handleDistrictChange} label="Quận/Huyện">
-                                        {districts.map((district) => (
-                                            <MenuItem key={district.Id} value={district.Name}>{district.Name}</MenuItem>
-                                        ))}
+                                    <Select
+                                        value={district}
+                                        onChange={handleDistrictChange}
+                                        label="Quận/Huyện"
+                                    >
+                                        {districts.length > 0 ? (
+                                            districts.map((district) => (
+                                                <MenuItem key={district.DistrictID} value={district.DistrictName}>
+                                                    {district.DistrictName}
+                                                </MenuItem>
+                                            ))
+                                        ) : (
+                                            <MenuItem disabled>Không có dữ liệu</MenuItem>
+                                        )}
                                     </Select>
                                 </FormControl>
                             </Grid>
@@ -734,13 +966,19 @@ const ThanhToan = () => {
                             <Grid item xs={6} marginTop={2}>
                                 <FormControl fullWidth size="small" sx={{ height: '100%' }}>
                                     <InputLabel>Xã/Phường</InputLabel>
-                                    <Select value={ward} onChange={handleWardChange} label="Xã/Phường">
+                                    <Select
+                                        value={ward}
+                                        onChange={handleWardChange}
+                                        label="Xã/Phường"
+                                    >
                                         {wards.length > 0 ? (
                                             wards.map((ward) => (
-                                                <MenuItem key={ward.Id} value={ward.Name}>{ward.Name}</MenuItem>
+                                                <MenuItem key={ward.WardCode} value={ward.WardName}>
+                                                    {ward.WardName}
+                                                </MenuItem>
                                             ))
                                         ) : (
-                                            <MenuItem disabled>No wards available</MenuItem>
+                                            <MenuItem disabled>Không có dữ liệu</MenuItem>
                                         )}
                                     </Select>
                                 </FormControl>
@@ -920,71 +1158,141 @@ const ThanhToan = () => {
                             </Typography>
                         </Box>
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2, alignItems: 'center' }}>
-                            <Typography variant="body1">Phiếu giảm giá:</Typography>
-                            <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                <Input
-                                    value={selectedVoucherCode} // Hiển thị mã voucher đã chọn
-                                    sx={{ color: '#5e5e5ede', width: 140 }} // Tăng padding phải để đủ chỗ cho icon
-                                    endAdornment={
-                                        <InputAdornment position="end" sx={{ position: 'relative' }}>
-                                            {/* CloseIcon - Xóa voucher */}
-                                            {selectedVoucherCode && (
-                                                <CloseIcon
+                        <Box
+                            sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                marginTop: 2,
+                                alignItems: "flex-start", // Chuyển từ center sang flex-start để các box con có thể giãn theo chiều dọc
+                            }}
+                        >
+                            <Typography variant="body1" sx={{ marginTop: "6px" }}>
+                                Phiếu giảm giá:
+                            </Typography>
+
+                            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                                <Box
+                                    sx={{
+                                        position: "relative",
+                                        display: "flex",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Input
+                                        value={selectedVoucherCode}
+                                        sx={{ color: "#5e5e5ede", width: 140 }}
+                                        endAdornment={
+                                            <InputAdornment position="end" sx={{ position: "relative" }}>
+                                                {selectedVoucherCode && (
+                                                    <CloseIcon
+                                                        sx={{
+                                                            color: "red",
+                                                            fontSize: 14,
+                                                            cursor: "pointer",
+                                                            position: "absolute",
+                                                            left: -13,
+                                                            top: "-3px",
+                                                            transform: "translateY(-50%)",
+                                                            backgroundColor: "white",
+                                                            borderRadius: "50%",
+                                                            boxShadow: "0 0 4px rgba(0,0,0,0.2)",
+                                                        }}
+                                                        onClick={() => {
+                                                            setSelectedVoucherCode("");
+                                                            setDiscountAmount(0);
+                                                        }}
+                                                    />
+                                                )}
+                                                <EditIcon
                                                     sx={{
-                                                        color: 'red',
-                                                        fontSize: 14,
-                                                        cursor: 'pointer',
-                                                        position: 'absolute',
-                                                        left: -13, // Dịch sang phải thêm 5px
-                                                        top: '-3px', // Đưa lên cao hơn
-                                                        transform: 'translateY(-50%)',
-                                                        backgroundColor: 'white', // Đảm bảo không bị che khuất
-                                                        borderRadius: '50%',
-                                                        boxShadow: '0 0 4px rgba(0,0,0,0.2)' // Thêm hiệu ứng nổi
+                                                        color: "gray",
+                                                        fontSize: 18,
+                                                        cursor: "pointer",
                                                     }}
-                                                    onClick={() => {
-                                                        setSelectedVoucherCode(''); // Xóa mã voucher
-                                                        setDiscountAmount(0); // Đặt giảm giá về 0 để cập nhật lại tổng tiền
-                                                    }}
+                                                    onClick={handleOpenVoucherModal}
                                                 />
-                                            )}
-                                            {/* EditIcon - Mở modal chọn voucher */}
-                                            <EditIcon
-                                                sx={{
-                                                    color: 'gray',
-                                                    fontSize: 18,
-                                                    cursor: 'pointer',
-                                                }}
-                                                onClick={handleOpenVoucherModal}
-                                            />
-                                        </InputAdornment>
+                                            </InputAdornment>
+                                        }
+                                        inputProps={{
+                                            style: {
+                                                textAlign: "right",
+                                                fontWeight: "bold",
+                                            },
+                                        }}
+                                    />
+                                </Box>
+
+                                {selectedVoucherCode === bestVoucher?.ma && (
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: "green",
+                                            marginTop: "4px",
+                                            fontStyle: "italic",
+                                        }}
+                                    >
+                                        Phiếu giảm giá tốt nhất!
+                                    </Typography>
+                                )}
+                            </Box>
+                        </Box>
+                        {showLeftPanel && (
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    marginTop: 1,
+                                }}
+                            >
+                                <Typography variant="body1">
+                                    Phí vận chuyển:
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    variant="standard"
+                                    value={
+                                        discount
+                                            ? parseInt(discount, 10).toLocaleString()
+                                            : discount
                                     }
-                                    inputProps={{
-                                        style: {
-                                            textAlign: 'right',
-                                            fontWeight: 'bold',
+                                    onChange={handleDiscountInput}
+                                    onBlur={() => {
+                                        if (discount === "") {
+                                            setDiscount(0);
+                                        }
+                                    }}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <Typography sx={{ color: "black" }}>
+                                                    VNĐ
+                                                </Typography>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                    sx={{
+                                        width: "140px", // Giới hạn chiều rộng
+                                        "& .MuiInputBase-input": {
+                                            fontSize: 16,
+                                            fontWeight: 400,
+                                            textAlign: "right",
                                         },
                                     }}
                                 />
                             </Box>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 1, marginTop: 1.5 }}>
-                            <Typography>Phí vận chuyển</Typography>
-                            <Typography>{phiShip.toLocaleString()} đ</Typography>
-                        </Box>
+                        )}
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 1.5, marginTop: 1 }}>
                             <Typography>Giảm giá</Typography>
-                            <Typography>{discountAmount.toLocaleString()} đ</Typography>
+                            <Typography>{discountAmount.toLocaleString()} VNĐ</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
                             <Typography>Tổng số tiền cần thanh toán</Typography>
-                            <Typography color="error">{tongTienThanhToan.toLocaleString()} đ</Typography>
+                            <Typography color="error">{tongTienThanhToan.toLocaleString()} VNĐ</Typography>
                         </Box>
 
                         <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
-                            Ngày nhận dự kiến: 31/03/2025
+                            Ngày nhận dự kiến: {getEstimatedDeliveryDate()}
                         </Typography>
                     </Grid>
                 </Grid>
@@ -1156,57 +1464,78 @@ const ThanhToan = () => {
                 <DialogContent>
                     {/* Thành phố */}
                     <FormControl fullWidth margin="normal">
-                        <InputLabel id="city-label" size="small">Tỉnh/Thành phố</InputLabel>
+                        <InputLabel id="city-label" size="small">
+                            Tỉnh/Thành phố
+                        </InputLabel>
                         <Select
                             labelId="city-label"
-                            value={newCity}  // Sử dụng state cho modal là 'city'
+                            value={newCity} // Sử dụng state cho modal là 'city'
                             label="Tỉnh/Thành phố"
                             onChange={handleCityChangeModal}
                             size="small" // Áp dụng size nhỏ cho Select
                         >
-                            {newCities.map((newCity) => (  // Sử dụng citiess (dữ liệu cho modal)
-                                <MenuItem key={newCity.Id} value={newCity.Name}>
-                                    {newCity.Name}
-                                </MenuItem>
-                            ))}
+                            {newCities.map(
+                                (
+                                    newCity // Sử dụng citiess (dữ liệu cho modal)
+                                ) => (
+                                    <MenuItem key={newCity.ProvinceID} value={newCity.Name}>
+                                        {newCity.Name}
+                                    </MenuItem>
+                                )
+                            )}
                         </Select>
                     </FormControl>
 
                     {/* Quận/Huyện */}
                     <FormControl fullWidth margin="normal">
-                        <InputLabel id="district-label" size="small">Quận/Huyện</InputLabel>
+                        <InputLabel id="district-label" size="small">
+                            Quận/Huyện
+                        </InputLabel>
                         <Select
                             labelId="district-label"
-                            value={newDistrict}  // Sử dụng state cho modal là 'district'
+                            value={newDistrict} // Sử dụng state cho modal là 'district'
                             label="Quận/Huyện"
                             onChange={handleDistrictChangeModal}
-                            disabled={!newCities}  // Disable nếu chưa chọn thành phố
+                            disabled={!newCities} // Disable nếu chưa chọn thành phố
                             size="small" // Áp dụng size nhỏ cho Select
                         >
-                            {newDistricts.map((newDistrict) => (  // Sử dụng districtss (dữ liệu cho modal)
-                                <MenuItem key={newDistrict.Id} value={newDistrict.Name}>
-                                    {newDistrict.Name}
-                                </MenuItem>
-                            ))}
+                            {newDistricts.map(
+                                (
+                                    newDistrict // Sử dụng districtss (dữ liệu cho modal)
+                                ) => (
+                                    <MenuItem
+                                        key={newDistrict.DistrictID}
+                                        value={newDistrict.DistrictName}
+                                    >
+                                        {newDistrict.DistrictName}
+                                    </MenuItem>
+                                )
+                            )}
                         </Select>
                     </FormControl>
 
                     {/* Xã/Phường */}
                     <FormControl fullWidth margin="normal">
-                        <InputLabel id="ward-label" size="small">Xã/Phường</InputLabel>
+                        <InputLabel id="ward-label" size="small">
+                            Xã/Phường
+                        </InputLabel>
                         <Select
                             labelId="ward-label"
-                            value={newWard}  // Sử dụng state cho modal là 'ward'
+                            value={newWard} // Sử dụng state cho modal là 'ward'
                             label="Xã/Phường"
                             onChange={handleWardChangeModal}
-                            disabled={!newDistrict}  // Disable nếu chưa chọn quận/huyện
+                            disabled={!newDistrict} // Disable nếu chưa chọn quận/huyện
                             size="small" // Áp dụng size nhỏ cho Select
                         >
-                            {newWards.map((newWard) => (  // Sử dụng wardss (dữ liệu cho modal)
-                                <MenuItem key={newWard.Id} value={newWard.Name}>
-                                    {newWard.Name}
-                                </MenuItem>
-                            ))}
+                            {newWards.map(
+                                (
+                                    newWard // Sử dụng wardss (dữ liệu cho modal)
+                                ) => (
+                                    <MenuItem key={newWard.WardID} value={newWard.WardName}>
+                                        {newWard.WardName}
+                                    </MenuItem>
+                                )
+                            )}
                         </Select>
                     </FormControl>
 

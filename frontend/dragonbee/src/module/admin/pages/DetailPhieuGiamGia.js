@@ -22,13 +22,15 @@ import {
   InputAdornment,
   IconButton,
   Select,
-  MenuItem
+  MenuItem,
+  Menu,
 } from "@mui/material";
 import PercentIcon from "@mui/icons-material/Percent";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SearchIcon from "@mui/icons-material/Search";
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const DetailPhieuGiamGia = () => {
   const [type, setType] = useState("public");  // Kiểm tra kiểu: công khai hoặc cá nhân
@@ -58,6 +60,30 @@ const DetailPhieuGiamGia = () => {
     khachHangIds: ''
   });
 
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // tháng hiện tại
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isSelectingMonth, setIsSelectingMonth] = useState(true);
+
+  const handleOpenMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+    setIsSelectingMonth(true); // Reset trạng thái về chọn tháng
+  };
+
+  const handleSelectMonth = (month) => {
+    setSelectedMonth(month);
+    setIsSelectingMonth(false); // Sau khi chọn tháng, chuyển sang chọn năm
+  };
+
+  const handleSelectYear = (year) => {
+    setSelectedYear(year);
+    handleCloseMenu(); // Khi chọn năm, đóng menu và reset trạng thái
+  };
+
   // Hàm xử lý quay lại trang trước
   const handleBack = () => {
     navigate("/admin/phieu-giam-gia"); // Điều hướng về trang phiếu giảm giá
@@ -68,17 +94,32 @@ const DetailPhieuGiamGia = () => {
     const fetchPhieuGiamGiaDetail = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/dragonbee/detail-phieu-giam-gia/${ma}`);
-
+  
         setPhieuGiamGia({
           ...response.data,
           giaTriGiamToiDa: response.data.giaTriGiamToiDa || "", // ✅ Gán giá trị rỗng nếu null
         });
-
+  
         setSelectedIcon(response.data.loaiPhieuGiamGia === "Phần trăm" ? "percent" : "dollar");
-
+  
         if (response.data.kieuGiamGia === "Cá nhân") {
           setType("private");
-          setSelectedCustomers(response.data.khachHangIds || []);
+          const selectedCustomerIds = response.data.khachHangIds || [];
+  
+          // Cập nhật danh sách khách hàng và sắp xếp lại, đưa các khách hàng đã chọn lên đầu
+          setCustomers((prevCustomers) => {
+            const sortedCustomers = [...prevCustomers].sort((a, b) => {
+              // Kiểm tra nếu khách hàng có trong selectedCustomerIds thì đưa lên đầu
+              const isSelectedA = selectedCustomerIds.includes(a.id);
+              const isSelectedB = selectedCustomerIds.includes(b.id);
+              if (isSelectedA && !isSelectedB) return -1;  // A lên đầu
+              if (!isSelectedA && isSelectedB) return 1;   // B lên đầu
+              return 0; // Không thay đổi vị trí nếu cả hai đều cùng trạng thái
+            });
+            return sortedCustomers;
+          });
+  
+          setSelectedCustomers(selectedCustomerIds);
         } else {
           setType("public");
         }
@@ -86,28 +127,49 @@ const DetailPhieuGiamGia = () => {
         console.error("Lỗi khi lấy chi tiết phiếu giảm giá:", error);
       }
     };
-
+  
     fetchPhieuGiamGiaDetail();
-  }, [ma]);
+  }, [ma]);  
 
-
-  // Hàm gọi API lấy danh sách khách hàng
   const fetchCustomers = async (keyword = "", pageNumber = 0, pageSize = 5) => {
     try {
-      const response = await axios.get("http://localhost:8080/dragonbee/search-khach-hang", {
-        params: { keyword, page: pageNumber, size: pageSize }
+      const response = await axios.get(`http://localhost:8080/dragonbee/search-khach-hang`, {
+        params: {
+          keyword,
+          page: pageNumber,
+          size: pageSize,
+          thang: selectedMonth,
+          nam: selectedYear
+        }
       });
-      setCustomers(response.data.content);
+  
+      let fetchedCustomers = response.data.content;
+  
+      // Nếu KHÔNG tìm kiếm và KHÔNG chọn tháng/năm mới => cần ghép selected lên đầu
+      const isDefaultFilter = !keyword && pageNumber === 0 && selectedMonth === new Date().getMonth() + 1 && selectedYear === new Date().getFullYear();
+  
+      if (isDefaultFilter && selectedCustomers.length > 0) {
+        // Lọc ra các khách hàng đã chọn từ response
+        const selected = fetchedCustomers.filter(c => selectedCustomers.includes(c.id));
+  
+        // Lọc ra các khách hàng chưa được chọn
+        const unselected = fetchedCustomers.filter(c => !selectedCustomers.includes(c.id));
+  
+        // Ghép selected lên đầu danh sách, giữ nguyên thứ tự của unselected
+        fetchedCustomers = [...selected, ...unselected];
+      }
+  
+      setCustomers(fetchedCustomers);
       setTotalItems(response.data.totalElements);
     } catch (error) {
       console.error("Lỗi khi gọi API khách hàng:", error);
     }
-  };
+  };  
 
   // Gọi API khi component được mount hoặc khi tìm kiếm, phân trang thay đổi
   useEffect(() => {
     fetchCustomers(searchTerm, page, rowsPerPage);
-  }, [searchTerm, page, rowsPerPage]);
+  }, [searchTerm, page, rowsPerPage, selectedMonth, selectedYear]);
 
   // Xử lý thay đổi tìm kiếm
   const handleSearchChange = (e) => {
@@ -287,8 +349,10 @@ const DetailPhieuGiamGia = () => {
   };
 
   return (
-        <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", padding: 3, margin: -3,  // Căn giữa nội dung
-          borderRadius: 2 }}>
+    <Box sx={{
+      backgroundColor: "#f5f5f5", minHeight: "100vh", padding: 3, margin: -3,  // Căn giữa nội dung
+      borderRadius: 2
+    }}>
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle sx={{ textAlign: "center" }}>
           <InfoOutlinedIcon sx={{ fontSize: 70, color: "#1976D2", marginBottom: 1 }} />
@@ -598,8 +662,52 @@ const DetailPhieuGiamGia = () => {
                         <TableCell sx={{ padding: "6px 8px" }}>
                           <strong>Email</strong>
                         </TableCell>
-                        <TableCell sx={{ padding: "6px 8px" }}>
-                          <strong>Ngày sinh</strong>
+                        <TableCell sx={{ width: "25%", padding: "6px 8px" }}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <strong>Chi tiêu</strong>
+                            <IconButton size="small" onClick={handleOpenMenu}>
+                              <Typography variant="body2" style={{ fontSize: '0.8rem' }}>
+                                ({selectedMonth}/{selectedYear})
+                              </Typography>
+                              <ArrowDropDownIcon />
+                            </IconButton>
+
+                            <Menu
+                              anchorEl={anchorEl}
+                              open={Boolean(anchorEl)}
+                              onClose={handleCloseMenu}
+                            >
+                              <Box sx={{ px: 2, pt: 1 }}>
+                                {/* Hiển thị chọn tháng nếu đang ở trạng thái chọn tháng */}
+                                {isSelectingMonth ? (
+                                  <>
+                                    <Typography variant="subtitle2">Chọn tháng</Typography>
+                                    {[...Array(12)].map((_, i) => (
+                                      <MenuItem
+                                        key={i + 1}
+                                        onClick={() => handleSelectMonth(i + 1)}
+                                      >
+                                        Tháng {i + 1}
+                                      </MenuItem>
+                                    ))}
+                                  </>
+                                ) : (
+                                  // Hiển thị chọn năm nếu đã chọn tháng
+                                  <>
+                                    <Typography variant="subtitle2">Chọn năm</Typography>
+                                    {[2023, 2024, 2025].map((y) => (
+                                      <MenuItem
+                                        key={y}
+                                        onClick={() => handleSelectYear(y)}
+                                      >
+                                        Năm {y}
+                                      </MenuItem>
+                                    ))}
+                                  </>
+                                )}
+                              </Box>
+                            </Menu>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     </TableHead>
@@ -616,7 +724,7 @@ const DetailPhieuGiamGia = () => {
                           <TableCell sx={{ padding: "6px 8px" }}>{customer.tenKhachHang}</TableCell>
                           <TableCell sx={{ padding: "6px 8px" }}>{customer.sdt}</TableCell>
                           <TableCell sx={{ padding: "6px 8px" }}>{customer.email}</TableCell>
-                          <TableCell sx={{ padding: "6px 8px" }}>{customer.ngaySinh}</TableCell>
+                          <TableCell sx={{ padding: "6px 8px" }}> {customer.chiTieuThang.toLocaleString()} VNĐ</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

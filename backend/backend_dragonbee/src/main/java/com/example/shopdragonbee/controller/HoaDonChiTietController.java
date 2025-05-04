@@ -24,8 +24,9 @@ public class HoaDonChiTietController {
     public HoaDonChiTietResponseDTO.HoaDonChiTietDTO getHoaDonById(@PathVariable Integer id) {
         return hoaDonChiTietService.getHoaDonById(id);
     }
-    @GetMapping("/client/{id}")
-    public HoaDonChiTietResponseDTO.HoaDonChiTietDTO getHoaDonByIdClient(@PathVariable Integer id) {
-        return hoaDonChiTietService.getHoaDonByIdClient(id);
+
+    @PostMapping("/hoanTien/{id}")
+    public Boolean xacNhanHoanfTien(@PathVariable Integer id,@RequestParam Float soTienCanHoan) {
+        return hoaDonChiTietService.xacNhanHoanTien(id,soTienCanHoan);
     }
 }

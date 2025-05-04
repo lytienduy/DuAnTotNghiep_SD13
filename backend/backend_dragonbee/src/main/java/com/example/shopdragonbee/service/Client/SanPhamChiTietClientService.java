@@ -5,6 +5,8 @@ import com.example.shopdragonbee.dto.Client.SPCTDTO;
 import com.example.shopdragonbee.entity.*;
 import com.example.shopdragonbee.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,13 +18,18 @@ public class SanPhamChiTietClientService {
 
     @Autowired
     private SanPhamChiTietRepositoryP sanPhamChiTietRepositoryP;
-
+    @Autowired
+    private HoaDonChiTietRepository hoaDonChiTietRepository;
     @Autowired
     private SanPhamRepositoryP sanPhamRepositoryP;
     @Autowired
     private GioHangRepository gioHangRepository;
     @Autowired
     private GioHangChiTietRepository gioHangChiTietRepository;
+    @Autowired
+    private KhachHangRepository khachHangRepository;
+    @Autowired
+    private HomeService homeService;
 
     private Map<Integer, SPCTDTO.SanPhamCart> idSet = new HashMap<>();
 
@@ -37,7 +44,7 @@ public class SanPhamChiTietClientService {
     }
 
     //P
-    public SPCTDTO.SizeCuaPhong convertSangListSizeCuaPhong(SanPhamChiTiet sanPhamChiTiet) {
+    public SPCTDTO.SizeCuaPhong convertSangListSizeCuaPhong(SanPhamChiTiet sanPhamChiTiet, Integer idKhachHang) {
         SPCTDTO.SanPhamCart sanPhamTrungTrongCart = idSet.get(sanPhamChiTiet.getId());
         if (sanPhamTrungTrongCart != null) {
             sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - sanPhamTrungTrongCart.getQuantity());
@@ -48,13 +55,14 @@ public class SanPhamChiTietClientService {
                 sanPhamChiTiet.getSize().getId(),
                 sanPhamChiTiet.getSize().getMa(),
                 sanPhamChiTiet.getSize().getTenSize(),
-                sanPhamChiTiet.getSoLuong()
+                idKhachHang == null ? sanPhamChiTiet.getSoLuong() : sanPhamChiTiet.getSoLuong() - hoaDonChiTietRepository.getSoLuongSanPhamTheoCacHoaDonChoXacNhanCuaKhachHang(sanPhamChiTiet, "Hoạt động", "Chờ xác nhận", khachHangRepository.findById(idKhachHang).get())
         );
     }
 
     public SPCTDTO.SanPhamCart convertSangSanPhamCart(GioHangChiTiet gioHangChiTiet) {
         SPCTDTO.SanPhamCart sanPhamCart = new SPCTDTO.SanPhamCart();
         SanPhamChiTiet sanPhamChiTiet = gioHangChiTiet.getSanPhamChiTiet();
+        sanPhamCart.setId(sanPhamChiTiet.getSanPham().getId());
         sanPhamCart.setIdSPCT(sanPhamChiTiet.getId());
         if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
             sanPhamCart.setAnhSPCT(sanPhamChiTiet.getListAnh().get(0).getAnhUrl());
@@ -81,6 +89,7 @@ public class SanPhamChiTietClientService {
                         .map(this::convertSangSanPhamCart) // Gọi hàm convert từng phần tử
                         .collect(Collectors.toList());
                 idSet = listChuyenDoiGioHangChiTietSangSanPhamCart.stream().collect(Collectors.toMap(SPCTDTO.SanPhamCart::getIdSPCT, sp -> sp));
+
             } else {
                 idSet = Collections.emptyMap();
             }
@@ -96,28 +105,48 @@ public class SanPhamChiTietClientService {
             mauSacAndHinhAnhAndSize.setMauSac(mauSac);
             //
             SanPham sp = sanPhamRepositoryP.findById(idSanPham).get();
-            List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThai(sp, mauSac, "Hoạt động");
+            List<SanPhamChiTiet> listSPCT = sanPhamChiTietRepositoryP.findBySanPhamAndMauSacAndTrangThaiOrderBySize_TenSize(sp, mauSac, "Hoạt động");
+            int indexLayGiaTheoMau = 0;
             for (SanPhamChiTiet sanPhamChiTiet : listSPCT//For này chỉ để lấy tên và ảnh của sản phẩm
             ) {
+                //Lấy giá sản phẩm theo màu
+                if(indexLayGiaTheoMau == 0){
+                    mauSacAndHinhAnhAndSize.setGia(sanPhamChiTiet.getGia());
+                }
                 if (index == 0) {
                     tongQuanSanPhamCTClient.setTen(sp.getTenSanPham() + " " + sanPhamChiTiet.getChatLieu().getTenChatLieu() + " " + sanPhamChiTiet.getThuongHieu().getTenThuongHieu() + " " + sanPhamChiTiet.getDanhMuc().getTenDanhMuc() + " " + sanPhamChiTiet.getKieuDang().getTenKieuDang());
                     tongQuanSanPhamCTClient.setMoTa(sanPhamChiTiet.getMoTa());
                     tongQuanSanPhamCTClient.setGia(sanPhamChiTiet.getGia());
                     tongQuanSanPhamCTClient.setKieuDang(sanPhamChiTiet.getKieuDang());
                     tongQuanSanPhamCTClient.setChatLieu(sanPhamChiTiet.getChatLieu());
+                    tongQuanSanPhamCTClient.setDanhMuc(sanPhamChiTiet.getDanhMuc());
+                    tongQuanSanPhamCTClient.setThuongHieu(sanPhamChiTiet.getThuongHieu());
+                    tongQuanSanPhamCTClient.setXuatXu(sanPhamChiTiet.getXuatXu());
                 }
                 if (sanPhamChiTiet.getListAnh().isEmpty() == false) {
                     mauSacAndHinhAnhAndSize.setListAnh(listURLAnhSanPham(sanPhamChiTiet.getListAnh()));
                     break;
                 }
                 ++index;
+                ++indexLayGiaTheoMau;
             }
-            mauSacAndHinhAnhAndSize.setListSize(listSPCT.stream().map(this::convertSangListSizeCuaPhong).collect(Collectors.toList()));
+            mauSacAndHinhAnhAndSize.setListSize(listSPCT.stream().map(spct -> convertSangListSizeCuaPhong(spct, idKhachHang)).collect(Collectors.toList()));
             listMauSacAndSizeCuaSp.add(mauSacAndHinhAnhAndSize);
         }
         tongQuanSanPhamCTClient.setListHinhAnhAndMauSacAndSize(listMauSacAndSizeCuaSp);
         return tongQuanSanPhamCTClient;
     }
 
+
+    public List<HomeDTO.SanPhamClient> getListSanPhamTuongTu(Integer idSanPham, String tenDanhMuc) {
+        List<HomeDTO.SanPhamClient> listTraVe = new ArrayList<>();
+        listTraVe.addAll(homeService.getListSanPhamQuanAuNamDanhMucTheoDanhMucTop3(tenDanhMuc, idSanPham));
+        List<HomeDTO.SanPhamClient> listBanChay = homeService.getListSanPhamQuanAuNamDanhMucTopBanChay()
+                .stream()
+                .filter(sp -> sp.getId() != idSanPham) // Lọc bỏ sản phẩm có id = 1
+                .collect(Collectors.toList());
+        listTraVe.addAll(listBanChay);
+        return listTraVe;
+    }
 
 }

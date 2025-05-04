@@ -22,12 +22,14 @@ import {
   Checkbox,
   InputAdornment,
   IconButton,
+  Menu,
 } from "@mui/material";
 import PercentIcon from "@mui/icons-material/Percent";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SearchIcon from "@mui/icons-material/Search";
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const ThemPhieuGiamGia = () => {
   const [type, setType] = useState("public");  // Kiểm tra kiểu: công khai hoặc cá nhân
@@ -64,6 +66,30 @@ const ThemPhieuGiamGia = () => {
     denNgay: "",
     selectedCustomers: "",
   });
+
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // tháng hiện tại
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isSelectingMonth, setIsSelectingMonth] = useState(true);
+
+  const handleOpenMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+    setIsSelectingMonth(true); // Reset trạng thái về chọn tháng
+  };
+
+  const handleSelectMonth = (month) => {
+    setSelectedMonth(month);
+    setIsSelectingMonth(false); // Sau khi chọn tháng, chuyển sang chọn năm
+  };
+
+  const handleSelectYear = (year) => {
+    setSelectedYear(year);
+    handleCloseMenu(); // Khi chọn năm, đóng menu và reset trạng thái
+  };
 
   // Hàm xử lý quay lại trang trước
   const handleBack = () => {
@@ -234,10 +260,16 @@ const ThemPhieuGiamGia = () => {
   const fetchCustomers = async (keyword = "", pageNumber = 0, pageSize = 5) => {
     try {
       const response = await axios.get("http://localhost:8080/dragonbee/search-khach-hang", {
-        params: { keyword, page: pageNumber, size: pageSize }
+        params: {
+          keyword,
+          page: pageNumber,
+          size: pageSize,
+          thang: selectedMonth,
+          nam: selectedYear
+        }
       });
-      setCustomers(response.data.content);
-      setTotalItems(response.data.totalElements);
+      setCustomers(response.data.content); // Lấy danh sách khách hàng đã sắp xếp từ backend
+      setTotalItems(response.data.totalElements); // Cập nhật tổng số lượng khách hàng
     } catch (error) {
       console.error("Lỗi khi gọi API khách hàng:", error);
     }
@@ -246,7 +278,7 @@ const ThemPhieuGiamGia = () => {
   // Gọi API khi component được mount hoặc khi tìm kiếm, phân trang thay đổi
   useEffect(() => {
     fetchCustomers(searchTerm, page, rowsPerPage);
-  }, [searchTerm, page, rowsPerPage]);
+  }, [searchTerm, page, rowsPerPage, selectedMonth, selectedYear]);
 
   // Xử lý thay đổi tìm kiếm
   const handleSearchChange = (e) => {
@@ -290,8 +322,10 @@ const ThemPhieuGiamGia = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", padding: 3, margin: -3,  // Căn giữa nội dung
-      borderRadius: 2 }}>
+    <Box sx={{
+      backgroundColor: "#f5f5f5", minHeight: "100vh", padding: 3, margin: -3,  // Căn giữa nội dung
+      borderRadius: 2
+    }}>
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle sx={{ textAlign: "center" }}>
           <InfoOutlinedIcon sx={{ fontSize: 70, color: "#1976D2", marginBottom: 1 }} />
@@ -510,22 +544,24 @@ const ThemPhieuGiamGia = () => {
                   minWidth: "500px",
                 }}
               >
-                <TextField
-                  placeholder="Tìm kiếm khách hàng"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  value={searchTerm}
-                  onChange={handleSearchChange} // Cập nhật keyword tìm kiếm
-                  InputProps={{
-                    startAdornment: (
-                      <IconButton>
-                        <SearchIcon sx={{ color: "gray", marginRight: 1 }} />
-                      </IconButton>
-                    ),
-                  }}
-                />
+                <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                  <TextField
+                    placeholder="Tìm kiếm khách hàng"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    InputProps={{
+                      startAdornment: (
+                        <IconButton>
+                          <SearchIcon sx={{ color: "gray", marginRight: 1 }} />
+                        </IconButton>
+                      ),
+                    }}
+                    sx={{ flex: 1 }} // để chiếm tối đa không gian còn lại
+                  />
+                </Box>
                 <Typography variant="body2" color="error" sx={{ mb: 2 }}>
                   {errors.selectedCustomers}
                 </Typography>
@@ -549,8 +585,52 @@ const ThemPhieuGiamGia = () => {
                         <TableCell sx={{ width: "30%", padding: "6px 8px" }}>
                           <strong>Email</strong>
                         </TableCell>
-                        <TableCell sx={{ width: "20%", padding: "6px 8px" }}>
-                          <strong>Ngày sinh</strong>
+                        <TableCell sx={{ width: "25%", padding: "6px 8px" }}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <strong>Chi tiêu</strong>
+                            <IconButton size="small" onClick={handleOpenMenu}>
+                              <Typography variant="body2" style={{ fontSize: '0.8rem' }}>
+                                ({selectedMonth}/{selectedYear})
+                              </Typography>
+                              <ArrowDropDownIcon />
+                            </IconButton>
+
+                            <Menu
+                              anchorEl={anchorEl}
+                              open={Boolean(anchorEl)}
+                              onClose={handleCloseMenu}
+                            >
+                              <Box sx={{ px: 2, pt: 1 }}>
+                                {/* Hiển thị chọn tháng nếu đang ở trạng thái chọn tháng */}
+                                {isSelectingMonth ? (
+                                  <>
+                                    <Typography variant="subtitle2">Chọn tháng</Typography>
+                                    {[...Array(12)].map((_, i) => (
+                                      <MenuItem
+                                        key={i + 1}
+                                        onClick={() => handleSelectMonth(i + 1)}
+                                      >
+                                        Tháng {i + 1}
+                                      </MenuItem>
+                                    ))}
+                                  </>
+                                ) : (
+                                  // Hiển thị chọn năm nếu đã chọn tháng
+                                  <>
+                                    <Typography variant="subtitle2">Chọn năm</Typography>
+                                    {[2023, 2024, 2025].map((y) => (
+                                      <MenuItem
+                                        key={y}
+                                        onClick={() => handleSelectYear(y)}
+                                      >
+                                        Năm {y}
+                                      </MenuItem>
+                                    ))}
+                                  </>
+                                )}
+                              </Box>
+                            </Menu>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     </TableHead>
@@ -577,7 +657,7 @@ const ThemPhieuGiamGia = () => {
                             </Typography>
                           </TableCell>
                           <TableCell sx={{ width: "20%", padding: "6px 8px" }}>
-                            {customer.ngaySinh}
+                            {customer.chiTieuThang.toLocaleString()} VNĐ
                           </TableCell>
                         </TableRow>
                       ))}

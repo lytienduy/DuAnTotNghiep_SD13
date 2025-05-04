@@ -1,5 +1,6 @@
 package com.example.shopdragonbee.dto.Client;
 
+import com.example.shopdragonbee.dto.HoaDonChiTietResponseDTO;
 import com.example.shopdragonbee.entity.ChatLieu;
 import com.example.shopdragonbee.entity.KieuDang;
 import lombok.*;
@@ -19,6 +20,8 @@ public class DonMuaDTO {
         private String maHoaDon;
         private String trangThai;
         private List<SanPham> sanPhams;
+        private Float tongTienThanhToan;
+        private List<HoaDonChiTietResponseDTO.ThanhToanHoaDonDTO> listThanhToanHoaDon;
     }
 
     @Getter

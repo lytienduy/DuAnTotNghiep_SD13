@@ -3,18 +3,17 @@ package com.example.shopdragonbee.controller;
 import com.example.shopdragonbee.dto.KhachHangPGGResponse;
 import com.example.shopdragonbee.dto.PhieuGiamGiaRequest;
 import com.example.shopdragonbee.dto.PhieuGiamGiaResponse;
+import com.example.shopdragonbee.entity.HoaDon;
 import com.example.shopdragonbee.entity.PhieuGiamGia;
 import com.example.shopdragonbee.entity.PhieuGiamGiaKhachHang;
-import com.example.shopdragonbee.repository.KhachHangPGGRepository;
-import com.example.shopdragonbee.repository.PhieuGiamGiaKhachHangRepository;
-import com.example.shopdragonbee.repository.PhieuGiamGiaRepository;
-import com.example.shopdragonbee.repository.PhieuGiamGiaSpecification;
+import com.example.shopdragonbee.repository.*;
 import com.example.shopdragonbee.service.EmailPGGService;
 import com.example.shopdragonbee.service.KhachHangPGGService;
 import com.example.shopdragonbee.service.PhieuGiamGiaService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,8 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -51,6 +49,9 @@ public class AppController {
     @Autowired
     private EmailPGGService emailPGGService;
 
+    @Autowired
+    private HoaDonRepository hoaDonRepository;
+
     public void PhieuGiamGiaController(PhieuGiamGiaRepository phieuGiamGiaRepository,
                                        KhachHangPGGRepository khachHangPGGRepository,
                                        EmailPGGService emailPGGService) {
@@ -63,10 +64,40 @@ public class AppController {
     public Page<KhachHangPGGResponse> searchKhachHang(
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(value = "thang", required = false) Integer thang,
+            @RequestParam(value = "nam", required = false) Integer nam
+    ) {
+        // Dùng tháng/năm hiện tại nếu không được truyền từ FE
+        LocalDate today = LocalDate.now();
+        int month = (thang != null) ? thang : today.getMonthValue();
+        int year = (nam != null) ? nam : today.getYear();
 
-        Pageable pageable = PageRequest.of(page, size);
-        return khachHangPGGService.searchKhachHang(keyword, pageable);
+        LocalDateTime startOfMonth = LocalDate.of(year, month, 1).atStartOfDay();
+        LocalDateTime endOfMonth = startOfMonth
+                .withDayOfMonth(startOfMonth.toLocalDate().lengthOfMonth())
+                .withHour(23).withMinute(59).withSecond(59);
+
+        // Lấy toàn bộ danh sách KH phù hợp keyword (không phân trang)
+        List<KhachHangPGGResponse> fullList = khachHangPGGService.searchKhachHang(keyword);
+
+        // Tính chi tiêu và gán vào
+        for (KhachHangPGGResponse customer : fullList) {
+            Double chiTieuThang = hoaDonRepository.tinhTongChiTieuTheoThang(customer.getId(), startOfMonth, endOfMonth);
+            customer.setChiTieuThang(chiTieuThang != null ? chiTieuThang : 0.0);
+        }
+
+        // Sắp xếp theo chi tiêu giảm dần
+        List<KhachHangPGGResponse> sortedList = fullList.stream()
+                .sorted(Comparator.comparingDouble(KhachHangPGGResponse::getChiTieuThang).reversed())
+                .collect(Collectors.toList());
+
+        // Thực hiện phân trang thủ công
+        int start = (int) Math.min(page * size, sortedList.size());
+        int end = (int) Math.min(start + size, sortedList.size());
+        List<KhachHangPGGResponse> pageContent = sortedList.subList(start, end);
+
+        return new PageImpl<>(pageContent, PageRequest.of(page, size), sortedList.size());
     }
 
     @GetMapping("/search-phieu-giam-gia")
@@ -120,8 +151,8 @@ public class AppController {
 
     //show khách hàng trong thêm mới phiếu giảm giá phần "cá nhân"
     @GetMapping("/khach-hang")
-    public Page<KhachHangPGGResponse> getAllKhachHang(Pageable pageable) {
-        return khachHangPGGRepository.getKhachHangList(pageable);
+    public List<KhachHangPGGResponse> getAllKhachHang() {
+        return khachHangPGGRepository.getKhachHangList();
     }
 
     @PostMapping("/add-phieu-giam-gia")
@@ -384,6 +415,28 @@ public class AppController {
         return ResponseEntity.ok("Cập nhật phiếu giảm giá thành công!");
     }
 
+    @GetMapping("/giam-gia")
+    public ResponseEntity<?> tinhTienGiamGia(
+            @RequestParam("ma") String ma,
+            @RequestParam("tongTienSanPham") double tongTienSanPham) {
+        PhieuGiamGia phieu = phieuGiamGiaService.getByMa(ma);
+        double tienGiam = phieuGiamGiaService.tinhTienGiam(phieu, tongTienSanPham);
+        Map<String, Object> response = new HashMap<>();
+        response.put("phieuGiamGia", phieu);
+        response.put("tienGiam", tienGiam);
+        return ResponseEntity.ok(response);
+    }
 
+    @PutMapping("/hoa-don/{id}")
+    public ResponseEntity<?> capNhatHoaDon(@PathVariable("id") Integer id, @RequestBody HoaDon hoaDonMoi) {
+        HoaDon hoaDon = hoaDonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn với ID: " + id));
+
+        hoaDon.setTongTien(hoaDonMoi.getTongTien()); // cập nhật tổng tiền sau khi trừ giảm giá
+        // Có thể cập nhật thêm các trường khác nếu cần
+
+        hoaDonRepository.save(hoaDon);
+        return ResponseEntity.ok("Cập nhật hóa đơn thành công");
+    }
 
 }

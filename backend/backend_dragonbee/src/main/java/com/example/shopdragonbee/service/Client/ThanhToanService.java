@@ -37,7 +37,7 @@ public class ThanhToanService {
     @Autowired
     private MailService mailService;
 
-    //Add sản phẩm vào giỏ hàng
+    //Add sản phẩm vào giỏ hàng online chưa trừ số lượng
     @Transactional
     public Boolean addSanPhamVaoHoaDonChiTiet(Integer idHoaDon, Integer idSanPhamChiTiet, Integer soLuong, Double donGia, String idKhachHang) {
         try {
@@ -51,7 +51,7 @@ public class ThanhToanService {
                 hoaDonChiTiet.setMa("HDCT" + (System.currentTimeMillis() % 100000));
                 hoaDonChiTiet.setHoaDon(hoaDonRepository.findById(idHoaDon).get());
                 hoaDonChiTiet.setSanPhamChiTiet(sanPhamChiTietRepositoryP.findById(idSanPhamChiTiet).get());
-                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
+//                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 hoaDonChiTiet.setSoLuong(soLuong);
                 hoaDonChiTiet.setDonGia(donGia);
                 hoaDonChiTiet.setNgayTao(LocalDateTime.now());
@@ -60,7 +60,7 @@ public class ThanhToanService {
                 sanPhamChiTietRepositoryP.save(sanPhamChiTiet);//set lại số lượng sản phẩm chi tiết
             } else {
                 kiemTraHDCTDaCoChua.setSoLuong(kiemTraHDCTDaCoChua.getSoLuong() + soLuong);
-                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
+//                sanPhamChiTiet.setSoLuong(sanPhamChiTiet.getSoLuong() - soLuong);
                 kiemTraHDCTDaCoChua.setDonGia(donGia);
                 kiemTraHDCTDaCoChua.setNgaySua(LocalDateTime.now());
                 hoaDonChiTietRepository.save(kiemTraHDCTDaCoChua);//lưu hóa đơn chi tiết
@@ -71,9 +71,6 @@ public class ThanhToanService {
                         sanPhamChiTiet, gioHangRepository.getGioHangByKhachHang(khachHangRepository.findById(Integer.parseInt(idKhachHang)).get())
                 ));
             }
-//            HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
-//            hoaDon.setTongTien(hoaDonRepository.tinhTongTienByHoaDonId(hoaDon.getId()) + (hoaDon.getPhiShip() != null ? hoaDon.getPhiShip() : 0));
-//            hoaDonRepository.save(hoaDon);
             return true;
         } catch (Exception e) {
             return false;
@@ -81,7 +78,7 @@ public class ThanhToanService {
     }
 
     @Transactional
-    public String xacNhanDatHangKhongDangNhap(
+    public String xacNhanDatHang(
             String maHoaDon,
             String pgg,
             String tenNguoiNhan,

@@ -291,7 +291,7 @@ const Home = () => {
                     Array.from({ length: Math.min(5, productDataBusiness.length) }).map((_, index) => {
                       const product = productDataBusiness[(startBusiness + index) % productDataBusiness?.length];
                       return (
-                        <Grid item key={product.id} xs={12} sm={4} md={2.4} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
+                        <Grid item key={product.id} xs={12} sm={4} md={2.4} sx={{ cursor: 'pointer' }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                           <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
                             {/* Label "NEW" */}
                             {product?.isNew === true && <Typography
@@ -495,7 +495,7 @@ const Home = () => {
                     Array.from({ length: Math.min(5, productDataGolf.length) }).map((_, index) => {
                       const product = productDataGolf[(startGolf + index) % productDataGolf?.length];
                       return (
-                        <Grid item key={product.id} xs={12} sm={4} md={2.4} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
+                        <Grid item key={product.id} xs={12} sm={4} md={2.4} sx={{ cursor: 'pointer' }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                           <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
                             {/* Label "NEW" */}
                             {product?.isNew === true && <Typography
@@ -697,7 +697,7 @@ const Home = () => {
                     Array.from({ length: Math.min(5, productDataCasual.length) }).map((_, index) => {
                       const product = productDataCasual[(startCasual + index) % productDataCasual?.length];
                       return (
-                        <Grid item key={product.id} xs={12} sm={4} md={2.4} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
+                        <Grid item key={product.id} xs={12} sm={4} md={2.4} sx={{ cursor: 'pointer' }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                           <Card sx={{ position: 'relative', boxShadow: 2, borderRadius: 2 }}>
                             {/* Label "NEW" */}
                             {product?.isNew === true && <Typography
@@ -880,9 +880,9 @@ const Home = () => {
           <Typography variant="h4" sx={{ mb: 4, textAlign: "center" }}>
             TOP SẢN PHẨM BÁN CHẠY
           </Typography>
-          <Grid container spacing={3} justifyContent="center">
+          <Grid container spacing={3} justifyContent="center" >
             {productDataTopBanChay.map((product) => (
-              <Grid item xs={12} sm={6} md={4} key={product.id} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
+              <Grid item xs={12} sm={6} md={4} key={product.id} sx={{ marginBottom: '2px', cursor: 'pointer' }} onClick={() => navigate(`/sanPhamChiTiet/${product.id}`)}>
                 <Card sx={{ position: 'relative', boxShadow: 3, borderRadius: 2 }}>
                   {/* Label "NEW" */}
                   {product?.isNew === true && <Typography

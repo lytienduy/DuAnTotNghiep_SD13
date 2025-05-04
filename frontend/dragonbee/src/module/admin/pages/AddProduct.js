@@ -89,6 +89,7 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
   const [tenSanPham, setTenSanPham] = useState("");
   const [moTa, setMoTa] = useState("");
   const [error, setError] = useState("");
+  const [snackSeverity, setSnackSeverity] = useState("success");
   const [newCategory, setNewCategory] = useState({
     tenDanhMuc: "",
     moTa: "",
@@ -500,34 +501,36 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
 
   const handleSave = async () => {
     console.log("Danh sách productDetails trước khi lưu:", productDetails);
-
+  
     if (!selectedProduct) {
-      alert("Vui lòng chọn sản phẩm.");
+      setSnackMessage("Vui lòng chọn sản phẩm.");
+      setSnackSeverity("error");
+      setSnackOpen(true);
       return;
     }
-
-    // Kiểm tra từng sản phẩm chi tiết có ảnh không
+  
     const isValidImages = productDetails.every(
       (detail) => detail.images && detail.images.length > 0
     );
     if (!isValidImages) {
-      alert("Vui lòng chọn ít nhất một ảnh cho mỗi sản phẩm chi tiết.");
+      setSnackMessage("Vui lòng chọn ít nhất một ảnh cho mỗi sản phẩm chi tiết.");
+      setSnackSeverity("error");
+      setSnackOpen(true);
       return;
     }
-
-    // Kiểm tra số lượng và giá phải lớn hơn 0
+  
     const invalidDetail = productDetails.find(
       (detail) =>
-        !detail.quantity ||
-        detail.quantity <= 0 ||
-        !detail.price ||
-        detail.price <= 0
+        !detail.quantity || detail.quantity <= 0 ||
+        !detail.price || detail.price <= 0
     );
     if (invalidDetail) {
-      alert("Số lượng và giá của mỗi sản phẩm phải lớn hơn 0.");
+      setSnackMessage("Số lượng và giá của mỗi sản phẩm phải lớn hơn 0.");
+      setSnackSeverity("error");
+      setSnackOpen(true);
       return;
     }
-
+  
     const requestDataList = productDetails.map((detail) => ({
       sanPhamId: selectedProduct,
       soLuong: detail.quantity || 0,
@@ -538,33 +541,35 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
       thuongHieuId: selectedThuongHieu,
       phongCachId: selectedPhongCach,
       chatLieuId: selectedChatLieu,
-      mauSacId:
-        colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
+      mauSacId: colors.find((c) => c.tenMauSac === detail.tenMauSac)?.id || null,
       sizeId: sizes.find((s) => s.tenSize === detail.tenSize)?.id || null,
       kieuDangId: selectedKieuDang,
       kieuDaiQuanId: selectedKieuDaiQuan,
       xuatXuId: selectedXuatXus,
       anhUrls: detail.images || [],
     }));
-
+  
     try {
       const response = await axios.post(
         "http://localhost:8080/api/san-pham-chi-tiet/add/chi-tiet",
         requestDataList,
         { headers: { "Content-Type": "application/json" } }
       );
-
+  
       if (response.status === 200 || response.status === 201) {
-        console.log("Sản phẩm chi tiết đã được lưu", response.data);
         setSnackMessage("Thêm sản phẩm thành công!");
+        setSnackSeverity("success");
         setSnackOpen(true);
         navigate("/admin/sanpham", { replace: true });
       }
     } catch (error) {
       console.error("Lỗi khi gửi request:", error);
-      alert("Có lỗi xảy ra khi lưu sản phẩm.");
+      setSnackMessage("Có lỗi xảy ra khi lưu sản phẩm.");
+      setSnackSeverity("error");
+      setSnackOpen(true);
     }
   };
+  
 
   // xóa spct
   const removeSanPhamChiTiet = (index) => {
@@ -2513,6 +2518,20 @@ const AddSanPham = ({ sanPhamChiTietId }) => {
           >
             Lưu
           </Button>
+          <Snackbar
+  open={snackOpen}
+  autoHideDuration={3000}
+  onClose={() => setSnackOpen(false)}
+  anchorOrigin={{ vertical: "top", horizontal: "right" }}
+>
+  <Alert
+    onClose={() => setSnackOpen(false)}
+    severity={snackSeverity}
+    sx={{ width: "100%" }}
+  >
+    {snackMessage}
+  </Alert>
+</Snackbar>
         </Box>
       </Paper>
     </div>

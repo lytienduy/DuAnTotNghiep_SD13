@@ -83,7 +83,7 @@ const HoaDon = () => {
       "Loại hóa đơn": order.loaiDon,
       "Ngày tạo": new Date(order.ngayTao).toLocaleString("vi-VN"),
       "Trạng thái": order.trangThai,
-      "Số tiền thanh toán": (order?.tongTien ?? 0).toLocaleString("vi-VN") + " đ",
+      "Số tiền thanh toán": (order?.tongTien ?? 0).toLocaleString("vi-VN") + " VNĐ",
     }));
 
     // Tạo workbook và worksheet
@@ -189,7 +189,8 @@ const HoaDon = () => {
       "ĐÃ GIAO HÀNG", "CHỜ THANH TOÁN",
       "ĐÃ THANH TOÁN",
       "HOÀN THÀNH",
-      "ĐÃ HỦY"
+      "ĐÃ HỦY",
+      "Chờ hoàn tiền"
     ] : [
       "TẤT CẢ",
       "CHỜ THÊM SẢN PHẨM",
@@ -197,10 +198,12 @@ const HoaDon = () => {
       "ĐÃ XÁC NHẬN",
       "CHỜ GIAO HÀNG",
       "ĐANG VẬN CHUYỂN",
-      "ĐÃ GIAO HÀNG", "CHỜ THANH TOÁN",
+      "ĐÃ GIAO HÀNG",
+      "CHỜ THANH TOÁN",
       "ĐÃ THANH TOÁN",
       "HOÀN THÀNH",
-      "ĐÃ HỦY"
+      "ĐÃ HỦY",
+      "Chờ hoàn tiền"
     ];
 
 
@@ -536,7 +539,7 @@ const HoaDon = () => {
                       {order.trangThai}
                     </Box>
                   </TableCell>
-                  <TableCell align="center">{(order?.tongTien ?? 0).toLocaleString("vi-VN")} đ</TableCell>
+                  <TableCell align="center">{(order?.tongTien ?? 0).toLocaleString("vi-VN")} VNĐ</TableCell>
                   <TableCell align="center">
                     <Stack direction="row" spacing={1}>
                       <IconButton color="primary" size="small"
