@@ -492,7 +492,7 @@ const ThongKe = () => {
                       {topProducts && topProducts.length > 0 ? (
                         topProducts.map((product, index) => (
                           <TableRow key={index}>
-                            <TableCell>{index + 1}</TableCell>
+                          <TableCell><strong>{index + 1}</strong></TableCell>
                             <TableCell>
                               <img
                                 src={product.imageUrls}

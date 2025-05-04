@@ -123,7 +123,7 @@ const OutOfStockProducts = () => {
               <TableBody>
                 {products.map((prod, index) => (
                   <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
+                    <TableCell><strong>{index + 1}</strong></TableCell>
                     <TableCell>
                       {prod.anhSanPham ? (
                         <img
