@@ -53,6 +53,7 @@ const ChatLieu = () => {
   const [message, setMessage] = useState(""); // Thông báo thêm chất liệu thành công
   const [selectedId, setSelectedId] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmOpenCL, setConfirmOpenCL] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [openEdit, setOpenEdit] = useState(false);
@@ -126,15 +127,12 @@ const ChatLieu = () => {
   const handleClose = () => setOpen(false);
   // Gọi API thêm chất liệu
   const handleAddChatLieu = async () => {
-    const confirm = window.confirm("Bạn có muốn thêm mới chất liệu không?");
-    if (!confirm) return;
-
     try {
       const response = await axios.post("http://localhost:8080/api/chatlieu/add", {
         tenChatLieu,
         moTa,
       });
-
+      setConfirmOpenCL(false);
       setMessage({ type: "success", text: "Thêm chất liệu thành công!" });
       setTenChatLieu("");
       setMoTa("");
@@ -147,7 +145,14 @@ const ChatLieu = () => {
     }
   };
   
-  
+  const handleOpenCLConfirm = () => {
+
+    setConfirmOpenCL(true);
+  };
+
+  const handleCloseCLConfirm = () => {
+    setConfirmOpenCL(false);
+  };
   // chuyển đổi trạng thái
   const handleOpenConfirm = (id) => {
     setSelectedId(id);
@@ -332,14 +337,29 @@ const ChatLieu = () => {
             <Button
               variant="contained"
               sx={{ marginTop: 2 }}
-              onClick={handleAddChatLieu}
+              onClick={handleOpenCLConfirm}
               disabled={!tenChatLieu || !moTa} // Disable nếu tên hoặc mô tả trống
             >
               Thêm
             </Button>
           </Box>
         </Modal>
-        
+        <Dialog open={confirmOpenCL} onClose={handleCloseCLConfirm}>
+            <DialogTitle>Xác nhận thêm chất liệu</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Bạn có chắc muốn thêm chất liệu này không?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseCLConfirm} color="error">
+                Hủy
+              </Button>
+              <Button onClick={handleAddChatLieu} color="primary" autoFocus>
+                Đồng ý
+              </Button>
+            </DialogActions>
+          </Dialog>
         {message && (
         <Snackbar
           open={Boolean(message)}
@@ -485,7 +505,7 @@ const ChatLieu = () => {
             open={snackbar.open}
             autoHideDuration={3000}
             onClose={() => setSnackbar({ open: false, message: "" })}
-            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
           >
             <Alert severity="success" sx={{ width: "100%" }}>
               {snackbar.message}
