@@ -44,8 +44,8 @@ public class BanHangTaiQuayController {
 
     //Thêm hóa đơn tại quầy
     @GetMapping("/addHoaDonTaiQuay")
-    public HoaDon addHoaDonTaiQuay() {
-        return banHangTaiQuayService.taoHoaDon();
+    public HoaDon addHoaDonTaiQuay(@RequestParam String tenUser) {
+        return banHangTaiQuayService.taoHoaDon(tenUser);
     }
 
     //Lấy hóa đơn tại quầy
@@ -144,6 +144,7 @@ public class BanHangTaiQuayController {
         String diaChiNhanHang = body.get("diaChiNhanHang");
         String tongTienPhaiTra = body.get("tongTienPhaiTra");
         String phiShip = body.get("phiShip");
+        String tenUser = body.get("tenUser");
         if (idkhachHang == null) {
             return banHangTaiQuayService.xacNhanDatHang(
                     Integer.parseInt(idHoaDon),
@@ -154,7 +155,8 @@ public class BanHangTaiQuayController {
                     sdtNguoiNhan,
                     diaChiNhanHang,
                     Float.parseFloat(tongTienPhaiTra),
-                    Float.parseFloat(phiShip)
+                    Float.parseFloat(phiShip),
+                    tenUser
             );
         } else {
             return banHangTaiQuayService.xacNhanDatHang(
@@ -166,7 +168,8 @@ public class BanHangTaiQuayController {
                     sdtNguoiNhan,
                     diaChiNhanHang,
                     Float.parseFloat(tongTienPhaiTra),
-                    Float.parseFloat(phiShip)
+                    Float.parseFloat(phiShip),
+                    tenUser
             );
         }
     }

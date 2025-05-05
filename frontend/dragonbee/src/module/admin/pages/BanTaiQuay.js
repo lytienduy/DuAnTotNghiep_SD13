@@ -200,6 +200,7 @@ const BanTaiQuay = () => {
     Number(discount || 0) -
     Number(discountAmount || 0);
 
+
   const checkFreeShipping = () => {
     const tongTien = selectedOrder?.tongTienSanPham || 0;
     if (tongTien >= 2000000) {
@@ -260,6 +261,10 @@ const BanTaiQuay = () => {
     showLeftPanel,
   ]);
   
+
+  const tenUser = JSON.parse(localStorage.getItem("userData"))?.nhanVien?.tenNhanVien;
+
+
   // Hàm mở và đóng modal voucher
   const handleOpenVoucherModal = () => {
     setOpenVoucherModal(true);
@@ -1409,7 +1414,7 @@ const BanTaiQuay = () => {
       }
       // }
 
-      let apiUrl = "http://localhost:8080/ban-hang-tai-quay/addHoaDonTaiQuay";
+      let apiUrl = `http://localhost:8080/ban-hang-tai-quay/addHoaDonTaiQuay?tenUser=${tenUser}`;
 
       const response = await axios.get(apiUrl); //Gọi api bằng axiosGet
       if (response.data) {
@@ -1436,6 +1441,7 @@ const BanTaiQuay = () => {
           lyDo: ghiChuTrangThai,
           trangThai: "Đã hủy",
           hanhDong: "Hủy",
+          tenUser: tenUser
         }
       );
       if (response.data) {
@@ -1804,6 +1810,7 @@ const BanTaiQuay = () => {
           diaChiNhanHang: addressParts,
           tongTienPhaiTra: tongTienPhaiTra,
           phiShip: discount,
+          tenUser: tenUser
         }
       );
       if (response.data !== null) {
