@@ -67,6 +67,17 @@ const ThanhToan = () => {
     const [openConfirmDatHang, setOpenConfirmDatHang] = useState(false);
     const userKH = JSON.parse(localStorage.getItem("userKH"));
 
+    const checkFreeShipping = () => {
+        const tongTienv = tongTien || 0;
+        if (tongTienv >= 2000000) {
+          setDiscount(0);
+        }
+      };
+    
+      useEffect(() => {
+        checkFreeShipping();
+      }, [tongTien]);
+      
     //Thông báo Toast
     const showSuccessToast = (message) => {
         toast.success(message, {
@@ -306,6 +317,7 @@ const ThanhToan = () => {
             );
             const rawFee = serviceFeeResponse.data.data.service_fee;
             setDiscount(roundToNearestThousand(rawFee));
+            checkFreeShipping();
         };
         fetchGHNServiceFee();
     };
@@ -636,6 +648,7 @@ const ThanhToan = () => {
                         );
                         const rawFee = feeResponse.data.data.service_fee;
                         setDiscount(roundToNearestThousand(rawFee));
+                        checkFreeShipping();
                     }
                 })
                 .catch((error) => console.error("Error fetching addresses:", error));
@@ -803,6 +816,7 @@ const ThanhToan = () => {
                             );
                             const rawFee = serviceFeeResponse.data.data.service_fee;
                             setDiscount(roundToNearestThousand(rawFee));
+                            checkFreeShipping();
                         };
                         await fetchGHNServiceFee();
                     };

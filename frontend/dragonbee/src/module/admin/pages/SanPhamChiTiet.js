@@ -1132,7 +1132,7 @@ const SanPhamChiTiet = () => {
                     <TableCell>
                       <strong>Hành Động</strong>
                     </TableCell>
-                    <TableCell>Download QR</TableCell>
+                    <TableCell><strong>Download QR</strong></TableCell>
                     <TableCell>
                       <strong>Chuyển Đổi Trạng Thái</strong>
                     </TableCell>{" "}

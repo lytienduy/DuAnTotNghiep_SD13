@@ -36,6 +36,7 @@ import {
   Modal,
   Slider,
   DialogContentText,
+  FormHelperText
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -91,6 +92,16 @@ const BanTaiQuay = () => {
   const [gender, setGender] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
+
+  const [errorName, setErrorName] = useState(false);
+  const [errorPhone, setErrorPhone] = useState(false);
+  const [errorDob, setErrorDob] = useState(false);
+  const [errorGender, setErrorGender] = useState(false);
+  const [errorEmail, setErrorEmail] = useState(false);
+  const [errorCity, setErrorCity] = useState(false);
+  const [errorDistrict, setErrorDistrict] = useState(false);
+  const [errorWard, setErrorWard] = useState(false);
+  const [errorAddress, setErrorAddress] = useState(false);
 
   // State để lưu danh sách các đơn hàng
   const [orders, setOrders] = useState([]);
@@ -189,6 +200,66 @@ const BanTaiQuay = () => {
     Number(discount || 0) -
     Number(discountAmount || 0);
 
+  const checkFreeShipping = () => {
+    const tongTien = selectedOrder?.tongTienSanPham || 0;
+    if (tongTien >= 2000000) {
+      setDiscount(0);
+    }
+  };
+
+  useEffect(() => {
+    checkFreeShipping();
+  }, [selectedOrder?.tongTienSanPham]);
+
+  const updateShippingFeeIfNeeded = async ({
+    tongTien,
+    districtId,
+    wardCode,
+    showLeftPanel,
+    setDiscount,
+  }) => {
+    if (tongTien >= 2000000 || !showLeftPanel) {
+      return;
+    }
+  
+    try {
+      const response = await axios.get(
+        `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+        {
+          headers: { token: "2ae73454-f01a-11ef-b6c2-d21b7695c8d0" },
+          params: {
+            service_type_id: 2,
+            to_district_id: districtId,
+            to_ward_code: wardCode,
+            weight: 3000,
+            insurance_value: 0,
+          },
+        }
+      );
+      const fee = response.data.data.service_fee;
+      setDiscount(roundToNearestThousand(fee));
+    } catch (error) {
+      console.error("Lỗi khi lấy phí vận chuyển:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedOrder && selectedGHNDistrict && selectedGHNWard) {
+      updateShippingFeeIfNeeded({
+        tongTien: selectedOrder.tongTienSanPham,
+        districtId: selectedGHNDistrict,
+        wardCode: selectedGHNWard,
+        showLeftPanel,
+        setDiscount,
+      });
+    }
+  }, [
+    selectedOrder?.tongTienSanPham,
+    selectedGHNDistrict,
+    selectedGHNWard,
+    showLeftPanel,
+  ]);
+  
   // Hàm mở và đóng modal voucher
   const handleOpenVoucherModal = () => {
     setOpenVoucherModal(true);
@@ -524,6 +595,7 @@ const BanTaiQuay = () => {
               );
               const rawFee = serviceFeeResponse.data.data.service_fee;
               setDiscount(roundToNearestThousand(rawFee));
+              checkFreeShipping();
             };
             await fetchGHNServiceFee();
           } else {
@@ -769,6 +841,7 @@ const BanTaiQuay = () => {
       );
       const rawFee = serviceFeeResponse.data.data.service_fee;
       setDiscount(roundToNearestThousand(rawFee));
+      checkFreeShipping();
     };
     fetchGHNServiceFee();
   };
@@ -916,6 +989,7 @@ const BanTaiQuay = () => {
       );
       const rawFee = response.data.data.service_fee;
       setDiscount(roundToNearestThousand(rawFee));
+      checkFreeShipping();
     } catch (error) {
       console.error("Error calculating GHN fee:", error);
     }
@@ -981,10 +1055,90 @@ const BanTaiQuay = () => {
   const handleSubmitAddNewKH = async (e) => {
     e.preventDefault();
 
-    // Tách "Số nhà, Đường" thành hai trường 'soNha' và 'duong' ngăn cách bởi dấu phẩy
+    let isValid = true;
+
+    // Reset lỗi
+    setErrorName(false);
+    setErrorPhone(false);
+    setErrorDob(false);
+    setErrorGender(false);
+    setErrorEmail(false);
+    setErrorCity(false);
+    setErrorDistrict(false);
+    setErrorWard(false);
+    setErrorAddress(false);
+
+    // Kiểm tra từng trường
+    if (!name.trim()) {
+      setErrorName(true);
+      isValid = false;
+    }
+
+    if (!phone.trim()) {
+      setErrorPhone(true);
+      isValid = false;
+    }
+
+    if (!dob) {
+      setErrorDob(true);
+      isValid = false;
+    } else {
+      // Kiểm tra tuổi >= 18
+      const dobDate = new Date(dob);
+      const now = new Date();
+      const age = now.getFullYear() - dobDate.getFullYear();
+      const monthDiff = now.getMonth() - dobDate.getMonth();
+      if (age < 18 || (age === 18 && monthDiff < 0)) {
+        setErrorDob(true);
+        showErrorToast("Khách hàng phải từ 18 tuổi trở lên");
+        isValid = false;
+      }
+    }
+
+    if (!gender) {
+      setErrorGender(true);
+      isValid = false;
+    }
+
+    if (!email.trim()) {
+      setErrorEmail(true);
+      isValid = false;
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setErrorEmail(true);
+        showErrorToast("Email không đúng định dạng");
+        isValid = false;
+      }
+    }
+
+    if (!cityKH) {
+      setErrorCity(true);
+      isValid = false;
+    }
+
+    if (!districtKH) {
+      setErrorDistrict(true);
+      isValid = false;
+    }
+
+    if (!wardKH) {
+      setErrorWard(true);
+      isValid = false;
+    }
+
+    if (!address.trim()) {
+      setErrorAddress(true);
+      isValid = false;
+    }
+
+    if (!isValid) {
+      showErrorToast("Vui lòng kiểm tra lại các trường đã nhập!");
+      return;
+    }
+
     const [soNha, duong] = address.split(",");
 
-    // Tạo đối tượng dữ liệu để gửi lên API
     const customerData = {
       tenKhachHang: name,
       ngaySinh: dob,
@@ -1002,26 +1156,13 @@ const BanTaiQuay = () => {
     };
 
     try {
-      // Gửi dữ liệu đến API để thêm khách hàng mới
       const response = await axios.post(
         "http://localhost:8080/dragonbee/them-khach-hang",
         customerData
       );
-      showSuccessToast("Thêm khách hàng thành công!");
+      showSuccessToast("Thêm khách hàng thành công");
       fetchDefaultCustomers();
-      // Sau khi thêm thành công, gọi hàm để lấy thông tin khách hàng mới nhất
       fetchNewestCustomer();
-      // Sau khi thêm khách hàng thành công, reset form
-      setName('');
-      setPhone('');
-      setDob('');
-      setGender('');
-      setEmail('');
-      setCityKH('');
-      setDistrictKH('');
-      setWardKH('');
-      setAddress('');
-      // Đóng pop-up hoặc modal
       setOpenKH(false);
       setOpen(false);
     } catch (error) {
@@ -1505,7 +1646,7 @@ const BanTaiQuay = () => {
   };
 
   //Kho nhập số lượng bàn phím và thoát focus nhập số lượng
-  const handleInputBlur = (id,soLuong) => {
+  const handleInputBlur = (id, soLuong) => {
     setSelectedProductId(id);
     const newValue = (isNaN(Number(tempValues[id]))) ? soLuong : Number(tempValues[id]);
     if (newValue >= 1) {
@@ -1759,6 +1900,7 @@ const BanTaiQuay = () => {
               );
               const rawFee = serviceFeeResponse.data.data.service_fee;
               setDiscount(roundToNearestThousand(rawFee));
+              checkFreeShipping();
             };
             await fetchGHNServiceFee();
           };
@@ -2299,7 +2441,7 @@ const BanTaiQuay = () => {
                                             )
                                           }
                                           onBlur={() =>
-                                            handleInputBlur(product.id,product.soLuong)
+                                            handleInputBlur(product.id, product.soLuong)
                                           }
                                           type="number"
                                           inputProps={{
@@ -3369,7 +3511,12 @@ const BanTaiQuay = () => {
                   margin="normal"
                   size="small"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setErrorName(false);
+                  }}
+                  error={errorName}
+                  helperText={errorName ? "Tên không được để trống" : ""}
                 />
                 <TextField
                   fullWidth
@@ -3378,7 +3525,12 @@ const BanTaiQuay = () => {
                   margin="normal"
                   size="small"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    setErrorPhone(false);
+                  }}
+                  error={errorPhone}
+                  helperText={errorPhone ? "Số điện thoại không được để trống" : ""}
                 />
                 <TextField
                   fullWidth
@@ -3388,20 +3540,29 @@ const BanTaiQuay = () => {
                   type="date"
                   size="small"
                   value={dob}
-                  onChange={(e) => setDob(e.target.value)}
+                  onChange={(e) => {
+                    setDob(e.target.value);
+                    setErrorDob(false);
+                  }}
                   InputLabelProps={{ shrink: true }}
+                  error={errorDob}
+                  helperText={errorDob ? "Ngày sinh không hợp lệ hoặc khách hàng phải trên 18 tuổi" : ""}
                 />
-                <FormControl fullWidth margin="normal" size="small">
+                <FormControl fullWidth margin="normal" size="small" error={errorGender}>
                   <InputLabel>Giới tính</InputLabel>
                   <Select
                     value={gender}
-                    onChange={(e) => setGender(e.target.value)}
+                    onChange={(e) => {
+                      setGender(e.target.value);
+                      setErrorGender(false);
+                    }}
                     label="Giới tính"
                   >
-                    <MenuItem value="Nam">Nam</MenuItem>
-                    <MenuItem value="Nữ">Nữ</MenuItem>
+                    <MenuItem value="male">Nam</MenuItem>
+                    <MenuItem value="female">Nữ</MenuItem>
                     <MenuItem value="other">Khác</MenuItem>
                   </Select>
+                  {errorGender && <FormHelperText>Giới tính không được để trống</FormHelperText>}
                 </FormControl>
                 <TextField
                   fullWidth
@@ -3410,17 +3571,25 @@ const BanTaiQuay = () => {
                   margin="normal"
                   size="small"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrorEmail(false);
+                  }}
+                  error={errorEmail}
+                  helperText={errorEmail ? "Email không hợp lệ hoặc để trống" : ""}
                 />
               </Grid>
 
               {/* Cột bên phải */}
               <Grid item xs={6}>
-                <FormControl fullWidth size="small" sx={{ marginTop: 2 }}>
+                <FormControl fullWidth size="small" sx={{ marginTop: 2 }} error={errorCity}>
                   <InputLabel>Tỉnh/Thành phố</InputLabel>
                   <Select
                     value={cityKH}
-                    onChange={handleCityChangeKH}
+                    onChange={(e) => {
+                      handleCityChangeKH(e);
+                      setErrorCity(false);
+                    }}
                     label="Tỉnh/Thành phố"
                   >
                     {citiesKH.map((city) => (
@@ -3429,31 +3598,36 @@ const BanTaiQuay = () => {
                       </MenuItem>
                     ))}
                   </Select>
+                  {errorCity && <FormHelperText>Tỉnh/Thành phố không được để trống</FormHelperText>}
                 </FormControl>
 
-                <FormControl fullWidth size="small" sx={{ marginTop: 3 }}>
+                <FormControl fullWidth size="small" sx={{ marginTop: 3 }} error={errorDistrict}>
                   <InputLabel>Quận/Huyện</InputLabel>
                   <Select
                     value={districtKH}
-                    onChange={handleDistrictChangeKH}
+                    onChange={(e) => {
+                      handleDistrictChangeKH(e);
+                      setErrorDistrict(false);
+                    }}
                     label="Quận/Huyện"
                   >
                     {districtsKH.map((district) => (
-                      <MenuItem
-                        key={district.DistrictID}
-                        value={district.DistrictName}
-                      >
+                      <MenuItem key={district.DistrictID} value={district.DistrictName}>
                         {district.DistrictName}
                       </MenuItem>
                     ))}
                   </Select>
+                  {errorDistrict && <FormHelperText>Quận/Huyện không được để trống</FormHelperText>}
                 </FormControl>
 
-                <FormControl fullWidth size="small" sx={{ marginTop: 3 }}>
+                <FormControl fullWidth size="small" sx={{ marginTop: 3 }} error={errorWard}>
                   <InputLabel>Xã/Phường</InputLabel>
                   <Select
                     value={wardKH}
-                    onChange={handleWardChangeKH}
+                    onChange={(e) => {
+                      handleWardChangeKH(e);
+                      setErrorWard(false);
+                    }}
                     label="Xã/Phường"
                   >
                     {wardsKH.length > 0 ? (
@@ -3466,6 +3640,7 @@ const BanTaiQuay = () => {
                       <MenuItem disabled>No wards available</MenuItem>
                     )}
                   </Select>
+                  {errorWard && <FormHelperText>Xã/Phường không được để trống</FormHelperText>}
                 </FormControl>
 
                 <TextField
@@ -3476,7 +3651,12 @@ const BanTaiQuay = () => {
                   size="small"
                   sx={{ marginTop: 3 }}
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  onChange={(e) => {
+                    setAddress(e.target.value);
+                    setErrorAddress(false);
+                  }}
+                  error={errorAddress}
+                  helperText={errorAddress ? "Địa chỉ không được để trống" : ""}
                 />
               </Grid>
             </Grid>
